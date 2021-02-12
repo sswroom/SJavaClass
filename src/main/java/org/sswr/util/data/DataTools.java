@@ -1,0 +1,660 @@
+package org.sswr.util.data;
+
+import java.lang.reflect.Array;
+import java.lang.reflect.InvocationTargetException;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.sswr.util.db.QueryConditions;
+
+public class DataTools {
+	public static <T> Set<Integer> createIntSet(Iterable<T> objs, String fieldName, QueryConditions<T> cond)
+	{
+		Iterator<T> it = objs.iterator();
+		if (!it.hasNext())
+		{
+			return Collections.emptySet();
+		}
+		HashSet<Integer> intSet = new HashSet<Integer>();
+		T obj = it.next();
+		Class<?> cls = obj.getClass();
+		try
+		{
+			FieldGetter<T> getter = new FieldGetter<T>(cls, fieldName);
+			Class<?> fieldType = getter.getFieldType();
+			if (fieldType.equals(Integer.class) || fieldType.equals(int.class))
+			{
+				if (cond == null || cond.isValid(obj))
+					intSet.add((Integer)getter.get(obj));
+				while (it.hasNext())
+				{
+					obj = it.next();
+					if (cond == null || cond.isValid(obj))
+						intSet.add((Integer)getter.get(obj));
+				}
+				return intSet;
+			}
+			else if (fieldType.equals(Set.class))
+			{
+				if (cond == null || cond.isValid(obj))
+				{
+					@SuppressWarnings("unchecked")
+					Set<Integer> set = (Set<Integer>)getter.get(obj);
+					intSet.addAll(set);
+				}
+				while (it.hasNext())
+				{
+					obj = it.next();
+					if (cond == null || cond.isValid(obj))
+					{
+						@SuppressWarnings("unchecked")
+						Set<Integer> set2 = (Set<Integer>)getter.get(obj);
+						intSet.addAll(set2);
+					}
+				}
+				return intSet;
+			}
+			else
+			{
+				System.out.println("DataTools.getIntSet: field type is not supported: "+fieldType.toString());
+				return null;
+			}
+		}
+		catch (NoSuchFieldException ex)
+		{
+			ex.printStackTrace();
+			return null;
+		}
+		catch (IllegalAccessException ex)
+		{
+			ex.printStackTrace();
+			return null;
+		}
+		catch (InvocationTargetException ex)
+		{
+			ex.printStackTrace();
+			return null;
+		}
+	}
+
+	public static <T> Set<String> createStringSet(Iterable<T> objs, String fieldName, QueryConditions<T> cond)
+	{
+		Iterator<T> it = objs.iterator();
+		if (!it.hasNext())
+		{
+			return Collections.emptySet();
+		}
+		HashSet<String> strSet = new HashSet<String>();
+		T obj = it.next();
+		Class<?> cls = obj.getClass();
+		try
+		{
+			FieldGetter<T> getter = new FieldGetter<T>(cls, fieldName);
+			Class<?> fieldType = getter.getFieldType();
+			if (fieldType.equals(String.class))
+			{
+				if (cond == null || cond.isValid(obj))
+				{
+					strSet.add((String)getter.get(obj));
+				}
+				while (it.hasNext())
+				{
+					obj = it.next();
+					if (cond == null || cond.isValid(obj))
+					{
+						strSet.add((String)getter.get(obj));
+					}
+				}
+				return strSet;
+			}
+			else
+			{
+				if (cond == null || cond.isValid(obj))
+				{
+					strSet.add(getter.get(obj).toString());
+				}
+				while (it.hasNext())
+				{
+					obj = it.next();
+					if (cond == null || cond.isValid(obj))
+					{
+						strSet.add(getter.get(obj).toString());
+					}
+				}
+				return strSet;
+			}
+		}
+		catch (NoSuchFieldException ex)
+		{
+			ex.printStackTrace();
+			return null;
+		}
+		catch (IllegalAccessException ex)
+		{
+			ex.printStackTrace();
+			return null;
+		}
+		catch (InvocationTargetException ex)
+		{
+			ex.printStackTrace();
+			return null;
+		}
+	}
+
+	public static <T> Set<Timestamp> createTimestampSet(Iterable<T> objs, String fieldName, QueryConditions<T> cond)
+	{
+		Iterator<T> it = objs.iterator();
+		if (!it.hasNext())
+		{
+			return Collections.emptySet();
+		}
+		HashSet<Timestamp> tsSet = new HashSet<Timestamp>();
+		T obj = it.next();
+		Class<?> cls = obj.getClass();
+		try
+		{
+			FieldGetter<T> getter = new FieldGetter<T>(cls, fieldName);
+			Class<?> fieldType = getter.getFieldType();
+			if (fieldType.equals(Timestamp.class))
+			{
+				if (cond == null || cond.isValid(obj))
+				{
+					tsSet.add((Timestamp)getter.get(obj));
+				}
+				while (it.hasNext())
+				{
+					obj = it.next();
+					if (cond == null || cond.isValid(obj))
+					{
+						tsSet.add((Timestamp)getter.get(obj));
+					}
+				}
+				return tsSet;
+			}
+			else
+			{
+				return null;
+			}
+		}
+		catch (NoSuchFieldException ex)
+		{
+			ex.printStackTrace();
+			return null;
+		}
+		catch (IllegalAccessException ex)
+		{
+			ex.printStackTrace();
+			return null;
+		}
+		catch (InvocationTargetException ex)
+		{
+			ex.printStackTrace();
+			return null;
+		}
+	}
+
+	public static <T> Map<Integer, T> createIntMap(Iterable<T> list, String fieldName, QueryConditions<T> cond)
+	{
+		Iterator<T> it = list.iterator();
+		if (!it.hasNext())
+		{
+			return new HashMap<Integer, T>();
+		}
+		T o = it.next();
+		try
+		{
+			FieldGetter<T> getter = new FieldGetter<T>(o.getClass(), fieldName);
+			Class<?> t = getter.getFieldType();
+			HashMap<Integer, T> retMap = new HashMap<Integer, T>();
+			Integer v;
+			if (t.equals(Integer.class) || t.equals(int.class))
+			{
+				if (cond == null || cond.isValid(o))
+				{
+					v = (Integer)getter.get(o);
+					retMap.put(v, o);
+				}
+				while (it.hasNext())
+				{
+					o = it.next();
+					if (cond == null || cond.isValid(o))
+					{
+						v = (Integer)getter.get(o);
+						retMap.put(v, o);
+					}
+				}
+				return retMap;
+			}
+			else
+			{
+				return null;
+			}
+		}
+		catch (NoSuchFieldException ex)
+		{
+			ex.printStackTrace();
+			return null;
+		}
+		catch (IllegalAccessException ex)
+		{
+			ex.printStackTrace();
+			return null;
+		}
+		catch (IllegalArgumentException ex)
+		{
+			ex.printStackTrace();
+			return null;
+		}
+		catch (InvocationTargetException ex)
+		{
+			ex.printStackTrace();
+			return null;
+		}
+	}
+
+	public static <T> Map<String, T> createStringMap(Iterable<T> list, String fieldName, QueryConditions<T> cond)
+	{
+		Iterator<T> it = list.iterator();
+		if (!it.hasNext())
+		{
+			return new HashMap<String, T>();
+		}
+		T o = it.next();
+		try
+		{
+			FieldGetter<T> getter = new FieldGetter<T>(o.getClass(), fieldName);
+			Class<?> t = getter.getFieldType();
+			HashMap<String, T> retMap = new HashMap<String, T>();
+			String s;
+			if (t.equals(String.class))
+			{
+				if (cond == null || cond.isValid(o))
+				{
+					s = (String)getter.get(o);
+					retMap.put(s, o);
+				}
+				while (it.hasNext())
+				{
+					o = it.next();
+					if (cond == null || cond.isValid(o))
+					{
+						s = (String)getter.get(o);
+						retMap.put(s, o);
+					}
+				}
+				return retMap;
+			}
+			else
+			{
+				if (cond == null || cond.isValid(o))
+				{
+					s = getter.get(o).toString();
+					retMap.put(s, o);
+				}
+				while (it.hasNext())
+				{
+					o = it.next();
+					if (cond == null || cond.isValid(o))
+					{
+						s = getter.get(o).toString();
+						retMap.put(s, o);
+					}
+				}
+				return retMap;
+			}
+		}
+		catch (NoSuchFieldException ex)
+		{
+			ex.printStackTrace();
+			return null;
+		}
+		catch (IllegalAccessException ex)
+		{
+			ex.printStackTrace();
+			return null;
+		}
+		catch (IllegalArgumentException ex)
+		{
+			ex.printStackTrace();
+			return null;
+		}
+		catch (InvocationTargetException ex)
+		{
+			ex.printStackTrace();
+			return null;
+		}
+	}
+
+	public static <T, K> List<K> createValueList(Class<K> cls, Iterable<T> objs, String fieldName, QueryConditions<T> cond)
+	{
+		Iterator<T> it = objs.iterator();
+		if (!it.hasNext())
+		{
+			return Collections.emptyList();
+		}
+		ArrayList<K> valueList = new ArrayList<K>();
+		T obj = it.next();
+		Class<?> clsT = obj.getClass();
+		try
+		{
+			FieldGetter<T> getter = new FieldGetter<T>(clsT, fieldName);
+			Class<?> fieldType = getter.getFieldType();
+			if (fieldType.equals(cls))
+			{
+				if (cond == null || cond.isValid(obj))
+				{
+					@SuppressWarnings("unchecked")
+					K val = (K)getter.get(obj);
+					valueList.add(val);
+				}
+				while (it.hasNext())
+				{
+					obj = it.next();
+					if (cond == null || cond.isValid(obj))
+					{
+						@SuppressWarnings("unchecked")
+						K val = (K)getter.get(obj);
+						valueList.add(val);
+					}
+				}
+				return valueList;
+			}
+			else if (fieldType.equals(Set.class))
+			{
+				if (cond == null || cond.isValid(obj))
+				{
+					@SuppressWarnings("unchecked")
+					Set<K> set = (Set<K>)getter.get(obj);
+					valueList.addAll(set);
+				}
+				while (it.hasNext())
+				{
+					obj = it.next();
+					if (cond == null || cond.isValid(obj))
+					{
+						@SuppressWarnings("unchecked")
+						Set<K> set2 = (Set<K>)getter.get(obj);
+						valueList.addAll(set2);
+					}
+				}
+				return valueList;
+			}
+			else
+			{
+				System.out.println("DataTools.createValueList: field type is not supported: "+fieldType.toString());
+				return null;
+			}
+		}
+		catch (NoSuchFieldException ex)
+		{
+			ex.printStackTrace();
+			return null;
+		}
+		catch (IllegalAccessException ex)
+		{
+			ex.printStackTrace();
+			return null;
+		}
+		catch (InvocationTargetException ex)
+		{
+			ex.printStackTrace();
+			return null;
+		}
+	}
+
+	public static <T> List<T> filterToList(T[] arr, QueryConditions<T> cond)
+	{
+		ArrayList<T> list = new ArrayList<T>();
+		int i = 0;
+		int j = arr.length;
+		try
+		{
+			while (i < j)
+			{
+				if (cond == null || cond.isValid(arr[i]))
+					list.add(arr[i]);
+				i++;
+			}
+			return list;
+		}
+		catch (IllegalAccessException ex)
+		{
+			return null;
+		}
+		catch (InvocationTargetException ex)
+		{
+			return null;
+		}
+	}
+
+	public static <T> List<T> filterToList(Iterable<T> values, QueryConditions<T> cond)
+	{
+		ArrayList<T> list = new ArrayList<T>();
+		Iterator<T> it = values.iterator();
+		try
+		{
+			T obj;
+			while (it.hasNext())
+			{
+				obj = it.next();
+				if (cond == null || cond.isValid(obj))
+					list.add(obj);
+			}
+			return list;
+		}
+		catch (IllegalAccessException ex)
+		{
+			return null;
+		}
+		catch (InvocationTargetException ex)
+		{
+			return null;
+		}
+	}
+
+	public static <T> String objectJoin(Iterable<T> list, String fieldName, String seperator)
+	{
+		Iterator<T> it = list.iterator();
+		if (!it.hasNext())
+		{
+			return "";
+		}
+		T o = it.next();
+		try
+		{
+			FieldGetter<T> getter = new FieldGetter<T>(o.getClass(), fieldName);
+			StringBuilder sb = new StringBuilder();
+			sb.append(getter.get(o));
+			while (it.hasNext())
+			{
+				sb.append(seperator);
+				sb.append(getter.get(it.next()));
+			}
+			return sb.toString();
+		}
+		catch (NoSuchFieldException ex)
+		{
+			ex.printStackTrace();
+			return "";
+		}
+		catch (IllegalAccessException ex)
+		{
+			ex.printStackTrace();
+			return "";
+		}
+		catch (IllegalArgumentException ex)
+		{
+			ex.printStackTrace();
+			return "";
+		}
+		catch (InvocationTargetException ex)
+		{
+			ex.printStackTrace();
+			return "";
+		}
+	}
+
+	public static String intJoin(Iterable<Integer> list, String seperator)
+	{
+		StringBuilder sb = new StringBuilder();
+		Iterator<Integer> it = list.iterator();
+		if (!it.hasNext())
+		{
+			return "";
+		}
+		sb.append(it.next().toString());
+		while (it.hasNext())
+		{
+			sb.append(seperator);
+			sb.append(it.next().toString());
+		}
+		return sb.toString();
+	}
+
+	public static <T extends Enum<T>> T getEnum(Class<T> cls, String name)
+	{
+		T[] enums = cls.getEnumConstants();
+		if (enums == null)
+		{
+			return null;
+		}
+		int i = 0;
+		int j = enums.length;
+		while (i < j)
+		{
+			if (enums[i].name().equals(name))
+			{
+				return enums[i];
+			}
+			i++;
+		}
+		return null;
+	}
+
+	public static <T extends Enum<T>> T[] string2Enums(Class<T> cls, String names[])
+	{
+		ArrayList<T> tList = new ArrayList<T>();
+		int i = 0;
+		int j = names.length;
+		while (i < j)
+		{
+			T t = getEnum(cls, names[i]);
+			if (t != null)
+			{
+				tList.add(t);
+			}
+			i++;
+		}
+		return toArray(cls, tList);
+	}
+
+	public static <T> void copyList(List<T> list, int destIndex, int srcIndex, int count)
+	{
+		if (destIndex > srcIndex)
+		{
+			destIndex += count;
+			srcIndex += count;
+			while (count-- > 0)
+			{
+				list.set(--destIndex, list.get(--srcIndex));
+			}
+		}
+		else if (destIndex < srcIndex)
+		{
+			while (count-- > 0)
+			{
+				list.set(destIndex++, list.get(srcIndex++));
+			}
+		}
+	}
+
+	public static <T> List<T> sortAsList(Iterable<T> objs, String sortStr) throws NoSuchFieldException
+	{
+		ArrayList<T> retList = new ArrayList<T>();
+		Iterator<T> it = objs.iterator();
+		if (!it.hasNext())
+		{
+			return retList;
+		}
+		T obj = it.next();
+		FieldComparator<T> comparator = new FieldComparator<T>(obj.getClass(), sortStr);
+		retList.add(obj);
+		while (it.hasNext())
+			retList.add(it.next());
+		ArtificialQuickSort.sort(retList, comparator);
+		return retList;
+	}
+	
+	public static <T> List<T> toList(Iterable<T> objs)
+	{
+		ArrayList<T> retList = new ArrayList<T>();
+		Iterator<T> it = objs.iterator();
+		while (it.hasNext())
+		{
+			retList.add(it.next());
+		}
+		return retList;
+	}
+
+	public static <T> T[] toArray(Class<T> cls, List<T> objs)
+	{
+		@SuppressWarnings("unchecked")
+		T tArr[] = (T[])Array.newInstance(cls, objs.size());
+		int i = 0;
+		int j = objs.size();
+		while (i < j)
+		{
+			tArr[i] = objs.get(i);
+			i++;
+		}
+		return tArr;
+	}
+
+	public static int objectCompare(Object obj1, Object obj2)
+	{
+		if (obj1 == null)
+		{
+			if (obj2 == null)
+			{
+				return 0;
+			}
+			else
+			{
+				return -1;
+			}
+		}
+		else if (obj2 == null)
+		{
+			return 1;
+		}
+		Class<?> cls = obj1.getClass();
+		if (!cls.equals(obj2.getClass()))
+		{
+			throw new ClassCastException("The objects are not in the same class");
+		}
+		if (cls.equals(Integer.class))
+		{
+			return ((Integer)obj1).compareTo((Integer)obj2);
+		}
+		else if (cls.equals(Double.class))
+		{
+			return ((Double)obj1).compareTo((Double)obj2);
+		}
+		else if (cls.equals(String.class))
+		{
+			return ((String)obj1).compareTo((String)obj2);
+		}
+		else if (cls.equals(Timestamp.class))
+		{
+			return ((Timestamp)obj1).compareTo((Timestamp)obj2);
+		}
+		throw new IllegalArgumentException("Object class is not supported: "+cls.toString());
+	}
+}

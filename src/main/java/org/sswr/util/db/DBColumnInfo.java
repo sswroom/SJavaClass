@@ -1,0 +1,17 @@
+package org.sswr.util.db;
+
+import java.lang.reflect.Field;
+
+import javax.persistence.EnumType;
+import javax.persistence.JoinColumn;
+
+import org.sswr.util.data.FieldSetter;
+
+public class DBColumnInfo {
+	public Field field;
+	public FieldSetter setter;
+	public EnumType enumType;
+	public String colName;
+	public boolean isId;
+	public JoinColumn joinCol;
+}
