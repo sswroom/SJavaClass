@@ -49,7 +49,7 @@ public class ReflectTools {
 			}
 			else
 			{
-				System.out.println("ReportBase.findGetter: Field = "+field.getName()+", funcName = "+funcName+", wrong return type: "+meth.getReturnType().toString());
+				System.out.println("ReflectTools.findGetter: Field = "+field.getDeclaringClass().getName()+"."+field.getName()+", funcName = "+funcName+", wrong return type: "+meth.getReturnType().toString());
 				return null;
 			}
 		}
@@ -74,7 +74,7 @@ public class ReflectTools {
 			}
 			else
 			{
-				System.out.println("ReportBase.findGetter: Field = "+fieldName+", funcName = "+funcName+", wrong return type: "+meth.getReturnType().toString());
+				System.out.println("ReflectTools.findGetter: Field = "+cls.getName()+"."+fieldName+", funcName = "+funcName+", wrong return type: "+meth.getReturnType().toString());
 				return null;
 			}
 		}

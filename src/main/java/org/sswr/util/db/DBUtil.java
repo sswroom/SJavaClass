@@ -28,6 +28,7 @@ import javax.persistence.Enumerated;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -181,6 +182,7 @@ public class DBUtil {
 			try
 			{
 				col.setter = new FieldSetter(field);
+				col.getter = new FieldGetter<>(field);
 				return col;
 			}
 			catch (IllegalArgumentException ex)
@@ -841,6 +843,8 @@ public class DBUtil {
 		ElementCollection elemColl = null;
 		CollectionTable collTab = null;
 		Column column = null;
+		JoinColumn joinColumn = null;
+		ManyToOne manyToOne = null;
 
 		int i = 0;
 		int j = anns.length;
@@ -859,6 +863,14 @@ public class DBUtil {
 			else if (annType.equals(Column.class))
 			{
 				column = (Column)ann;
+			}
+			else if (annType.equals(ManyToOne.class))
+			{
+				manyToOne = (ManyToOne)ann;
+			}
+			else if (annType.equals(JoinColumn.class))
+			{
+				joinColumn = (JoinColumn)ann;
 			}
 			i++;
 		}
@@ -932,6 +944,47 @@ public class DBUtil {
 				throw new IllegalArgumentException("Unsupported annotations: "+field.toString());
 			}
 			return false;
+		}
+		else if (joinColumn != null && manyToOne != null)
+		{
+			List<DBColumnInfo> joinAllCols = new ArrayList<DBColumnInfo>();
+			List<DBColumnInfo> joinIdCols = new ArrayList<DBColumnInfo>();
+			parseDBCols(fieldType, joinAllCols, joinIdCols, null);
+			if (joinIdCols.size() == 1)
+			{
+				Set<Integer> idSet = DataTools.createIntSet(items, fieldName+"."+joinIdCols.get(0).colName, null);
+				Map<Integer, ?> innerItems = DBUtil.loadItemsById(fieldType, conn, idSet, null);
+				DBColumnInfo idCol = joinIdCols.get(0);
+				FieldSetter setter = new FieldSetter(field);
+				it = items.iterator();
+				while (it.hasNext())
+				{
+					obj = it.next();
+					try
+					{
+						Object joinObj = getter.get(obj);
+						
+						joinObj = innerItems.get((Integer)idCol.getter.get(joinObj));
+						if (joinObj != null)
+						{
+							setter.set(obj, joinObj);
+						}
+					}
+					catch (IllegalAccessException ex)
+					{
+						ex.printStackTrace();
+					}
+					catch (InvocationTargetException ex)
+					{
+						ex.printStackTrace();
+					}
+				}
+				return true;
+			}
+			else
+			{
+				throw new IllegalArgumentException("Field type not supported: "+fieldType.toString());
+			}
 		}
 		else
 		{
