@@ -33,9 +33,13 @@ public class HttpUtil {
 	}
 
 
-	public static boolean responseFileContent(String fileName, HttpServletRequest req, HttpServletResponse resp) throws IOException
+	public static boolean responseFileContent(String filePath, HttpServletRequest req, HttpServletResponse resp) throws IOException
 	{
-		File file = new File(FileUtil.getRealPath(fileName));
+		return responseFileContent(new File(FileUtil.getRealPath(filePath)), null, req, resp);
+	}
+
+	public static boolean responseFileContent(File file, String fileName, HttpServletRequest req, HttpServletResponse resp) throws IOException
+	{
 		if (!file.exists())
 		{
 			return false;
@@ -89,7 +93,11 @@ public class HttpUtil {
 		}
 
 		resp.setStatus(HttpServletResponse.SC_OK);
-		resp.setContentType(URLConnection.guessContentTypeFromName(fileName));
+		resp.setContentType(URLConnection.guessContentTypeFromName(file.getName()));
+		if (fileName != null)
+		{
+			resp.addHeader("Content-Disposition", "inline; filename=\""+fileName+"\"");
+		}
 		resp.addDateHeader("Last-Modified", lastModified);
 		resp.addHeader("Accept-Ranges", "bytes");
 		resp.setContentLengthLong(fileLen);
@@ -184,7 +192,11 @@ public class HttpUtil {
 
 	public static boolean responseFileDownload(String filePath, String fileName, HttpServletRequest req, HttpServletResponse resp) throws IOException
 	{
-		File file = new File(FileUtil.getRealPath(filePath));
+		return responseFileDownload(new File(FileUtil.getRealPath(filePath)), fileName, req, resp);
+	}
+
+	public static boolean responseFileDownload(File file, String fileName, HttpServletRequest req, HttpServletResponse resp) throws IOException
+	{
 		if (!file.exists())
 		{
 			return false;
@@ -199,7 +211,7 @@ public class HttpUtil {
 		}
 		long fileLen = file.length();
 		resp.setStatus(HttpServletResponse.SC_OK);
-		resp.setContentType(URLConnection.guessContentTypeFromName(filePath));
+		resp.setContentType(URLConnection.guessContentTypeFromName(file.getName()));
 		resp.addDateHeader("Last-Modified", lastModified);
 		resp.addHeader("Content-Disposition", "attachment; filename=\""+fileName+"\"");
 		resp.setContentLengthLong(fileLen);
