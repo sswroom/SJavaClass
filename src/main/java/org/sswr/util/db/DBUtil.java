@@ -150,6 +150,10 @@ public class DBUtil {
 				{
 					isJoin = true;
 				}
+				else if (annType.equals(ManyToMany.class))
+				{
+					isJoin = true;
+				}
 				else if (annType.equals(JoinColumn.class))
 				{
 					joinCol = (JoinColumn)anns[i];
