@@ -4,11 +4,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URLConnection;
+import java.nio.charset.StandardCharsets;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.sswr.util.data.StringUtil;
 import org.sswr.util.io.FileUtil;
 
 public class HttpUtil {
@@ -33,12 +35,55 @@ public class HttpUtil {
 	}
 
 
-	public static boolean responseFileContent(String filePath, HttpServletRequest req, HttpServletResponse resp) throws IOException
+	public static String headerEscape(HttpServletRequest req, String fileName)
 	{
-		return responseFileContent(new File(FileUtil.getRealPath(filePath)), null, req, resp);
+		//Firefox:
+		{
+			StringBuilder sb = new StringBuilder();
+			sb.append('\"');
+			byte[] bytes = fileName.getBytes(StandardCharsets.UTF_8);
+			byte b;
+			int i = 0;
+			int j = bytes.length;
+			while (i < j)
+			{
+				b = bytes[i];
+				if (b < 32 || b >= 128 || b == '%')
+				{
+					sb.append('%');
+					sb.append(StringUtil.toHex(b));
+				}
+				else
+				{
+					sb.append((char)b);
+				}
+				i++;
+			}
+			sb.append('\"');
+			return sb.toString();
+		}
 	}
 
-	public static boolean responseFileContent(File file, String fileName, HttpServletRequest req, HttpServletResponse resp) throws IOException
+	public static void addContentDisposition(HttpServletRequest req, HttpServletResponse resp, boolean attachment, String fileName)
+	{
+		if (attachment)
+		{
+			if (fileName != null)
+			{
+				resp.addHeader("Content-Disposition", "attachment; filename="+headerEscape(req, fileName));
+			}
+			else
+			{
+				resp.addHeader("Content-Disposition", "attachment");
+			}
+		}
+		else
+		{
+			resp.addHeader("Content-Disposition", "inline; filename="+headerEscape(req, fileName));
+		}
+	}
+
+	public static boolean responseFile(File file, boolean attachment, String fileName, HttpServletRequest req, HttpServletResponse resp) throws IOException
 	{
 		if (!file.exists())
 		{
@@ -94,9 +139,9 @@ public class HttpUtil {
 
 		resp.setStatus(HttpServletResponse.SC_OK);
 		resp.setContentType(URLConnection.guessContentTypeFromName(file.getName()));
-		if (fileName != null)
+		if (fileName != null || attachment)
 		{
-			resp.addHeader("Content-Disposition", "inline; filename=\""+fileName+"\"");
+			addContentDisposition(req, resp, attachment, fileName);
 		}
 		resp.addDateHeader("Last-Modified", lastModified);
 		resp.addHeader("Accept-Ranges", "bytes");
@@ -190,67 +235,23 @@ public class HttpUtil {
 		return true;
 	}
 
+	public static boolean responseFileContent(String filePath, HttpServletRequest req, HttpServletResponse resp) throws IOException
+	{
+		return responseFile(new File(FileUtil.getRealPath(filePath)), false, null, req, resp);
+	}
+
+	public static boolean responseFileContent(File file, String fileName, HttpServletRequest req, HttpServletResponse resp) throws IOException
+	{
+		return responseFile(file, false, fileName, req, resp);
+	}
+
 	public static boolean responseFileDownload(String filePath, String fileName, HttpServletRequest req, HttpServletResponse resp) throws IOException
 	{
-		return responseFileDownload(new File(FileUtil.getRealPath(filePath)), fileName, req, resp);
+		return responseFile(new File(FileUtil.getRealPath(filePath)), true, fileName, req, resp);
 	}
 
 	public static boolean responseFileDownload(File file, String fileName, HttpServletRequest req, HttpServletResponse resp) throws IOException
 	{
-		if (!file.exists())
-		{
-			return false;
-		}
-		long since = req.getDateHeader("If-Modified-Since");
-		long lastModified = file.lastModified();
-		if (since >= 0 && since + 999 >= lastModified)
-		{
-			resp.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
-			resp.addDateHeader("Last-Modified", lastModified);
-			return true;
-		}
-		long fileLen = file.length();
-		resp.setStatus(HttpServletResponse.SC_OK);
-		resp.setContentType(URLConnection.guessContentTypeFromName(file.getName()));
-		resp.addDateHeader("Last-Modified", lastModified);
-		resp.addHeader("Content-Disposition", "attachment; filename=\""+fileName+"\"");
-		resp.setContentLengthLong(fileLen);
-		if (fileLen <= FILE_BUFFER_SIZE)
-		{
-			FileInputStream fis = new FileInputStream(file);
-			byte fileBuff[] = fis.readAllBytes();
-			fis.close();
-			resp.getOutputStream().write(fileBuff);
-		}
-		else
-		{
-			long lengLeft = fileLen;
-			FileInputStream fis = new FileInputStream(file);
-			ServletOutputStream ostm = resp.getOutputStream();
-			byte fileBuff[] = new byte[FILE_BUFFER_SIZE];
-			int readCnt;
-			while (lengLeft > FILE_BUFFER_SIZE)
-			{
-				readCnt = fis.read(fileBuff, 0, FILE_BUFFER_SIZE);
-				if (readCnt <= 0)
-				{
-					break;
-				}
-				ostm.write(fileBuff, 0, readCnt);
-				lengLeft -= readCnt;
-			}
-			if (lengLeft > 0)
-			{
-				readCnt = fis.read(fileBuff, 0, FILE_BUFFER_SIZE);
-				if (readCnt > 0)
-				{
-					ostm.write(fileBuff, 0, readCnt);
-					lengLeft -= readCnt;
-				}
-			}
-			fis.close();
-			ostm.close();
-		}
-		return true;
+		return responseFile(file, true, fileName, req, resp);
 	}
 }

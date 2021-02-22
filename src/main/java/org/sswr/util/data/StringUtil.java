@@ -3,7 +3,10 @@ package org.sswr.util.data;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
-public class StringUtil {
+public class StringUtil
+{
+	private static final char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
+
 	public static boolean isNumeric(String s)
 	{
 		if (s == null || s.length() == 0)
@@ -39,5 +42,11 @@ public class StringUtil {
 		{
 			throw new IllegalArgumentException();
 		}
+	}
+
+	public static String toHex(byte b)
+	{
+		int v = b & 0xff;
+		return new String(new char[]{HEX_ARRAY[v >> 4], HEX_ARRAY[v & 15]});
 	}
 }
