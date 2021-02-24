@@ -1,6 +1,7 @@
 package org.sswr.util.media;
 
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -77,6 +78,86 @@ public class ImageUtil {
 			iwParam.setCompressionQuality(quality);
 			writer.setOutput(ios);
 			writer.write(null, new IIOImage(img.getBufferedImage(), null, img.getMetadata()), iwParam);
+			writer.dispose();
+			return true;
+		}
+		catch (IOException ex)
+		{
+			return false;
+		}
+	}
+
+	public static boolean saveAsJpgBySize(StaticImage img, OutputStream output, int minSize, int maxSize)
+	{
+		try
+		{
+			ImageOutputStream ios = ImageIO.createImageOutputStream(output);
+			ImageWriter writer = ImageIO.getImageWritersByFormatName("jpeg").next();
+			ImageWriteParam iwParam = writer.getDefaultWriteParam();
+			IIOImage iioImg = new IIOImage(img.getBufferedImage(), null, img.getMetadata());
+			iwParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+			ByteArrayOutputStream baos;
+
+			float minQuality = 0.0f;
+			float maxQuality = 1.0f;
+			int minQSize;
+			int maxQSize;
+			int thisQSize;
+
+			baos = new ByteArrayOutputStream();
+			iwParam.setCompressionQuality(minQuality);
+			writer.setOutput(ImageIO.createImageOutputStream(baos));
+			writer.write(null, iioImg, iwParam);
+			minQSize = baos.size();
+			if (minQSize > maxSize)
+			{
+				writer.setOutput(ios);
+				writer.write(null, iioImg, iwParam);
+				writer.dispose();
+				return true;
+			}
+			baos = new ByteArrayOutputStream();
+			iwParam.setCompressionQuality(maxQuality);
+			writer.setOutput(ImageIO.createImageOutputStream(baos));
+			writer.write(null, iioImg, iwParam);
+			maxQSize = baos.size();
+			if (maxQSize < minSize)
+			{
+				writer.setOutput(ios);
+				writer.write(null, iioImg, iwParam);
+				writer.dispose();
+				return true;
+			}
+			int i = 10;
+			while (i-- > 0)
+			{
+				baos = new ByteArrayOutputStream();
+				iwParam.setCompressionQuality((minQuality + maxQuality) * 0.5f);
+				writer.setOutput(ImageIO.createImageOutputStream(baos));
+				writer.write(null, iioImg, iwParam);
+				thisQSize = baos.size();
+				if (thisQSize < minSize)
+				{
+					minQSize = thisQSize;
+					minQuality = (minQuality + maxQuality) * 0.5f;
+				}
+				else if (thisQSize > maxSize)
+				{
+					maxQSize = thisQSize;
+					maxQuality = (minQuality + maxQuality) * 0.5f;
+				}
+				else
+				{
+					writer.setOutput(ios);
+					writer.write(null, iioImg, iwParam);
+					writer.dispose();
+					return true;
+				}
+			}
+
+			iwParam.setCompressionQuality((minQuality + maxQuality) * 0.5f);
+			writer.setOutput(ios);
+			writer.write(null, iioImg, iwParam);
 			writer.dispose();
 			return true;
 		}
