@@ -1,29 +1,24 @@
 package org.sswr.util.media;
 
-import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.imageio.metadata.IIOMetadata;
 
 public class ImageList
 {
 	class ImageInfo
 	{
-		public BufferedImage img;
+		public StaticImage img;
 		public int delay;
 	}
 
-	private IIOMetadata metadata;
 	private List<ImageInfo> imgList;
 
-	public ImageList(IIOMetadata metadata)
+	public ImageList()
 	{
-		this.metadata = metadata;
 		this.imgList = new ArrayList<ImageInfo>();
 	}
 
-	public void addImage(BufferedImage img, int delay)
+	public void add(StaticImage img, int delay)
 	{
 		ImageInfo imgInfo = new ImageInfo();
 		imgInfo.img = img;
@@ -31,7 +26,7 @@ public class ImageList
 		this.imgList.add(imgInfo);
 	}
 	
-	public BufferedImage getImage(int index)
+	public StaticImage getImage(int index)
 	{
 		ImageInfo imgInfo = this.imgList.get(index);
 		if (imgInfo == null)
@@ -51,8 +46,8 @@ public class ImageList
 		return imgInfo.delay;
 	}
 
-	public IIOMetadata getMetadata()
+	public int size()
 	{
-		return this.metadata;
+		return this.imgList.size();
 	}
 }
