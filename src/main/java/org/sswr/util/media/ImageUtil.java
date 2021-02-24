@@ -1,7 +1,18 @@
 package org.sswr.util.media;
 
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+
+import javax.imageio.IIOImage;
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.metadata.IIOMetadata;
+import javax.imageio.stream.ImageOutputStream;
 
 import org.sswr.util.data.RectangleArea;
 public class ImageUtil {
@@ -33,6 +44,50 @@ public class ImageUtil {
 		}
 	
 		return "dat";
+	}
+
+	public static ImageList load(InputStream stm)
+	{
+		try
+		{
+			ImageReader reader = ImageIO.getImageReadersBySuffix("jpg").next();
+			reader.setInput(ImageIO.createImageInputStream(stm));
+			IIOMetadata metadata = reader.getImageMetadata(0);
+			ImageList imgList = new ImageList(metadata);
+			int i = 0;
+			int j = reader.getNumImages(true);
+			while (i < j)
+			{
+				imgList.addImage(reader.read(i, null), 0);
+				i++;
+			}
+			return imgList;
+		}
+		catch (IOException ex)
+		{
+			return null;
+		}
+	}
+
+	public static boolean saveAsJpg(ImageList imgList, File output, float quality) //0-1
+	{
+		try
+		{
+			FileOutputStream fos = new FileOutputStream(output);
+			ImageOutputStream ios = ImageIO.createImageOutputStream(fos);
+			ImageWriter writer = ImageIO.getImageWritersByFormatName("jpeg").next();
+			ImageWriteParam iwParam = writer.getDefaultWriteParam();
+			iwParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+			iwParam.setCompressionQuality(quality);
+			writer.setOutput(ios);
+			writer.write(null, new IIOImage(imgList.getImage(0), null, imgList.getMetadata()), iwParam);
+			writer.dispose();
+			return true;
+		}
+		catch (IOException ex)
+		{
+			return false;
+		}
 	}
 
 	public static BufferedImage cropImageSquare(BufferedImage img) throws IOException
