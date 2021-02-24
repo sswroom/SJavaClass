@@ -110,4 +110,52 @@ public class StringUtil
 		int v = b & 0xff;
 		return new String(new char[]{HEX_ARRAY[v >> 4], HEX_ARRAY[v & 15]});
 	}
+
+	public static String toHex(byte buff[])
+	{
+		int i = 0;
+		int j = buff.length;
+		int v;
+		char carr[] = new char[j << 1];
+		while (i < j)
+		{
+			v = buff[i] & 0xff;
+			carr[(i << 1)] = HEX_ARRAY[v >> 4];
+			carr[(i << 1) + 1] = HEX_ARRAY[v & 15];
+			i++;
+		}
+		return new String(carr);
+	}
+
+	public static Integer toInteger(String s)
+	{
+		try
+		{
+			if (isNullOrEmpty(s))
+			{
+				return null;
+			}
+			return Integer.parseInt(s);
+		}
+		catch (NumberFormatException ex)
+		{
+			return null;
+		}
+	}
+
+	public static Long toLong(String s)
+	{
+		try
+		{
+			if (isNullOrEmpty(s))
+			{
+				return null;
+			}
+			return Long.parseLong(s);
+		}
+		catch (NumberFormatException ex)
+		{
+			return null;
+		}
+	}
 }
