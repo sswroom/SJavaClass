@@ -18,14 +18,14 @@ import org.sswr.util.data.FieldGetter;
 
 public class QueryConditions<T>
 {
-	abstract class Condition
+	public abstract class Condition
 	{
 		public abstract String toWhereClause(Map<String, DBColumnInfo> colsMap, DBUtil.DBType dbType);
 		public abstract boolean isValid(T obj) throws IllegalAccessException, InvocationTargetException;
 	}
 
 
-	class TimeBetweenCondition extends Condition
+	public class TimeBetweenCondition extends Condition
 	{
 		private String fieldName;
 		private Timestamp t1;
@@ -78,7 +78,7 @@ public class QueryConditions<T>
 		}
 	}
 
-	class IntCondition extends Condition
+	public class IntCondition extends Condition
 	{
 		private String fieldName;
 		private Integer val;
@@ -100,6 +100,21 @@ public class QueryConditions<T>
 			{
 				throw new NoSuchFieldException("Not Integer format: "+fieldType.toString());
 			}
+		}
+
+		public String getFieldName()
+		{
+			return this.fieldName;
+		}
+
+		public Integer getVal()
+		{
+			return this.val;
+		}
+
+		public CompareCondition getCompareCond()
+		{
+			return this.cond;
 		}
 
 		public String toWhereClause(Map<String, DBColumnInfo> colsMap, DBUtil.DBType dbType)
@@ -165,7 +180,7 @@ public class QueryConditions<T>
 		}
 	}
 
-	class IntInCondition extends Condition
+	public class IntInCondition extends Condition
 	{
 		private String fieldName;
 		private Iterable<Integer> vals;
@@ -218,7 +233,7 @@ public class QueryConditions<T>
 		}
 	}
 
-	class DoubleCondition extends Condition
+	public class DoubleCondition extends Condition
 	{
 		private String fieldName;
 		private Double val;
@@ -305,7 +320,7 @@ public class QueryConditions<T>
 		}
 	}
 
-	class StrInCondition extends Condition
+	public class StrInCondition extends Condition
 	{
 		private String fieldName;
 		private Iterable<String> vals;
@@ -359,7 +374,7 @@ public class QueryConditions<T>
 		}
 	}
 
-	class StrContainsCondition extends Condition
+	public class StrContainsCondition extends Condition
 	{
 		private String fieldName;
 		private String val;
@@ -394,7 +409,7 @@ public class QueryConditions<T>
 		}
 	}
 
-	class StrEqualsCondition extends Condition
+	public class StrEqualsCondition extends Condition
 	{
 		private String fieldName;
 		private String val;
@@ -407,6 +422,16 @@ public class QueryConditions<T>
 			this.getter = new FieldGetter<T>(cls, fieldName);
 		}
 
+		public String getFieldName()
+		{
+			return this.fieldName;
+		}
+
+		public String getVal()
+		{
+			return this.val;
+		}
+		
 		public String toWhereClause(Map<String, DBColumnInfo> colsMap, DBUtil.DBType dbType)
 		{
 			StringBuilder sb = new StringBuilder();
@@ -429,7 +454,7 @@ public class QueryConditions<T>
 		}
 	}
 
-	class EnumCondition extends Condition
+	public class EnumCondition extends Condition
 	{
 		private String fieldName;
 		private Enum<?> val;
@@ -526,7 +551,7 @@ public class QueryConditions<T>
 	}
 
 
-	class EnumInCondition extends Condition
+	public class EnumInCondition extends Condition
 	{
 		private String fieldName;
 		private Iterable<Enum<?>> vals;
@@ -608,7 +633,7 @@ public class QueryConditions<T>
 		}
 	}
 
-	class BooleanCondition extends Condition
+	public class BooleanCondition extends Condition
 	{
 		private String fieldName;
 		private boolean val;
@@ -649,7 +674,7 @@ public class QueryConditions<T>
 		}
 	}
 
-	class InnerCondition extends Condition
+	public class InnerCondition extends Condition
 	{
 		private QueryConditions<T> innerCond;
 
@@ -667,9 +692,14 @@ public class QueryConditions<T>
 		{
 			return this.innerCond.isValid(obj);
 		}
+
+		public QueryConditions<T> getConditions()
+		{
+			return this.innerCond;
+		}
 	}
 
-	class OrCondition extends Condition
+	public class OrCondition extends Condition
 	{
 		public OrCondition()
 		{
@@ -905,6 +935,16 @@ public class QueryConditions<T>
 			}
 		}
 		return sb.toString();
+	}
+
+	public int size()
+	{
+		return this.conditionList.size();
+	}
+
+	public Condition get(int index)
+	{
+		return this.conditionList.get(index);
 	}
 
 	public static String getCondStr(CompareCondition cond)
