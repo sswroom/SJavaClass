@@ -2,7 +2,9 @@ package org.sswr.util.data;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 
 public class StringUtil
 {
@@ -51,6 +53,27 @@ public class StringUtil
 	public static boolean hasChars(String s)
 	{
 		return s != null && s.length() > 0;
+	}
+
+	/**
+	* Check whether the string array can convert to int array
+	*
+	* @param  sarr  array of string to check
+	* @return    true if the string can convert to int array with at least 1 element
+	*/
+	public static boolean canParseIntArr(String sarr[])
+	{
+		if (sarr == null)
+			return false;
+		int i = sarr.length;
+		if (i <= 0)
+			return false;
+		while (i-- > 0)
+		{
+			if (toInteger(sarr[i]) == null)
+				return false;
+		}
+		return true;
 	}
 
 	/**
@@ -124,6 +147,7 @@ public class StringUtil
 			{
 				sb.append(seperator);
 				sb.append(strs[i]);
+				i++;
 			}
 		}
 		return sb.toString();
@@ -258,5 +282,41 @@ public class StringUtil
 		{
 			return null;
 		}
+	}
+
+
+	/**
+	* Parse String into Set of Integer
+	*
+	* @param  s  String to parse
+	* @param  seperator Seperator of the string
+	* @return     null if it is input is not valid
+	*/
+	public static Set<Integer> toIntSet(String s, String seperator)
+	{
+		if (s == null) return null;
+		return toIntSet(s.split(seperator));
+	}
+
+	/**
+	* Parse String array into Set of Integer
+	*
+	* @param  sarr  Array of String to parse
+	* @return     null if it is input is not valid
+	*/
+	public static Set<Integer> toIntSet(String sarr[])
+	{
+		if (sarr == null) return null;
+		Set<Integer> retSet = new HashSet<Integer>();
+		int i = sarr.length;
+		Integer val;
+		while (i-- > 0)
+		{
+			val = toInteger(sarr[i]);
+			if (val == null)
+				return null;
+			retSet.add(val);
+		}
+		return retSet;
 	}
 }
