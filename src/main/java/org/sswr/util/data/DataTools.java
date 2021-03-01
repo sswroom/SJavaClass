@@ -409,6 +409,63 @@ public class DataTools {
 		}
 	}
 
+	public static <T, K> Map<K, T> createValueMap(Class<K> cls, Iterable<T> objs, String fieldName, QueryConditions<T> cond)
+	{
+		Iterator<T> it = objs.iterator();
+		if (!it.hasNext())
+		{
+			return Collections.emptyMap();
+		}
+		Map<K, T> valueMap = new HashMap<K, T>();
+		T obj = it.next();
+		Class<?> clsT = obj.getClass();
+		try
+		{
+			FieldGetter<T> getter = new FieldGetter<T>(clsT, fieldName);
+			Class<?> fieldType = getter.getFieldType();
+			if (fieldType.equals(cls))
+			{
+				if (cond == null || cond.isValid(obj))
+				{
+					@SuppressWarnings("unchecked")
+					K val = (K)getter.get(obj);
+					valueMap.put(val, obj);
+				}
+				while (it.hasNext())
+				{
+					obj = it.next();
+					if (cond == null || cond.isValid(obj))
+					{
+						@SuppressWarnings("unchecked")
+						K val = (K)getter.get(obj);
+						valueMap.put(val, obj);
+					}
+				}
+				return valueMap;
+			}
+			else
+			{
+				System.out.println("DataTools.createValueMap: field type is not supported: "+fieldType.toString());
+				return null;
+			}
+		}
+		catch (NoSuchFieldException ex)
+		{
+			ex.printStackTrace();
+			return null;
+		}
+		catch (IllegalAccessException ex)
+		{
+			ex.printStackTrace();
+			return null;
+		}
+		catch (InvocationTargetException ex)
+		{
+			ex.printStackTrace();
+			return null;
+		}
+	}
+
 	public static <T> List<T> filterToList(T[] arr, QueryConditions<T> cond)
 	{
 		ArrayList<T> list = new ArrayList<T>();
