@@ -550,7 +550,6 @@ public class QueryConditions<T>
 		}
 	}
 
-
 	public class EnumInCondition extends Condition
 	{
 		private String fieldName;
@@ -674,6 +673,33 @@ public class QueryConditions<T>
 		}
 	}
 
+
+	public class NotNullCondition extends Condition
+	{
+		private String fieldName;
+		private FieldGetter<T> getter;
+
+		public NotNullCondition(String fieldName) throws NoSuchFieldException
+		{
+			this.fieldName = fieldName;
+			this.getter = new FieldGetter<T>(cls, fieldName);
+		}
+
+		public String toWhereClause(Map<String, DBColumnInfo> colsMap, DBUtil.DBType dbType)
+		{
+			StringBuilder sb = new StringBuilder();
+			DBColumnInfo col = colsMap.get(this.fieldName);
+			sb.append(col.colName);
+			sb.append(" is not null");
+			return sb.toString();
+		}
+
+		public boolean isValid(T obj) throws IllegalAccessException, InvocationTargetException
+		{
+			Object v = this.getter.get(obj);
+			return v != null;
+		}
+	}
 	public class InnerCondition extends Condition
 	{
 		private QueryConditions<T> innerCond;
@@ -865,6 +891,12 @@ public class QueryConditions<T>
 	public QueryConditions<T> enumIn(String fieldName, Iterable<Enum<?>> vals) throws NoSuchFieldException
 	{
 		this.conditionList.add(new EnumInCondition(fieldName, vals, parseEnumType(fieldName)));
+		return this;
+	}
+
+	public QueryConditions<T> notNull(String fieldName) throws NoSuchFieldException
+	{
+		this.conditionList.add(new NotNullCondition(fieldName));
 		return this;
 	}
 
