@@ -148,6 +148,11 @@ public class DateTimeUtil
 		return ret;
 	}
 
+	public static boolean isDayStart(Timestamp ts)
+	{
+		return ts.equals(clearTime(ts));
+	}
+
 	public static int parseMonthStr(String monStr)
 	{
 		String umonStr = monStr.toUpperCase();
@@ -374,5 +379,15 @@ public class DateTimeUtil
 		dDiff = (t1.getHour() - t2.getHour()) + dDiff / 60.0;
 		dDiff = (t1.getDayOfMonth() - t2.getDayOfMonth()) + dDiff / 24.0;
 		return mDiff + dDiff / ym.lengthOfMonth();
+	}
+
+	public static double calcMonthDiff(Timestamp t1, Timestamp t2)
+	{
+		return calcMonthDiff(t1.toLocalDateTime(), t2.toLocalDateTime());
+	}
+
+	public static double calcDayDiff(Timestamp t1, Timestamp t2)
+	{
+		return (t1.getTime() - t2.getTime()) / 86400000.0;
 	}
 }
