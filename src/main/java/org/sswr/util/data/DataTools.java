@@ -13,6 +13,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import org.sswr.util.db.QueryConditions;
 
@@ -740,6 +741,10 @@ public class DataTools {
 		{
 			return JSText.quoteString(o.toString());
 		}
+		else if (cls.equals(UUID.class))
+		{
+			return JSText.quoteString(o.toString());
+		}
 		else if (cls.isEnum())
 		{
 			return JSText.quoteString(o.toString());
@@ -759,6 +764,35 @@ public class DataTools {
 				}
 			}
 			sb.append(']');
+			return sb.toString();
+		}
+		else if (o instanceof Map)
+		{
+			Map<?, ?> map = (Map<?, ?>)o;
+			Set<?> keySet = map.keySet();
+			Iterator<?> it;
+			Object key;
+			StringBuilder sb = new StringBuilder();
+			sb.append(cls.getSimpleName());
+			sb.append('{');
+			it = keySet.iterator();
+			if (it.hasNext())
+			{
+				key = it.next();
+				sb.append(toObjectString(key));
+				sb.append('=');
+				sb.append(toObjectString(map.get(key)));
+				while (it.hasNext())
+				{
+					sb.append(',');
+					sb.append(' ');
+					key = it.next();
+					sb.append(toObjectString(key));
+					sb.append('=');
+					sb.append(toObjectString(map.get(key)));
+				}
+			}
+			sb.append('}');
 			return sb.toString();
 		}
 		else
