@@ -1,7 +1,9 @@
 package org.sswr.util.data;
 
 import java.lang.reflect.Array;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -713,5 +715,101 @@ public class DataTools {
 			return ((Timestamp)obj1).compareTo((Timestamp)obj2);
 		}
 		throw new IllegalArgumentException("Object class is not supported: "+cls.toString());
+	}
+
+	public static String toObjectString(Object o)
+	{
+		if (o == null)
+		{
+			return "null";
+		}
+		Class<?> cls = o.getClass();
+		if (cls.equals(String.class))
+		{
+			return JSText.quoteString(o.toString());
+		}
+		else if (cls.equals(Integer.class) || cls.equals(int.class))
+		{
+			return o.toString();
+		}
+		else if (cls.equals(Double.class) || cls.equals(double.class))
+		{
+			return o.toString();
+		}
+		else if (cls.equals(Timestamp.class))
+		{
+			return JSText.quoteString(o.toString());
+		}
+		else if (cls.isEnum())
+		{
+			return JSText.quoteString(o.toString());
+		}
+		else if (o instanceof Iterable)
+		{
+			Iterator<?> it = ((Iterable<?>)o).iterator();
+			StringBuilder sb = new StringBuilder();
+			sb.append('[');
+			if (it.hasNext())
+			{
+				sb.append(toObjectString(it.next()));
+				while (it.hasNext())
+				{
+					sb.append(",");
+					sb.append(toObjectString(it.next()));
+				}
+			}
+			sb.append(']');
+			return sb.toString();
+		}
+		else
+		{
+			StringBuilder sb = new StringBuilder();
+			sb.append(cls.getSimpleName());
+			sb.append('{');
+			Field fields[] = cls.getDeclaredFields();
+			boolean found = false;
+			int i = 0;
+			int j = fields.length;
+			while (i < j)
+			{
+				try
+				{
+					Method getter = ReflectTools.findGetter(fields[i]);
+					Object innerObj;
+					if (getter != null)
+					{
+						innerObj = getter.invoke(o);
+					}
+					else
+					{
+						innerObj = fields[i].get(o);
+					}
+					if (found)
+					{
+						sb.append(',');
+						sb.append(' ');
+					}
+					sb.append(fields[i].getName());
+					sb.append('=');
+					sb.append(toObjectString(innerObj));
+					found = true;
+				}
+				catch (IllegalAccessException ex)
+				{
+
+				}
+				catch (IllegalArgumentException ex)
+				{
+
+				}
+				catch (InvocationTargetException ex)
+				{
+
+				}
+				i++;
+			}
+			sb.append('}');
+			return sb.toString();
+		}
 	}
 }
