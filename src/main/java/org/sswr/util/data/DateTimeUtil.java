@@ -390,4 +390,9 @@ public class DateTimeUtil
 	{
 		return (t1.getTime() - t2.getTime()) / 86400000.0;
 	}
+
+	public static Timestamp addDay(Timestamp t, int dayDiff)
+	{
+		return Timestamp.valueOf(t.toLocalDateTime().plusDays(dayDiff));
+	}
 }
