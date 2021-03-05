@@ -718,7 +718,7 @@ public class DataTools {
 		throw new IllegalArgumentException("Object class is not supported: "+cls.toString());
 	}
 
-	public static String toObjectString(Object o)
+	private static String toObjectStringInner(Object o, int maxLevel)
 	{
 		if (o == null)
 		{
@@ -749,6 +749,10 @@ public class DataTools {
 		{
 			return JSText.quoteString(o.toString());
 		}
+		else if (maxLevel <= 0)
+		{
+			return cls.getSimpleName();
+		}
 		else if (o instanceof Iterable)
 		{
 			Iterator<?> it = ((Iterable<?>)o).iterator();
@@ -756,11 +760,11 @@ public class DataTools {
 			sb.append('[');
 			if (it.hasNext())
 			{
-				sb.append(toObjectString(it.next()));
+				sb.append(toObjectStringInner(it.next(), maxLevel - 1));
 				while (it.hasNext())
 				{
 					sb.append(",");
-					sb.append(toObjectString(it.next()));
+					sb.append(toObjectStringInner(it.next(), maxLevel - 1));
 				}
 			}
 			sb.append(']');
@@ -779,20 +783,38 @@ public class DataTools {
 			if (it.hasNext())
 			{
 				key = it.next();
-				sb.append(toObjectString(key));
+				sb.append(toObjectStringInner(key, maxLevel - 1));
 				sb.append('=');
-				sb.append(toObjectString(map.get(key)));
+				sb.append(toObjectStringInner(map.get(key), maxLevel - 1));
 				while (it.hasNext())
 				{
 					sb.append(',');
 					sb.append(' ');
 					key = it.next();
-					sb.append(toObjectString(key));
+					sb.append(toObjectStringInner(key, maxLevel - 1));
 					sb.append('=');
-					sb.append(toObjectString(map.get(key)));
+					sb.append(toObjectStringInner(map.get(key), maxLevel - 1));
 				}
 			}
 			sb.append('}');
+			return sb.toString();
+		}
+		else if (cls.isArray())
+		{
+			int i = 0;
+			int j = Array.getLength(o);
+			StringBuilder sb = new StringBuilder();
+			sb.append('[');
+			while (i < j)
+			{
+				if (i > 0)
+				{
+					sb.append(",");
+				}
+				sb.append(toObjectStringInner(Array.get(o, i), maxLevel - 1));
+				i++;
+			}
+			sb.append(']');
 			return sb.toString();
 		}
 		else
@@ -825,7 +847,14 @@ public class DataTools {
 					}
 					sb.append(fields[i].getName());
 					sb.append('=');
-					sb.append(toObjectString(innerObj));
+					if (innerObj == o)
+					{
+						sb.append("self");
+					}
+					else
+					{
+						sb.append(toObjectStringInner(innerObj, maxLevel - 1));
+					}
 					found = true;
 				}
 				catch (IllegalAccessException ex)
@@ -845,5 +874,10 @@ public class DataTools {
 			sb.append('}');
 			return sb.toString();
 		}
+	}
+
+	public static String toObjectString(Object o)
+	{
+		return toObjectStringInner(o, 5);
 	}
 }
