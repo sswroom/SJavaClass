@@ -102,6 +102,25 @@ public class StringUtil
 	}
 
 	/**
+	* Pad integer to string with '0'
+	*
+	* @param  s  original string
+	* @param  minDigits minimum number of digits of the string
+	* @return      padded string
+	*/
+	public static String intZPad(int val, int minDigits)
+	{
+		if (val < 0)
+		{
+			return "-"+leftPad((-val)+"", minDigits, '0');
+		}
+		else
+		{
+			return leftPad(val+"", minDigits, '0');
+		}
+	}
+
+	/**
 	* Join strings into string
 	*
 	* @param  objs  list of string
