@@ -1173,6 +1173,146 @@ public class DBUtil {
 
 			throw new IllegalArgumentException("Field type not supported: "+fieldType.toString());
 		}
+		else if (manyToMany != null && joinTable != null && (fieldType.equals(Set.class) || fieldType.equals(List.class)))
+		{
+			Class<?> targetClass = manyToMany.targetEntity();
+			FieldSetter setter = new FieldSetter(field);
+			if (targetClass.equals(void.class))
+			{
+				Type t = field.getGenericType();
+				if (t instanceof ParameterizedType)
+				{
+					ParameterizedType pt = (ParameterizedType)t;
+					targetClass = (Class<?>)pt.getActualTypeArguments()[0];
+				}
+			}
+			if (targetClass.equals(void.class))
+			{
+				throw new IllegalArgumentException("Field type not supported: "+fieldType.toString());
+			}
+			if (idCols.size() != 1)
+			{
+				throw new IllegalArgumentException("Field type not supported: "+fieldType.toString());
+			}
+
+			List<DBColumnInfo> targetCols = new ArrayList<DBColumnInfo>();
+			List<DBColumnInfo> targetIdCols = new ArrayList<DBColumnInfo>();
+			parseDBCols(targetClass, targetCols, targetIdCols, null);
+			if (targetIdCols.size() != 1)
+			{
+				throw new IllegalArgumentException("Joined Class is not supported: "+targetClass.toString());
+			}
+
+			Set<Integer> idSet = DataTools.createIntSet(items, idCols.get(0).field.getName(), null);
+			StringBuilder sb = new StringBuilder();
+			String idName = joinTable.joinColumns()[0].name();
+			sb.append("select ");
+			sb.append(idName);
+			sb.append(", ");
+			sb.append(joinTable.inverseJoinColumns()[0].name());
+			sb.append(" from ");
+			if (!joinTable.catalog().equals(""))
+			{
+				sb.append(joinTable.catalog());
+				sb.append('.');
+			}
+			if (!joinTable.schema().equals(""))
+			{
+				sb.append(joinTable.schema());
+				sb.append('.');
+			}
+			sb.append(joinTable.name());
+			sb.append(" where ");
+			sb.append(idName);
+			sb.append(" in (");
+			sb.append(DataTools.intJoin(idSet, ", "));
+			sb.append(")");
+			List<JoinItem> joinItemList = new ArrayList<JoinItem>();
+			JoinItem joinItem;
+			try
+			{
+				System.out.println(sb.toString());
+				PreparedStatement stmt;
+				ResultSet rs;
+				stmt = conn.prepareStatement(sb.toString());
+				rs = stmt.executeQuery();
+				while (rs.next())
+				{
+					joinItem = new JoinItem();
+					joinItem.id = rs.getInt(1);
+					joinItem.joinId = rs.getInt(2);
+					joinItemList.add(joinItem);
+				}
+				rs.close();
+				stmt.close();
+			}
+			catch (SQLException ex)
+			{
+				ex.printStackTrace();
+				throw new IllegalArgumentException("Error in joining table");
+			}
+			Map<Integer, ? extends Object> targetMap = loadItemsById(targetClass, conn, DataTools.createIntSet(joinItemList, "joinId", null), null);
+			Map<Integer, T> itemMap = DataTools.createIntMap(items, idCols.get(0).field.getName(), null);
+			it = items.iterator();
+			try
+			{
+				if (fieldType.equals(Set.class))
+				{
+					while (it.hasNext())
+					{
+						setter.set(it.next(), new HashSet<>());
+					}
+					i = 0;
+					j = joinItemList.size();
+					while (i < j)
+					{
+						joinItem = joinItemList.get(i);
+						obj = itemMap.get(joinItem.id);
+						@SuppressWarnings("unchecked")
+						Set<Object> itemSet = (Set<Object>)getter.get(obj);
+						Object o = targetMap.get(joinItem.joinId);
+						if (o != null)
+						{
+							itemSet.add(o);
+						}
+						i++;
+					}
+					return true;
+				}
+				else if (fieldType.equals(List.class))
+				{
+					while (it.hasNext())
+					{
+						setter.set(it.next(), new ArrayList<>());
+					}
+					i = 0;
+					j = joinItemList.size();
+					while (i < j)
+					{
+						joinItem = joinItemList.get(i);
+						obj = itemMap.get(joinItem.id);
+						@SuppressWarnings("unchecked")
+						List<Object> itemSet = (List<Object>)getter.get(obj);
+						Object o = targetMap.get(joinItem.joinId);
+						if (o != null)
+						{
+							itemSet.add(o);
+						}
+						i++;
+					}
+					return true;
+				}
+			}
+			catch (IllegalAccessException ex)
+			{
+				ex.printStackTrace();
+			}
+			catch (InvocationTargetException ex)
+			{
+				ex.printStackTrace();
+			}
+			throw new IllegalArgumentException("Field type not supported: "+fieldType.toString());
+		}
 		else
 		{
 			throw new IllegalArgumentException("Field type not supported: "+fieldType.toString());
