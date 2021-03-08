@@ -1,6 +1,7 @@
 package org.sswr.util.data;
 
 import java.sql.Timestamp;
+import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.YearMonth;
@@ -394,5 +395,20 @@ public class DateTimeUtil
 	public static Timestamp addDay(Timestamp t, int dayDiff)
 	{
 		return Timestamp.valueOf(t.toLocalDateTime().plusDays(dayDiff));
+	}
+
+	public static Timestamp toWeekdayBefore(Timestamp t, DayOfWeek weekday)
+	{
+		return Timestamp.valueOf(toWeekdayBefore(t.toLocalDateTime(), weekday));
+	}
+
+	public static LocalDateTime toWeekdayBefore(LocalDateTime t, DayOfWeek weekday)
+	{
+		t = toDayStart(t);
+		while (t.getDayOfWeek() != weekday)
+		{
+			t = t.minusDays(1);
+		}
+		return t;
 	}
 }
