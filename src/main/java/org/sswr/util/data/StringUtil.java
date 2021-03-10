@@ -303,6 +303,27 @@ public class StringUtil
 		}
 	}
 
+	/**
+	* Parse String to Double
+	*
+	* @param  s  String to parse
+	* @return     null if it is not valid Double
+	*/
+	public static Double toDouble(String s)
+	{
+		try
+		{
+			if (isNullOrEmpty(s))
+			{
+				return null;
+			}
+			return Double.parseDouble(s);
+		}
+		catch (NumberFormatException ex)
+		{
+			return null;
+		}
+	}
 
 	/**
 	* Parse String into Set of Integer
