@@ -52,7 +52,7 @@ public class DBUtil {
 	public static DBType connGetDBType(Connection conn)
 	{
 		String clsName = conn.getClass().getName();
-		if (clsName.equals("com.microsoft.sqlserver.jdbc.SQLServerConnection"))
+		if (clsName.startsWith("com.microsoft.sqlserver.jdbc.SQLServerConnection"))
 		{
 			return DBType.DT_MSSQL;
 		}
