@@ -102,6 +102,25 @@ public class StringUtil
 	}
 
 	/**
+	* Pad integer to string with '0'
+	*
+	* @param  s  original string
+	* @param  minDigits minimum number of digits of the string
+	* @return      padded string
+	*/
+	public static String intZPad(int val, int minDigits)
+	{
+		if (val < 0)
+		{
+			return "-"+leftPad((-val)+"", minDigits, '0');
+		}
+		else
+		{
+			return leftPad(val+"", minDigits, '0');
+		}
+	}
+
+	/**
 	* Join strings into string
 	*
 	* @param  objs  list of string
@@ -284,6 +303,27 @@ public class StringUtil
 		}
 	}
 
+	/**
+	* Parse String to Double
+	*
+	* @param  s  String to parse
+	* @return     null if it is not valid Double
+	*/
+	public static Double toDouble(String s)
+	{
+		try
+		{
+			if (isNullOrEmpty(s))
+			{
+				return null;
+			}
+			return Double.parseDouble(s);
+		}
+		catch (NumberFormatException ex)
+		{
+			return null;
+		}
+	}
 
 	/**
 	* Parse String into Set of Integer
