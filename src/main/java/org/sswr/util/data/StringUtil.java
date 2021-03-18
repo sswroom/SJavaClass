@@ -158,4 +158,19 @@ public class StringUtil
 			return null;
 		}
 	}
+
+	/**
+	* Convert enum into name string
+	*
+	* @param  e  Enum to convert
+	* @return     null if it is input null
+	*/
+	public static <T extends Enum<T>> String getEnumName(T e)
+	{
+		if (e == null)
+		{
+			return null;
+		}
+		return e.name();
+	}
 }
