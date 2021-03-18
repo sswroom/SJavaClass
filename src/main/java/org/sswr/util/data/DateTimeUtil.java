@@ -1,6 +1,7 @@
 package org.sswr.util.data;
 
 import java.sql.Timestamp;
+import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.YearMonth;
@@ -146,6 +147,11 @@ public class DateTimeUtil
 	{
 		Timestamp ret = new Timestamp(dt.toInstant().toEpochMilli());
 		return ret;
+	}
+
+	public static boolean isDayStart(Timestamp ts)
+	{
+		return ts.equals(clearTime(ts));
 	}
 
 	public static int parseMonthStr(String monStr)
@@ -374,5 +380,35 @@ public class DateTimeUtil
 		dDiff = (t1.getHour() - t2.getHour()) + dDiff / 60.0;
 		dDiff = (t1.getDayOfMonth() - t2.getDayOfMonth()) + dDiff / 24.0;
 		return mDiff + dDiff / ym.lengthOfMonth();
+	}
+
+	public static double calcMonthDiff(Timestamp t1, Timestamp t2)
+	{
+		return calcMonthDiff(t1.toLocalDateTime(), t2.toLocalDateTime());
+	}
+
+	public static double calcDayDiff(Timestamp t1, Timestamp t2)
+	{
+		return (t1.getTime() - t2.getTime()) / 86400000.0;
+	}
+
+	public static Timestamp addDay(Timestamp t, int dayDiff)
+	{
+		return Timestamp.valueOf(t.toLocalDateTime().plusDays(dayDiff));
+	}
+
+	public static Timestamp toWeekdayBefore(Timestamp t, DayOfWeek weekday)
+	{
+		return Timestamp.valueOf(toWeekdayBefore(t.toLocalDateTime(), weekday));
+	}
+
+	public static LocalDateTime toWeekdayBefore(LocalDateTime t, DayOfWeek weekday)
+	{
+		t = toDayStart(t);
+		while (t.getDayOfWeek() != weekday)
+		{
+			t = t.minusDays(1);
+		}
+		return t;
 	}
 }

@@ -3,6 +3,10 @@ package org.sswr.util.data;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ReflectTools {
 	public static String getFuncName(String fieldName, String action)
@@ -108,5 +112,33 @@ public class ReflectTools {
 	public static boolean isPublic(int modifiers)
 	{
 		return (modifiers & Modifier.PUBLIC) != 0;
+	}
+
+	private static void addTypeArguments(Type t, List<Type> typeList)
+	{
+		if (t instanceof ParameterizedType)
+		{
+			ParameterizedType pt = (ParameterizedType)t;
+			Type types[] = pt.getActualTypeArguments();
+			int i = 0;
+			int j = types.length;
+			while (i < j)
+			{
+				typeList.add(types[i]);
+				i++;
+			}
+		}
+	}
+
+	public static List<Type> getTypeParameters(Type t)
+	{
+		List<Type> typeList = new ArrayList<Type>();
+		if (t instanceof ParameterizedType)
+		{
+			addTypeArguments(t, typeList);
+			return typeList;
+		}
+
+		return typeList;
 	}
 }

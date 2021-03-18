@@ -1,7 +1,9 @@
 package org.sswr.util.data;
 
 import java.lang.reflect.Array;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -11,6 +13,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import org.sswr.util.db.QueryConditions;
 
@@ -409,6 +412,63 @@ public class DataTools {
 		}
 	}
 
+	public static <T, K> Map<K, T> createValueMap(Class<K> cls, Iterable<T> objs, String fieldName, QueryConditions<T> cond)
+	{
+		Iterator<T> it = objs.iterator();
+		if (!it.hasNext())
+		{
+			return Collections.emptyMap();
+		}
+		Map<K, T> valueMap = new HashMap<K, T>();
+		T obj = it.next();
+		Class<?> clsT = obj.getClass();
+		try
+		{
+			FieldGetter<T> getter = new FieldGetter<T>(clsT, fieldName);
+			Class<?> fieldType = getter.getFieldType();
+			if (fieldType.equals(cls))
+			{
+				if (cond == null || cond.isValid(obj))
+				{
+					@SuppressWarnings("unchecked")
+					K val = (K)getter.get(obj);
+					valueMap.put(val, obj);
+				}
+				while (it.hasNext())
+				{
+					obj = it.next();
+					if (cond == null || cond.isValid(obj))
+					{
+						@SuppressWarnings("unchecked")
+						K val = (K)getter.get(obj);
+						valueMap.put(val, obj);
+					}
+				}
+				return valueMap;
+			}
+			else
+			{
+				System.out.println("DataTools.createValueMap: field type is not supported: "+fieldType.toString());
+				return null;
+			}
+		}
+		catch (NoSuchFieldException ex)
+		{
+			ex.printStackTrace();
+			return null;
+		}
+		catch (IllegalAccessException ex)
+		{
+			ex.printStackTrace();
+			return null;
+		}
+		catch (InvocationTargetException ex)
+		{
+			ex.printStackTrace();
+			return null;
+		}
+	}
+
 	public static <T> List<T> filterToList(T[] arr, QueryConditions<T> cond)
 	{
 		ArrayList<T> list = new ArrayList<T>();
@@ -656,5 +716,168 @@ public class DataTools {
 			return ((Timestamp)obj1).compareTo((Timestamp)obj2);
 		}
 		throw new IllegalArgumentException("Object class is not supported: "+cls.toString());
+	}
+
+	private static String toObjectStringInner(Object o, int maxLevel)
+	{
+		if (o == null)
+		{
+			return "null";
+		}
+		Class<?> cls = o.getClass();
+		if (cls.equals(String.class))
+		{
+			return JSText.quoteString(o.toString());
+		}
+		else if (cls.equals(Integer.class) || cls.equals(int.class))
+		{
+			return o.toString();
+		}
+		else if (cls.equals(Double.class) || cls.equals(double.class))
+		{
+			return o.toString();
+		}
+		else if (cls.equals(Timestamp.class))
+		{
+			return JSText.quoteString(o.toString());
+		}
+		else if (cls.equals(UUID.class))
+		{
+			return JSText.quoteString(o.toString());
+		}
+		else if (cls.isEnum())
+		{
+			return JSText.quoteString(o.toString());
+		}
+		else if (maxLevel <= 0)
+		{
+			return cls.getSimpleName();
+		}
+		else if (o instanceof Iterable)
+		{
+			Iterator<?> it = ((Iterable<?>)o).iterator();
+			StringBuilder sb = new StringBuilder();
+			sb.append('[');
+			if (it.hasNext())
+			{
+				sb.append(toObjectStringInner(it.next(), maxLevel - 1));
+				while (it.hasNext())
+				{
+					sb.append(",");
+					sb.append(toObjectStringInner(it.next(), maxLevel - 1));
+				}
+			}
+			sb.append(']');
+			return sb.toString();
+		}
+		else if (o instanceof Map)
+		{
+			Map<?, ?> map = (Map<?, ?>)o;
+			Set<?> keySet = map.keySet();
+			Iterator<?> it;
+			Object key;
+			StringBuilder sb = new StringBuilder();
+			sb.append(cls.getSimpleName());
+			sb.append('{');
+			it = keySet.iterator();
+			if (it.hasNext())
+			{
+				key = it.next();
+				sb.append(toObjectStringInner(key, maxLevel - 1));
+				sb.append('=');
+				sb.append(toObjectStringInner(map.get(key), maxLevel - 1));
+				while (it.hasNext())
+				{
+					sb.append(',');
+					sb.append(' ');
+					key = it.next();
+					sb.append(toObjectStringInner(key, maxLevel - 1));
+					sb.append('=');
+					sb.append(toObjectStringInner(map.get(key), maxLevel - 1));
+				}
+			}
+			sb.append('}');
+			return sb.toString();
+		}
+		else if (cls.isArray())
+		{
+			int i = 0;
+			int j = Array.getLength(o);
+			StringBuilder sb = new StringBuilder();
+			sb.append('[');
+			while (i < j)
+			{
+				if (i > 0)
+				{
+					sb.append(",");
+				}
+				sb.append(toObjectStringInner(Array.get(o, i), maxLevel - 1));
+				i++;
+			}
+			sb.append(']');
+			return sb.toString();
+		}
+		else
+		{
+			StringBuilder sb = new StringBuilder();
+			sb.append(cls.getSimpleName());
+			sb.append('{');
+			Field fields[] = cls.getDeclaredFields();
+			boolean found = false;
+			int i = 0;
+			int j = fields.length;
+			while (i < j)
+			{
+				try
+				{
+					Method getter = ReflectTools.findGetter(fields[i]);
+					Object innerObj;
+					if (getter != null)
+					{
+						innerObj = getter.invoke(o);
+					}
+					else
+					{
+						innerObj = fields[i].get(o);
+					}
+					if (found)
+					{
+						sb.append(',');
+						sb.append(' ');
+					}
+					sb.append(fields[i].getName());
+					sb.append('=');
+					if (innerObj == o)
+					{
+						sb.append("self");
+					}
+					else
+					{
+						sb.append(toObjectStringInner(innerObj, maxLevel - 1));
+					}
+					found = true;
+				}
+				catch (IllegalAccessException ex)
+				{
+
+				}
+				catch (IllegalArgumentException ex)
+				{
+
+				}
+				catch (InvocationTargetException ex)
+				{
+
+				}
+				i++;
+			}
+			sb.append('}');
+			return sb.toString();
+		}
+	}
+
+	public static String toObjectString(Object o)
+	{
+		return toObjectStringInner(o, 5);
 	}
 }
