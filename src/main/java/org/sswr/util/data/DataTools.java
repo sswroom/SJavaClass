@@ -880,4 +880,32 @@ public class DataTools {
 	{
 		return toObjectStringInner(o, 5);
 	}
+
+	public static <T> T cloneEntity(T o)
+	{
+		try
+		{
+			FieldGetter<T> getter;
+			FieldSetter setter;
+			Class<?> classT = o.getClass();
+			@SuppressWarnings("unchecked")
+			T newO = (T)classT.getConstructor(new Class<?>[0]).newInstance();
+			Field fields[] = classT.getDeclaredFields();
+			int i = 0;
+			int j = fields.length;
+			while (i < j)
+			{
+				getter = new FieldGetter<T>(fields[i]);
+				setter = new FieldSetter(fields[i]);
+				setter.set(newO, getter.get(o));
+				i++;
+			}
+			return newO;
+		}
+		catch (Exception ex)
+		{
+			ex.printStackTrace();
+			return null;
+		}
+	}
 }
