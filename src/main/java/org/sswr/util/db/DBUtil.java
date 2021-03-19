@@ -20,6 +20,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.persistence.CollectionTable;
@@ -1400,6 +1401,238 @@ public class DBUtil {
 		else
 		{
 			return "'"+new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(val)+"'";
+		}
+	}
+
+	public static String dbVal(DBType dbType, DBColumnInfo col, Object val)
+	{
+		if (val == null)
+		{
+			return "null";
+		}
+		Class<?> fieldType = col.field.getType();
+		if (fieldType.equals(Timestamp.class) && val.getClass().equals(Timestamp.class))
+		{
+			return dbTime(dbType, (Timestamp)val);
+		}
+		else if (fieldType.equals(Integer.class) || fieldType.equals(int.class))
+		{
+			if (val instanceof Integer)
+			{
+				return ((Integer)val).toString();
+			}
+		}
+		else if (fieldType.equals(Double.class) || fieldType.equals(double.class))
+		{
+			if (val instanceof Double)
+			{
+				return ((Double)val).toString();
+			}
+		}
+		if (fieldType.equals(String.class) && val.getClass().equals(String.class))
+		{
+			return dbStr(dbType, (String)val);
+		}
+		else if (fieldType.isEnum() && val instanceof Enum)
+		{
+			if (col.enumType == EnumType.ORDINAL)
+			{
+				return ""+((Enum<?>)val).ordinal();
+			}
+			else
+			{
+				return dbStr(dbType, ((Enum<?>)val).name());
+			}
+		}
+
+		System.out.println("DBUtil.dbVal: Unsupport field type: " + fieldType.toString() + ", Object type: "+val.getClass().toString());
+		return "?";
+	}
+
+	public static <T> boolean update(Connection conn, T oriObj, T newObj)
+	{
+		Class<?> targetClass;
+		if (oriObj != null)
+		{
+			targetClass = oriObj.getClass();
+		}
+		else if (newObj != null)
+		{
+			targetClass = newObj.getClass();
+		}
+		else
+		{
+			return false;
+		}
+		Table tableAnn = parseClassTable(targetClass);
+		if (tableAnn == null)
+		{
+			throw new IllegalArgumentException("Class annotation is not valid");
+		}
+
+		List<DBColumnInfo> targetCols = new ArrayList<DBColumnInfo>();
+		List<DBColumnInfo> targetIdCols = new ArrayList<DBColumnInfo>();
+		DBColumnInfo col;
+		parseDBCols(targetClass, targetCols, targetIdCols, null);
+		StringBuilder sb;
+		DBType dbType = connGetDBType(conn);
+		int i;
+		int j;
+		try
+		{
+			if (newObj == null)
+			{
+				if (targetIdCols.size() == 0)
+				{
+					return false;
+				}
+				sb = new StringBuilder();
+				sb.append("delete from ");
+				sb.append(getTableName(tableAnn));
+				sb.append(" where ");
+				i = 0;
+				j = targetIdCols.size();
+				while (i < j)
+				{
+					col = targetIdCols.get(i);
+					if (i > 0)
+					{
+						sb.append(" and ");
+					}
+					sb.append(col.colName);
+					sb.append(" = ");
+					sb.append(dbVal(dbType, col, col.getter.get(oriObj)));
+					i++;
+				}
+				return executeNonQuery(conn, sb.toString());
+			}
+			else if (oriObj == null)
+			{
+				sb = new StringBuilder();
+				sb.append("insert into ");
+				sb.append(getTableName(tableAnn));
+				sb.append(" (");
+				i = 0;
+				j = targetCols.size();
+				while (i < j)
+				{
+					col = targetCols.get(i);
+					if (i > 0)
+					{
+						sb.append(", ");
+					}
+					sb.append(col.colName);
+					i++;
+				}
+				sb.append(") values (");
+				i = 0;
+				while (i < j)
+				{
+					col = targetCols.get(i);
+					if (i > 0)
+					{
+						sb.append(", ");
+					}
+					sb.append(dbVal(dbType, col, col.getter.get(newObj)));
+					i++;
+				}
+				sb.append(")");
+				return executeNonQuery(conn, sb.toString());
+			}
+			else
+			{
+				Object o1;
+				Object o2;
+				boolean found = false;
+				sb = new StringBuilder();
+				sb.append("update ");
+				sb.append(getTableName(tableAnn));
+				sb.append(" set ");
+				i = 0;
+				j = targetCols.size();
+				while (i < j)
+				{
+					col = targetCols.get(i);
+					o1 = col.getter.get(oriObj);
+					o2 = col.getter.get(newObj);
+					if (!Objects.equals(o1, o2))
+					{
+						if (found)
+						{
+							sb.append(", ");
+						}
+						sb.append(col.colName);
+						sb.append(" = ");
+						sb.append(dbVal(dbType, col, o2));
+						found = true;
+					}
+					i++;
+				}
+				if (!found)
+				{
+					return true;
+				}
+				sb.append(" where ");
+				i = 0;
+				j = targetIdCols.size();
+				while (i < j)
+				{
+					col = targetIdCols.get(i);
+					if (i > 0)
+					{
+						sb.append(" and ");
+					}
+					sb.append(col.colName);
+					sb.append(" = ");
+					sb.append(dbVal(dbType, col, col.getter.get(oriObj)));
+					i++;
+				}
+				if (executeNonQuery(conn, sb.toString()))
+				{
+					i = 0;
+					j = targetCols.size();
+					while (i < j)
+					{
+						col = targetCols.get(i);
+						o1 = col.getter.get(oriObj);
+						o2 = col.getter.get(newObj);
+						if (!Objects.equals(o1, o2))
+						{
+							col.setter.set(oriObj, o2);
+						}
+						i++;
+					}
+					return true;
+				}
+				return false;
+			}
+		}
+		catch (IllegalAccessException ex)
+		{
+			ex.printStackTrace();
+			return false;
+		}
+		catch (InvocationTargetException ex)
+		{
+			ex.printStackTrace();
+			return false;
+		}
+	}
+
+	public static boolean executeNonQuery(Connection conn, String sql)
+	{
+		try
+		{
+			System.out.println(sql);
+			PreparedStatement stmt;
+			stmt = conn.prepareStatement(sql);
+			int rowCnt = stmt.executeUpdate();
+			return rowCnt >= 0;
+		}
+		catch (SQLException ex)
+		{
+			ex.printStackTrace();
+			return false;
 		}
 	}
 }
