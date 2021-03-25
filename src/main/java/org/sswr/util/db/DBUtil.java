@@ -55,6 +55,13 @@ public class DBUtil {
 		DT_ORACLE
 	}
 
+	private static DBUpdateHandler updateHandler = null;
+
+	public static void setUpdateHandler(DBUpdateHandler updateHandler)
+	{
+		DBUtil.updateHandler = updateHandler;
+	}
+
 	public static DBType connGetDBType(Connection conn)
 	{
 		String clsName = conn.getClass().getName();
@@ -1578,7 +1585,12 @@ public class DBUtil {
 					sb.append(dbVal(dbType, col, col.getter.get(oriObj)));
 					i++;
 				}
-				return executeNonQuery(conn, sb.toString());
+				boolean ret = executeNonQuery(conn, sb.toString());
+				if (ret && updateHandler != null)
+				{
+					updateHandler.dbUpdated(oriObj, newObj);
+				}
+				return ret;
 			}
 			else if (oriObj == null)
 			{
@@ -1631,6 +1643,10 @@ public class DBUtil {
 						{
 							col.setter.set(newObj, getLastIdentity32(conn));
 						}
+					}
+					if (updateHandler != null)
+					{
+						updateHandler.dbUpdated(oriObj, newObj);
 					}
 				}
 				return found;
@@ -1685,6 +1701,10 @@ public class DBUtil {
 				}
 				if (executeNonQuery(conn, sb.toString()))
 				{
+					if (updateHandler != null)
+					{
+						updateHandler.dbUpdated(oriObj, newObj);
+					}
 					i = 0;
 					j = targetCols.size();
 					while (i < j)
