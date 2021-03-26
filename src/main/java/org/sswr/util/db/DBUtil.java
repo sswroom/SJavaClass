@@ -29,6 +29,8 @@ import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
@@ -51,6 +53,13 @@ public class DBUtil {
 		DT_SQLITE,
 		DT_ACCESS,
 		DT_ORACLE
+	}
+
+	private static DBUpdateHandler updateHandler = null;
+
+	public static void setUpdateHandler(DBUpdateHandler updateHandler)
+	{
+		DBUtil.updateHandler = updateHandler;
 	}
 
 	public static DBType connGetDBType(Connection conn)
@@ -99,6 +108,7 @@ public class DBUtil {
 		boolean isTransient;
 		boolean isJoin;
 		JoinColumn joinCol;
+		GeneratedValue genVal;
 		Annotation anns[];
 		int i;
 		int j;
@@ -108,6 +118,7 @@ public class DBUtil {
 		isTransient = false;
 		isJoin = false;
 		joinCol = null;
+		genVal = null;
 		colName = getFieldDefColName(field);
 		if (field.getName().startsWith("$SWITCH_TABLE$"))
 		{
@@ -168,6 +179,14 @@ public class DBUtil {
 						joinFields.add(field.getName());
 					}
 				}
+				else if (annType.equals(GeneratedValue.class))
+				{
+					genVal = (GeneratedValue)anns[i];
+				}
+				else if (annType.getSimpleName().equals("Formula"))
+				{
+					isTransient = true;
+				}
 				i++;
 			}
 		}
@@ -188,6 +207,14 @@ public class DBUtil {
 			col.colName = colName;
 			col.enumType = enumType;
 			col.joinCol = joinCol;
+			if (genVal != null)
+			{
+				col.genType = genVal.strategy();
+			}
+			else
+			{
+				col.genType = GenerationType.AUTO;
+			}
 			try
 			{
 				col.setter = new FieldSetter(field);
@@ -1312,6 +1339,7 @@ public class DBUtil {
 			{
 				ex.printStackTrace();
 			}
+
 			throw new IllegalArgumentException("Field type not supported: "+fieldType.toString());
 		}
 		else
@@ -1444,9 +1472,62 @@ public class DBUtil {
 				return dbStr(dbType, ((Enum<?>)val).name());
 			}
 		}
+		else if (fieldType.equals(val.getClass()))
+		{
+			ArrayList<DBColumnInfo> allCols = new ArrayList<DBColumnInfo>();
+			ArrayList<DBColumnInfo> idCols = new ArrayList<DBColumnInfo>();
+			parseDBCols(fieldType, allCols, idCols, null);
+			if (idCols.size() == 1)
+			{
+				col = idCols.get(0);
+				try
+				{
+					return dbVal(dbType, col, col.getter.get(val));
+				}
+				catch (IllegalAccessException ex)
+				{
+					ex.printStackTrace();
+				}
+				catch (InvocationTargetException ex)
+				{
+					ex.printStackTrace();
+				}
+			}
+		}
 
 		System.out.println("DBUtil.dbVal: Unsupport field type: " + fieldType.toString() + ", Object type: "+val.getClass().toString());
 		return "?";
+	}
+
+	public static int getLastIdentity32(Connection conn)
+	{
+		DBType dbType = connGetDBType(conn);
+		if (dbType == DBType.DT_MYSQL || dbType == DBType.DT_MSSQL || dbType == DBType.DT_ACCESS)
+		{
+			int id = 0;
+			try
+			{
+				PreparedStatement stmt = conn.prepareStatement("select @@identity");
+				ResultSet rs = stmt.executeQuery();
+				if (rs != null)
+				{
+					if (rs.next())
+					{
+						id = rs.getInt(1);
+					}
+					rs.close();
+				}
+			}
+			catch (SQLException ex)
+			{
+				ex.printStackTrace();
+			}
+			return id;
+		}
+		else
+		{
+			return 0;
+		}
 	}
 
 	public static <T> boolean update(Connection conn, T oriObj, T newObj)
@@ -1504,7 +1585,12 @@ public class DBUtil {
 					sb.append(dbVal(dbType, col, col.getter.get(oriObj)));
 					i++;
 				}
-				return executeNonQuery(conn, sb.toString());
+				boolean ret = executeNonQuery(conn, sb.toString());
+				if (ret && updateHandler != null)
+				{
+					updateHandler.dbUpdated(oriObj, newObj);
+				}
+				return ret;
 			}
 			else if (oriObj == null)
 			{
@@ -1512,32 +1598,58 @@ public class DBUtil {
 				sb.append("insert into ");
 				sb.append(getTableName(tableAnn));
 				sb.append(" (");
+				boolean found = false;
 				i = 0;
 				j = targetCols.size();
 				while (i < j)
 				{
 					col = targetCols.get(i);
-					if (i > 0)
+					if (col.genType != GenerationType.IDENTITY)
 					{
-						sb.append(", ");
+						if (found)
+						{
+							sb.append(", ");
+						}
+						found = true;
+						sb.append(col.colName);
 					}
-					sb.append(col.colName);
 					i++;
 				}
 				sb.append(") values (");
+				found = false;
 				i = 0;
 				while (i < j)
 				{
 					col = targetCols.get(i);
-					if (i > 0)
+					if (col.genType != GenerationType.IDENTITY)
 					{
-						sb.append(", ");
+						if (found)
+						{
+							sb.append(", ");
+						}
+						found = true;
+						sb.append(dbVal(dbType, col, col.getter.get(newObj)));
 					}
-					sb.append(dbVal(dbType, col, col.getter.get(newObj)));
 					i++;
 				}
 				sb.append(")");
-				return executeNonQuery(conn, sb.toString());
+				found = executeNonQuery(conn, sb.toString());
+				if (found)
+				{
+					if (targetIdCols.size() == 1)
+					{
+						col = targetIdCols.get(0);
+						if (col.genType == GenerationType.IDENTITY)
+						{
+							col.setter.set(newObj, getLastIdentity32(conn));
+						}
+					}
+					if (updateHandler != null)
+					{
+						updateHandler.dbUpdated(oriObj, newObj);
+					}
+				}
+				return found;
 			}
 			else
 			{
@@ -1589,6 +1701,10 @@ public class DBUtil {
 				}
 				if (executeNonQuery(conn, sb.toString()))
 				{
+					if (updateHandler != null)
+					{
+						updateHandler.dbUpdated(oriObj, newObj);
+					}
 					i = 0;
 					j = targetCols.size();
 					while (i < j)
