@@ -867,10 +867,11 @@ public class DBUtil {
 			return true;
 		}
 		T obj = it.next();
+		Class<?> tClass = obj.getClass();
 		ArrayList<DBColumnInfo> cols = new ArrayList<DBColumnInfo>();
 		ArrayList<DBColumnInfo> idCols = new ArrayList<DBColumnInfo>();
-		parseDBCols(obj.getClass(), cols, idCols, null);
-		Field field = obj.getClass().getDeclaredField(fieldName);
+		parseDBCols(tClass, cols, idCols, null);
+		Field field = tClass.getDeclaredField(fieldName);
 		Annotation[] anns = field.getAnnotations();
 		Annotation ann;
 		if (idCols.size() == 0 || idCols.size() > 1)
@@ -885,6 +886,7 @@ public class DBUtil {
 		JoinColumn joinColumn = null;
 		ManyToOne manyToOne = null;
 		ManyToMany manyToMany = null;
+		OneToMany oneToMany = null;
 		JoinTable joinTable = null;
 
 		int i = 0;
@@ -920,6 +922,10 @@ public class DBUtil {
 			else if (annType.equals(JoinTable.class))
 			{
 				joinTable = (JoinTable)ann;
+			}
+			else if (annType.equals(OneToMany.class))
+			{
+				oneToMany = (OneToMany)ann;
 			}
 			i++;
 		}
@@ -1032,6 +1038,69 @@ public class DBUtil {
 			}
 			else
 			{
+				throw new IllegalArgumentException("Field type not supported: "+fieldType.toString());
+			}
+		}
+		else if (oneToMany != null && fieldType.equals(Set.class))
+		{
+			Class<?> targetClass = oneToMany.targetEntity();			
+			if (targetClass.equals(void.class))
+			{
+				Type t = field.getGenericType();
+				if (t instanceof ParameterizedType)
+				{
+					ParameterizedType pt = (ParameterizedType)t;
+					targetClass = (Class<?>)pt.getActualTypeArguments()[0];
+				}
+			}
+			if (targetClass.equals(void.class))
+			{
+				throw new IllegalArgumentException("Field type not supported: "+fieldType.toString());
+			}
+			if (idCols.size() != 1)
+			{
+				throw new IllegalArgumentException("Field type not supported: "+fieldType.toString());
+			}
+			DBColumnInfo idCol = idCols.get(0);
+			Field targetField = targetClass.getDeclaredField(oneToMany.mappedBy());
+			if (!targetField.getType().equals(tClass))
+			{
+				throw new IllegalArgumentException("Field type not supported: "+fieldType.toString());
+			}
+			Map<Integer, T> tMap;
+			if (idCol.field.getType().equals(int.class))
+			{
+				tMap = DataTools.createValueMap(int.class, items, idCol.field.getName(), null);
+			}
+			else
+			{
+				tMap = DataTools.createValueMap(Integer.class, items, idCol.field.getName(), null);
+			}
+			FieldGetter<Object> targetGetter = new FieldGetter<>(targetField);
+			@SuppressWarnings("unchecked")
+			Class<Object> tmpClass = (Class<Object>)targetClass;
+			Map<Integer, ?> targetMap = loadItems(tmpClass, conn, new QueryConditions<>(tmpClass).intIn(oneToMany.mappedBy()+"."+idCol.field.getName(), DataTools.createIntSet(items, idCol.field.getName(), null)), null);
+			Iterator<?> itTarget = targetMap.values().iterator();
+			try
+			{
+				while (itTarget.hasNext())
+				{
+					Object targetObj = itTarget.next();
+					T tObj = tMap.get(idCol.getter.get(targetGetter.get(targetObj)));
+					@SuppressWarnings("unchecked")
+					Set<Object> targetSet = ((Set<Object>)getter.get(tObj));
+					targetSet.add(targetObj);
+				}
+				return true;
+			}
+			catch (InvocationTargetException ex)
+			{
+				ex.printStackTrace();
+				throw new IllegalArgumentException("Field type not supported: "+fieldType.toString());
+			}
+			catch (IllegalAccessException ex)
+			{
+				ex.printStackTrace();
 				throw new IllegalArgumentException("Field type not supported: "+fieldType.toString());
 			}
 		}
