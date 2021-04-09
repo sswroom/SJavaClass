@@ -773,12 +773,14 @@ public class DBUtil {
 		}
 	}	
 
+
 	/*
 	* @param joinFields return fields which are joined with other tables, null = not returns
 	*/
-	public static <T> T loadItem(Class<T> cls, Connection conn, int id, List<String> joinFields)
+	public static <T, K> T loadItem(Class<T> cls, Connection conn, K id, List<String> joinFields)
 	{
 		StringBuilder sb;
+		DBType dbType = connGetDBType(conn);
 		Table tableAnn = parseClassTable(cls);
 		if (tableAnn == null)
 		{
@@ -820,7 +822,7 @@ public class DBUtil {
 		sb.append(" where ");
 		sb.append(idCol.colName);
 		sb.append(" = ");
-		sb.append(id);
+		sb.append(dbVal(dbType, idCol, id));
 		try
 		{
 			System.out.println(sb.toString());
@@ -858,7 +860,7 @@ public class DBUtil {
 			return null;
 		}
 	}
-	
+
 	public static <T> boolean loadJoinItems(Connection conn, Iterable<T> items, String fieldName) throws NoSuchFieldException
 	{
 		Iterator<T> it = items.iterator();
