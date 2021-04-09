@@ -101,4 +101,34 @@ public class ConfigFile
 		}
 		return cfg;
 	}
+
+	public String toString()
+	{
+		StringBuilder sb = new StringBuilder();
+		Set<String> cates = this.cfgVals.keySet();
+		Map<String, String> vals;
+		Iterator<String> itCate = cates.iterator();
+		String key;
+		Iterator<String> itKey;
+		String cate;
+		while (itCate.hasNext())
+		{
+			cate = itCate.next();
+			vals = this.cfgVals.get(cate);
+			itKey = vals.keySet().iterator();
+			while (itKey.hasNext())
+			{
+				key = itKey.next();
+				if (cate.length() > 0)
+				{
+					sb.append(cate+".");
+				}
+				sb.append(key);
+				sb.append("=");
+				sb.append(vals.get(key));
+				sb.append("\r\n");
+			}
+		}
+		return sb.toString();
+	}
 }
