@@ -1,5 +1,6 @@
 package org.sswr.util.io;
 
+import java.io.PrintStream;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
@@ -52,6 +53,14 @@ public class LogTool
 			this.addLogHandler(logs, logLev);
 			fileLogArr.add(logs);
 		}
+	}
+	
+	public LogTool addPrintLog(PrintStream pstm, LogLevel logLev)
+	{
+		if (closed)
+			return this;
+		this.addLogHandler(new PrintStreamLog(pstm), logLev);
+		return this;
 	}
 	
 	public void addLogHandler(LogHandler hdlr, LogLevel logLev)
@@ -108,5 +117,10 @@ public class LogTool
 					this.hdlrArr.get(i).logAdded(t, logMsg, level);
 			}
 		}
+	}
+
+	public void logException(Exception ex)
+	{
+		this.logMessage(ex.toString(), LogLevel.ERR_DETAIL);
 	}
 }
