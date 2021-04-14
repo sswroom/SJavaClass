@@ -2,9 +2,11 @@ package org.sswr.util.data;
 
 import java.sql.Timestamp;
 import java.time.DayOfWeek;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.YearMonth;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 
@@ -415,5 +417,15 @@ public class DateTimeUtil
 			t = t.minusDays(1);
 		}
 		return t;
+	}
+
+	public static LocalDateTime newLocalDateTime(long t, ZoneOffset zoneOffset)
+	{
+		return LocalDateTime.ofEpochSecond(t / 1000, (int)(t % 1000) * 1000000, zoneOffset);
+	}
+
+	public static LocalDateTime newLocalDateTime(long t, ZoneId zoneId)
+	{
+		return LocalDateTime.ofInstant(Instant.ofEpochMilli(t), zoneId);
 	}
 }
