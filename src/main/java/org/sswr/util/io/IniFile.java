@@ -22,7 +22,7 @@ public class IniFile
 
 	public static ConfigFile parse(String fileName, Charset charset) throws IOException
 	{
-		return parseReader(new FileReader(fileName, charset));
+		return parseReader(new FileReader(FileUtil.getRealPath(fileName, false), charset));
 	}
 
 	private static ConfigFile parseReader(Reader reader) throws IOException

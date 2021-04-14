@@ -205,7 +205,7 @@ public class MTFileLog implements Runnable, LogHandler
 	
 		int i;
 	
-		this.fileName = fileName;
+		this.fileName = FileUtil.getRealPath(fileName, false);
 		if (this.groupStyle != LogGroup.NO_GROUP)
 		{
 			i = this.fileName.lastIndexOf(File.separatorChar);
