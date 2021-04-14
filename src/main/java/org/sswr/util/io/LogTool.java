@@ -75,12 +75,8 @@ public class LogTool
 	
 		long t = System.currentTimeMillis();
 		StringBuilder sb = new StringBuilder();
-		Class<?> mainCls = JavaEnv.getMainClass();
 		sb.append("Program ");
-		if (mainCls != null)
-		{
-			sb.append(mainCls.getSimpleName());
-		}
+		sb.append(JavaEnv.getProgName());
 		sb.append(" started");
 		hdlr.logAdded(t, sb.toString(), LogLevel.FORCE);
 	}

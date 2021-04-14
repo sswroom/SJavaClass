@@ -2,15 +2,14 @@ package org.sswr.util.io;
 
 public class JavaEnv
 {
-	public static Class<?> getMainClass()
+	public static String getProgName()
 	{
-		try
+		String cmd = System.getProperty("sun.java.command");
+		if (cmd.endsWith(".jar"))
 		{
-			return Class.forName(System.getProperty("sun.java.command"));
+			return cmd.substring(0, cmd.length() - 4);
 		}
-		catch (ClassNotFoundException ex)
-		{
-			return null;
-		}
+		int i = cmd.indexOf(".");
+		return cmd.substring(i + 1);
 	}
 }
