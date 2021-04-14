@@ -58,7 +58,7 @@ public class DBUtil {
 	}
 
 	private static DBUpdateHandler updateHandler = null;
-	private static LogTool sqlLogger = new LogTool().addPrintLog(System.out, LogLevel.RAW);
+	private static LogTool sqlLogger = new LogTool();
 
 	public static void setUpdateHandler(DBUpdateHandler updateHandler)
 	{
