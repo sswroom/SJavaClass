@@ -3,6 +3,7 @@ package org.sswr.util.io;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 public class ConfigFile
@@ -130,5 +131,41 @@ public class ConfigFile
 			}
 		}
 		return sb.toString();
+	}
+
+	public static ConfigFile fromSystemProperties()
+	{
+		return fromProperties(System.getProperties());
+	}
+
+	public static ConfigFile fromProperties(Properties properties)
+	{
+		ConfigFile cfg = new ConfigFile();
+		Iterator<Object> itKeys = properties.keySet().iterator();
+		Object key;
+		while (itKeys.hasNext())
+		{
+			key = itKeys.next();
+			cfg.setValue(null, key.toString(), properties.get(key).toString());
+		}
+		return cfg;
+	}
+
+	public ConfigFile merge(ConfigFile cfg)
+	{
+		Iterator<String> itCates = cfg.cfgVals.keySet().iterator();
+		while (itCates.hasNext())
+		{
+			String cate = itCates.next();
+			Map<String, String> cfgCate = cfg.cfgVals.get(cate);
+			Iterator<String> itKeys = cfgCate.keySet().iterator();
+			String key;
+			while (itKeys.hasNext())
+			{
+				key = itKeys.next();
+				this.setValue(cate, key, cfgCate.get(key));
+			}
+		}
+		return this;
 	}
 }
