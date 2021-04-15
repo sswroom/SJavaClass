@@ -412,6 +412,83 @@ public class DataTools {
 		}
 	}
 
+	public static <T, K> Set<K> createValueSet(Class<K> cls, Iterable<T> objs, String fieldName, QueryConditions<T> cond)
+	{
+		Iterator<T> it = objs.iterator();
+		if (!it.hasNext())
+		{
+			return Collections.emptySet();
+		}
+		Set<K> valueSet = new HashSet<K>();
+		T obj = it.next();
+		Class<?> clsT = obj.getClass();
+		try
+		{
+			FieldGetter<T> getter = new FieldGetter<T>(clsT, fieldName);
+			Class<?> fieldType = getter.getFieldType();
+			if (fieldType.equals(cls))
+			{
+				if (cond == null || cond.isValid(obj))
+				{
+					@SuppressWarnings("unchecked")
+					K val = (K)getter.get(obj);
+					valueSet.add(val);
+				}
+				while (it.hasNext())
+				{
+					obj = it.next();
+					if (cond == null || cond.isValid(obj))
+					{
+						@SuppressWarnings("unchecked")
+						K val = (K)getter.get(obj);
+						valueSet.add(val);
+					}
+				}
+				return valueSet;
+			}
+			else if (fieldType.equals(Set.class))
+			{
+				if (cond == null || cond.isValid(obj))
+				{
+					@SuppressWarnings("unchecked")
+					Set<K> set = (Set<K>)getter.get(obj);
+					valueSet.addAll(set);
+				}
+				while (it.hasNext())
+				{
+					obj = it.next();
+					if (cond == null || cond.isValid(obj))
+					{
+						@SuppressWarnings("unchecked")
+						Set<K> set2 = (Set<K>)getter.get(obj);
+						valueSet.addAll(set2);
+					}
+				}
+				return valueSet;
+			}
+			else
+			{
+				System.out.println("DataTools.createValueSet: field type is not supported: "+fieldType.toString());
+				return null;
+			}
+		}
+		catch (NoSuchFieldException ex)
+		{
+			ex.printStackTrace();
+			return null;
+		}
+		catch (IllegalAccessException ex)
+		{
+			ex.printStackTrace();
+			return null;
+		}
+		catch (InvocationTargetException ex)
+		{
+			ex.printStackTrace();
+			return null;
+		}
+	}
+
 	public static <T, K> Map<K, T> createValueMap(Class<K> cls, Iterable<T> objs, String fieldName, QueryConditions<T> cond)
 	{
 		Iterator<T> it = objs.iterator();
