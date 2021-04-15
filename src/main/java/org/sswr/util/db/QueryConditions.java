@@ -160,7 +160,7 @@ public class QueryConditions<T>
 			{
 				return false;
 			}
-			Integer iVal = (Integer)v;
+			int iVal = (Integer)v;
 			switch (cond)
 			{
 			case EQUAL:

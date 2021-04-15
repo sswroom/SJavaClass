@@ -7,17 +7,22 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 public class FileUtil {
-	public static String getRealPath(String path)
+	public static String getRealPath(String path, boolean appendSeperator)
 	{
 		if (path.startsWith("~/"))
 		{
 			path = System.getProperty("user.home") + path.substring(1);
 		}
-		if (!path.endsWith(File.separator))
+		if (appendSeperator && !path.endsWith(File.separator))
 		{
 			path = path + File.separator;
 		}
 		return path;
+	}
+
+	public static String getRealPath(String path)
+	{
+		return getRealPath(path, true);
 	}
 
 	public static boolean copyFile(File srcFile, File destFile)

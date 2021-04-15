@@ -43,6 +43,8 @@ import javax.persistence.Transient;
 import org.sswr.util.data.DataTools;
 import org.sswr.util.data.FieldGetter;
 import org.sswr.util.data.FieldSetter;
+import org.sswr.util.io.LogLevel;
+import org.sswr.util.io.LogTool;
 
 public class DBUtil {
 	public enum DBType
@@ -56,10 +58,19 @@ public class DBUtil {
 	}
 
 	private static DBUpdateHandler updateHandler = null;
+	private static LogTool sqlLogger = new LogTool();
 
 	public static void setUpdateHandler(DBUpdateHandler updateHandler)
 	{
 		DBUtil.updateHandler = updateHandler;
+	}
+
+	public static void setSqlLogger(LogTool sqlLogger)
+	{
+		if (sqlLogger != null)
+		{
+			DBUtil.sqlLogger = sqlLogger;
+		}
 	}
 
 	public static DBType connGetDBType(Connection conn)
@@ -71,7 +82,7 @@ public class DBUtil {
 		}
 		else
 		{
-			System.out.println("DB class = "+clsName);
+			sqlLogger.logMessage("DB class = "+clsName, LogLevel.ERROR);
 			return DBType.DT_UNKNOWN;
 		}
 	}
@@ -223,7 +234,7 @@ public class DBUtil {
 			}
 			catch (IllegalArgumentException ex)
 			{
-				System.out.println(ex.getMessage());
+				sqlLogger.logException(ex);
 				return null;
 			}
 		}
@@ -405,16 +416,16 @@ public class DBUtil {
 					}
 					else
 					{
-						System.out.println("DBUtil.fillColVals join idCols mismatch");
+						sqlLogger.logMessage("DBUtil.fillColVals join idCols mismatch", LogLevel.ERROR);
 					}
 				}
 				catch (NoSuchMethodException ex)
 				{
-					ex.printStackTrace();
+					sqlLogger.logException(ex);
 				}
 				catch (InstantiationException ex)
 				{
-					ex.printStackTrace();
+					sqlLogger.logException(ex);
 				}
 			}
 			else if (fieldType.equals(int.class))
@@ -464,7 +475,7 @@ public class DBUtil {
 			else
 			{
 //							col.setterMeth.invoke(obj, rs.getObject(i + 1));
-				System.out.println("Unknown fieldType for "+col.field.getName()+" ("+fieldType.toString()+")");
+				sqlLogger.logMessage("Unknown fieldType for "+col.field.getName()+" ("+fieldType.toString()+")", LogLevel.ERROR);
 			}
 			i++;
 		}
@@ -535,7 +546,7 @@ public class DBUtil {
 		}
 		try
 		{
-			System.out.println(sb.toString());
+			sqlLogger.logMessage(sb.toString(), LogLevel.COMMAND);
 
 			PreparedStatement stmt = conn.prepareStatement(sb.toString());
 			ResultSet rs = stmt.executeQuery();
@@ -554,15 +565,15 @@ public class DBUtil {
 				}
 				catch (InvocationTargetException ex)
 				{
-					ex.printStackTrace();
+					sqlLogger.logException(ex);
 				}
 				catch (InstantiationException ex)
 				{
-					ex.printStackTrace();
+					sqlLogger.logException(ex);
 				}
 				catch (IllegalAccessException ex)
 				{
-					ex.printStackTrace();
+					sqlLogger.logException(ex);
 				}
 			}
 			rs.close();
@@ -570,8 +581,7 @@ public class DBUtil {
 		}
 		catch (SQLException ex)
 		{
-			System.out.println(sb.toString());
-			ex.printStackTrace();
+			sqlLogger.logException(ex);
 			return null;
 		}
 	}	
@@ -628,7 +638,7 @@ public class DBUtil {
 		}
 		try
 		{
-			System.out.println(sb.toString());
+			sqlLogger.logMessage(sb.toString(), LogLevel.COMMAND);
 
 			PreparedStatement stmt = conn.prepareStatement(sb.toString());
 			ResultSet rs = stmt.executeQuery();
@@ -647,15 +657,15 @@ public class DBUtil {
 				}
 				catch (InvocationTargetException ex)
 				{
-					ex.printStackTrace();
+					sqlLogger.logException(ex);
 				}
 				catch (InstantiationException ex)
 				{
-					ex.printStackTrace();
+					sqlLogger.logException(ex);
 				}
 				catch (IllegalAccessException ex)
 				{
-					ex.printStackTrace();
+					sqlLogger.logException(ex);
 				}
 			}
 			rs.close();
@@ -663,8 +673,7 @@ public class DBUtil {
 		}
 		catch (SQLException ex)
 		{
-			System.out.println(sb.toString());
-			ex.printStackTrace();
+			sqlLogger.logException(ex);
 			return null;
 		}
 	}	
@@ -698,7 +707,7 @@ public class DBUtil {
 		}
 		catch (NoSuchMethodException ex)
 		{
-			ex.printStackTrace();
+			sqlLogger.logException(ex);
 			throw new IllegalArgumentException("No suitable constructor found");
 		}
 
@@ -732,7 +741,7 @@ public class DBUtil {
 		}
 		try
 		{
-			System.out.println(sb.toString());
+			sqlLogger.logMessage(sb.toString(), LogLevel.COMMAND);
 
 			PreparedStatement stmt = conn.prepareStatement(sb.toString());
 			ResultSet rs = stmt.executeQuery();
@@ -751,15 +760,15 @@ public class DBUtil {
 				}
 				catch (InvocationTargetException ex)
 				{
-					ex.printStackTrace();
+					sqlLogger.logException(ex);
 				}
 				catch (InstantiationException ex)
 				{
-					ex.printStackTrace();
+					sqlLogger.logException(ex);
 				}
 				catch (IllegalAccessException ex)
 				{
-					ex.printStackTrace();
+					sqlLogger.logException(ex);
 				}
 			}
 			rs.close();
@@ -767,8 +776,7 @@ public class DBUtil {
 		}
 		catch (SQLException ex)
 		{
-			System.out.println(sb.toString());
-			ex.printStackTrace();
+			sqlLogger.logException(ex);
 			return null;
 		}
 	}	
@@ -776,9 +784,10 @@ public class DBUtil {
 	/*
 	* @param joinFields return fields which are joined with other tables, null = not returns
 	*/
-	public static <T> T loadItem(Class<T> cls, Connection conn, int id, List<String> joinFields)
+	public static <T, K> T loadItem(Class<T> cls, Connection conn, K id, List<String> joinFields)
 	{
 		StringBuilder sb;
+		DBType dbType = connGetDBType(conn);
 		Table tableAnn = parseClassTable(cls);
 		if (tableAnn == null)
 		{
@@ -820,11 +829,10 @@ public class DBUtil {
 		sb.append(" where ");
 		sb.append(idCol.colName);
 		sb.append(" = ");
-		sb.append(id);
+		sb.append(dbVal(dbType, idCol, id));
 		try
 		{
-			System.out.println(sb.toString());
-
+			sqlLogger.logMessage(sb.toString(), LogLevel.COMMAND);
 			PreparedStatement stmt = conn.prepareStatement(sb.toString());
 			ResultSet rs = stmt.executeQuery();
 			T ret = null;
@@ -837,15 +845,15 @@ public class DBUtil {
 				}
 				catch (InvocationTargetException ex)
 				{
-					ex.printStackTrace();
+					sqlLogger.logException(ex);
 				}
 				catch (InstantiationException ex)
 				{
-					ex.printStackTrace();
+					sqlLogger.logException(ex);
 				}
 				catch (IllegalAccessException ex)
 				{
-					ex.printStackTrace();
+					sqlLogger.logException(ex);
 				}
 			}
 			rs.close();
@@ -853,12 +861,11 @@ public class DBUtil {
 		}
 		catch (SQLException ex)
 		{
-			System.out.println(sb.toString());
-			ex.printStackTrace();
+			sqlLogger.logException(ex);
 			return null;
 		}
 	}
-	
+
 	public static <T> boolean loadJoinItems(Connection conn, Iterable<T> items, String fieldName) throws NoSuchFieldException
 	{
 		Iterator<T> it = items.iterator();
@@ -960,7 +967,7 @@ public class DBUtil {
 				sb.append(")");
 				try
 				{
-					System.out.println(sb.toString());
+					sqlLogger.logMessage(sb.toString(), LogLevel.COMMAND);
 					PreparedStatement stmt;
 					ResultSet rs;
 					stmt = conn.prepareStatement(sb.toString());
@@ -980,18 +987,18 @@ public class DBUtil {
 					}
 					catch(InvocationTargetException ex)
 					{
-						ex.printStackTrace();
+						sqlLogger.logException(ex);
 					}
 					catch (IllegalAccessException ex)
 					{
-						ex.printStackTrace();
+						sqlLogger.logException(ex);
 					}
 					rs.close();
 					stmt.close();
 				}
 				catch (SQLException ex)
 				{
-					ex.printStackTrace();
+					sqlLogger.logException(ex);
 				}
 			}
 			else
@@ -1027,11 +1034,11 @@ public class DBUtil {
 					}
 					catch (IllegalAccessException ex)
 					{
-						ex.printStackTrace();
+						sqlLogger.logException(ex);
 					}
 					catch (InvocationTargetException ex)
 					{
-						ex.printStackTrace();
+						sqlLogger.logException(ex);
 					}
 				}
 				return true;
@@ -1095,12 +1102,12 @@ public class DBUtil {
 			}
 			catch (InvocationTargetException ex)
 			{
-				ex.printStackTrace();
+				sqlLogger.logException(ex);
 				throw new IllegalArgumentException("Field type not supported: "+fieldType.toString());
 			}
 			catch (IllegalAccessException ex)
 			{
-				ex.printStackTrace();
+				sqlLogger.logException(ex);
 				throw new IllegalArgumentException("Field type not supported: "+fieldType.toString());
 			}
 		}
@@ -1187,7 +1194,7 @@ public class DBUtil {
 			JoinItem joinItem;
 			try
 			{
-				System.out.println(sb.toString());
+				sqlLogger.logMessage(sb.toString(), LogLevel.COMMAND);
 				PreparedStatement stmt;
 				ResultSet rs;
 				stmt = conn.prepareStatement(sb.toString());
@@ -1204,7 +1211,7 @@ public class DBUtil {
 			}
 			catch (SQLException ex)
 			{
-				ex.printStackTrace();
+				sqlLogger.logException(ex);
 				throw new IllegalArgumentException("Error in joining table");
 			}
 			Map<Integer, ? extends Object> targetMap = loadItemsById(targetClass, conn, DataTools.createIntSet(joinItemList, "joinId", null), null);
@@ -1261,11 +1268,11 @@ public class DBUtil {
 			}
 			catch (IllegalAccessException ex)
 			{
-				ex.printStackTrace();
+				sqlLogger.logException(ex);
 			}
 			catch (InvocationTargetException ex)
 			{
-				ex.printStackTrace();
+				sqlLogger.logException(ex);
 			}
 
 			throw new IllegalArgumentException("Field type not supported: "+fieldType.toString());
@@ -1328,7 +1335,7 @@ public class DBUtil {
 			JoinItem joinItem;
 			try
 			{
-				System.out.println(sb.toString());
+				sqlLogger.logMessage(sb.toString(), LogLevel.COMMAND);
 				PreparedStatement stmt;
 				ResultSet rs;
 				stmt = conn.prepareStatement(sb.toString());
@@ -1345,7 +1352,7 @@ public class DBUtil {
 			}
 			catch (SQLException ex)
 			{
-				ex.printStackTrace();
+				sqlLogger.logException(ex);
 				throw new IllegalArgumentException("Error in joining table");
 			}
 			Map<Integer, ? extends Object> targetMap = loadItemsById(targetClass, conn, DataTools.createIntSet(joinItemList, "joinId", null), null);
@@ -1402,11 +1409,11 @@ public class DBUtil {
 			}
 			catch (IllegalAccessException ex)
 			{
-				ex.printStackTrace();
+				sqlLogger.logException(ex);
 			}
 			catch (InvocationTargetException ex)
 			{
-				ex.printStackTrace();
+				sqlLogger.logException(ex);
 			}
 
 			throw new IllegalArgumentException("Field type not supported: "+fieldType.toString());
@@ -1555,16 +1562,16 @@ public class DBUtil {
 				}
 				catch (IllegalAccessException ex)
 				{
-					ex.printStackTrace();
+					sqlLogger.logException(ex);
 				}
 				catch (InvocationTargetException ex)
 				{
-					ex.printStackTrace();
+					sqlLogger.logException(ex);
 				}
 			}
 		}
 
-		System.out.println("DBUtil.dbVal: Unsupport field type: " + fieldType.toString() + ", Object type: "+val.getClass().toString());
+		sqlLogger.logMessage("DBUtil.dbVal: Unsupport field type: " + fieldType.toString() + ", Object type: "+val.getClass().toString(), LogLevel.ERR_DETAIL);
 		return "?";
 	}
 
@@ -1589,7 +1596,7 @@ public class DBUtil {
 			}
 			catch (SQLException ex)
 			{
-				ex.printStackTrace();
+				sqlLogger.logException(ex);
 			}
 			return id;
 		}
@@ -1794,12 +1801,12 @@ public class DBUtil {
 		}
 		catch (IllegalAccessException ex)
 		{
-			ex.printStackTrace();
+			sqlLogger.logException(ex);
 			return false;
 		}
 		catch (InvocationTargetException ex)
 		{
-			ex.printStackTrace();
+			sqlLogger.logException(ex);
 			return false;
 		}
 	}
@@ -1808,7 +1815,7 @@ public class DBUtil {
 	{
 		try
 		{
-			System.out.println(sql);
+			sqlLogger.logMessage(sql, LogLevel.COMMAND);
 			PreparedStatement stmt;
 			stmt = conn.prepareStatement(sql);
 			int rowCnt = stmt.executeUpdate();
@@ -1816,7 +1823,7 @@ public class DBUtil {
 		}
 		catch (SQLException ex)
 		{
-			ex.printStackTrace();
+			sqlLogger.logException(ex);
 			return false;
 		}
 	}
