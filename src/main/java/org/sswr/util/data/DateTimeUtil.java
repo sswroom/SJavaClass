@@ -115,6 +115,16 @@ public class DateTimeUtil
 		return Timestamp.valueOf(clearTime(ts.toLocalDateTime()));
 	}
 
+	public static LocalDateTime clearMs(LocalDateTime dt)
+	{
+		return dt.truncatedTo(ChronoUnit.SECONDS);
+	}
+
+	public static Timestamp clearMs(Timestamp ts)
+	{
+		return Timestamp.valueOf(clearMs(ts.toLocalDateTime()));
+	}
+
 	public static Timestamp toDayStart(Timestamp ts)
 	{
 		return clearTime(ts);
