@@ -5,8 +5,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +23,6 @@ public class MTFileLog implements Runnable, LogHandler
 	private String fileName;
 	private String extName;
 	private boolean closed;
-	private ZoneId zoneId;
 	private boolean running;
 	private ThreadEvent evt;
 	private List<Long> dateList;
@@ -33,7 +31,7 @@ public class MTFileLog implements Runnable, LogHandler
 	private String getNewName(long logTime)
 	{
 		StringBuilder sb = new StringBuilder();
-		LocalDateTime time = DateTimeUtil.newLocalDateTime(logTime, this.zoneId);
+		ZonedDateTime time = DateTimeUtil.newZonedDateTime(logTime);
 
 		switch (this.groupStyle)
 		{
@@ -101,7 +99,7 @@ public class MTFileLog implements Runnable, LogHandler
 			String newFile = null;
 			long logTime = dateArr.get(i);
 			String logMsg = msgArr.get(i);
-			LocalDateTime time = DateTimeUtil.newLocalDateTime(logTime, this.zoneId);
+			ZonedDateTime time = DateTimeUtil.newZonedDateTime(logTime);
 		
 			if (this.logStyle == LogType.PER_DAY)
 			{
@@ -184,7 +182,7 @@ public class MTFileLog implements Runnable, LogHandler
 		}
 	}
 
-	public MTFileLog(String fileName, LogType style, LogGroup groupStyle, String dateFormat, ZoneId zoneId)
+	public MTFileLog(String fileName, LogType style, LogGroup groupStyle, String dateFormat)
 	{
 		this.evt = new ThreadEvent(true);
 		this.dateList = new ArrayList<Long>();
@@ -197,7 +195,6 @@ public class MTFileLog implements Runnable, LogHandler
 		{
 			this.dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss\t");
 		}
-		this.zoneId = zoneId;
 		this.logStyle = style;
 		this.groupStyle = groupStyle;
 		this.closed = false;

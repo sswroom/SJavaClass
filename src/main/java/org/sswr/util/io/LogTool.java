@@ -1,7 +1,6 @@
 package org.sswr.util.io;
 
 import java.io.PrintStream;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,13 +42,13 @@ public class LogTool
 			return;
 		if (directWrite)
 		{
-			FileLog logs = new FileLog(fileName, style, groupStyle, dateFormat, ZoneOffset.systemDefault());
+			FileLog logs = new FileLog(fileName, style, groupStyle, dateFormat);
 			this.addLogHandler(logs, logLev);
 			fileLogArr.add(logs);
 		}
 		else
 		{
-			MTFileLog logs = new MTFileLog(fileName, style, groupStyle, dateFormat, ZoneOffset.systemDefault());
+			MTFileLog logs = new MTFileLog(fileName, style, groupStyle, dateFormat);
 			this.addLogHandler(logs, logLev);
 			fileLogArr.add(logs);
 		}

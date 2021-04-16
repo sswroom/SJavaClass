@@ -4,15 +4,15 @@ import java.sql.Timestamp;
 import java.time.DayOfWeek;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
 import java.time.YearMonth;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 
 public class DateTimeUtil
 {
-	private static OffsetDateTime setDate(OffsetDateTime dt, String strs[])
+	private static ZonedDateTime setDate(ZonedDateTime dt, String strs[])
 	{
 		int vals[] = new int[3];
 		vals[0] = Integer.parseInt(strs[0]);
@@ -46,7 +46,7 @@ public class DateTimeUtil
 		}
 	}
 
-	private static OffsetDateTime setTime(OffsetDateTime dt, String strs[])
+	private static ZonedDateTime setTime(ZonedDateTime dt, String strs[])
 	{
 		int h;
 		int m;
@@ -69,7 +69,7 @@ public class DateTimeUtil
 			throw new IllegalArgumentException();
 		}
 	}
-	private static OffsetDateTime setTZ(OffsetDateTime dt, String tzStr)
+	private static ZonedDateTime setTZ(ZonedDateTime dt, String tzStr)
 	{
 		if (tzStr.length() == 6)
 		{
@@ -95,12 +95,12 @@ public class DateTimeUtil
 			{
 				throw new IllegalArgumentException();
 			}
-			dt.withOffsetSameLocal(ZoneOffset.ofTotalSeconds(min * 60));
+			dt.withZoneSameLocal(ZoneOffset.ofTotalSeconds(min * 60));
 		}
 		throw new IllegalArgumentException();
 	}
 
-	public static OffsetDateTime clearTime(OffsetDateTime dt)
+	public static ZonedDateTime clearTime(ZonedDateTime dt)
 	{
 		return dt.truncatedTo(ChronoUnit.DAYS);
 	}
@@ -115,6 +115,16 @@ public class DateTimeUtil
 		return Timestamp.valueOf(clearTime(ts.toLocalDateTime()));
 	}
 
+	public static LocalDateTime clearMs(LocalDateTime dt)
+	{
+		return dt.truncatedTo(ChronoUnit.SECONDS);
+	}
+
+	public static Timestamp clearMs(Timestamp ts)
+	{
+		return Timestamp.valueOf(clearMs(ts.toLocalDateTime()));
+	}
+
 	public static Timestamp toDayStart(Timestamp ts)
 	{
 		return clearTime(ts);
@@ -125,7 +135,7 @@ public class DateTimeUtil
 		return clearTime(dt);
 	}
 
-	public static OffsetDateTime toDayStart(OffsetDateTime dt)
+	public static ZonedDateTime toDayStart(ZonedDateTime dt)
 	{
 		return clearTime(dt);
 	}
@@ -140,12 +150,12 @@ public class DateTimeUtil
 		return clearTime(dt).plusDays(1).minusNanos(1);
 	}
 
-	public static OffsetDateTime toDayEnd(OffsetDateTime dt)
+	public static ZonedDateTime toDayEnd(ZonedDateTime dt)
 	{
 		return clearTime(dt).plusDays(1).minusNanos(1);
 	}
 
-	public static Timestamp toTimestamp(OffsetDateTime dt)
+	public static Timestamp toTimestamp(ZonedDateTime dt)
 	{
 		Timestamp ret = new Timestamp(dt.toInstant().toEpochMilli());
 		return ret;
@@ -210,7 +220,7 @@ public class DateTimeUtil
 		throw new IllegalArgumentException();
 	}
 
-	public static OffsetDateTime parse(String dateStr)
+	public static ZonedDateTime parse(String dateStr)
 	{
 		if (dateStr == null)
 			throw new IllegalArgumentException();
@@ -220,7 +230,7 @@ public class DateTimeUtil
 		{
 			dateStr = dateStr.substring(4).trim();
 		}
-		OffsetDateTime dt = OffsetDateTime.now();
+		ZonedDateTime dt = ZonedDateTime.now();
 		String strs2[] = dateStr.split(" ");
 		String strs[];
 		if (strs2.length == 1)
@@ -260,7 +270,7 @@ public class DateTimeUtil
 					if (strs[2].endsWith("Z"))
 					{
 						strs[2] = strs[2].substring(0, strs[2].length() - 1);
-						dt = dt.withOffsetSameLocal(ZoneOffset.UTC);
+						dt = dt.withZoneSameLocal(ZoneOffset.UTC);
 					}
 					dt = setTime(dt, strs);
 				}
@@ -335,7 +345,7 @@ public class DateTimeUtil
 			{
 				if (strs2[4].equals("GMT"))
 				{
-					dt = dt.withOffsetSameLocal(ZoneOffset.UTC);
+					dt = dt.withZoneSameLocal(ZoneOffset.UTC);
 				}
 				else if (strs2[4].length() == 5)
 				{
@@ -350,11 +360,11 @@ public class DateTimeUtil
 					}
 					if (strs2[4].startsWith("-"))
 					{
-						dt = dt.withOffsetSameLocal(ZoneOffset.ofTotalSeconds(-min * 60));
+						dt = dt.withZoneSameLocal(ZoneOffset.ofTotalSeconds(-min * 60));
 					}
 					else if (strs2[4].startsWith("+"))
 					{
-						dt = dt.withOffsetSameLocal(ZoneOffset.ofTotalSeconds(min * 60));
+						dt = dt.withZoneSameLocal(ZoneOffset.ofTotalSeconds(min * 60));
 					}
 				}
 				else
@@ -419,13 +429,36 @@ public class DateTimeUtil
 		return t;
 	}
 
-	public static LocalDateTime newLocalDateTime(long t, ZoneOffset zoneOffset)
+	public static ZonedDateTime newZonedDateTime(Timestamp ts)
 	{
-		return LocalDateTime.ofEpochSecond(t / 1000, (int)(t % 1000) * 1000000, zoneOffset);
+		return newZonedDateTime(ts.getTime());
 	}
 
-	public static LocalDateTime newLocalDateTime(long t, ZoneId zoneId)
+	public static ZonedDateTime newZonedDateTime(long t)
 	{
-		return LocalDateTime.ofInstant(Instant.ofEpochMilli(t), zoneId);
+		return ZonedDateTime.ofInstant(Instant.ofEpochMilli(t), ZoneId.systemDefault());
+	}
+
+	public static long getTimeMillis(ZonedDateTime t)
+	{
+		return t.toInstant().toEpochMilli();
+	}
+
+	public static boolean isSameMonth(ZonedDateTime t1, ZonedDateTime t2)
+	{
+		if (!t2.getZone().equals(t1.getZone()))
+		{
+			t2 = t2.withZoneSameInstant(t1.getZone());
+		}
+		return t1.getYear() == t2.getYear() && t1.getMonthValue() == t2.getMonthValue();
+	}
+
+	public static boolean isSameDay(ZonedDateTime t1, ZonedDateTime t2)
+	{
+		if (!t2.getZone().equals(t1.getZone()))
+		{
+			t2 = t2.withZoneSameInstant(t1.getZone());
+		}
+		return isSameMonth(t1, t2) && t1.getDayOfMonth() == t2.getDayOfMonth();
 	}
 }

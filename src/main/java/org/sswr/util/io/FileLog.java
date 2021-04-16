@@ -5,8 +5,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
 import org.sswr.util.data.DateTimeUtil;
@@ -21,12 +20,11 @@ public class FileLog implements LogHandler
 	private String fileName;
 	private String extName;
 	private boolean closed;
-	private ZoneId zoneId;
-
+	
 	private String getNewName(long logTime)
 	{
 		StringBuilder sb = new StringBuilder();
-		LocalDateTime time = DateTimeUtil.newLocalDateTime(logTime, this.zoneId);
+		ZonedDateTime time = DateTimeUtil.newZonedDateTime(logTime);
 
 		switch (this.groupStyle)
 		{
@@ -85,7 +83,7 @@ public class FileLog implements LogHandler
 		return sb.toString();
 	}
 
-	public FileLog(String fileName, LogType style, LogGroup groupStyle, String dateFormat, ZoneId zoneId)
+	public FileLog(String fileName, LogType style, LogGroup groupStyle, String dateFormat)
 	{
 		if (dateFormat != null)
 		{
@@ -95,7 +93,6 @@ public class FileLog implements LogHandler
 		{
 			this.dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss\t");
 		}
-		this.zoneId = zoneId;
 		this.logStyle = style;
 		this.groupStyle = groupStyle;
 		this.closed = false;
@@ -159,7 +156,7 @@ public class FileLog implements LogHandler
 	public synchronized void logAdded(long logTime, String logMsg, LogLevel logLev)
 	{
 		String newFile = null;
-		LocalDateTime time = DateTimeUtil.newLocalDateTime(logTime, this.zoneId);
+		ZonedDateTime time = DateTimeUtil.newZonedDateTime(logTime);
 	
 		if (this.logStyle == LogType.PER_DAY)
 		{
