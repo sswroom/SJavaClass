@@ -35,8 +35,9 @@ public class ActionFileStore implements Runnable, DBUpdateHandler {
 	private LocalDateTime lastEntryTime;
 	private FileWriter fs;
 	private LogTool logger;
+	private String packageName;
 
-	public ActionFileStore(String logPath, LogTool logger)
+	public ActionFileStore(String logPath, LogTool logger, String packageName)
 	{
 		this.entries = new ArrayList<LogEntry>();
 		this.threadRunning = false;
@@ -54,23 +55,27 @@ public class ActionFileStore implements Runnable, DBUpdateHandler {
 	}
 
 
-	public void logAction(String userName, ActionType actType, String fromData, String toData)
+	public void logAction(int stackSkip, String userName, ActionType actType, String fromData, String toData)
 	{
 		StackTraceElement[] stacks = Thread.currentThread().getStackTrace();
 		String className = null;
 		String funcName = null;
-		String packageName = this.getClass().getPackage().getName();
-		int i = packageName.lastIndexOf(".");
+		String utilPackage = this.getClass().getPackage().getName();
+		int i = utilPackage.lastIndexOf(".");
 		if (i >= 0)
 		{
-			packageName = packageName.substring(0, i);
+			utilPackage = utilPackage.substring(0, i);
 		}
 
-		i = 4;
+		i = stackSkip;
 		int j = stacks.length;
 		while (i < j)
 		{
-			if (stacks[i].getClassName().startsWith(packageName))
+			if (stacks[i].getClassName().startsWith(utilPackage))
+			{
+
+			}
+			else if (packageName == null || stacks[i].getClassName().startsWith(packageName))
 			{
 				className = stacks[i].getClassName();
 				funcName = stacks[i].getMethodName();
@@ -264,15 +269,15 @@ public class ActionFileStore implements Runnable, DBUpdateHandler {
 		}
 		else if (oldObj == null)
 		{
-			this.logAction(null, ActionFileStore.ActionType.CREATE, null, newObj.toString());
+			this.logAction(2, null, ActionFileStore.ActionType.CREATE, null, newObj.toString());
 		}
 		else if (newObj == null)
 		{
-			this.logAction(null, ActionFileStore.ActionType.DELETE, oldObj.toString(), null);
+			this.logAction(2, null, ActionFileStore.ActionType.DELETE, oldObj.toString(), null);
 		}
 		else
 		{
-			this.logAction(null, ActionFileStore.ActionType.UPDATE, oldObj.toString(), newObj.toString());
+			this.logAction(2, null, ActionFileStore.ActionType.UPDATE, oldObj.toString(), newObj.toString());
 		}
 	}
 }
