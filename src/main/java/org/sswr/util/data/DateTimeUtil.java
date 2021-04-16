@@ -155,6 +155,11 @@ public class DateTimeUtil
 		return clearTime(dt).plusDays(1).minusNanos(1);
 	}
 
+	public static ZonedDateTime toMonthStart(ZonedDateTime dt)
+	{
+		return clearTime(dt).withDayOfMonth(1);
+	}
+
 	public static Timestamp toTimestamp(ZonedDateTime dt)
 	{
 		Timestamp ret = new Timestamp(dt.toInstant().toEpochMilli());
