@@ -404,6 +404,11 @@ public class DateTimeUtil
 		return (t1.getTime() - t2.getTime()) / 86400000.0;
 	}
 
+	public static double calcDayDiff(ZonedDateTime t1, ZonedDateTime t2)
+	{
+		return (getTimeMillis(t1) - getTimeMillis(t2)) / 86400000.0;
+	}
+
 	public static Timestamp addSecond(Timestamp t, int secondDiff)
 	{
 		return Timestamp.valueOf(t.toLocalDateTime().plusSeconds(secondDiff));
@@ -420,6 +425,16 @@ public class DateTimeUtil
 	}
 
 	public static LocalDateTime toWeekdayBefore(LocalDateTime t, DayOfWeek weekday)
+	{
+		t = toDayStart(t);
+		while (t.getDayOfWeek() != weekday)
+		{
+			t = t.minusDays(1);
+		}
+		return t;
+	}
+
+	public static ZonedDateTime toWeekdayBefore(ZonedDateTime t, DayOfWeek weekday)
 	{
 		t = toDayStart(t);
 		while (t.getDayOfWeek() != weekday)
@@ -451,6 +466,17 @@ public class DateTimeUtil
 			t2 = t2.withZoneSameInstant(t1.getZone());
 		}
 		return t1.getYear() == t2.getYear() && t1.getMonthValue() == t2.getMonthValue();
+	}
+
+	public static boolean isSameWeek(ZonedDateTime t1, ZonedDateTime t2, DayOfWeek weekday)
+	{
+		if (!t2.getZone().equals(t1.getZone()))
+		{
+			t2 = t2.withZoneSameInstant(t1.getZone());
+		}
+		t1 = toWeekdayBefore(t1, weekday);
+		double diff = calcDayDiff(t2, t1);
+		return diff >= 0 && diff < 7;
 	}
 
 	public static boolean isSameDay(ZonedDateTime t1, ZonedDateTime t2)
