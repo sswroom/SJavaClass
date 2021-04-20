@@ -1,5 +1,6 @@
 package org.sswr.util.data;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -140,5 +141,17 @@ public class ReflectTools {
 		}
 
 		return typeList;
+	}
+
+	public static <T> Constructor<T> getEmptyConstructor(Class<T> cls)
+	{
+		try
+		{
+			return cls.getConstructor(new Class<?>[0]);
+		}
+		catch (NoSuchMethodException ex)
+		{
+			return null;
+		}
 	}
 }

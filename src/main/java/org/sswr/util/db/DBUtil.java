@@ -41,8 +41,10 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import org.sswr.util.data.DataTools;
+import org.sswr.util.data.FieldComparator;
 import org.sswr.util.data.FieldGetter;
 import org.sswr.util.data.FieldSetter;
+import org.sswr.util.data.ReflectTools;
 import org.sswr.util.io.LogLevel;
 import org.sswr.util.io.LogTool;
 
@@ -341,9 +343,24 @@ public class DBUtil {
 		}
 	}
 
-	public static void appendSelect(StringBuilder sb, List<DBColumnInfo> allCols, Table tableAnn)
+	public static PageStatus appendSelect(StringBuilder sb, List<DBColumnInfo> allCols, Table tableAnn, DBType dbType, int dataOfst, int dataCnt)
 	{
+		PageStatus status;
+		if (dataOfst == 0 && dataCnt == 0)
+		{
+			status = PageStatus.SUCC;
+		}
+		else
+		{
+			status = PageStatus.NO_PAGE;
+		}
 		sb.append("select ");
+		if (status == PageStatus.NO_PAGE && dbType == DBType.DT_ACCESS)
+		{
+			sb.append("TOP ");
+			sb.append(dataOfst + dataCnt);
+			status = PageStatus.NO_OFFSET;
+		}
 		int i = 0;
 		int j = allCols.size();
 		while (i < j)
@@ -357,6 +374,7 @@ public class DBUtil {
 		}
 		sb.append(" from ");
 		sb.append(getTableName(tableAnn));
+		return status;
 	}
 
 	public static Integer fillColVals(ResultSet rs, Object o, List<DBColumnInfo> allCols) throws IllegalAccessException, InvocationTargetException, SQLException
@@ -494,16 +512,11 @@ public class DBUtil {
 			throw new IllegalArgumentException("Class annotation is not valid");
 		}
 
-		Constructor<T> constr;
-		try
-		{
-			constr = cls.getConstructor(new Class<?>[0]);
-		}
-		catch (NoSuchMethodException ex)
+		Constructor<T> constr = ReflectTools.getEmptyConstructor(cls);
+		if (constr == null)
 		{
 			throw new IllegalArgumentException("No empty constructor found");
-		}
-
+		}		
 
 		ArrayList<DBColumnInfo> cols = new ArrayList<DBColumnInfo>();
 		ArrayList<DBColumnInfo> idCols = new ArrayList<DBColumnInfo>();
@@ -523,8 +536,9 @@ public class DBUtil {
 		}
 		DBColumnInfo idCol = idCols.get(0);
 
+		DBType dbType = connGetDBType(conn);
 		sb = new StringBuilder();
-		appendSelect(sb, cols, tableAnn);
+		appendSelect(sb, cols, tableAnn, dbType, 0, 0);
 
 		if (idSet != null && idSet.size() > 0)
 		{
@@ -591,6 +605,14 @@ public class DBUtil {
 	*/
 	public static <T> Map<Integer, T> loadItems(Class<T> cls, Connection conn, QueryConditions<T> conditions, List<String> joinFields)
 	{
+		return loadItemsIClass(cls, null, conn, conditions, joinFields);
+	}	
+
+	/*
+	* @param joinFields return fields which are joined with other tables, null = not returns
+	*/
+	public static <T> Map<Integer, T> loadItemsIClass(Class<T> cls, Object parent, Connection conn, QueryConditions<T> conditions, List<String> joinFields)
+	{
 		StringBuilder sb;
 		Table tableAnn = parseClassTable(cls);
 		if (tableAnn == null)
@@ -599,15 +621,26 @@ public class DBUtil {
 		}
 
 		Constructor<T> constr;
-		try
+		if (parent == null)
 		{
-			constr = cls.getConstructor(new Class<?>[0]);
+			constr = ReflectTools.getEmptyConstructor(cls);
 		}
-		catch (NoSuchMethodException ex)
+		else
 		{
-			throw new IllegalArgumentException("No empty constructor found");
+			try
+			{
+				constr = cls.getDeclaredConstructor(new Class<?>[]{parent.getClass()});
+			}
+			catch (NoSuchMethodException ex)
+			{
+				sqlLogger.logException(ex);
+				throw new IllegalArgumentException("No suitable constructor found");
+			}
 		}
-
+		if (constr == null)
+		{
+			throw new IllegalArgumentException("No suitable constructor found");
+		}
 
 		ArrayList<DBColumnInfo> cols = new ArrayList<DBColumnInfo>();
 		ArrayList<DBColumnInfo> idCols = new ArrayList<DBColumnInfo>();
@@ -626,13 +659,13 @@ public class DBUtil {
 			throw new IllegalArgumentException("No Id column found");
 		}
 
+		DBType dbType = connGetDBType(conn);
 		sb = new StringBuilder();
-		appendSelect(sb, cols, tableAnn);
+		appendSelect(sb, cols, tableAnn, dbType, 0, 0);
 
 		if (conditions != null)
 		{
 			Map<String, DBColumnInfo> colsMap = dbCols2Map(cols);
-			DBType dbType = connGetDBType(conn);
 			sb.append(" where ");
 			sb.append(conditions.toWhereClause(colsMap, dbType));
 		}
@@ -647,7 +680,15 @@ public class DBUtil {
 			{
 				try
 				{
-					T obj = constr.newInstance(new Object[0]);
+					T obj;
+					if (parent == null)
+					{
+						obj = constr.newInstance(new Object[0]);
+					}
+					else
+					{
+						obj = constr.newInstance(parent);
+					}
 					Integer id = fillColVals(rs, obj, cols);
 
 					if (id != null)
@@ -682,7 +723,7 @@ public class DBUtil {
 	/*
 	* @param joinFields return fields which are joined with other tables, null = not returns
 	*/
-	public static <T> Map<Integer, T> loadItemsIClass(Class<T> cls, Object parent, Connection conn, QueryConditions<T> conditions, List<String> joinFields)
+	public static <T> List<T> loadItemsAsList(Class<T> cls, Object parent, Connection conn, QueryConditions<T> conditions, List<String> joinFields, String sortString, int dataOfst, int dataCnt)
 	{
 		StringBuilder sb;
 		Table tableAnn = parseClassTable(cls);
@@ -692,25 +733,43 @@ public class DBUtil {
 		}
 
 		Constructor<T> constr;
-		try
+		if (parent == null)
 		{
-			Constructor<?>[] constrs = cls.getDeclaredConstructors();
-			System.out.println("Constr count = "+constrs.length);
-			int i = 0;
-			int j = constrs.length;
-			while (i < j)
-			{
-				System.out.println("Constr: "+constrs[i]);
-				i++;
-			}
-			constr = cls.getDeclaredConstructor(new Class<?>[]{parent.getClass()});
+			constr = ReflectTools.getEmptyConstructor(cls);
 		}
-		catch (NoSuchMethodException ex)
+		else
 		{
-			sqlLogger.logException(ex);
+			try
+			{
+				constr = cls.getDeclaredConstructor(new Class<?>[]{parent.getClass()});
+			}
+			catch (NoSuchMethodException ex)
+			{
+				sqlLogger.logException(ex);
+				throw new IllegalArgumentException("No suitable constructor found");
+			}
+		}
+		if (constr == null)
+		{
 			throw new IllegalArgumentException("No suitable constructor found");
 		}
-
+		FieldComparator<T> fieldComp;
+		if (sortString == null)
+		{
+			fieldComp = null;
+		}
+		else
+		{
+			try
+			{
+				fieldComp = new FieldComparator<T>(cls, sortString);
+			}
+			catch (NoSuchFieldException ex)
+			{
+				sqlLogger.logException(ex);
+				throw new IllegalArgumentException("sortString is not valid ("+sortString+")");
+			}
+		}
 
 		ArrayList<DBColumnInfo> cols = new ArrayList<DBColumnInfo>();
 		ArrayList<DBColumnInfo> idCols = new ArrayList<DBColumnInfo>();
@@ -720,24 +779,44 @@ public class DBUtil {
 		{
 			throw new IllegalArgumentException("No selectable column found");
 		}
-		if (idCols.size() > 1)
-		{
-			throw new IllegalArgumentException("Multiple id column found");
-		}
-		if (idCols.size() == 0)
-		{
-			throw new IllegalArgumentException("No Id column found");
-		}
 
+		DBType dbType = connGetDBType(conn);
+		Map<String, DBColumnInfo> colsMap = dbCols2Map(cols);
 		sb = new StringBuilder();
-		appendSelect(sb, cols, tableAnn);
+		PageStatus status = appendSelect(sb, cols, tableAnn, dbType, dataOfst, dataCnt);
 
 		if (conditions != null)
 		{
-			Map<String, DBColumnInfo> colsMap = dbCols2Map(cols);
-			DBType dbType = connGetDBType(conn);
 			sb.append(" where ");
 			sb.append(conditions.toWhereClause(colsMap, dbType));
+		}
+		if (fieldComp != null)
+		{
+			sb.append(" order by ");
+			sb.append(fieldComp.toOrderClause(colsMap, dbType));
+		}
+		if ((dataOfst != 0 || dataCnt != 0) && status != PageStatus.SUCC)
+		{
+			if (dbType == DBType.DT_MYSQL)
+			{
+				sb.append(" LIMIT ");
+				sb.append(dataOfst);
+				sb.append(", ");
+				sb.append(dataCnt);
+				status = PageStatus.SUCC;
+			}
+			else if (dbType == DBType.DT_MSSQL)
+			{
+				if (fieldComp != null)
+				{
+					sb.append(" offset ");
+					sb.append(dataOfst);
+					sb.append(" row fetch next ");
+					sb.append(dataCnt);
+					sb.append(" row only");
+					status = PageStatus.SUCC;
+				}
+			}
 		}
 		try
 		{
@@ -745,34 +824,63 @@ public class DBUtil {
 
 			PreparedStatement stmt = conn.prepareStatement(sb.toString());
 			ResultSet rs = stmt.executeQuery();
-			HashMap<Integer, T> retMap = new HashMap<Integer, T>();
+			ArrayList<T> retList = new ArrayList<T>();
+			if (status == PageStatus.SUCC)
+			{
+				dataOfst = 0;
+				dataCnt = Integer.MAX_VALUE;
+			}
+			else if (status == PageStatus.NO_OFFSET)
+			{
+				dataCnt = Integer.MAX_VALUE;
+			}
+			else if (status == PageStatus.NO_PAGE)
+			{
+
+			}
+
 			while (rs.next())
 			{
-				try
+				if (dataOfst > 0)
 				{
-					T obj = constr.newInstance(parent);
-					Integer id = fillColVals(rs, obj, cols);
-
-					if (id != null)
+					dataOfst--;
+				}
+				else if (dataCnt <= 0)
+				{
+					break;
+				}
+				else
+				{
+					try
 					{
-						retMap.put(id, obj);
+						T obj;
+						if (parent == null)
+						{
+							obj = constr.newInstance(new Object[0]);
+						}
+						else
+						{
+							obj = constr.newInstance(parent);
+						}
+						fillColVals(rs, obj, cols);
+						retList.add(obj);
 					}
-				}
-				catch (InvocationTargetException ex)
-				{
-					sqlLogger.logException(ex);
-				}
-				catch (InstantiationException ex)
-				{
-					sqlLogger.logException(ex);
-				}
-				catch (IllegalAccessException ex)
-				{
-					sqlLogger.logException(ex);
+					catch (InvocationTargetException ex)
+					{
+						sqlLogger.logException(ex);
+					}
+					catch (InstantiationException ex)
+					{
+						sqlLogger.logException(ex);
+					}
+					catch (IllegalAccessException ex)
+					{
+						sqlLogger.logException(ex);
+					}
 				}
 			}
 			rs.close();
-			return retMap;
+			return retList;
 		}
 		catch (SQLException ex)
 		{
@@ -824,7 +932,7 @@ public class DBUtil {
 		DBColumnInfo idCol = idCols.get(0);
 
 		sb = new StringBuilder();
-		appendSelect(sb, cols, tableAnn);
+		appendSelect(sb, cols, tableAnn, dbType, 0, 0);
 
 		sb.append(" where ");
 		sb.append(idCol.colName);

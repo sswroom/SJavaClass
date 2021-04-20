@@ -2,9 +2,14 @@ package org.sswr.util.data;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Comparator;
+import java.util.Map;
+
+import org.sswr.util.db.DBColumnInfo;
+import org.sswr.util.db.DBUtil;
 
 public class FieldComparator<T> implements Comparator<T>
 {
+	private String fieldNames[];
 	private Object getters[];
 	private int dirs[];
 	public FieldComparator(Class<?> cls, String compareConds) throws NoSuchFieldException
@@ -13,6 +18,7 @@ public class FieldComparator<T> implements Comparator<T>
 		String cond[];
 		getters = new Object[conds.length];
 		dirs = new int[conds.length];
+		fieldNames = new String[conds.length];
 		int i = 0;
 		int j = conds.length;
 		while (i < j)
@@ -39,6 +45,7 @@ public class FieldComparator<T> implements Comparator<T>
 					throw new IllegalArgumentException("\""+conds[i]+"\" is not supported");
 				}
 			}
+			fieldNames[i] = cond[0];
 			getters[i] = new FieldGetter<T>(cls, cond[0]);
 			i++;
 		}
@@ -73,5 +80,27 @@ public class FieldComparator<T> implements Comparator<T>
 		{
 			throw new ClassCastException(ex.getMessage());
 		}
+	}
+
+	public String toOrderClause(Map<String, DBColumnInfo> colsMap, DBUtil.DBType dbType)
+	{
+		StringBuilder sb = new StringBuilder();
+		int i = 0;
+		int j  = this.getters.length;
+		while (i < j)
+		{
+			if (i > 0)
+			{
+				sb.append(", ");
+			}
+			DBColumnInfo col = colsMap.get(this.fieldNames[i]);
+			sb.append(col.colName);
+			if (this.dirs[i] == -1)
+			{
+				sb.append(" desc");
+			}
+			i++;
+		}
+		return sb.toString();
 	}
 }
