@@ -53,7 +53,7 @@ public class QueryConditions<T>
 		{
 			StringBuilder sb = new StringBuilder();
 			DBColumnInfo col = colsMap.get(this.fieldName);
-			sb.append(col.colName);
+			sb.append(DBUtil.dbCol(dbType, col.colName));
 			sb.append(" between ");
 			sb.append(DBUtil.dbTime(dbType, t1));
 			sb.append(" and ");
@@ -121,7 +121,7 @@ public class QueryConditions<T>
 		{
 			StringBuilder sb = new StringBuilder();
 			DBColumnInfo col = colsMap.get(this.fieldName);
-			sb.append(col.colName);
+			sb.append(DBUtil.dbCol(dbType, col.colName));
 			if (val == null)
 			{
 				if (cond != CompareCondition.NOT_EQUAL)
@@ -206,7 +206,7 @@ public class QueryConditions<T>
 		{
 			StringBuilder sb = new StringBuilder();
 			DBColumnInfo col = colsMap.get(this.fieldName);
-			sb.append(col.colName);
+			sb.append(DBUtil.dbCol(dbType, col.colName));
 			sb.append(" in (");
 			sb.append(DataTools.intJoin(vals, ", "));
 			sb.append(")");
@@ -261,7 +261,7 @@ public class QueryConditions<T>
 		{
 			StringBuilder sb = new StringBuilder();
 			DBColumnInfo col = colsMap.get(this.fieldName);
-			sb.append(col.colName);
+			sb.append(DBUtil.dbCol(dbType, col.colName));
 			if (val == null)
 			{
 				if (cond != CompareCondition.NOT_EQUAL)
@@ -337,7 +337,7 @@ public class QueryConditions<T>
 		{
 			StringBuilder sb = new StringBuilder();
 			DBColumnInfo col = colsMap.get(this.fieldName);
-			sb.append(col.colName);
+			sb.append(DBUtil.dbCol(dbType, col.colName));
 			Iterator<String> it = this.vals.iterator();
 			if (it.hasNext())
 			{
@@ -391,7 +391,7 @@ public class QueryConditions<T>
 		{
 			StringBuilder sb = new StringBuilder();
 			DBColumnInfo col = colsMap.get(this.fieldName);
-			sb.append(col.colName);
+			sb.append(DBUtil.dbCol(dbType, col.colName));
 			sb.append(" like ");
 			sb.append(DBUtil.dbStr(dbType, "%"+this.val+"%"));
 			return sb.toString();
@@ -436,7 +436,7 @@ public class QueryConditions<T>
 		{
 			StringBuilder sb = new StringBuilder();
 			DBColumnInfo col = colsMap.get(this.fieldName);
-			sb.append(col.colName);
+			sb.append(DBUtil.dbCol(dbType, col.colName));
 			sb.append(" = ");
 			sb.append(DBUtil.dbStr(dbType, this.val));
 			return sb.toString();
@@ -483,7 +483,7 @@ public class QueryConditions<T>
 		{
 			StringBuilder sb = new StringBuilder();
 			DBColumnInfo col = colsMap.get(this.fieldName);
-			sb.append(col.colName);
+			sb.append(DBUtil.dbCol(dbType, col.colName));
 			if (this.cond == CompareCondition.EQUAL)
 			{
 				if (val == null)
@@ -577,7 +577,7 @@ public class QueryConditions<T>
 		{
 			StringBuilder sb = new StringBuilder();
 			DBColumnInfo col = colsMap.get(this.fieldName);
-			sb.append(col.colName);
+			sb.append(DBUtil.dbCol(dbType, col.colName));
 			Iterator<Enum<?>> it = vals.iterator();
 			if (!it.hasNext())
 			{
@@ -662,7 +662,7 @@ public class QueryConditions<T>
 			{
 				sb.append("NOT ");
 			}
-			sb.append(col.colName);
+			sb.append(DBUtil.dbCol(dbType, col.colName));
 			return sb.toString();
 		}
 
@@ -689,7 +689,7 @@ public class QueryConditions<T>
 		{
 			StringBuilder sb = new StringBuilder();
 			DBColumnInfo col = colsMap.get(this.fieldName);
-			sb.append(col.colName);
+			sb.append(DBUtil.dbCol(dbType, col.colName));
 			sb.append(" is not null");
 			return sb.toString();
 		}

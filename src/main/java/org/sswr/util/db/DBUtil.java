@@ -82,6 +82,10 @@ public class DBUtil {
 		{
 			return DBType.DT_MSSQL;
 		}
+		else if (clsName.startsWith("com.mysql.cj.jdbc.ConnectionImpl"))
+		{
+			return DBType.DT_MYSQL;
+		}
 		else
 		{
 			sqlLogger.logMessage("DB class = "+clsName, LogLevel.ERROR);
@@ -276,20 +280,48 @@ public class DBUtil {
 		return tableAnn;
 	}
 
-	private static String getTableName(Table table)
+	private static String uncol(String name)
+	{
+		if (name.startsWith("[") && name.endsWith("]"))
+		{
+			return name.substring(1, name.length() - 1);
+		}
+		if (name.startsWith("`") && name.endsWith("`"))
+		{
+			return name.substring(1, name.length() - 1);
+		}
+		return name;
+	}
+
+	private static String getTableName(Table table, DBType dbType)
 	{
 		StringBuilder sb = new StringBuilder();
-		if (!table.catalog().equals(""))
+		String catalog = uncol(table.catalog());
+		String schema = uncol(table.schema());
+		String tableName = uncol(table.name());
+		if (dbType == DBType.DT_MYSQL)
 		{
-			sb.append(table.catalog());
-			sb.append('.');
+			if (!catalog.equals(""))
+			{
+				sb.append(dbCol(dbType, catalog));
+				sb.append('.');
+			}
+			sb.append(dbCol(dbType, tableName));
 		}
-		if (!table.schema().equals(""))
+		else
 		{
-			sb.append(table.schema());
-			sb.append('.');
+			if (!catalog.equals(""))
+			{
+				sb.append(dbCol(dbType, catalog));
+				sb.append('.');
+			}
+			if (!schema.equals(""))
+			{
+				sb.append(dbCol(dbType, schema));
+				sb.append('.');
+			}
+			sb.append(dbCol(dbType, tableName));
 		}
-		sb.append(table.name());
 		return sb.toString();
 	}
 
@@ -369,11 +401,11 @@ public class DBUtil {
 			{
 				sb.append(", ");
 			}
-			sb.append(allCols.get(i).colName);
+			sb.append(dbCol(dbType, allCols.get(i).colName));
 			i++;
 		}
 		sb.append(" from ");
-		sb.append(getTableName(tableAnn));
+		sb.append(getTableName(tableAnn, dbType));
 		return status;
 	}
 
@@ -1683,6 +1715,23 @@ public class DBUtil {
 		return "?";
 	}
 
+
+	public static String dbCol(DBType dbType, String val)
+	{
+		if (dbType == DBType.DT_MYSQL)
+		{
+			return "`"+val+"`";
+		}
+		else if (dbType == DBType.DT_MSSQL)
+		{
+			return "["+val+"]";
+		}
+		else
+		{
+			return val;
+		}
+	}
+
 	public static int getLastIdentity32(Connection conn)
 	{
 		DBType dbType = connGetDBType(conn);
@@ -1753,7 +1802,7 @@ public class DBUtil {
 				}
 				sb = new StringBuilder();
 				sb.append("delete from ");
-				sb.append(getTableName(tableAnn));
+				sb.append(getTableName(tableAnn, dbType));
 				sb.append(" where ");
 				i = 0;
 				j = targetIdCols.size();
@@ -1764,7 +1813,7 @@ public class DBUtil {
 					{
 						sb.append(" and ");
 					}
-					sb.append(col.colName);
+					sb.append(dbCol(dbType, col.colName));
 					sb.append(" = ");
 					sb.append(dbVal(dbType, col, col.getter.get(oriObj)));
 					i++;
@@ -1780,7 +1829,7 @@ public class DBUtil {
 			{
 				sb = new StringBuilder();
 				sb.append("insert into ");
-				sb.append(getTableName(tableAnn));
+				sb.append(getTableName(tableAnn, dbType));
 				sb.append(" (");
 				boolean found = false;
 				i = 0;
@@ -1795,7 +1844,7 @@ public class DBUtil {
 							sb.append(", ");
 						}
 						found = true;
-						sb.append(col.colName);
+						sb.append(dbCol(dbType, col.colName));
 					}
 					i++;
 				}
@@ -1842,7 +1891,7 @@ public class DBUtil {
 				boolean found = false;
 				sb = new StringBuilder();
 				sb.append("update ");
-				sb.append(getTableName(tableAnn));
+				sb.append(getTableName(tableAnn, dbType));
 				sb.append(" set ");
 				i = 0;
 				j = targetCols.size();
@@ -1857,7 +1906,7 @@ public class DBUtil {
 						{
 							sb.append(", ");
 						}
-						sb.append(col.colName);
+						sb.append(dbCol(dbType, col.colName));
 						sb.append(" = ");
 						sb.append(dbVal(dbType, col, o2));
 						found = true;
@@ -1878,7 +1927,7 @@ public class DBUtil {
 					{
 						sb.append(" and ");
 					}
-					sb.append(col.colName);
+					sb.append(dbCol(dbType, col.colName));
 					sb.append(" = ");
 					sb.append(dbVal(dbType, col, col.getter.get(oriObj)));
 					i++;

@@ -94,7 +94,7 @@ public class FieldComparator<T> implements Comparator<T>
 				sb.append(", ");
 			}
 			DBColumnInfo col = colsMap.get(this.fieldNames[i]);
-			sb.append(col.colName);
+			sb.append(DBUtil.dbCol(dbType, col.colName));
 			if (this.dirs[i] == -1)
 			{
 				sb.append(" desc");
