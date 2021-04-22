@@ -44,7 +44,34 @@ public class IniFile
 				i = s.indexOf("=");
 				if (i >= 0)
 				{
-					cfg.setValue(cate, s.substring(0, i), s.substring(i + 1));
+					String key = s.substring(0, i);
+					String val = s.substring(i + 1);
+					i = 0;
+					while ((i = val.indexOf("\\", i)) >= 0)
+					{
+						if (i + 1 < val.length())
+						{
+							char c = val.charAt(i + 1);
+							if (c == 'r')
+							{
+								val = val.substring(0, i) + "\r" + val.substring(i + 2);
+							}
+							else if (c == 'n')
+							{
+								val = val.substring(0, i) + "\n" + val.substring(i + 2);
+							}
+							else if (c == 't')
+							{
+								val = val.substring(0, i) + "\t" + val.substring(i + 2);
+							}
+							else
+							{
+								val = val.substring(0, i) + c + val.substring(i + 2);
+							}
+							i++;
+						}
+					}
+					cfg.setValue(cate, key, val);
 				}
 			}
 		}
