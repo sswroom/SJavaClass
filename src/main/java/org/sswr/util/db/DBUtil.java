@@ -1,5 +1,6 @@
 package org.sswr.util.db;
 
+import java.io.File;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -9,6 +10,7 @@ import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -85,6 +87,10 @@ public class DBUtil {
 		else if (clsName.startsWith("com.mysql.cj.jdbc.ConnectionImpl"))
 		{
 			return DBType.DT_MYSQL;
+		}
+		else if (clsName.startsWith("net.ucanaccess.jdbc.UcanaccessConnection"))
+		{
+			return DBType.DT_ACCESS;
 		}
 		else
 		{
@@ -1722,7 +1728,7 @@ public class DBUtil {
 		{
 			return "`"+val+"`";
 		}
-		else if (dbType == DBType.DT_MSSQL)
+		else if (dbType == DBType.DT_MSSQL || dbType == DBType.DT_ACCESS)
 		{
 			return "["+val+"]";
 		}
@@ -1982,6 +1988,28 @@ public class DBUtil {
 		{
 			sqlLogger.logException(ex);
 			return false;
+		}
+	}
+
+	public static Connection openAccessFile(String accessPath)
+	{
+		String jdbcStr;
+		if (File.separatorChar == '\\')
+		{
+			jdbcStr = "jdbc:ucanaccess://"+accessPath.replace("\\", "/");
+		}
+		else
+		{
+			jdbcStr = "jdbc:ucanaccess://"+accessPath;
+		}
+		try
+		{
+			return DriverManager.getConnection(jdbcStr);
+		}
+		catch (SQLException ex)
+		{
+			sqlLogger.logException(ex);
+			return null;
 		}
 	}
 }
