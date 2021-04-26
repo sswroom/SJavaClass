@@ -1,6 +1,8 @@
 package org.sswr.util.io;
 
 import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -116,6 +118,8 @@ public class LogTool
 
 	public void logException(Exception ex)
 	{
-		this.logMessage(ex.toString(), LogLevel.ERR_DETAIL);
+		StringWriter writer = new StringWriter();
+		ex.printStackTrace(new PrintWriter(writer));
+		this.logMessage(writer.toString(), LogLevel.ERR_DETAIL);
 	}
 }
