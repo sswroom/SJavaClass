@@ -1,5 +1,6 @@
 package org.sswr.util.db;
 
+import java.io.File;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -9,6 +10,7 @@ import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -40,11 +42,16 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.io.ParseException;
+import org.locationtech.jts.io.WKBReader;
+import org.locationtech.jts.io.WKBWriter;
 import org.sswr.util.data.DataTools;
 import org.sswr.util.data.FieldComparator;
 import org.sswr.util.data.FieldGetter;
 import org.sswr.util.data.FieldSetter;
 import org.sswr.util.data.ReflectTools;
+import org.sswr.util.data.StringUtil;
 import org.sswr.util.io.LogLevel;
 import org.sswr.util.io.LogTool;
 
@@ -85,6 +92,10 @@ public class DBUtil {
 		else if (clsName.startsWith("com.mysql.cj.jdbc.ConnectionImpl"))
 		{
 			return DBType.DT_MYSQL;
+		}
+		else if (clsName.startsWith("net.ucanaccess.jdbc.UcanaccessConnection"))
+		{
+			return DBType.DT_ACCESS;
 		}
 		else
 		{
@@ -521,6 +532,18 @@ public class DBUtil {
 			else if (fieldType.equals(String.class))
 			{
 				col.setter.set(o, rs.getString(i + 1));
+			}
+			else if (fieldType.equals(Geometry.class))
+			{
+				WKBReader reader = new WKBReader();
+				try
+				{
+					col.setter.set(o, reader.read(rs.getBytes(i + 1)));
+				}
+				catch (ParseException ex)
+				{
+					sqlLogger.logException(ex);
+				}
 			}
 			else
 			{
@@ -1648,6 +1671,26 @@ public class DBUtil {
 		}
 	}
 
+	public static String dbBin(DBType dbType, byte val[])
+	{
+		if (val == null)
+		{
+			return "null";
+		}
+		if (dbType == DBType.DT_MYSQL || dbType == DBType.DT_SQLITE)
+		{
+			return "x'"+StringUtil.toHex(val)+"'";
+		}
+		else if (dbType == DBType.DT_MSSQL)
+		{
+			return "0x"+StringUtil.toHex(val);
+		}
+		else
+		{
+			return "''";
+		}
+	}
+
 	public static String dbVal(DBType dbType, DBColumnInfo col, Object val)
 	{
 		if (val == null)
@@ -1671,6 +1714,14 @@ public class DBUtil {
 			if (val instanceof Double)
 			{
 				return ((Double)val).toString();
+			}
+		}
+		else if (fieldType.equals(Geometry.class))
+		{
+			if (val instanceof Geometry)
+			{
+				WKBWriter writer = new WKBWriter();
+				return dbBin(dbType, writer.write((Geometry)val));
 			}
 		}
 		if (fieldType.equals(String.class) && val.getClass().equals(String.class))
@@ -1722,7 +1773,7 @@ public class DBUtil {
 		{
 			return "`"+val+"`";
 		}
-		else if (dbType == DBType.DT_MSSQL)
+		else if (dbType == DBType.DT_MSSQL || dbType == DBType.DT_ACCESS)
 		{
 			return "["+val+"]";
 		}
@@ -1982,6 +2033,28 @@ public class DBUtil {
 		{
 			sqlLogger.logException(ex);
 			return false;
+		}
+	}
+
+	public static Connection openAccessFile(String accessPath)
+	{
+		String jdbcStr;
+		if (File.separatorChar == '\\')
+		{
+			jdbcStr = "jdbc:ucanaccess://"+accessPath.replace("\\", "/");
+		}
+		else
+		{
+			jdbcStr = "jdbc:ucanaccess://"+accessPath;
+		}
+		try
+		{
+			return DriverManager.getConnection(jdbcStr);
+		}
+		catch (SQLException ex)
+		{
+			sqlLogger.logException(ex);
+			return null;
 		}
 	}
 }
