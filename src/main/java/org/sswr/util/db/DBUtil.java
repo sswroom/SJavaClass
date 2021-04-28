@@ -46,10 +46,12 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKBReader;
 import org.locationtech.jts.io.WKBWriter;
+import org.locationtech.jts.io.WKTWriter;
 import org.sswr.util.data.DataTools;
 import org.sswr.util.data.FieldComparator;
 import org.sswr.util.data.FieldGetter;
 import org.sswr.util.data.FieldSetter;
+import org.sswr.util.data.MSGeography;
 import org.sswr.util.data.ReflectTools;
 import org.sswr.util.data.StringUtil;
 import org.sswr.util.io.LogLevel;
@@ -291,7 +293,7 @@ public class DBUtil {
 		return tableAnn;
 	}
 
-	private static String uncol(String name)
+	public static String uncol(String name)
 	{
 		if (name.startsWith("[") && name.endsWith("]"))
 		{
@@ -420,7 +422,7 @@ public class DBUtil {
 		return status;
 	}
 
-	public static Integer fillColVals(ResultSet rs, Object o, List<DBColumnInfo> allCols) throws IllegalAccessException, InvocationTargetException, SQLException
+	public static Integer fillColVals(DBType dbType, ResultSet rs, Object o, List<DBColumnInfo> allCols) throws IllegalAccessException, InvocationTargetException, SQLException
 	{
 		Class<?> fieldType;
 		Integer id = null;
@@ -535,14 +537,22 @@ public class DBUtil {
 			}
 			else if (fieldType.equals(Geometry.class))
 			{
-				WKBReader reader = new WKBReader();
-				try
+				byte bytes[] = rs.getBytes(i + 1);
+				if (dbType == DBType.DT_MSSQL)
 				{
-					col.setter.set(o, reader.read(rs.getBytes(i + 1)));
+					col.setter.set(o, MSGeography.parseBinary(bytes));
 				}
-				catch (ParseException ex)
+				else
 				{
-					sqlLogger.logException(ex);
+					WKBReader reader = new WKBReader();
+					try
+					{
+						col.setter.set(o, reader.read(bytes));
+					}
+					catch (ParseException ex)
+					{
+						sqlLogger.logException(ex);
+					}
 				}
 			}
 			else
@@ -625,7 +635,7 @@ public class DBUtil {
 				try
 				{
 					T obj = constr.newInstance(new Object[0]);
-					Integer id = fillColVals(rs, obj, cols);
+					Integer id = fillColVals(dbType, rs, obj, cols);
 
 					if (id != null)
 					{
@@ -744,7 +754,7 @@ public class DBUtil {
 					{
 						obj = constr.newInstance(parent);
 					}
-					Integer id = fillColVals(rs, obj, cols);
+					Integer id = fillColVals(dbType, rs, obj, cols);
 
 					if (id != null)
 					{
@@ -917,7 +927,7 @@ public class DBUtil {
 						{
 							obj = constr.newInstance(parent);
 						}
-						fillColVals(rs, obj, cols);
+						fillColVals(dbType, rs, obj, cols);
 						retList.add(obj);
 					}
 					catch (InvocationTargetException ex)
@@ -1004,7 +1014,7 @@ public class DBUtil {
 				try
 				{
 					ret = constr.newInstance(new Object[0]);
-					fillColVals(rs, ret, cols);
+					fillColVals(dbType, rs, ret, cols);
 				}
 				catch (InvocationTargetException ex)
 				{
@@ -1691,6 +1701,25 @@ public class DBUtil {
 		}
 	}
 
+	public static String dbGeometry(DBType dbType, Geometry geometry)
+	{
+		if (dbType == DBType.DT_MYSQL)
+		{
+			WKTWriter writer = new WKTWriter();
+			return "ST_GeomFromText('"+writer.write(geometry)+"', "+geometry.getSRID()+")";
+		}
+		else if (dbType == DBType.DT_MSSQL)
+		{
+			WKTWriter writer = new WKTWriter();
+			return "geometry::STGeomFromText('"+writer.write(geometry)+"', "+geometry.getSRID()+")";
+		}
+		else
+		{
+			WKBWriter writer = new WKBWriter();
+			return dbBin(dbType, writer.write(geometry));
+		}
+	}
+
 	public static String dbVal(DBType dbType, DBColumnInfo col, Object val)
 	{
 		if (val == null)
@@ -1720,8 +1749,7 @@ public class DBUtil {
 		{
 			if (val instanceof Geometry)
 			{
-				WKBWriter writer = new WKBWriter();
-				return dbBin(dbType, writer.write((Geometry)val));
+				return dbGeometry(dbType, (Geometry)val);
 			}
 		}
 		if (fieldType.equals(String.class) && val.getClass().equals(String.class))

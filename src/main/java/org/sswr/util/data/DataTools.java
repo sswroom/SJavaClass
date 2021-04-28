@@ -92,7 +92,7 @@ public class DataTools {
 		Iterator<T> it = objs.iterator();
 		if (!it.hasNext())
 		{
-			return Collections.emptySet();
+			return new HashSet<String>();
 		}
 		HashSet<String> strSet = new HashSet<String>();
 		T obj = it.next();
@@ -156,7 +156,7 @@ public class DataTools {
 		Iterator<T> it = objs.iterator();
 		if (!it.hasNext())
 		{
-			return Collections.emptySet();
+			return new HashSet<Timestamp>();
 		}
 		HashSet<Timestamp> tsSet = new HashSet<Timestamp>();
 		T obj = it.next();
@@ -340,7 +340,7 @@ public class DataTools {
 		Iterator<T> it = objs.iterator();
 		if (!it.hasNext())
 		{
-			return Collections.emptyList();
+			return new ArrayList<K>();
 		}
 		ArrayList<K> valueList = new ArrayList<K>();
 		T obj = it.next();
@@ -417,7 +417,7 @@ public class DataTools {
 		Iterator<T> it = objs.iterator();
 		if (!it.hasNext())
 		{
-			return Collections.emptySet();
+			return new HashSet<K>();
 		}
 		Set<K> valueSet = new HashSet<K>();
 		T obj = it.next();
@@ -494,7 +494,7 @@ public class DataTools {
 		Iterator<T> it = objs.iterator();
 		if (!it.hasNext())
 		{
-			return Collections.emptyMap();
+			return new HashMap<K, T>();
 		}
 		Map<K, T> valueMap = new HashMap<K, T>();
 		T obj = it.next();
