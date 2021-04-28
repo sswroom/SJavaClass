@@ -46,11 +46,11 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKBReader;
 import org.locationtech.jts.io.WKBWriter;
-import org.locationtech.jts.io.WKTWriter;
 import org.sswr.util.data.DataTools;
 import org.sswr.util.data.FieldComparator;
 import org.sswr.util.data.FieldGetter;
 import org.sswr.util.data.FieldSetter;
+import org.sswr.util.data.GeometryUtil;
 import org.sswr.util.data.MSGeography;
 import org.sswr.util.data.ReflectTools;
 import org.sswr.util.data.StringUtil;
@@ -512,6 +512,15 @@ public class DBUtil {
 				{
 					id = v;
 				}
+			}
+			else if (fieldType.equals(Long.class))
+			{
+				Long v = rs.getLong(i + 1);
+				if (rs.wasNull())
+				{
+					v = null;
+				}
+				col.setter.set(o, v);
 			}
 			else if (fieldType.equals(double.class))
 			{
@@ -1641,7 +1650,7 @@ public class DBUtil {
 		else if (dbType == DBType.DT_MSSQL)
 		{
 			val = val.replace("\\", "\\\\");
-			val = val.replace("\'", "\\\'");
+			val = val.replace("\'", "\'\'");
 			return "N'"+val+"'";
 		}
 		else if (dbType == DBType.DT_ACCESS)
@@ -1705,13 +1714,11 @@ public class DBUtil {
 	{
 		if (dbType == DBType.DT_MYSQL)
 		{
-			WKTWriter writer = new WKTWriter();
-			return "ST_GeomFromText('"+writer.write(geometry)+"', "+geometry.getSRID()+")";
+			return "ST_GeomFromText('"+GeometryUtil.toWKT(geometry)+"', "+geometry.getSRID()+")";
 		}
 		else if (dbType == DBType.DT_MSSQL)
 		{
-			WKTWriter writer = new WKTWriter();
-			return "geometry::STGeomFromText('"+writer.write(geometry)+"', "+geometry.getSRID()+")";
+			return "geometry::STGeomFromText('"+GeometryUtil.toWKT(geometry)+"', "+geometry.getSRID()+")";
 		}
 		else
 		{
