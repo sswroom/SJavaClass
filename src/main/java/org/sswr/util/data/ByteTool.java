@@ -26,4 +26,9 @@ public class ByteTool {
 	{
 		return Double.longBitsToDouble(readLong(buff, index));
 	}
+
+	public static long combineToLong(int lo, int hi)
+	{
+		return (0xffffffffL & (long)lo) | (((long)hi) << 32);
+	}
 }
