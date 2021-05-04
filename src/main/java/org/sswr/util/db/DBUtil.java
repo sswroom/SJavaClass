@@ -68,6 +68,7 @@ public class DBUtil {
 		DT_ORACLE
 	}
 
+	public static final int MAX_SQL_ITEMS = 100;
 	private static DBUpdateHandler updateHandler = null;
 	private static LogTool sqlLogger = new LogTool();
 
@@ -614,7 +615,7 @@ public class DBUtil {
 		sb = new StringBuilder();
 		appendSelect(sb, cols, tableAnn, dbType, 0, 0);
 
-		if (idSet != null && idSet.size() > 0)
+		if (idSet != null && idSet.size() > 0 && idSet.size() <= MAX_SQL_ITEMS)
 		{
 			Iterator<Integer> it = idSet.iterator();
 			boolean hasFirst = false;
@@ -646,7 +647,7 @@ public class DBUtil {
 					T obj = constr.newInstance(new Object[0]);
 					Integer id = fillColVals(dbType, rs, obj, cols);
 
-					if (id != null)
+					if (id != null && idSet.contains(id))
 					{
 						retMap.put(id, obj);
 					}
@@ -1118,6 +1119,7 @@ public class DBUtil {
 			}
 			i++;
 		}
+		boolean clientCheck = false;
 		Class<?> fieldType = field.getType();
 		if (elemColl != null && collTab != null && column != null)
 		{
@@ -1142,11 +1144,18 @@ public class DBUtil {
 					sb.append('.');
 				}
 				sb.append(collTab.name());
-				sb.append(" where ");
-				sb.append(idName);
-				sb.append(" in (");
-				sb.append(DataTools.intJoin(objMap.keySet(), ", "));
-				sb.append(")");
+				if (objMap.size() > MAX_SQL_ITEMS)
+				{
+					clientCheck = true;
+				}
+				else
+				{
+					sb.append(" where ");
+					sb.append(idName);
+					sb.append(" in (");
+					sb.append(DataTools.intJoin(objMap.keySet(), ", "));
+					sb.append(")");
+				}
 				try
 				{
 					sqlLogger.logMessage(sb.toString(), LogLevel.COMMAND);
@@ -1367,11 +1376,18 @@ public class DBUtil {
 				sb.append('.');
 			}
 			sb.append(mapJoinTable.name());
-			sb.append(" where ");
-			sb.append(idName);
-			sb.append(" in (");
-			sb.append(DataTools.intJoin(idSet, ", "));
-			sb.append(")");
+			if (idSet.size() > MAX_SQL_ITEMS)
+			{
+				clientCheck = true;
+			}
+			else
+			{
+				sb.append(" where ");
+				sb.append(idName);
+				sb.append(" in (");
+				sb.append(DataTools.intJoin(idSet, ", "));
+				sb.append(")");
+			}
 			List<JoinItem> joinItemList = new ArrayList<JoinItem>();
 			JoinItem joinItem;
 			try
@@ -1383,10 +1399,13 @@ public class DBUtil {
 				rs = stmt.executeQuery();
 				while (rs.next())
 				{
-					joinItem = new JoinItem();
-					joinItem.id = rs.getInt(1);
-					joinItem.joinId = rs.getInt(2);
-					joinItemList.add(joinItem);
+					if (!clientCheck || idSet.contains(rs.getInt(1)))
+					{
+						joinItem = new JoinItem();
+						joinItem.id = rs.getInt(1);
+						joinItem.joinId = rs.getInt(2);
+						joinItemList.add(joinItem);
+					}
 				}
 				rs.close();
 				stmt.close();
