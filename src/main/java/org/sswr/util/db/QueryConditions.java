@@ -20,10 +20,9 @@ public class QueryConditions<T>
 {
 	public abstract class Condition
 	{
-		public abstract String toWhereClause(Map<String, DBColumnInfo> colsMap, DBUtil.DBType dbType);
+		public abstract String toWhereClause(Map<String, DBColumnInfo> colsMap, DBUtil.DBType dbType, int maxDbItem);
 		public abstract boolean isValid(T obj) throws IllegalAccessException, InvocationTargetException;
 	}
-
 
 	public class TimeBetweenCondition extends Condition
 	{
@@ -49,7 +48,7 @@ public class QueryConditions<T>
 			}
 		}
 
-		public String toWhereClause(Map<String, DBColumnInfo> colsMap, DBUtil.DBType dbType)
+		public String toWhereClause(Map<String, DBColumnInfo> colsMap, DBUtil.DBType dbType, int maxDbItem)
 		{
 			StringBuilder sb = new StringBuilder();
 			DBColumnInfo col = colsMap.get(this.fieldName);
@@ -117,7 +116,7 @@ public class QueryConditions<T>
 			return this.cond;
 		}
 
-		public String toWhereClause(Map<String, DBColumnInfo> colsMap, DBUtil.DBType dbType)
+		public String toWhereClause(Map<String, DBColumnInfo> colsMap, DBUtil.DBType dbType, int maxDbItem)
 		{
 			StringBuilder sb = new StringBuilder();
 			DBColumnInfo col = colsMap.get(this.fieldName);
@@ -202,15 +201,22 @@ public class QueryConditions<T>
 			}
 		}
 
-		public String toWhereClause(Map<String, DBColumnInfo> colsMap, DBUtil.DBType dbType)
+		public String toWhereClause(Map<String, DBColumnInfo> colsMap, DBUtil.DBType dbType, int maxDbItem)
 		{
-			StringBuilder sb = new StringBuilder();
-			DBColumnInfo col = colsMap.get(this.fieldName);
-			sb.append(DBUtil.dbCol(dbType, col.colName));
-			sb.append(" in (");
-			sb.append(DataTools.intJoin(vals, ", "));
-			sb.append(")");
-			return sb.toString();
+			if (DataTools.getSize(vals) > maxDbItem)
+			{
+				return "";
+			}
+			else
+			{
+				StringBuilder sb = new StringBuilder();
+				DBColumnInfo col = colsMap.get(this.fieldName);
+				sb.append(DBUtil.dbCol(dbType, col.colName));
+				sb.append(" in (");
+				sb.append(DataTools.intJoin(vals, ", "));
+				sb.append(")");
+				return sb.toString();
+			}
 		}
 
 		public boolean isValid(T obj) throws IllegalAccessException, InvocationTargetException
@@ -257,7 +263,7 @@ public class QueryConditions<T>
 			}
 		}
 
-		public String toWhereClause(Map<String, DBColumnInfo> colsMap, DBUtil.DBType dbType)
+		public String toWhereClause(Map<String, DBColumnInfo> colsMap, DBUtil.DBType dbType, int maxDbItem)
 		{
 			StringBuilder sb = new StringBuilder();
 			DBColumnInfo col = colsMap.get(this.fieldName);
@@ -333,25 +339,32 @@ public class QueryConditions<T>
 			this.getter = new FieldGetter<T>(cls, fieldName);
 		}
 
-		public String toWhereClause(Map<String, DBColumnInfo> colsMap, DBUtil.DBType dbType)
+		public String toWhereClause(Map<String, DBColumnInfo> colsMap, DBUtil.DBType dbType, int maxDbItem)
 		{
-			StringBuilder sb = new StringBuilder();
-			DBColumnInfo col = colsMap.get(this.fieldName);
-			sb.append(DBUtil.dbCol(dbType, col.colName));
-			Iterator<String> it = this.vals.iterator();
-			if (it.hasNext())
+			if (DataTools.getSize(this.vals) > maxDbItem)
 			{
-				sb.append(" in (");
-				sb.append(DBUtil.dbStr(dbType, it.next()));
-				while (it.hasNext())
-				{
-					sb.append(", ");
-					sb.append(DBUtil.dbStr(dbType, it.next()));
-				}
-				sb.append(")");
-	
+				return "";
 			}
-			return sb.toString();
+			else
+			{
+				StringBuilder sb = new StringBuilder();
+				DBColumnInfo col = colsMap.get(this.fieldName);
+				sb.append(DBUtil.dbCol(dbType, col.colName));
+				Iterator<String> it = this.vals.iterator();
+				if (it.hasNext())
+				{
+					sb.append(" in (");
+					sb.append(DBUtil.dbStr(dbType, it.next()));
+					while (it.hasNext())
+					{
+						sb.append(", ");
+						sb.append(DBUtil.dbStr(dbType, it.next()));
+					}
+					sb.append(")");
+		
+				}
+				return sb.toString();
+			}
 		}
 
 		public boolean isValid(T obj) throws IllegalAccessException, InvocationTargetException
@@ -387,7 +400,7 @@ public class QueryConditions<T>
 			this.getter = new FieldGetter<T>(cls, fieldName);
 		}
 
-		public String toWhereClause(Map<String, DBColumnInfo> colsMap, DBUtil.DBType dbType)
+		public String toWhereClause(Map<String, DBColumnInfo> colsMap, DBUtil.DBType dbType, int maxDbItem)
 		{
 			StringBuilder sb = new StringBuilder();
 			DBColumnInfo col = colsMap.get(this.fieldName);
@@ -432,7 +445,7 @@ public class QueryConditions<T>
 			return this.val;
 		}
 		
-		public String toWhereClause(Map<String, DBColumnInfo> colsMap, DBUtil.DBType dbType)
+		public String toWhereClause(Map<String, DBColumnInfo> colsMap, DBUtil.DBType dbType, int maxDbItem)
 		{
 			StringBuilder sb = new StringBuilder();
 			DBColumnInfo col = colsMap.get(this.fieldName);
@@ -479,7 +492,7 @@ public class QueryConditions<T>
 			}
 		}
 
-		public String toWhereClause(Map<String, DBColumnInfo> colsMap, DBUtil.DBType dbType)
+		public String toWhereClause(Map<String, DBColumnInfo> colsMap, DBUtil.DBType dbType, int maxDbItem)
 		{
 			StringBuilder sb = new StringBuilder();
 			DBColumnInfo col = colsMap.get(this.fieldName);
@@ -573,41 +586,48 @@ public class QueryConditions<T>
 			}
 		}
 
-		public String toWhereClause(Map<String, DBColumnInfo> colsMap, DBUtil.DBType dbType)
+		public String toWhereClause(Map<String, DBColumnInfo> colsMap, DBUtil.DBType dbType, int maxDbItem)
 		{
-			StringBuilder sb = new StringBuilder();
-			DBColumnInfo col = colsMap.get(this.fieldName);
-			sb.append(DBUtil.dbCol(dbType, col.colName));
-			Iterator<Enum<?>> it = vals.iterator();
-			if (!it.hasNext())
+			if (DataTools.getSize(this.vals) > maxDbItem)
 			{
-				sb.append(" is null");
+				return "";
 			}
 			else
 			{
-				sb.append(" in (");
-				if (this.enumType == EnumType.STRING)
+				StringBuilder sb = new StringBuilder();
+				DBColumnInfo col = colsMap.get(this.fieldName);
+				sb.append(DBUtil.dbCol(dbType, col.colName));
+				Iterator<Enum<?>> it = vals.iterator();
+				if (!it.hasNext())
 				{
-					sb.append(DBUtil.dbStr(dbType, it.next().name()));
-					while (it.hasNext())
-					{
-						sb.append(", ");
-						sb.append(DBUtil.dbStr(dbType, it.next().name()));
-					}
+					sb.append(" is null");
 				}
 				else
 				{
-					sb.append(it.next().ordinal());
-					while (it.hasNext())
+					sb.append(" in (");
+					if (this.enumType == EnumType.STRING)
 					{
-						sb.append(", ");
-						sb.append(it.next().ordinal());
+						sb.append(DBUtil.dbStr(dbType, it.next().name()));
+						while (it.hasNext())
+						{
+							sb.append(", ");
+							sb.append(DBUtil.dbStr(dbType, it.next().name()));
+						}
 					}
+					else
+					{
+						sb.append(it.next().ordinal());
+						while (it.hasNext())
+						{
+							sb.append(", ");
+							sb.append(it.next().ordinal());
+						}
+					}
+					sb.append(")");
 				}
-				sb.append(")");
+	
+				return sb.toString();
 			}
-
-			return sb.toString();
 		}
 
 		public boolean isValid(T obj) throws IllegalAccessException, InvocationTargetException
@@ -654,7 +674,7 @@ public class QueryConditions<T>
 			}
 		}
 
-		public String toWhereClause(Map<String, DBColumnInfo> colsMap, DBUtil.DBType dbType)
+		public String toWhereClause(Map<String, DBColumnInfo> colsMap, DBUtil.DBType dbType, int maxDbItem)
 		{
 			StringBuilder sb = new StringBuilder();
 			DBColumnInfo col = colsMap.get(this.fieldName);
@@ -685,7 +705,7 @@ public class QueryConditions<T>
 			this.getter = new FieldGetter<T>(cls, fieldName);
 		}
 
-		public String toWhereClause(Map<String, DBColumnInfo> colsMap, DBUtil.DBType dbType)
+		public String toWhereClause(Map<String, DBColumnInfo> colsMap, DBUtil.DBType dbType, int maxDbItem)
 		{
 			StringBuilder sb = new StringBuilder();
 			DBColumnInfo col = colsMap.get(this.fieldName);
@@ -709,9 +729,18 @@ public class QueryConditions<T>
 			this.innerCond = innerCond;
 		}
 
-		public String toWhereClause(Map<String, DBColumnInfo> colsMap, DBUtil.DBType dbType)
+		public String toWhereClause(Map<String, DBColumnInfo> colsMap, DBUtil.DBType dbType, int maxDbItem)
 		{
-			return "("+this.innerCond.toWhereClause(colsMap, dbType)+")";
+			List<Condition> clientConditions = new ArrayList<Condition>();
+			String whereClause = this.innerCond.toWhereClause(colsMap, dbType, clientConditions, maxDbItem);
+			if (clientConditions.size() > 0)
+			{
+				return "";
+			}
+			else
+			{
+				return "("+whereClause+")";
+			}
 		}
 
 		public boolean isValid(T obj) throws IllegalAccessException, InvocationTargetException
@@ -731,7 +760,7 @@ public class QueryConditions<T>
 		{
 		}
 
-		public String toWhereClause(Map<String, DBColumnInfo> colsMap, DBUtil.DBType dbType)
+		public String toWhereClause(Map<String, DBColumnInfo> colsMap, DBUtil.DBType dbType, int maxDbItem)
 		{
 			return " or ";
 		}
@@ -753,14 +782,19 @@ public class QueryConditions<T>
 
 	public boolean isValid(T obj) throws IllegalAccessException, InvocationTargetException
 	{
+		return objectValid(obj, this.conditionList);
+	}
+
+	public static <T> boolean objectValid(T obj, List<QueryConditions<T>.Condition> conditionList) throws IllegalAccessException, InvocationTargetException
+	{
 		boolean ret = true;
-		Condition cond;
+		QueryConditions<T>.Condition cond;
 		int i = 0;
-		int j = this.conditionList.size();
+		int j = conditionList.size();
 		while (i < j)
 		{
-			cond = this.conditionList.get(i);
-			if (cond.getClass().equals(OrCondition.class))
+			cond = conditionList.get(i);
+			if (cond.getClass().equals(QueryConditions.OrCondition.class))
 			{
 				if (ret)
 					return true;
@@ -900,7 +934,7 @@ public class QueryConditions<T>
 		return this;
 	}
 
-	public String toWhereClause(Map<String, DBColumnInfo> colsMap, DBUtil.DBType dbType)
+	public String toWhereClause(Map<String, DBColumnInfo> colsMap, DBUtil.DBType dbType, List<Condition> clientConditions, int maxDbItem)
 	{
 		StringBuilder sb = new StringBuilder();
 		boolean hasOr = false;
@@ -919,7 +953,7 @@ public class QueryConditions<T>
 
 		if (hasOr)
 		{
-			boolean isSplit = true;
+			int splitType = 1;
 			i = 0;
 			j = this.conditionList.size();
 			while (i < j)
@@ -927,26 +961,45 @@ public class QueryConditions<T>
 				Condition condition = this.conditionList.get(i);
 				if (condition.getClass() == OrCondition.class)
 				{
-					sb.append(")");
-					sb.append(" or ");
-					isSplit = true;
-				}
-				else
-				{
-					if (isSplit)
+					if (splitType != 0)
 					{
-						sb.append("(");
-						isSplit = false;
+
 					}
 					else
 					{
-						sb.append(" and ");
+						sb.append(")");
+						splitType = 2;
 					}
-					sb.append(condition.toWhereClause(colsMap, dbType));
+				}
+				else
+				{
+					String whereClause = condition.toWhereClause(colsMap, dbType, maxDbItem);
+					if (whereClause.equals(""))
+					{
+						clientConditions.add(condition);
+					}
+					else
+					{
+						if (splitType == 2)
+						{
+							sb.append(" or (");
+							splitType = 0;
+						}
+						else if (splitType != 0)
+						{
+							sb.append("(");
+							splitType = 0;
+						}
+						else
+						{
+							sb.append(" and ");
+						}
+						sb.append(whereClause);
+					}
 				}
 				i++;
 			}
-			if (!isSplit)
+			if (splitType == 0)
 			{
 				sb.append(")");
 			}
@@ -958,11 +1011,19 @@ public class QueryConditions<T>
 			while (i < j)
 			{
 				Condition condition = this.conditionList.get(i);
-				if (i > 0)
+				String whereClause = condition.toWhereClause(colsMap, dbType, maxDbItem);
+				if (whereClause.equals(""))
 				{
-					sb.append(" and ");
+					clientConditions.add(condition);
 				}
-				sb.append(condition.toWhereClause(colsMap, dbType));
+				else
+				{
+					if (i > 0)
+					{
+						sb.append(" and ");
+					}
+					sb.append(whereClause);
+				}
 				i++;
 			}
 		}

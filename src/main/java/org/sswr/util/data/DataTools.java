@@ -6,6 +6,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -983,6 +984,34 @@ public class DataTools {
 		{
 			ex.printStackTrace();
 			return null;
+		}
+	}
+
+	public static <T> int getSize(Iterable<T> it)
+	{
+		if (it instanceof List)
+		{
+			return ((List<T>)it).size();
+		}
+		else if (it instanceof Set)
+		{
+			return ((Set<T>)it).size();
+		}
+		else if (it instanceof Collection)
+		{
+			return ((Collection<T>)it).size();
+		}
+		else
+		{
+			System.out.println("getSize: "+it.getClass().toString());
+			int ret = 0;
+			Iterator<T> itObj = it.iterator();
+			while (itObj.hasNext())
+			{
+				ret++;
+				itObj.next();
+			}
+			return ret;
 		}
 	}
 }

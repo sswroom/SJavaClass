@@ -738,11 +738,16 @@ public class DBUtil {
 		sb = new StringBuilder();
 		appendSelect(sb, cols, tableAnn, dbType, 0, 0);
 
+		List<QueryConditions<T>.Condition> clientConditions = new ArrayList<QueryConditions<T>.Condition>();
 		if (conditions != null)
 		{
 			Map<String, DBColumnInfo> colsMap = dbCols2Map(cols);
-			sb.append(" where ");
-			sb.append(conditions.toWhereClause(colsMap, dbType));
+			String whereClause = conditions.toWhereClause(colsMap, dbType, clientConditions, MAX_SQL_ITEMS);
+			if (!StringUtil.isNullOrEmpty(whereClause))
+			{
+				sb.append(" where ");
+				sb.append(whereClause);
+			}
 		}
 		try
 		{
@@ -766,7 +771,7 @@ public class DBUtil {
 					}
 					Integer id = fillColVals(dbType, rs, obj, cols);
 
-					if (id != null)
+					if (id != null && QueryConditions.objectValid(obj, clientConditions))
 					{
 						retMap.put(id, obj);
 					}
@@ -860,10 +865,15 @@ public class DBUtil {
 		sb = new StringBuilder();
 		PageStatus status = appendSelect(sb, cols, tableAnn, dbType, dataOfst, dataCnt);
 
+		List<QueryConditions<T>.Condition> clientConditions = new ArrayList<QueryConditions<T>.Condition>();
 		if (conditions != null)
 		{
-			sb.append(" where ");
-			sb.append(conditions.toWhereClause(colsMap, dbType));
+			String whereClause = conditions.toWhereClause(colsMap, dbType, clientConditions, MAX_SQL_ITEMS);
+			if (!StringUtil.isNullOrEmpty(whereClause))
+			{
+				sb.append(" where ");
+				sb.append(whereClause);
+			}
 		}
 		if (fieldComp != null)
 		{
@@ -938,7 +948,10 @@ public class DBUtil {
 							obj = constr.newInstance(parent);
 						}
 						fillColVals(dbType, rs, obj, cols);
-						retList.add(obj);
+						if (QueryConditions.objectValid(obj, clientConditions))
+						{
+							retList.add(obj);
+						}
 					}
 					catch (InvocationTargetException ex)
 					{
