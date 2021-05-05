@@ -2106,6 +2106,14 @@ public class DBUtil {
 	public static Connection openAccessFile(String accessPath)
 	{
 		String jdbcStr;
+		try
+		{
+			Class.forName("net.ucanaccess.jdbc.UcanaccessDriver");
+		}
+		catch (ClassNotFoundException ex)
+		{
+			ex.printStackTrace();
+		}
 		if (File.separatorChar == '\\')
 		{
 			jdbcStr = "jdbc:ucanaccess://"+accessPath.replace("\\", "/");
