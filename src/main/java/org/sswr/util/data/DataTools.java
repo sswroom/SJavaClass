@@ -658,6 +658,10 @@ public class DataTools {
 
 	public static <T extends Enum<T>> T getEnum(Class<T> cls, String name)
 	{
+		if (name == null)
+		{
+			return null;
+		}
 		T[] enums = cls.getEnumConstants();
 		if (enums == null)
 		{
