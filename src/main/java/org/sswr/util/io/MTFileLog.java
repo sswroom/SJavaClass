@@ -93,12 +93,21 @@ public class MTFileLog implements Runnable, LogHandler
 	private void writeArr(List<String> msgArr, List<Long> dateArr)
 	{
 		int i = 0;
-		int arrCnt = msgArr.size();
+		int arrCnt;
+		synchronized(msgArr)
+		{
+			arrCnt = msgArr.size();
+		}
 		while (i < arrCnt)
 		{
 			String newFile = null;
-			long logTime = dateArr.get(i);
-			String logMsg = msgArr.get(i);
+			long logTime;
+			String logMsg;
+			synchronized (msgArr)
+			{
+				logTime = dateArr.get(i);				
+				logMsg = msgArr.get(i);
+			}
 			ZonedDateTime time = DateTimeUtil.newZonedDateTime(logTime);
 		
 			if (this.logStyle == LogType.PER_DAY)
@@ -272,8 +281,10 @@ public class MTFileLog implements Runnable, LogHandler
 			{
 				if ((arrCnt = this.msgList.size()) > 0)
 				{
-					msgArr = this.msgList.subList(0, arrCnt);
-					dateArr = this.dateList.subList(0, arrCnt);
+					msgArr = new ArrayList<String>();
+					dateArr = new ArrayList<Long>();
+					msgArr.addAll(this.msgList.subList(0, arrCnt));
+					dateArr.addAll(this.dateList.subList(0, arrCnt));
 					this.msgList.removeAll(msgArr);
 					this.dateList.removeAll(dateArr);
 				}
@@ -288,10 +299,15 @@ public class MTFileLog implements Runnable, LogHandler
 	
 		if ((arrCnt = this.msgList.size()) > 0)
 		{
-			msgArr = this.msgList.subList(0, arrCnt);
-			dateArr = this.dateList.subList(0, arrCnt);
-			this.msgList.removeAll(msgArr);
-			this.dateList.removeAll(dateArr);
+			synchronized(this)
+			{
+				msgArr = new ArrayList<String>();
+				dateArr = new ArrayList<Long>();
+				msgArr.addAll(this.msgList.subList(0, arrCnt));
+				dateArr.addAll(this.dateList.subList(0, arrCnt));
+				this.msgList.removeAll(msgArr);
+				this.dateList.removeAll(dateArr);
+			}
 			this.writeArr(msgArr, dateArr);
 		}
 	

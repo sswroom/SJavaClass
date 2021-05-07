@@ -89,7 +89,10 @@ public class ThreadEvent {
 					t = System.currentTimeMillis();
 					if (t - startT >= timeoutMs)
 						return true;
-					this.wait(timeoutMs - (t - startT));
+					synchronized(this)
+					{
+						this.wait(timeoutMs - (t - startT));
+					}
 				}
 				catch (InterruptedException ex)
 				{
@@ -132,7 +135,10 @@ public class ThreadEvent {
 	public void set()
 	{
 		this.set = true;
-		this.notifyAll();
+		synchronized(this)
+		{
+			this.notifyAll();
+		}
 	}
 	
 	public void clear()
