@@ -115,41 +115,53 @@ public class EmailTemplate {
 				sb.append(template.substring(i));
 				return;
 			}
-			k = template.indexOf(']', j);
-			if (k < 0)
+			if (j + 1 >= template.length())
 			{
-				throw new TemplateFormatException("Closing ']' not found in the template file");
+				throw new TemplateFormatException("'[' cannot be the end of the template file");
 			}
-			String paramName = template.substring(j + 1, k);
-			String param;
-			String keyName;
-			if (paramName.startsWith("@") || paramName.startsWith("#"))
+			if (template.charAt(j + 1) == '[')
 			{
-				keyName = paramName.substring(1);
+				sb.append("[");
+				k = j + 1;
 			}
 			else
 			{
-				keyName = paramName;
+				k = template.indexOf(']', j);
+				if (k < 0)
+				{
+					throw new TemplateFormatException("Closing ']' not found in the template file");
+				}
+				String paramName = template.substring(j + 1, k);
+				String param;
+				String keyName;
+				if (paramName.startsWith("@") || paramName.startsWith("#"))
+				{
+					keyName = paramName.substring(1);
+				}
+				else
+				{
+					keyName = paramName;
+				}
+				param = vars.get(keyName);
+				if (param == null && vars.containsKey(keyName))
+				{
+					param = "";
+				}
+				if (param == null)
+				{
+					throw new TemplateItemException("Parameter value ["+paramName+"] not provided");
+				}
+				if (paramName.startsWith("@"))
+				{
+					param = XmlUtil.toAttr(param);
+				}
+				else if (paramName.startsWith("#"))
+				{
+					param = XmlUtil.toHTMLText(param);
+				}
+				sb.append(template.substring(i, j));
+				sb.append(param);
 			}
-			param = vars.get(keyName);
-			if (param == null && vars.containsKey(keyName))
-			{
-				param = "";
-			}
-			if (param == null)
-			{
-				throw new TemplateItemException("Parameter value ["+paramName+"] not provided");
-			}
-			if (paramName.startsWith("@"))
-			{
-				param = XmlUtil.toAttr(param);
-			}
-			else if (paramName.startsWith("#"))
-			{
-				param = XmlUtil.toHTMLText(param);
-			}
-			sb.append(template.substring(i, j));
-			sb.append(param);
 			i = k + 1;
 		}
 	}
