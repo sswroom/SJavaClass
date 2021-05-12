@@ -122,13 +122,19 @@ public class EmailTemplate {
 			}
 			String paramName = template.substring(j + 1, k);
 			String param;
+			String keyName;
 			if (paramName.startsWith("@") || paramName.startsWith("#"))
 			{
-				param = vars.get(paramName.substring(1));
+				keyName = paramName.substring(1);
 			}
 			else
 			{
-				param = vars.get(paramName);
+				keyName = paramName;
+			}
+			param = vars.get(keyName);
+			if (param == null && vars.containsKey(keyName))
+			{
+				param = "";
 			}
 			if (param == null)
 			{
