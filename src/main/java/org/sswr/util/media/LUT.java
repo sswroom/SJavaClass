@@ -1,22 +1,14 @@
 package org.sswr.util.media;
 
-import java.lang.reflect.Array;
-import java.lang.reflect.ParameterizedType;
-
-public class LUT<T>
+public abstract class LUT
 {
-	private String remark;
-	private int inputCh;
-	private int inputLev;
-	private int outputCh;
-	private T luTable[];
+	protected String remark;
+	protected int inputCh;
+	protected int inputLev;
+	protected int outputCh;
 
-	public LUT(int inputCh, int inputLev, int outputCh)
+	protected int getTableSize()
 	{
-		this.inputCh = inputCh;
-		this.inputLev = inputLev;
-		this.outputCh = outputCh;
-		this.remark = null;
 		int tableSize = 1;
 		int i;
 		i = inputCh;
@@ -24,11 +16,15 @@ public class LUT<T>
 		{
 			tableSize *= inputLev;
 		}
-		tableSize = tableSize * this.outputCh;
-		Class<?> persistentClass = (Class<?>)((ParameterizedType)getClass().getGenericSuperclass()).getActualTypeArguments()[0];
-		@SuppressWarnings("unchecked")
-		T[] arr = (T[])Array.newInstance(persistentClass, tableSize);
-		this.luTable = arr;
+		return tableSize * this.outputCh;
+	}
+
+	public LUT(int inputCh, int inputLev, int outputCh)
+	{
+		this.inputCh = inputCh;
+		this.inputLev = inputLev;
+		this.outputCh = outputCh;
+		this.remark = null;
 	}
 
 	public void setRemark(String remark)
@@ -56,75 +52,21 @@ public class LUT<T>
 		return this.outputCh;
 	}
 
-	public T[] getTable()
-	{
-		return this.luTable;
-	}
+	public abstract void getValueUInt8(int inputVals[], int inputIndex, int outVals[], int outputIndex);
+	public abstract void getValueUInt16(int inputVals[], int inputIndex, int outVals[], int outputIndex);
+	public abstract void getValueSingle(int inputVals[], int inputIndex, float outVals[], int outputIndex);
 
-	public int[] getValueUInt8(int inputVals[], int index)
-	{
-		//////////////////////////
-		return null;
-	}
+	public abstract LUT clone();
+	public abstract boolean tableEquals(LUT lut);
 
-	public int[] getValueUInt16(int inputVals[], int index)
+	public boolean equals(LUT lut)
 	{
-		//////////////////////////
-		return null;
-	}
-
-	public float[] getValueSingle(int inputVals[], int index)
-	{
-		//////////////////////////
-		return null;
-	}
-
-	public LUT<T> clone()
-	{
-		LUT<T> newLut = new LUT<T>(this.inputCh, this.inputLev, this.outputCh);
-		if (this.remark != null)
-		{
-			newLut.setRemark(this.remark);
-		}
-		int tableSize = 1;
-		int i;
-		tableSize = 1;
-		i = this.inputCh;
-		while (i-- > 0)
-		{
-			tableSize *= inputLev;
-		}
-		tableSize = tableSize * this.outputCh;
-		i = tableSize;
-		while (i-- > 0)
-		{
-			newLut.luTable[i] = this.luTable[i];
-		}
-		return newLut;
-	}
-
-	public boolean equals(LUT<T> lut)
-	{
+		if (!this.getClass().equals(lut.getClass()))
+			return false;
 		if (this.inputLev != lut.inputLev)
 			return false;
 		if (this.outputCh != lut.outputCh || this.inputCh != lut.inputCh)
 			return false;
-		int i;
-		int j = 1;
-		i = inputCh;
-		while (i-- > 0)
-		{
-			j *= this.inputLev;
-		}
-		j = j * this.outputCh;
-		T stab[] = this.luTable;
-		T dtab[] = lut.luTable;
-		while (i < j)
-		{
-			if (stab[i] != dtab[i])
-				return false;
-			i++;
-		}
-		return true;
+		return tableEquals(lut);
 	}
 }

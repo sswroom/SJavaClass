@@ -31,4 +31,36 @@ public class ByteTool {
 	{
 		return (0xffffffffL & (long)lo) | (((long)hi) << 32);
 	}
+
+	public static int toSUInt8(double v)
+	{
+		if (v >= 255.0)
+		{
+			return 255;
+		}
+		else if (v < 0)
+		{
+			return 0;
+		}
+		else
+		{
+			return (int)v;
+		}
+	}
+
+	public static int toSUInt16(double v)
+	{
+		if (v >= 65535.0)
+		{
+			return 65535;
+		}
+		else if (v < 0)
+		{
+			return 0;
+		}
+		else
+		{
+			return (int)v;
+		}
+	}
 }
