@@ -121,6 +121,7 @@ public class EmailTemplate {
 			}
 			if (template.charAt(j + 1) == '[')
 			{
+				sb.append(template.substring(i, j));
 				sb.append("[");
 				k = j + 1;
 			}
