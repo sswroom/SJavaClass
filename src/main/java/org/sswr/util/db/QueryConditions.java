@@ -1006,6 +1006,7 @@ public class QueryConditions<T>
 		}
 		else
 		{
+			boolean hasCond = false;
 			i = 0;
 			j = this.conditionList.size();
 			while (i < j)
@@ -1018,11 +1019,12 @@ public class QueryConditions<T>
 				}
 				else
 				{
-					if (i > 0)
+					if (hasCond)
 					{
 						sb.append(" and ");
 					}
 					sb.append(whereClause);
+					hasCond = true;
 				}
 				i++;
 			}
