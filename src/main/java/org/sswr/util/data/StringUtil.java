@@ -537,10 +537,24 @@ public class StringUtil
 		{
 			return v;
 		}
+		boolean neg;
+		if (v < 0)
+		{
+			neg = true;
+			v = -v;
+		}
+		else
+		{
+			neg = false;
+		}
 		int ex = -10000 + (int)(Math.log10(v) + 10000);
 		double mulVal = Math.pow(10.0, -ex + 8);
 		v = Math.round(v * mulVal + 5.0e-15);
 		v = v / mulVal;
+		if (neg)
+		{
+			v = -v;
+		}
 		return v;
 	}
 }
