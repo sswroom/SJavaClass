@@ -374,4 +374,173 @@ public class StringUtil
 		}
 		return e.name();
 	}
+
+	/**
+	* Convert double into string
+	*
+	* @param  v  double value to convert
+	* @return     string presentation of the value
+	*/
+	public static String fromDouble(double v)
+	{
+		if (v == 0)
+		{
+			return "0";
+		}
+		else if (Double.isNaN(v))
+		{
+			return "1.#QNAN0";
+		}
+		StringBuilder sb = new StringBuilder();
+		if (v < 0)
+		{
+			sb.append('-');
+			v = -v;
+		}
+		if (Double.isInfinite(v))
+		{
+			sb.append("1.#INF00");
+			return sb.toString();
+		}
+		int i = 14;
+		int ex = -10000 + (int)(Math.log10(v) + 10000);
+		int iVal;
+		v = v * Math.pow(10.0, -ex - 1) + 5.0e-15;
+		if (ex >= 16 || ex <= -4)
+		{
+			v = v * 10.0;
+			iVal = (int)v;
+			v = v - iVal;
+			sb.append((char)(iVal + 48));
+			sb.append('.');
+			v = v * 10.0;
+			iVal = (int)v;
+			v = v - iVal;
+			sb.append((char)(iVal + 48));
+			i--;
+	
+			if (v > 1.0e-10)
+			{
+				while (v > 1.0e-10)
+				{
+					v = v * 10.0;
+					iVal = (int)v;
+					v = v - iVal;
+					sb.append((char)(iVal + 48));
+					if (--i <= 0)
+						break;
+				}
+				if (sb.charAt(sb.length() - 1) == '0')
+				{
+					sb.deleteCharAt(sb.length() - 1);
+				}
+			}
+			sb.append('e');
+			if (ex < 0)
+			{
+				sb.append('-');
+				ex = -ex;
+			}
+			else
+			{
+				sb.append('+');
+			}
+			sb.append(""+ex);
+		}
+		else if (ex < 0)
+		{
+			sb.append('0');
+			sb.append('.');
+			while (++ex < 0)
+			{
+				sb.append('0');
+			}
+			while (v > 1.0e-10)
+			{
+				v = v * 10.0;
+				iVal = (int)v;
+				v = v - iVal;
+				sb.append((char)(iVal + 48));
+				if (--i <= 0)
+					break;
+			}
+			while (sb.charAt(sb.length() - 1) == '0')
+			{
+				sb.deleteCharAt(sb.length() - 1);
+			}
+		}
+		else
+		{
+			while (ex >= 1)
+			{
+				v = v * 10.0;
+				iVal = (int)v;
+				v = v - iVal;
+				sb.append((char)(iVal + 48));
+				i--;
+				ex -= 1;
+			}
+			v = v * 10.0;
+			iVal = (int)v;
+			v = v - iVal;
+			sb.append((char)(iVal + 48));
+			if (v > 1.0e-14)
+			{
+				sb.append('.');
+				v = v * 10.0;
+				iVal = (int)v;
+				v = v - iVal;
+				sb.append((char)(iVal + 48));
+			}
+			i--;
+			if (v > 1.0e-10)
+			{
+				while (v > 1.0e-10)
+				{
+					v = v * 100.0;
+					iVal = (int)v;
+					v = v - iVal;
+					sb.append((char)(iVal + 48));
+					if (--i <= 0)
+						break;
+				}
+				while (sb.charAt(sb.length() - 1) == '0')
+				{
+					sb.deleteCharAt(sb.length() - 1);
+				}
+				if (sb.charAt(sb.length() - 1) == '.')
+				{
+					sb.deleteCharAt(sb.length() - 1);
+				}
+			}
+		}
+		return sb.toString();
+	}
+
+	/**
+	* Round double value to 8 sig fig
+	*
+	* @param  v  double value to round
+	* @return     rounded value
+	*/
+	public static double fixDouble(double v)
+	{
+		if (v == 0)
+		{
+			return v;
+		}
+		else if (Double.isNaN(v))
+		{
+			return v;
+		}
+		else if (Double.isInfinite(v))
+		{
+			return v;
+		}
+		int ex = -10000 + (int)(Math.log10(v) + 10000);
+		double mulVal = Math.pow(10.0, -ex + 8);
+		v = Math.round(v * mulVal + 5.0e-15);
+		v = v / mulVal;
+		return v;
+	}
 }
