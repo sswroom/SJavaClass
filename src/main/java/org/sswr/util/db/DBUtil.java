@@ -951,6 +951,7 @@ public class DBUtil {
 						if (QueryConditions.objectValid(obj, clientConditions))
 						{
 							retList.add(obj);
+							dataCnt--;
 						}
 					}
 					catch (InvocationTargetException ex)
