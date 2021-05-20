@@ -2102,6 +2102,52 @@ public class DBUtil {
 			return false;
 		}
 	}
+	
+	public static <T> boolean deleteRecords(Connection conn, Class<T> cls, QueryConditions<T> conditions)
+	{
+		StringBuilder sb;
+		Table tableAnn = parseClassTable(cls);
+		if (tableAnn == null)
+		{
+			throw new IllegalArgumentException("Class annotation is not valid");
+		}
+		DBType dbType = connGetDBType(conn);
+		sb = new StringBuilder();
+		if (conditions == null)
+		{
+			sb.append("truncate table ");
+			sb.append(getTableName(tableAnn, dbType));
+			return executeNonQuery(conn, sb.toString());
+		}
+		else
+		{
+			ArrayList<DBColumnInfo> cols = new ArrayList<DBColumnInfo>();
+			ArrayList<DBColumnInfo> idCols = new ArrayList<DBColumnInfo>();
+			parseDBCols(cls, cols, idCols, null);
+			List<QueryConditions<T>.Condition> clientConditions = new ArrayList<QueryConditions<T>.Condition>();
+			Map<String, DBColumnInfo> colsMap = dbCols2Map(cols);
+			String whereClause = conditions.toWhereClause(colsMap, dbType, clientConditions, MAX_SQL_ITEMS);
+			if (StringUtil.isNullOrEmpty(whereClause) && clientConditions.size() == 0)
+			{
+				sb.append("truncate table ");
+				sb.append(getTableName(tableAnn, dbType));
+				return executeNonQuery(conn, sb.toString());
+			}
+			else if (clientConditions.size() == 0)
+			{
+				sb.append("delete from ");
+				sb.append(getTableName(tableAnn, dbType));
+				sb.append(" where ");
+				sb.append(whereClause);
+				return executeNonQuery(conn, sb.toString());
+			}
+			else
+			{
+				/////////////////////////////
+				return false;
+			}
+		}
+	}
 
 	public static Connection openAccessFile(String accessPath)
 	{
