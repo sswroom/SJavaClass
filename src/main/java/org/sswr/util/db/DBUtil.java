@@ -387,6 +387,11 @@ public class DBUtil {
 			}
 			i++;
 		}
+		Class<?> supercls = cls.getSuperclass();
+		if (supercls != null && !supercls.equals(Object.class))
+		{
+			parseDBCols(supercls, allCols, idCols, joinFields);
+		}
 	}
 
 	public static PageStatus appendSelect(StringBuilder sb, List<DBColumnInfo> allCols, Table tableAnn, DBType dbType, int dataOfst, int dataCnt)
