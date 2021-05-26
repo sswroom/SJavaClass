@@ -336,6 +336,79 @@ public class DataTools {
 		}
 	}
 
+	public static <T> Map<String, T> createUpperStringMap(Iterable<T> list, String fieldName, QueryConditions<T> cond)
+	{
+		Iterator<T> it = list.iterator();
+		if (!it.hasNext())
+		{
+			return new HashMap<String, T>();
+		}
+		T o = it.next();
+		try
+		{
+			FieldGetter<T> getter = new FieldGetter<T>(o.getClass(), fieldName);
+			Class<?> t = getter.getFieldType();
+			HashMap<String, T> retMap = new HashMap<String, T>();
+			String s;
+			if (t.equals(String.class))
+			{
+				if (cond == null || cond.isValid(o))
+				{
+					s = (String)getter.get(o);
+					retMap.put(s.toUpperCase(), o);
+				}
+				while (it.hasNext())
+				{
+					o = it.next();
+					if (cond == null || cond.isValid(o))
+					{
+						s = (String)getter.get(o);
+						retMap.put(s.toUpperCase(), o);
+					}
+				}
+				return retMap;
+			}
+			else
+			{
+				if (cond == null || cond.isValid(o))
+				{
+					s = getter.get(o).toString();
+					retMap.put(s.toUpperCase(), o);
+				}
+				while (it.hasNext())
+				{
+					o = it.next();
+					if (cond == null || cond.isValid(o))
+					{
+						s = getter.get(o).toString();
+						retMap.put(s.toUpperCase(), o);
+					}
+				}
+				return retMap;
+			}
+		}
+		catch (NoSuchFieldException ex)
+		{
+			ex.printStackTrace();
+			return null;
+		}
+		catch (IllegalAccessException ex)
+		{
+			ex.printStackTrace();
+			return null;
+		}
+		catch (IllegalArgumentException ex)
+		{
+			ex.printStackTrace();
+			return null;
+		}
+		catch (InvocationTargetException ex)
+		{
+			ex.printStackTrace();
+			return null;
+		}
+	}
+	
 	public static <T, K> List<K> createValueList(Class<K> cls, Iterable<T> objs, String fieldName, QueryConditions<T> cond)
 	{
 		Iterator<T> it = objs.iterator();
