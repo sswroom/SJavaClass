@@ -5,7 +5,7 @@ public class DomainUser
 	public static String removeUserDomain(String username)
 	{
 		int i;
-		if ((i = username.indexOf("\\")) >= 0)
+		if ((i = username.lastIndexOf("\\")) >= 0)
 		{
 			return username.substring(i + 1);
 		}
