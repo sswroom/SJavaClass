@@ -294,6 +294,21 @@ public class DBUtil {
 		return tableAnn;
 	}
 
+	public static TableInfo parseTableInfo(Class<?> cls)
+	{
+		TableInfo table = new TableInfo();
+		table.tableAnn = parseClassTable(cls);
+		if (table.tableAnn == null)
+		{
+			throw new IllegalArgumentException("Class annotation is not valid");
+		}
+
+		table.allCols = new ArrayList<DBColumnInfo>();
+		table.idCols = new ArrayList<DBColumnInfo>();
+		parseDBCols(cls, table.allCols, table.idCols, null);
+		return table;
+	}
+
 	public static String uncol(String name)
 	{
 		if (name.startsWith("[") && name.endsWith("]"))
@@ -1856,6 +1871,26 @@ public class DBUtil {
 		}
 	}
 
+	public static void dbCol(StringBuilder sb, DBType dbType, String val)
+	{
+		if (dbType == DBType.DT_MYSQL)
+		{
+			sb.append('`');
+			sb.append(val);
+			sb.append('`');
+		}
+		else if (dbType == DBType.DT_MSSQL || dbType == DBType.DT_ACCESS)
+		{
+			sb.append('[');
+			sb.append(val);
+			sb.append(']');
+		}
+		else
+		{
+			sb.append(val);
+		}
+	}
+
 	public static int getLastIdentity32(Connection conn)
 	{
 		DBType dbType = connGetDBType(conn);
@@ -1887,57 +1922,35 @@ public class DBUtil {
 		}
 	}
 
-	public static <T> boolean update(Connection conn, T oriObj, T newObj)
+	public static <T> boolean update(Connection conn, TableInfo table, T oriObj, T newObj)
 	{
-		Class<?> targetClass;
-		if (oriObj != null)
-		{
-			targetClass = oriObj.getClass();
-		}
-		else if (newObj != null)
-		{
-			targetClass = newObj.getClass();
-		}
-		else
-		{
-			return false;
-		}
-		Table tableAnn = parseClassTable(targetClass);
-		if (tableAnn == null)
-		{
-			throw new IllegalArgumentException("Class annotation is not valid");
-		}
-
-		List<DBColumnInfo> targetCols = new ArrayList<DBColumnInfo>();
-		List<DBColumnInfo> targetIdCols = new ArrayList<DBColumnInfo>();
-		DBColumnInfo col;
-		parseDBCols(targetClass, targetCols, targetIdCols, null);
-		StringBuilder sb;
 		DBType dbType = connGetDBType(conn);
+		StringBuilder sb;
+		DBColumnInfo col;
 		int i;
 		int j;
 		try
 		{
 			if (newObj == null)
 			{
-				if (targetIdCols.size() == 0)
+				if (table.idCols.size() == 0)
 				{
 					return false;
 				}
 				sb = new StringBuilder();
 				sb.append("delete from ");
-				sb.append(getTableName(tableAnn, dbType));
+				sb.append(getTableName(table.tableAnn, dbType));
 				sb.append(" where ");
 				i = 0;
-				j = targetIdCols.size();
+				j = table.idCols.size();
 				while (i < j)
 				{
-					col = targetIdCols.get(i);
+					col = table.idCols.get(i);
 					if (i > 0)
 					{
 						sb.append(" and ");
 					}
-					sb.append(dbCol(dbType, col.colName));
+					dbCol(sb, dbType, col.colName);
 					sb.append(" = ");
 					sb.append(dbVal(dbType, col, col.getter.get(oriObj)));
 					i++;
@@ -1953,14 +1966,14 @@ public class DBUtil {
 			{
 				sb = new StringBuilder();
 				sb.append("insert into ");
-				sb.append(getTableName(tableAnn, dbType));
+				sb.append(getTableName(table.tableAnn, dbType));
 				sb.append(" (");
 				boolean found = false;
 				i = 0;
-				j = targetCols.size();
+				j = table.allCols.size();
 				while (i < j)
 				{
-					col = targetCols.get(i);
+					col = table.allCols.get(i);
 					if (col.genType != GenerationType.IDENTITY)
 					{
 						if (found)
@@ -1977,7 +1990,7 @@ public class DBUtil {
 				i = 0;
 				while (i < j)
 				{
-					col = targetCols.get(i);
+					col = table.allCols.get(i);
 					if (col.genType != GenerationType.IDENTITY)
 					{
 						if (found)
@@ -1993,9 +2006,9 @@ public class DBUtil {
 				found = executeNonQuery(conn, sb.toString());
 				if (found)
 				{
-					if (targetIdCols.size() == 1)
+					if (table.idCols.size() == 1)
 					{
-						col = targetIdCols.get(0);
+						col = table.idCols.get(0);
 						if (col.genType == GenerationType.IDENTITY)
 						{
 							col.setter.set(newObj, getLastIdentity32(conn));
@@ -2015,13 +2028,13 @@ public class DBUtil {
 				boolean found = false;
 				sb = new StringBuilder();
 				sb.append("update ");
-				sb.append(getTableName(tableAnn, dbType));
+				sb.append(getTableName(table.tableAnn, dbType));
 				sb.append(" set ");
 				i = 0;
-				j = targetCols.size();
+				j = table.allCols.size();
 				while (i < j)
 				{
-					col = targetCols.get(i);
+					col = table.allCols.get(i);
 					o1 = col.getter.get(oriObj);
 					o2 = col.getter.get(newObj);
 					if (!Objects.equals(o1, o2))
@@ -2043,10 +2056,10 @@ public class DBUtil {
 				}
 				sb.append(" where ");
 				i = 0;
-				j = targetIdCols.size();
+				j = table.idCols.size();
 				while (i < j)
 				{
-					col = targetIdCols.get(i);
+					col = table.idCols.get(i);
 					if (i > 0)
 					{
 						sb.append(" and ");
@@ -2063,10 +2076,10 @@ public class DBUtil {
 						updateHandler.dbUpdated(oriObj, newObj);
 					}
 					i = 0;
-					j = targetCols.size();
+					j = table.allCols.size();
 					while (i < j)
 					{
-						col = targetCols.get(i);
+						col = table.allCols.get(i);
 						o1 = col.getter.get(oriObj);
 						o2 = col.getter.get(newObj);
 						if (!Objects.equals(o1, o2))
@@ -2090,6 +2103,24 @@ public class DBUtil {
 			sqlLogger.logException(ex);
 			return false;
 		}
+	}
+
+	public static <T> boolean update(Connection conn, T oriObj, T newObj)
+	{
+		TableInfo table = null;
+		if (oriObj != null)
+		{
+			table = parseTableInfo(oriObj.getClass());
+		}
+		else if (newObj != null)
+		{
+			table = parseTableInfo(newObj.getClass());
+		}
+		else
+		{
+			return false;
+		}
+		return update(conn, table, oriObj, newObj);
 	}
 
 	public static boolean executeNonQuery(Connection conn, String sql)
