@@ -1,12 +1,10 @@
 package org.sswr.util.db;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
-import java.nio.charset.Charset;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -129,11 +127,10 @@ public class CSVUtil {
 		}
 	}
 
-	public static <T> boolean createFile(File file, Charset cs, Iterable<T> datas, String cols[])
+	public static <T> boolean createFile(Writer writer, Iterable<T> datas, String cols[])
 	{
 		try
 		{
-			FileWriter writer = new FileWriter(file, cs);
 			StringBuilder sb;
 			int i = 0;
 			int j = cols.length;
@@ -196,7 +193,6 @@ public class CSVUtil {
 				succ = false;
 			}
 
-			writer.close();
 			return succ;
 		}
 		catch (IOException ex)
@@ -205,11 +201,10 @@ public class CSVUtil {
 		}
 	}
 
-	public static <T> boolean createFile(File file, Charset cs, Connection conn, String sql)
+	public static <T> boolean createFile(Writer writer, Connection conn, String sql)
 	{
 		try
 		{
-			FileWriter writer = new FileWriter(file, cs);
 			StringBuilder sb = new StringBuilder();
 			boolean succ = true;
 			try
@@ -373,7 +368,6 @@ public class CSVUtil {
 				succ = false;
 			}
 
-			writer.close();
 			return succ;
 		}
 		catch (IOException ex)
