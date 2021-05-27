@@ -23,4 +23,19 @@ public class StaticImage
 	{
 		return this.metadata;
 	}
+
+	public int getWidth()
+	{
+		return this.img.getWidth();
+	}
+
+	public int getHeight()
+	{
+		return this.img.getHeight();
+	}
+
+	public double getPixelAspectRatio()
+	{
+		return 1.0;
+	}
 }

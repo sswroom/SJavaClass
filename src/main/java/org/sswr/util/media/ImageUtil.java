@@ -67,6 +67,49 @@ public class ImageUtil {
 		}
 	}
 
+	public static boolean saveAsFormat(StaticImage img, OutputStream output, String format)
+	{
+		try
+		{
+			ImageOutputStream ios = ImageIO.createImageOutputStream(output);
+			ImageWriter writer = ImageIO.getImageWritersByFormatName(format).next();
+			ImageWriteParam iwParam = writer.getDefaultWriteParam();
+			writer.setOutput(ios);
+			writer.write(null, new IIOImage(img.getBufferedImage(), null, img.getMetadata()), iwParam);
+			writer.dispose();
+			return true;
+		}
+		catch (IOException ex)
+		{
+			return false;
+		}
+	}
+
+	public static boolean saveAsTiff(StaticImage img, OutputStream output)
+	{
+		return saveAsFormat(img, output, "tiff");
+	}
+
+	public static boolean saveAsGif(StaticImage img, OutputStream output)
+	{
+		return saveAsFormat(img, output, "gif");
+	}
+
+	public static boolean saveAsPng(StaticImage img, OutputStream output)
+	{
+		return saveAsFormat(img, output, "png");
+	}
+
+	public static boolean saveAsBmp(StaticImage img, OutputStream output)
+	{
+		return saveAsFormat(img, output, "bmp");
+	}
+
+	public static boolean saveAsWbmp(StaticImage img, OutputStream output)
+	{
+		return saveAsFormat(img, output, "wbmp");
+	}
+
 	public static boolean saveAsJpg(StaticImage img, OutputStream output, float quality) //0-1
 	{
 		try
