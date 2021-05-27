@@ -5,7 +5,16 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.math.BigDecimal;
 import java.nio.charset.Charset;
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -194,6 +203,182 @@ public class CSVUtil {
 		{
 			return false;
 		}
-
 	}
+
+	public static <T> boolean createFile(File file, Charset cs, Connection conn, String sql)
+	{
+		try
+		{
+			FileWriter writer = new FileWriter(file, cs);
+			StringBuilder sb = new StringBuilder();
+			boolean succ = true;
+			try
+			{
+				PreparedStatement stmt = conn.prepareStatement(sql);
+				ResultSet rs = stmt.executeQuery();
+				ResultSetMetaData metadata = rs.getMetaData();
+				int i = 0;
+				int j = metadata.getColumnCount();
+				while (i < j)
+				{
+					if (i > 0)
+					{
+						sb.append(",");
+					}
+					sb.append(quote(metadata.getColumnLabel(i + 1)));
+					i++;
+				}
+				sb.append("\r\n");
+				writer.write(sb.toString());
+				
+				while (rs.next())
+				{
+					sb.setLength(0);
+					i = 0;
+					while (i < j)
+					{
+						if (i > 0)
+						{
+							sb.append(',');
+						}
+						
+						switch (metadata.getColumnClassName(i + 1))
+						{
+						case "java.lang.Integer":
+							int iVal = rs.getInt(i + 1);
+							if (rs.wasNull())
+							{
+								sb.append("\"\"");
+							}
+							else
+							{
+								sb.append("\""+iVal+"\"");
+							}
+							break;
+						case "java.lang.Short":
+							short sVal = rs.getShort(i + 1);
+							if (rs.wasNull())
+							{
+								sb.append("\"\"");
+							}
+							else
+							{
+								sb.append("\""+sVal+"\"");
+							}
+							break;
+						case "java.lang.String":
+							sb.append(quote(rs.getString(i + 1)));
+							break;
+						case "java.lang.Float":
+							float fVal = rs.getFloat(i + 1);
+							if (rs.wasNull())
+							{
+								sb.append("\"\"");
+							}
+							else
+							{
+								sb.append("\""+fVal+"\"");
+							}
+							break;
+						case "java.lang.Double":
+							double dVal = rs.getDouble(i + 1);
+							if (rs.wasNull())
+							{
+								sb.append("\"\"");
+							}
+							else
+							{
+								sb.append("\""+dVal+"\"");
+							}
+							break;
+						case "java.sql.Date":
+							Date date = rs.getDate(i + 1);
+							if (date == null)
+							{
+								sb.append("\"\"");
+							}
+							else
+							{
+								sb.append("\""+date+"\"");
+							}
+							break;
+						case "java.sql.Timestamp":
+							Timestamp ts = rs.getTimestamp(i + 1);
+							if (ts == null)
+							{
+								sb.append("\"\"");
+							}
+							else
+							{
+								sb.append("\""+ts+"\"");
+							}
+							break;
+						case "java.time.LocalDateTime":
+							LocalDateTime ldt = (LocalDateTime)rs.getObject(i + 1);
+							if (ldt == null)
+							{
+								sb.append("\"\"");
+							}
+							else
+							{
+								sb.append("\""+ldt+"\"");
+							}
+							break;
+						case "java.math.BigDecimal":
+							BigDecimal bd = rs.getBigDecimal(i + 1);
+							if (bd == null)
+							{
+								sb.append("\"\"");
+							}
+							else
+							{
+								sb.append("\""+bd+"\"");
+							}
+							break;
+						case "[B":
+							byte barr[] = rs.getBytes(i + 1);
+							if (barr == null)
+							{
+								sb.append("\"\"");
+							}
+							else
+							{
+								String hex = "0123456789ABCDEF";
+								int k = 0;
+								int l = barr.length;
+								sb.append('"');
+								while (k < l)
+								{
+									sb.append(hex.charAt((barr[k] >> 4) & 0xf));
+									sb.append(hex.charAt(barr[k] & 0xf));
+									k++;
+								}
+								sb.append('"');
+							}
+							break;
+						default:
+							System.out.println("Unknown type: "+metadata.getColumnClassName(i + 1));
+							sb.append(quote(rs.getString(i + 1)));
+							break;
+						}
+						i++;
+					}
+					sb.append("\r\n");
+					writer.write(sb.toString());
+				}
+			}
+			catch (SQLException ex)
+			{
+				ex.printStackTrace();
+				succ = false;
+			}
+
+			writer.close();
+			return succ;
+		}
+		catch (IOException ex)
+		{
+			return false;
+		}
+	}	
 }
