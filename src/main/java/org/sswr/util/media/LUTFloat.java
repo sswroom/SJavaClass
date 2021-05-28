@@ -12,7 +12,6 @@ public class LUTFloat extends LUT
 		this.luTable = new float[getTableSize()];
 	}
 
-
 	public void getValueUInt8(int inputVals[], int inputIndex, int outVals[], int outputIndex)
 	{
 		int indexBase = 1;
@@ -108,5 +107,10 @@ public class LUTFloat extends LUT
 				return false;
 		}
 		return true;
-	}	
+	}
+
+	public float[] getTablePtr()
+	{
+		return this.luTable;
+	}
 }

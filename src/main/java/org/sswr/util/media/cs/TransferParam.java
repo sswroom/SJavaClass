@@ -1,4 +1,6 @@
-package org.sswr.util.media;
+package org.sswr.util.media.cs;
+
+import org.sswr.util.media.LUT;
 
 public class TransferParam
 {

@@ -1,4 +1,4 @@
-package org.sswr.util.media;
+package org.sswr.util.media.cs;
 
 public enum TransferType
 {

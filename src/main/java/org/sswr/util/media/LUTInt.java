@@ -161,4 +161,9 @@ public class LUTInt extends LUT
 	{
 		return this.luTable;
 	}
+
+	public DataFormat getFormat()
+	{
+		return this.fmt;
+	}
 }

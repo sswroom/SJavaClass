@@ -8,6 +8,8 @@ import org.sswr.util.basic.Vector3;
 import org.sswr.util.data.ByteTool;
 import org.sswr.util.data.StringUtil;
 import org.sswr.util.media.LUTInt.DataFormat;
+import org.sswr.util.media.cs.TransferParam;
+import org.sswr.util.media.cs.TransferType;
 
 public class ICCProfile
 {
