@@ -156,4 +156,9 @@ public class LUTInt extends LUT
 		}
 		return true;
 	}
+
+	public int[] getTablePtr()
+	{
+		return this.luTable;
+	}
 }

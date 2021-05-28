@@ -1,0 +1,30 @@
+package org.sswr.util.media;
+
+public enum TransferType
+{
+	SRGB,
+	BT709,
+	GAMMA,
+	SMPTE240,
+	LINEAR,
+	BT1361,
+	LOG100,
+	LOGSQRT10,
+	NTSC,
+	SLOG,
+	SLOG1,
+	SLOG2,
+	SLOG3,
+	VLOG,
+	PROTUNE,
+	BT2100,
+	HLG,
+	NLOG,
+
+	PDISPLAY,
+	VDISPLAY,
+	VUNKNOWN,
+	PUNKNOWN,
+	LUT,
+	PARAM1
+}

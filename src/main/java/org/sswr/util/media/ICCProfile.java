@@ -7,6 +7,7 @@ import org.sswr.util.basic.Matrix3;
 import org.sswr.util.basic.Vector3;
 import org.sswr.util.data.ByteTool;
 import org.sswr.util.data.StringUtil;
+import org.sswr.util.media.LUTInt.DataFormat;
 
 public class ICCProfile
 {
@@ -112,7 +113,410 @@ public class ICCProfile
 		return ByteTool.readMInt32(this.iccBuff, 128);
 	}
 
-
+	public LUT createRLUT()
+	{
+		int cnt = ByteTool.readMInt32(this.iccBuff, 128);
+		int i = 0;
+		LUTInt lut;
+		while (i < cnt)
+		{
+			int tagSign;
+			int tagOfst;
+	//		int tagLeng;
+			int tagType;
+			int valCnt;
+	
+			tagSign = ByteTool.readMInt32(this.iccBuff, 132 + 12 * i);
+			if (tagSign == 0x72545243 || tagSign == 0x6B545243)
+			{
+				tagOfst = ByteTool.readMInt32(this.iccBuff, 136 + 12 * i);
+	//			tagLeng = ByteTool.readMInt32(this.iccBuff, 140 + 12 * i);
+				tagType = ByteTool.readMInt32(this.iccBuff, tagOfst);
+				if (tagType == 0x63757276)
+				{
+					int j;
+					int dtab[];
+					valCnt = ByteTool.readMInt32(this.iccBuff, tagOfst + 8);
+					if (valCnt <= 1)
+					{
+						return null;
+					}
+					lut = new LUTInt(1, valCnt, 1, DataFormat.UINT16);
+					dtab = lut.getTablePtr();
+					j = 0;
+					while (j < valCnt)
+					{
+						dtab[j] = ByteTool.readMUInt16(this.iccBuff, tagOfst + 12 + j * 2);
+						j++;
+					}
+					return lut;
+				}
+				else
+				{
+					return null;
+				}
+			}
+			i++;
+		}
+		return null;
+	}
+	
+	public LUT createGLUT()
+	{
+		int cnt = ByteTool.readMInt32(this.iccBuff, 128);
+		int i = 0;
+		LUTInt lut;
+		while (i < cnt)
+		{
+			int tagSign;
+			int tagOfst;
+	//		int tagLeng;
+			int tagType;
+			int valCnt;
+	
+			tagSign = ByteTool.readMInt32(this.iccBuff, 132 + 12 * i);
+			if (tagSign == 0x67545243 || tagSign == 0x6B545243)
+			{
+				tagOfst = ByteTool.readMInt32(this.iccBuff, 136 + 12 * i);
+	//			tagLeng = ByteTool.readMInt32(this.iccBuff, 140 + 12 * i);
+				tagType = ByteTool.readMInt32(this.iccBuff, tagOfst);
+				if (tagType == 0x63757276)
+				{
+					int j;
+					int dtab[];
+					valCnt = ByteTool.readMInt32(this.iccBuff, tagOfst + 8);
+					if (valCnt <= 1)
+					{
+						return null;
+					}
+					lut = new LUTInt(1, valCnt, 1, DataFormat.UINT16);
+					dtab = lut.getTablePtr();
+					j = 0;
+					while (j < valCnt)
+					{
+						dtab[j] = ByteTool.readMUInt16(this.iccBuff, tagOfst + 12 + j * 2);
+						j++;
+					}
+					return lut;
+				}
+				else
+				{
+					return null;
+				}
+			}
+			i++;
+		}
+		return null;
+	}
+	
+	public LUT createBLUT()
+	{
+		int cnt = ByteTool.readMInt32(this.iccBuff, 128);
+		int i = 0;
+		LUTInt lut;
+		while (i < cnt)
+		{
+			int tagSign;
+			int tagOfst;
+	//		int tagLeng;
+			int tagType;
+			int valCnt;
+	
+			tagSign = ByteTool.readMInt32(this.iccBuff, 132 + 12 * i);
+			if (tagSign == 0x62545243 || tagSign == 0x6B545243)
+			{
+				tagOfst = ByteTool.readMInt32(this.iccBuff, 136 + 12 * i);
+	//			tagLeng = ByteTool.readMInt32(this.iccBuff, 140 + 12 * i);
+				tagType = ByteTool.readMInt32(this.iccBuff, tagOfst);
+				if (tagType == 0x63757276)
+				{
+					int j;
+					int dtab[];
+					valCnt = ByteTool.readMInt32(this.iccBuff, tagOfst + 8);
+					if (valCnt <= 1)
+					{
+						return null;
+					}
+					lut = new LUTInt(1, valCnt, 1, DataFormat.UINT16);
+					dtab = lut.getTablePtr();
+					j = 0;
+					while (j < valCnt)
+					{
+						dtab[j] = ByteTool.readMUInt16(this.iccBuff, tagOfst + 12 + j * 2);
+						j++;
+					}
+					return lut;
+				}
+				else
+				{
+					return null;
+				}
+			}
+			i++;
+		}
+		return null;
+	}
+	
+	public TransferParam getRedTransferParam()
+	{
+		int cnt = ByteTool.readMInt32(this.iccBuff, 128);
+		int i = 0;
+		TransferParam param = null;
+		while (i < cnt)
+		{
+			int tagSign;
+			int tagOfst;
+	//		int tagLeng;
+			int tagType;
+			int valCnt;
+	
+			tagSign = ByteTool.readMInt32(this.iccBuff, 132 + 12 * i);
+			if (tagSign == 0x72545243 || tagSign == 0x6B545243)
+			{
+				tagOfst = ByteTool.readMInt32(this.iccBuff, 136 + 12 * i);
+	//			tagLeng = ByteTool.readMInt32(this.iccBuff, 140 + 12 * i);
+				tagType = ByteTool.readMInt32(this.iccBuff, tagOfst);
+				if (tagType == 0x63757276)
+				{
+					valCnt = ByteTool.readMInt32(this.iccBuff, tagOfst + 8);
+					if (valCnt == 0)
+					{
+						param = new TransferParam(TransferType.LINEAR, 1.0);
+					}
+					else if (valCnt == 1)
+					{
+						param = new TransferParam(TransferType.GAMMA, readU8Fixed8Number(this.iccBuff, tagOfst + 12));
+					}
+					else
+					{
+						LUT lut = this.createRLUT();
+						param = new TransferParam(lut);
+					}
+	
+					return param;
+				}
+				else if (tagType == 0x70617261) //parametricCurveType
+				{
+					int funcType = ByteTool.readMInt16(this.iccBuff, tagOfst + 8);
+					double params[] = new double[7];
+					if (funcType == 0)
+					{
+						param = new TransferParam(TransferType.GAMMA, readS15Fixed16Number(this.iccBuff, tagOfst + 12));
+						return param;
+					}
+					else if (funcType == 3)
+					{
+						params[0] = readS15Fixed16Number(this.iccBuff, tagOfst + 12);
+						params[1] = readS15Fixed16Number(this.iccBuff, tagOfst + 16);
+						params[2] = readS15Fixed16Number(this.iccBuff, tagOfst + 20);
+						params[3] = readS15Fixed16Number(this.iccBuff, tagOfst + 24);
+						params[4] = readS15Fixed16Number(this.iccBuff, tagOfst + 28);
+						params[5] = 0;
+						params[6] = 0;
+						param = new TransferParam();
+						param.set(TransferType.PARAM1, params);
+						return param;
+					}
+					else if (funcType == 4)
+					{
+						params[0] = readS15Fixed16Number(this.iccBuff, tagOfst + 12);
+						params[1] = readS15Fixed16Number(this.iccBuff, tagOfst + 16);
+						params[2] = readS15Fixed16Number(this.iccBuff, tagOfst + 20);
+						params[3] = readS15Fixed16Number(this.iccBuff, tagOfst + 24);
+						params[4] = readS15Fixed16Number(this.iccBuff, tagOfst + 28);
+						params[5] = readS15Fixed16Number(this.iccBuff, tagOfst + 32);
+						params[6] = readS15Fixed16Number(this.iccBuff, tagOfst + 36);
+						param = new TransferParam();
+						param.set(TransferType.PARAM1, params);
+						return param;
+					}
+				}
+				else
+				{
+					return null;
+				}
+			}
+			i++;
+		}
+		return null;
+	}
+	
+	public TransferParam getGreenTransferParam()
+	{
+		int cnt = ByteTool.readMInt32(this.iccBuff, 128);
+		int i = 0;
+		TransferParam param = null;
+		while (i < cnt)
+		{
+			int tagSign;
+			int tagOfst;
+	//		int tagLeng;
+			int tagType;
+			int valCnt;
+	
+			tagSign = ByteTool.readMInt32(this.iccBuff, 132 + 12 * i);
+			if (tagSign == 0x67545243 || tagSign == 0x6B545243)
+			{
+				tagOfst = ByteTool.readMInt32(this.iccBuff, 136 + 12 * i);
+	//			tagLeng = ByteTool.readMInt32(this.iccBuff, 140 + 12 * i);
+				tagType = ByteTool.readMInt32(this.iccBuff, tagOfst);
+				if (tagType == 0x63757276)
+				{
+					valCnt = ByteTool.readMInt32(this.iccBuff, tagOfst + 8);
+					if (valCnt == 0)
+					{
+						param = new TransferParam(TransferType.LINEAR, 1.0);
+					}
+					else if (valCnt == 1)
+					{
+						param = new TransferParam(TransferType.GAMMA, readU8Fixed8Number(this.iccBuff, tagOfst + 12));
+					}
+					else
+					{
+						LUT lut = this.createGLUT();
+						param = new TransferParam(lut);
+					}
+	
+	/*				Double gamma;
+					Media::CS::TransferType tranType;
+					tranType = FindTransferType(valCnt, (UInt16*)&this.iccBuff[tagOfst + 12], &gamma);
+					param->Set(tranType, gamma);*/
+					return param;
+				}
+				else if (tagType == 0x70617261) //parametricCurveType
+				{
+					int funcType = ByteTool.readMInt16(this.iccBuff, tagOfst + 8);
+					double params[] = new double[7];
+					if (funcType == 0)
+					{
+						param = new TransferParam(TransferType.GAMMA, readS15Fixed16Number(this.iccBuff, tagOfst + 12));
+						return param;
+					}
+					else if (funcType == 3)
+					{
+						params[0] = readS15Fixed16Number(this.iccBuff, tagOfst + 12);
+						params[1] = readS15Fixed16Number(this.iccBuff, tagOfst + 16);
+						params[2] = readS15Fixed16Number(this.iccBuff, tagOfst + 20);
+						params[3] = readS15Fixed16Number(this.iccBuff, tagOfst + 24);
+						params[4] = readS15Fixed16Number(this.iccBuff, tagOfst + 28);
+						params[5] = 0;
+						params[6] = 0;
+						param = new TransferParam();
+						param.set(TransferType.PARAM1, params);
+						return param;
+					}
+					else if (funcType == 4)
+					{
+						params[0] = readS15Fixed16Number(this.iccBuff, tagOfst + 12);
+						params[1] = readS15Fixed16Number(this.iccBuff, tagOfst + 16);
+						params[2] = readS15Fixed16Number(this.iccBuff, tagOfst + 20);
+						params[3] = readS15Fixed16Number(this.iccBuff, tagOfst + 24);
+						params[4] = readS15Fixed16Number(this.iccBuff, tagOfst + 28);
+						params[5] = readS15Fixed16Number(this.iccBuff, tagOfst + 32);
+						params[6] = readS15Fixed16Number(this.iccBuff, tagOfst + 36);
+						param = new TransferParam();
+						param.set(TransferType.PARAM1, params);
+						return param;
+					}
+				}
+				else
+				{
+					return null;
+				}
+			}
+			i++;
+		}
+		return null;
+	}
+	
+	public TransferParam getBlueTransferParam()
+	{
+		int cnt = ByteTool.readMInt32(this.iccBuff, 128);
+		int i = 0;
+		TransferParam param = null;
+		while (i < cnt)
+		{
+			int tagSign;
+			int tagOfst;
+	//		int tagLeng;
+			int tagType;
+			int valCnt;
+	
+			tagSign = ByteTool.readMInt32(this.iccBuff, 132 + 12 * i);
+			if (tagSign == 0x62545243 || tagSign == 0x6B545243)
+			{
+				tagOfst = ByteTool.readMInt32(this.iccBuff, 136 + 12 * i);
+	//			tagLeng = ByteTool.readMInt32(this.iccBuff, 140 + 12 * i);
+				tagType = ByteTool.readMInt32(this.iccBuff, tagOfst);
+				if (tagType == 0x63757276)
+				{
+					valCnt = ByteTool.readMInt32(this.iccBuff, tagOfst + 8);
+					if (valCnt == 0)
+					{
+						param = new TransferParam(TransferType.LINEAR, 1.0);
+					}
+					else if (valCnt == 1)
+					{
+						param = new TransferParam(TransferType.GAMMA, readU8Fixed8Number(this.iccBuff, tagOfst + 12));
+					}
+					else
+					{
+						LUT lut = this.createBLUT();
+						param = new TransferParam(lut);
+					}
+	
+	/*				Double gamma;
+					Media::CS::TransferType tranType;
+					tranType = FindTransferType(valCnt, (UInt16*)&this.iccBuff[tagOfst + 12], &gamma);
+					param->Set(tranType, gamma);*/
+					return param;
+				}
+				else if (tagType == 0x70617261) //parametricCurveType
+				{
+					int funcType = ByteTool.readMInt16(this.iccBuff, tagOfst + 8);
+					double params[] = new double[7];
+					if (funcType == 0)
+					{
+						param = new TransferParam(TransferType.GAMMA, readS15Fixed16Number(this.iccBuff, tagOfst + 12));
+						return param;
+					}
+					else if (funcType == 3)
+					{
+						params[0] = readS15Fixed16Number(this.iccBuff, tagOfst + 12);
+						params[1] = readS15Fixed16Number(this.iccBuff, tagOfst + 16);
+						params[2] = readS15Fixed16Number(this.iccBuff, tagOfst + 20);
+						params[3] = readS15Fixed16Number(this.iccBuff, tagOfst + 24);
+						params[4] = readS15Fixed16Number(this.iccBuff, tagOfst + 28);
+						params[5] = 0;
+						params[6] = 0;
+						param = new TransferParam();
+						param.set(TransferType.PARAM1, params);
+						return param;
+					}
+					else if (funcType == 4)
+					{
+						params[0] = readS15Fixed16Number(this.iccBuff, tagOfst + 12);
+						params[1] = readS15Fixed16Number(this.iccBuff, tagOfst + 16);
+						params[2] = readS15Fixed16Number(this.iccBuff, tagOfst + 20);
+						params[3] = readS15Fixed16Number(this.iccBuff, tagOfst + 24);
+						params[4] = readS15Fixed16Number(this.iccBuff, tagOfst + 28);
+						params[5] = readS15Fixed16Number(this.iccBuff, tagOfst + 32);
+						params[6] = readS15Fixed16Number(this.iccBuff, tagOfst + 36);
+						param = new TransferParam();
+						param.set(TransferType.PARAM1, params);
+						return param;
+					}
+				}
+				else
+				{
+					return null;
+				}
+			}
+			i++;
+		}
+		return null;
+	}
+	
 	public ColorPrimaries getColorPrimaries()
 	{
 		int cnt = ByteTool.readMInt32(this.iccBuff, 128);
