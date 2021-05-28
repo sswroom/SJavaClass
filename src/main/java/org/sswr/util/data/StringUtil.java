@@ -232,6 +232,102 @@ public class StringUtil
 	}
 
 	/**
+	* Convert byte array to hexadecimal String
+	*
+	* @param  buff  byte array to convert
+	* @param  index  start index of the data
+	* @param  len  length of the data
+	* @return    Upper case Hexadecimal String, must be 2 * len characters long
+	*/
+	public static String toHex(byte buff[], int index, int len)
+	{
+		int i = index;
+		int j = index + len;
+		int k = 0;
+		int v;
+		char carr[] = new char[len << 1];
+		while (i < j)
+		{
+			v = buff[i] & 0xff;
+			carr[k] = HEX_ARRAY[v >> 4];
+			carr[k + 1] = HEX_ARRAY[v & 15];
+			i++;
+			k += 2;
+		}
+		return new String(carr);
+	}
+
+	/**
+	* Convert byte array to hexadecimal String
+	*
+	* @param  buff  byte array to convert
+	* @param  ch  Char to seperate for every byte
+	* @param  lbt  LineBreakType to seperate for every 16 bytes
+	* @param  sb  StringBuilder to build the output string
+	*/
+	public static void toHex(byte buff[], char ch, LineBreakType lbt, StringBuilder sb)
+	{
+		int i = 0;
+		int j = buff.length;
+		int v;
+		if (ch != 0)
+		{
+			while (i < j)
+			{
+				v = buff[i] & 0xff;
+				sb.append(HEX_ARRAY[v >> 4]);
+				sb.append(HEX_ARRAY[v & 15]);
+				sb.append(ch);
+				i++;
+				if ((i & 15) == 0)
+				{
+					switch (lbt)
+					{
+					case NONE:
+						break;
+					case CR:
+						sb.append('\r');
+						break;
+					case LF:
+						sb.append('\n');
+						break;
+					case CRLF:
+						sb.append("\r\n");
+						break;
+					}
+				}
+			}
+		}
+		else
+		{
+			while (i < j)
+			{
+				v = buff[i] & 0xff;
+				sb.append(HEX_ARRAY[v >> 4]);
+				sb.append(HEX_ARRAY[v & 15]);
+				i++;
+				if ((i & 15) == 0)
+				{
+					switch (lbt)
+					{
+					case NONE:
+						break;
+					case CR:
+						sb.append('\r');
+						break;
+					case LF:
+						sb.append('\n');
+						break;
+					case CRLF:
+						sb.append("\r\n");
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	/**
 	* Parse String to Timestamp
 	*
 	* @param  s  String to parse, format must be either:

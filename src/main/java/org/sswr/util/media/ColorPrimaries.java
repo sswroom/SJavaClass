@@ -6,11 +6,11 @@ import org.sswr.util.basic.Vector3;
 
 public class ColorPrimaries
 {
-	private ColorType colorType;
-	private Point r;
-	private Point g;
-	private Point b;
-	private Point w;
+	public ColorType colorType;
+	public Point r;
+	public Point g;
+	public Point b;
+	public Point w;
 
 	public ColorPrimaries()
 	{

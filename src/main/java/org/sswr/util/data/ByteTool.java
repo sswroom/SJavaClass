@@ -9,6 +9,26 @@ public class ByteTool {
 			((buff[index + 3] & 0xff) << 24);
 	}
 
+	public static int readMInt32(byte buff[], int index)
+	{
+		return ((buff[index] & 0xff) << 24) | 
+			((buff[index + 1] & 0xff) << 16) |
+			((buff[index + 2] & 0xff) << 8) |
+			(buff[index + 3] & 0xff);
+	}
+
+	public static int readMUInt16(byte buff[], int index)
+	{
+		return ((buff[index] & 0xff) << 8) | 
+			(buff[index + 1] & 0xff);
+	}
+
+	public static int readMInt16(byte buff[], int index)
+	{
+		return (((int)buff[index]) << 8) | 
+			(buff[index + 1] & 0xff);
+	}
+
 	public static long readLong(byte buff[], int index)
 	{
 		return ((long) buff[index + 7] << 56)
