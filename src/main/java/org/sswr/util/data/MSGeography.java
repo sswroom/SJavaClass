@@ -14,7 +14,7 @@ public class MSGeography
 		{
 			return null;
 		}
-		int srid = ByteTool.readInt(buff, 0);
+		int srid = ByteTool.readInt32(buff, 0);
 		GeometryFactory factory = new GeometryFactory(new PrecisionModel(), srid);
 		if (buff[4] == 1 || buff[4] == 2) //version 1 or 2
 		{
@@ -39,20 +39,20 @@ public class MSGeography
 				{
 					return null;
 				}
-				nPoints = ByteTool.readInt(buff, 6);
+				nPoints = ByteTool.readInt32(buff, 6);
 				pointInd = 10;
 				ind = 10 + nPoints * 16;
 				if (buff.length < ind + 4)
 				{
 					return null;
 				}
-				nFigures = ByteTool.readInt(buff, ind);
+				nFigures = ByteTool.readInt32(buff, ind);
 				ind += 4 + nFigures * 5;
 				if (buff.length < ind + 4)
 				{
 					return null;
 				}
-				nShapes = ByteTool.readInt(buff, ind);
+				nShapes = ByteTool.readInt32(buff, ind);
 				shapeInd = ind + 4;
 				if (buff.length < ind + 4 + nShapes * 9)
 				{
