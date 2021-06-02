@@ -48,4 +48,36 @@ public class JSText
 		sb.append('\'');
 		return sb.toString();
 	}
+
+	public static void toJSTextDQuote(StringBuilder sb, String v)
+	{
+		char carr[] = v.toCharArray();
+		char c;
+		int i = 0;
+		int j = carr.length;
+		sb.append('\"');
+		while (i < j)
+		{
+			c = carr[i];
+			switch (c)
+			{
+			case '\"':
+				sb.append('\\');
+				sb.append('\"');
+				break;
+			case '\n':
+				sb.append('\\');
+				sb.append('n');
+				break;
+			case '\r':
+				sb.append('\\');
+				sb.append('n');
+				break;
+			default:
+				sb.append(c);
+				break;
+			}
+		}
+		sb.append('\"');
+	}
 }
