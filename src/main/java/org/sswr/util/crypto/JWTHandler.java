@@ -9,12 +9,8 @@ import java.util.Base64.Decoder;
 import java.util.Base64.Encoder;
 
 import org.sswr.util.data.DataTools;
-import org.sswr.util.data.JSONBase;
 import org.sswr.util.data.JSONBuilder;
-import org.sswr.util.data.JSONNumber;
-import org.sswr.util.data.JSONObject;
-import org.sswr.util.data.JSONString;
-import org.sswr.util.data.JSONBase.JSType;
+import org.sswr.util.data.JSONParser;
 import org.sswr.util.data.JSONBuilder.ObjectType;
 
 public class JWTHandler
@@ -126,14 +122,16 @@ public class JWTHandler
 		Decoder b64urldec = Base64.getUrlDecoder();
 		String header = new String(b64urldec.decode(token.substring(0, i1)), StandardCharsets.UTF_8);
 		String payload = new String(b64urldec.decode(token.substring(i1 + 1, i2)), StandardCharsets.UTF_8);
-		JSONBase hdrJson = JSONBase.parseJSONStr(header);
+		Object hdrJson = JSONParser.parse(header);
 		Algorithm tokenAlg = null;
-		if (hdrJson != null && hdrJson.getJSType() == JSType.OBJECT)
+		if (hdrJson != null && hdrJson instanceof Map)
 		{
-			JSONBase algJson = ((JSONObject)hdrJson).getObjectValue("alg");
-			if (algJson != null && algJson.getJSType() == JSType.STRING)
+			@SuppressWarnings("unchecked")
+			Map<String, Object> hdrMap = (Map<String, Object>)hdrJson;
+			Object algJson = hdrMap.get("alg");
+			if (algJson != null)
 			{
-				tokenAlg = DataTools.getEnum(Algorithm.class, ((JSONString)algJson).getValue());
+				tokenAlg = DataTools.getEnum(Algorithm.class, algJson.toString());
 			}
 		}
 //		System.out.println("Token Alg = "+tokenAlg);
@@ -168,62 +166,84 @@ public class JWTHandler
 		}
 
 		param.clear();
-		JSONBase payloadJson = JSONBase.parseJSONStr(payload);
-		if (payloadJson == null || payloadJson.getJSType() != JSType.OBJECT)
+		Object payloadJson = JSONParser.parse(payload);
+		if (payloadJson == null || !(payloadJson instanceof Map))
 		{
 			return null;
 		}
+		@SuppressWarnings("unchecked")
+		Map<String, Object> payloadMap = (Map<String, Object>)payloadJson;
 		Map<String, String> retMap = new HashMap<String, String>();
-		JSONObject payloadObj = (JSONObject)payloadJson;
-		JSONBase json;
-		Iterator<String> itNames = payloadObj.getObjectNames().iterator();
+		Object json;
+		Iterator<String> itNames = payloadMap.keySet().iterator();
 		String name;
 		while (itNames.hasNext())
 		{
 			name = itNames.next();
-			json = payloadObj.getObjectValue(name);
+			json = payloadMap.get(name);
 			switch (name)
 			{
 			case "iss":
-				if (json != null && json.getJSType() == JSType.STRING)
+				if (json != null && json.getClass().equals(String.class))
 				{
-					param.setIssuer(((JSONString)json).getValue());
+					param.setIssuer((String)json);
 				}
 				break;
 			case "sub":
-				if (json != null && json.getJSType() == JSType.STRING)
+				if (json != null && json.getClass().equals(String.class))
 				{
-					param.setSubject(((JSONString)json).getValue());
+					param.setSubject((String)json);
 				}
 				break;
 			case "aud":
-				if (json != null && json.getJSType() == JSType.STRING)
+				if (json != null && json.getClass().equals(String.class))
 				{
-					param.setAudience(((JSONString)json).getValue());
+					param.setAudience((String)json);
 				}
 				break;
 			case "exp":
-				if (json != null && json.getJSType() == JSType.NUMBER)
+				if (json != null)
 				{
-					param.setExpirationTime((long)((JSONNumber)json).getValue());
+					if (json instanceof Integer)
+					{
+						param.setExpirationTime(((Integer)json).intValue());
+					}
+					else if (json instanceof Long)
+					{
+						param.setExpirationTime(((Long)json).longValue());
+					}
 				}
 				break;
 			case "nbf":
-				if (json != null && json.getJSType() == JSType.NUMBER)
+				if (json != null)
 				{
-					param.setNotBefore((long)((JSONNumber)json).getValue());
+					if (json instanceof Integer)
+					{
+						param.setNotBefore(((Integer)json).intValue());
+					}
+					else if (json instanceof Long)
+					{
+						param.setNotBefore(((Long)json).longValue());
+					}
 				}
 				break;
 			case "iat":
-				if (json != null && json.getJSType() == JSType.NUMBER)
+				if (json != null)
 				{
-					param.setIssuedAt((long)((JSONNumber)json).getValue());
+					if (json instanceof Integer)
+					{
+						param.setIssuedAt(((Integer)json).intValue());
+					}
+					else if (json instanceof Long)
+					{
+						param.setIssuedAt(((Long)json).longValue());
+					}
 				}
 				break;
 			case "jti":
-				if (json != null && json.getJSType() == JSType.STRING)
+				if (json != null && json.getClass().equals(String.class))
 				{
-					param.setJWTId(((JSONString)json).getValue());
+					param.setJWTId((String)json);
 				}
 				break;
 			default:
@@ -231,9 +251,9 @@ public class JWTHandler
 				{
 					retMap.put(name, null);
 				}
-				else if (json.getJSType() == JSType.STRING)
+				else if (json.getClass().equals(String.class))
 				{
-					retMap.put(name, ((JSONString)json).getValue());
+					retMap.put(name, (String)json);
 				}
 				else
 				{
