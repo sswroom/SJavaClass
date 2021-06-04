@@ -5,15 +5,29 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.Part;
 
+import org.sswr.util.data.JSONBase;
+import org.sswr.util.data.JSONBool;
+import org.sswr.util.data.JSONNumber;
+import org.sswr.util.data.JSONObject;
+import org.sswr.util.data.JSONString;
 import org.sswr.util.data.StringUtil;
+import org.sswr.util.data.JSONBase.JSType;
 import org.sswr.util.io.FileUtil;
 
-public class HttpUtil {
+public class HttpUtil
+{
+	public static final String PART_SEPERATOR = "\t";
 	private static final int FILE_BUFFER_SIZE = 65536;
 
 	public static String getSiteRoot(HttpServletRequest req)
@@ -253,5 +267,126 @@ public class HttpUtil {
 	public static boolean responseFileDownload(File file, String fileName, HttpServletRequest req, HttpServletResponse resp) throws IOException
 	{
 		return responseFile(file, true, fileName, req, resp);
+	}
+
+	public static Map<String, String> parseParams(HttpServletRequest req, List<Part> fileList)
+	{
+		String contentType = req.getContentType();
+		if (contentType != null)
+		{
+			if (contentType.startsWith("multipart/form-data") || contentType.startsWith("multipart/mixed"))
+			{
+				try
+				{
+					Collection<Part> parts = req.getParts();
+					Object partArr[] = parts.toArray();
+					Part part;
+					int i = 0;
+					int j = partArr.length;
+					Map<String, String> retMap = new HashMap<String, String>();
+					while (i < j)
+					{
+						part = (Part)partArr[i];
+						if (part.getSubmittedFileName() != null)
+						{
+							if (fileList != null)
+							{
+								fileList.add(part);
+							}
+						}
+						else
+						{
+							String name = part.getName();
+							String value = new String(part.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+							String oldVal = retMap.get(name);
+							if (oldVal == null)
+							{
+								retMap.put(name, value);
+							}
+							else
+							{
+								retMap.put(name, oldVal+PART_SEPERATOR+value);
+							}
+						}
+						i++;
+					}
+					return retMap;
+				}
+				catch (Exception ex)
+				{
+					ex.printStackTrace();
+					return new HashMap<String, String>();
+				}
+			}
+			else if (contentType.equals("application/x-www-form-urlencoded"))
+			{
+				Map<String, String[]> paramMap = req.getParameterMap();
+				Iterator<String> itKeys = paramMap.keySet().iterator();
+				String key;
+				String vals[];
+				Map<String, String> retMap = new HashMap<String, String>();
+				while (itKeys.hasNext())
+				{
+					key = itKeys.next();
+					vals = paramMap.get(key);
+					if (vals.length == 1)
+					{
+						retMap.put(key, vals[0]);
+					}
+					else
+					{
+						retMap.put(key, StringUtil.join(vals, PART_SEPERATOR));
+					}
+				}
+				return retMap;
+			}
+			else if (contentType.equals("application/json"))
+			{
+				try
+				{
+					byte[] buff = req.getInputStream().readAllBytes();
+					JSONBase json = JSONBase.parseJSONStr(new String(buff, StandardCharsets.UTF_8));
+					if (json == null || json.getJSType() != JSType.OBJECT)
+					{
+						return new HashMap<String, String>();
+					}
+					JSONObject o = (JSONObject)json;
+					HashMap<String, String> retMap = new HashMap<String, String>();
+					Iterator<String> itNames = o.getObjectNames().iterator();
+					String name;
+					while (itNames.hasNext())
+					{
+						name = itNames.next();
+						json = o.getObjectValue(name);
+						switch (json.getJSType())
+						{
+						case NUMBER:
+							retMap.put(name, ""+((JSONNumber)json).getValue());
+							break;
+						case STRING:
+							retMap.put(name, ((JSONString)json).getValue());
+							break;
+						case BOOL:
+							retMap.put(name, ""+((JSONBool)json).getValue());
+							break;
+						case NULL:
+							retMap.put(name, null);
+							break;
+						case OBJECT:
+						case ARRAY:
+						default:
+						}
+					}
+					return retMap;
+				}
+				catch (IOException ex)
+				{
+					ex.printStackTrace();
+					return new HashMap<String, String>();
+				}
+			}
+		}
+
+		return new HashMap<String, String>();
 	}
 }
