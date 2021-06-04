@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -16,13 +17,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
 
-import org.sswr.util.data.JSONBase;
-import org.sswr.util.data.JSONBool;
-import org.sswr.util.data.JSONNumber;
-import org.sswr.util.data.JSONObject;
-import org.sswr.util.data.JSONString;
+import org.sswr.util.data.DataTools;
+import org.sswr.util.data.JSONParser;
 import org.sswr.util.data.StringUtil;
-import org.sswr.util.data.JSONBase.JSType;
 import org.sswr.util.io.FileUtil;
 
 public class HttpUtil
@@ -269,7 +266,7 @@ public class HttpUtil
 		return responseFile(file, true, fileName, req, resp);
 	}
 
-	public static Map<String, String> parseParams(HttpServletRequest req, List<Part> fileList)
+	public static Map<String, Object> parseParams(HttpServletRequest req, List<Part> fileList)
 	{
 		String contentType = req.getContentType();
 		if (contentType != null)
@@ -283,7 +280,7 @@ public class HttpUtil
 					Part part;
 					int i = 0;
 					int j = partArr.length;
-					Map<String, String> retMap = new HashMap<String, String>();
+					Map<String, Object> retMap = new HashMap<String, Object>();
 					while (i < j)
 					{
 						part = (Part)partArr[i];
@@ -298,14 +295,23 @@ public class HttpUtil
 						{
 							String name = part.getName();
 							String value = new String(part.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
-							String oldVal = retMap.get(name);
+							Object oldVal = retMap.get(name);
 							if (oldVal == null)
 							{
 								retMap.put(name, value);
 							}
+							else if (oldVal instanceof List)
+							{
+								@SuppressWarnings("unchecked")
+								List<Object> sarr = (List<Object>)oldVal;
+								sarr.add(value);
+							}
 							else
 							{
-								retMap.put(name, oldVal+PART_SEPERATOR+value);
+								List<Object> sarr = new ArrayList<Object>();
+								sarr.add(oldVal);
+								sarr.add(value);
+								retMap.put(name, sarr);
 							}
 						}
 						i++;
@@ -315,7 +321,7 @@ public class HttpUtil
 				catch (Exception ex)
 				{
 					ex.printStackTrace();
-					return new HashMap<String, String>();
+					return new HashMap<String, Object>();
 				}
 			}
 			else if (contentType.equals("application/x-www-form-urlencoded"))
@@ -324,7 +330,7 @@ public class HttpUtil
 				Iterator<String> itKeys = paramMap.keySet().iterator();
 				String key;
 				String vals[];
-				Map<String, String> retMap = new HashMap<String, String>();
+				Map<String, Object> retMap = new HashMap<String, Object>();
 				while (itKeys.hasNext())
 				{
 					key = itKeys.next();
@@ -335,7 +341,7 @@ public class HttpUtil
 					}
 					else
 					{
-						retMap.put(key, StringUtil.join(vals, PART_SEPERATOR));
+						retMap.put(key, DataTools.createList(vals));
 					}
 				}
 				return retMap;
@@ -345,48 +351,28 @@ public class HttpUtil
 				try
 				{
 					byte[] buff = req.getInputStream().readAllBytes();
-					JSONBase json = JSONBase.parseJSONStr(new String(buff, StandardCharsets.UTF_8));
-					if (json == null || json.getJSType() != JSType.OBJECT)
+					Object json = JSONParser.parse(new String(buff, StandardCharsets.UTF_8));
+					if (json == null || !(json instanceof Map))
 					{
-						return new HashMap<String, String>();
+						return new HashMap<String, Object>();
 					}
-					JSONObject o = (JSONObject)json;
-					HashMap<String, String> retMap = new HashMap<String, String>();
-					Iterator<String> itNames = o.getObjectNames().iterator();
-					String name;
-					while (itNames.hasNext())
-					{
-						name = itNames.next();
-						json = o.getObjectValue(name);
-						switch (json.getJSType())
-						{
-						case NUMBER:
-							retMap.put(name, ""+((JSONNumber)json).getValue());
-							break;
-						case STRING:
-							retMap.put(name, ((JSONString)json).getValue());
-							break;
-						case BOOL:
-							retMap.put(name, ""+((JSONBool)json).getValue());
-							break;
-						case NULL:
-							retMap.put(name, null);
-							break;
-						case OBJECT:
-						case ARRAY:
-						default:
-						}
-					}
+					@SuppressWarnings("unchecked")
+					HashMap<String, Object> retMap = (HashMap<String, Object>)json;
 					return retMap;
 				}
 				catch (IOException ex)
 				{
 					ex.printStackTrace();
-					return new HashMap<String, String>();
+					return new HashMap<String, Object>();
+				}
+				catch (IllegalArgumentException ex)
+				{
+					ex.printStackTrace();
+					return new HashMap<String, Object>();
 				}
 			}
 		}
 
-		return new HashMap<String, String>();
+		return new HashMap<String, Object>();
 	}
 }

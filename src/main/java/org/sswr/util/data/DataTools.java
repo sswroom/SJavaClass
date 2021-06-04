@@ -1095,4 +1095,62 @@ public class DataTools {
 			return ret;
 		}
 	}
+
+	public static List<String> createList(String []sarr)
+	{
+		List<String> retList = new ArrayList<String>();
+		int i = 0;
+		int j = sarr.length;
+		while (i < j)
+		{
+			retList.add(sarr[i]);
+			i++;
+		}
+		return retList;
+	}
+
+	public static Map<String, String> toStringStringMap(Map<String, Object> map, String joinStr)
+	{
+		if (map == null)
+		{
+			return null;
+		}
+		Map<String, String> retMap = new HashMap<String, String>();
+		Iterator<String> itName = map.keySet().iterator();
+		String name;
+		Object v;
+		while (itName.hasNext())
+		{
+			name = itName.next();
+			v = map.get(name);
+			if (v == null)
+			{
+				retMap.put(name, null);
+			}
+			else if (v instanceof Iterable)
+			{
+				@SuppressWarnings("unchecked")
+				Iterable<Object> varr = (Iterable<Object>)v;
+				Iterator<Object> itV = varr.iterator();
+				StringBuilder sb = new StringBuilder();
+				boolean found = false;
+				while (itV.hasNext())
+				{
+					v = itV.next();
+					if (found)
+					{
+						sb.append(joinStr);
+					}
+					found = true;
+					sb.append(v.toString());
+				}
+				retMap.put(name, sb.toString());
+			}
+			else
+			{
+				retMap.put(name, v.toString());
+			}
+		}
+		return retMap;
+	}
 }
