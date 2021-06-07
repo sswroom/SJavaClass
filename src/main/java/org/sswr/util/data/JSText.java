@@ -77,6 +77,7 @@ public class JSText
 				sb.append(c);
 				break;
 			}
+			i++;
 		}
 		sb.append('\"');
 	}
