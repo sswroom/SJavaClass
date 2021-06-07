@@ -232,4 +232,12 @@ public class ByteTool {
 			i++;
 		}
 	}
+
+	public static void arrayXOR(byte destArr[], int destOfst, byte srcArr1[], int srcOfst1, byte srcArr2[], int srcOfst2, int size)
+	{
+		while (size-- > 0)
+		{
+			destArr[destOfst++] = (byte)(srcArr1[srcOfst1++] ^ srcArr2[srcOfst2++]);
+		}
+	}
 }
