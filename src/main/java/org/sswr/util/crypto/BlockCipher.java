@@ -62,7 +62,7 @@ public abstract class BlockCipher
 			while (inSize >= blockSize)
 			{
 				ByteTool.arrayXOR(blk, 0, inBuff, inOfst, blk, 0, this.blockSize);
-				this.encryptBlock(inBuff, inOfst, outBuff, outOfst, encParam);
+				this.encryptBlock(blk, 0, outBuff, outOfst, encParam);
 				ByteTool.copyArray(blk, 0, outBuff, outOfst, this.blockSize);
 				inOfst += this.blockSize;
 				outOfst += this.blockSize;
@@ -71,7 +71,7 @@ public abstract class BlockCipher
 			if (inSize > 0)
 			{
 				ByteTool.arrayXOR(blk, 0, inBuff, inOfst, blk, 0, inSize);
-				this.encryptBlock(inBuff, inOfst, outBuff, outOfst, encParam);
+				this.encryptBlock(blk, 0, outBuff, outOfst, encParam);
 				outOfst += this.blockSize;
 			}
 			return outBuff;
