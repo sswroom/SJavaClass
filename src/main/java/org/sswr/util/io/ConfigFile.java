@@ -92,13 +92,12 @@ public class ConfigFile
 		{
 			category = "";
 		}
-		Map<String, String> cate = this.cfgVals.get(category);
-		Set<String> cateVal = cate.keySet();
+		Set<String> cateVal = this.getKeys(category);
 		Iterator<String> itCate = cateVal.iterator();
 		while (itCate.hasNext())
 		{
 			String key = itCate.next();
-			cfg.setValue("", key, cate.get(key));
+			cfg.setValue("", key, this.getValue(category, key));
 		}
 		return cfg;
 	}
@@ -106,8 +105,7 @@ public class ConfigFile
 	public String toString()
 	{
 		StringBuilder sb = new StringBuilder();
-		Set<String> cates = this.cfgVals.keySet();
-		Map<String, String> vals;
+		Set<String> cates = this.getCateList();
 		Iterator<String> itCate = cates.iterator();
 		String key;
 		Iterator<String> itKey;
@@ -115,8 +113,7 @@ public class ConfigFile
 		while (itCate.hasNext())
 		{
 			cate = itCate.next();
-			vals = this.cfgVals.get(cate);
-			itKey = vals.keySet().iterator();
+			itKey = this.getKeys(cate).iterator();
 			while (itKey.hasNext())
 			{
 				key = itKey.next();
@@ -126,7 +123,7 @@ public class ConfigFile
 				}
 				sb.append(key);
 				sb.append("=");
-				sb.append(vals.get(key));
+				sb.append(this.getValue(cate, key));
 				sb.append("\r\n");
 			}
 		}
@@ -153,17 +150,16 @@ public class ConfigFile
 
 	public ConfigFile merge(ConfigFile cfg)
 	{
-		Iterator<String> itCates = cfg.cfgVals.keySet().iterator();
+		Iterator<String> itCates = cfg.getCateList().iterator();
 		while (itCates.hasNext())
 		{
 			String cate = itCates.next();
-			Map<String, String> cfgCate = cfg.cfgVals.get(cate);
-			Iterator<String> itKeys = cfgCate.keySet().iterator();
+			Iterator<String> itKeys = cfg.getKeys(cate).iterator();
 			String key;
 			while (itKeys.hasNext())
 			{
 				key = itKeys.next();
-				this.setValue(cate, key, cfgCate.get(key));
+				this.setValue(cate, key, cfg.getValue(cate, key));
 			}
 		}
 		return this;
