@@ -240,4 +240,12 @@ public class ByteTool {
 			destArr[destOfst++] = (byte)(srcArr1[srcOfst1++] ^ srcArr2[srcOfst2++]);
 		}
 	}
+
+	public static void arrayFill(byte destArr[], int destOfst, int size, byte b)
+	{
+		while (size-- > 0)
+		{
+			destArr[destOfst++] = b;
+		}
+	}
 }
