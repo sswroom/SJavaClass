@@ -265,7 +265,7 @@ public class HttpUtil
 	{
 		return responseFile(file, true, fileName, req, resp);
 	}
-
+	
 	public static Map<String, Object> parseParams(HttpServletRequest req, List<Part> fileList)
 	{
 		String contentType = req.getContentType();
@@ -324,7 +324,7 @@ public class HttpUtil
 					return new HashMap<String, Object>();
 				}
 			}
-			else if (contentType.equals("application/x-www-form-urlencoded"))
+			else if (contentType.startsWith("application/x-www-form-urlencoded"))
 			{
 				Map<String, String[]> paramMap = req.getParameterMap();
 				Iterator<String> itKeys = paramMap.keySet().iterator();
@@ -346,7 +346,7 @@ public class HttpUtil
 				}
 				return retMap;
 			}
-			else if (contentType.equals("application/json"))
+			else if (contentType.startsWith("application/json"))
 			{
 				try
 				{
