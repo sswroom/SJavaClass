@@ -78,6 +78,90 @@ public class ByteTool {
 		buff[index + 7] = (byte)(val & 0xff);
 	}
 
+	public static int readUTF8(StringBuilder sb, byte dataBuff[], int dataOfst)
+	{
+		byte b = dataBuff[dataOfst];
+		char code;
+		if (b < 0x80)
+		{
+			sb.append((char)b);
+			return dataOfst + 1;
+		}
+		else if ((b & 0xe0) == 0xc0)
+		{
+			sb.append((char)(((b & 0x1f) << 6) | (dataBuff[dataOfst + 1] & 0x3f)));
+			return dataOfst + 2;
+		}
+		else if ((b & 0xf0) == 0xe0)
+		{
+			sb.append((char)(((b & 0x0f) << 12) | ((dataBuff[dataOfst + 1] & 0x3f) << 6) | (dataBuff[dataOfst + 2] & 0x3f)));
+			return dataOfst + 3;
+		}
+		else if ((b & 0xf8) == 0xf0)
+		{
+			code = (char)(((b & 0x7) << 18) | ((dataBuff[0] & 0x3f) << 12) | ((dataBuff[1] & 0x3f) << 6) | (dataBuff[2] & 0x3f));
+			sb.append(code);
+			return dataOfst + 4;
+		}
+		else if ((b & 0xfc) == 0xf8)
+		{
+			code = (char)(((b & 0x3) << 24) | ((dataBuff[0] & 0x3f) << 18) | ((dataBuff[1] & 0x3f) << 12) | ((dataBuff[2] & 0x3f) << 6) | (dataBuff[3] & 0x3f));
+			sb.append(code);
+			return dataOfst + 5;
+		}
+		else if ((b & 0xfe) == 0xfc)
+		{
+			code = (char)(((b & 0x1) << 30) | ((dataBuff[0] & 0x3f) << 24) | ((dataBuff[1] & 0x3f) << 18) | ((dataBuff[2] & 0x3f) << 12) | ((dataBuff[3] & 0x3f) << 6) | (dataBuff[4] & 0x3f));
+			sb.append(code);
+			return dataOfst + 6;
+		}
+		return dataOfst + 6;
+	}
+
+	public static int writeUTF8(byte buff[], int ofst, char c)
+	{
+		if (c < 0x80)
+		{
+			buff[ofst++] = (byte)c;
+		}
+		else if (c < 0x800)
+		{
+			buff[ofst++] = (byte)(0xc0 | (c >> 6));
+			buff[ofst++] = (byte)(0x80 | (c & 0x3f));
+		}
+		else if (c < 0x10000)
+		{
+			buff[ofst++] = (byte)(0xe0 | (c >> 12));
+			buff[ofst++] = (byte)(0x80 | ((c >> 6) & 0x3f));
+			buff[ofst++] = (byte)(0x80 | (c & 0x3f));
+		}
+		else if (c < 0x200000)
+		{
+			buff[ofst++] = (byte)(0xf0 | (c >> 18));
+			buff[ofst++] = (byte)(0x80 | ((c >> 12) & 0x3f));
+			buff[ofst++] = (byte)(0x80 | ((c >> 6) & 0x3f));
+			buff[ofst++] = (byte)(0x80 | (c & 0x3f));
+		}
+		else if (c < 0x4000000)
+		{
+			buff[ofst++] = (byte)(0xf8 | (c >> 24));
+			buff[ofst++] = (byte)(0x80 | ((c >> 18) & 0x3f));
+			buff[ofst++] = (byte)(0x80 | ((c >> 12) & 0x3f));
+			buff[ofst++] = (byte)(0x80 | ((c >> 6) & 0x3f));
+			buff[ofst++] = (byte)(0x80 | (c & 0x3f));
+		}
+		else
+		{
+			buff[ofst++] = (byte)(0xfc | ByteTool.shr32(c, 30));
+			buff[ofst++] = (byte)(0x80 | ((c >> 24) & 0x3f));
+			buff[ofst++] = (byte)(0x80 | ((c >> 18) & 0x3f));
+			buff[ofst++] = (byte)(0x80 | ((c >> 12) & 0x3f));
+			buff[ofst++] = (byte)(0x80 | ((c >> 6) & 0x3f));
+			buff[ofst++] = (byte)(0x80 | (c & 0x3f));
+		}
+		return ofst;		
+	}
+
 	public static long combineToLong(int lo, int hi)
 	{
 		return (0xffffffffL & (long)lo) | (((long)hi) << 32);
@@ -147,6 +231,23 @@ public class ByteTool {
 			return val;
 		}
 		return (val << (64 - cnt)) | (((val >> 1) & 0x7fffffffffffffffL) >> (cnt - 1));
+	}
+
+	public static byte shr8(byte val, int cnt)
+	{
+		if (cnt < 0)
+		{
+			return (byte)(val << (-cnt));
+		}
+		if (cnt >= 32)
+		{
+			return 0;
+		}
+		if (cnt == 0)
+		{
+			return val;
+		}
+		return (byte)((val & (int)0xff) >> cnt);
 	}
 
 	public static int shr32(int val, int cnt)

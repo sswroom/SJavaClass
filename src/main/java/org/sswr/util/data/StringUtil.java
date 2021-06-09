@@ -267,8 +267,24 @@ public class StringUtil
 	*/
 	public static void toHex(byte buff[], char ch, LineBreakType lbt, StringBuilder sb)
 	{
-		int i = 0;
-		int j = buff.length;
+		toHex(buff, 0, buff.length, ch, lbt, sb);
+	}
+
+
+	/**
+	* Convert byte array to hexadecimal String
+	*
+	* @param  buff  byte array to convert
+	* @param  ofst  offset of byte array to convert
+	* @param  count  number of bytes to convert
+	* @param  ch  Char to seperate for every byte
+	* @param  lbt  LineBreakType to seperate for every 16 bytes
+	* @param  sb  StringBuilder to build the output string
+	*/
+	public static void toHex(byte buff[], int ofst, int count, char ch, LineBreakType lbt, StringBuilder sb)
+	{
+		int i = ofst;
+		int j = ofst + count;
 		int v;
 		if (ch != 0)
 		{
