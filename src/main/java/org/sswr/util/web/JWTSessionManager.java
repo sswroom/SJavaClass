@@ -8,6 +8,7 @@ import java.util.Map;
 import org.sswr.util.crypto.JWTHandler;
 import org.sswr.util.crypto.JWTParam;
 import org.sswr.util.crypto.JWTHandler.Algorithm;
+import org.sswr.util.data.StringUtil;
 
 public class JWTSessionManager
 {
@@ -24,7 +25,7 @@ public class JWTSessionManager
 		this.sessMap = new HashMap<Long, JWTSession>();
 	}
 
-	public synchronized JWTSession newSession(List<String> roleList)
+	public synchronized JWTSession newSession(String userName, List<String> roleList)
 	{
 		long id = System.currentTimeMillis();
 		if (id <= this.lastId)
@@ -32,7 +33,7 @@ public class JWTSessionManager
 			id = this.lastId + 1;
 		}
 		this.lastId = id;
-		JWTSession sess = new JWTSession(id, roleList);
+		JWTSession sess = new JWTSession(id, userName, roleList);
 		sessMap.put(id, sess);
 		sess.setLastAccessTime(System.currentTimeMillis());
 		return sess;
@@ -61,5 +62,22 @@ public class JWTSessionManager
 		JWTParam param = new JWTParam();
 		param.setJWTId(""+sess.getSessId());
 		return jwt.generate(new HashMap<String, String>(), param);
+	}
+
+	public synchronized JWTSession getSession(String token)
+	{
+		JWTParam param = new JWTParam();
+		jwt.parse(token, param);
+		Long sessId = StringUtil.toLong(param.getJWTId());
+		if (sessId != null)
+		{
+			JWTSession sess = this.sessMap.get(sessId);
+			if (sess != null)
+			{
+				sess.setLastAccessTime(System.currentTimeMillis());
+			}
+			return sess;
+		}
+		return null;
 	}
 }

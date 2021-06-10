@@ -7,10 +7,12 @@ public class JWTSession
 	private long sessId;
 	private List<String> roleList;
 	private long lastAccessTime;
+	private String userName;
 
-	public JWTSession(long sessId, List<String> roleList)
+	public JWTSession(long sessId, String userName, List<String> roleList)
 	{
 		this.sessId = sessId;
+		this.userName = userName;
 		this.roleList = roleList;
 	}
 
@@ -22,6 +24,11 @@ public class JWTSession
 	public List<String> getRoleList()
 	{
 		return this.roleList;
+	}
+
+	public String getUserName()
+	{
+		return this.userName;
 	}
 
 	public void setLastAccessTime(long lastAccessTime)
