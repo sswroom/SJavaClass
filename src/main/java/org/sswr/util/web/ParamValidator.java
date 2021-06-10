@@ -24,18 +24,18 @@ import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 
 public class ParamValidator {
-	private String funcName;
-	private LogTool logger;
-	private HttpServletRequest req;
-	private HttpServletResponse resp;
-	private String errMsg;
-	private String errVarName;
-	private String errVarValue;
-	private String errFuncDesc;
-	private String exDetail;
-	private int forceRespStatus;
-	private Map<String, String> mpartReq;
-	private ArrayList<Part> mpartFiles;
+	protected String funcName;
+	protected LogTool logger;
+	protected HttpServletRequest req;
+	protected HttpServletResponse resp;
+	protected String errMsg;
+	protected String errVarName;
+	protected String errVarValue;
+	protected String errFuncDesc;
+	protected String exDetail;
+	protected int forceRespStatus;
+	protected Map<String, String> mpartReq;
+	protected ArrayList<Part> mpartFiles;
 
 	public ParamValidator(String funcName, LogTool logger, HttpServletRequest req, HttpServletResponse resp)
 	{
@@ -480,7 +480,7 @@ public class ParamValidator {
 		return errMsg != null;
 	}
 
-	private void setRespStatus(int errorStatus)
+	protected void setRespStatus(int errorStatus)
 	{
 		if (this.forceRespStatus == 0)
 		{
