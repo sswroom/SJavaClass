@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.servlet.ServletOutputStream;
+import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
@@ -27,7 +28,7 @@ public class HttpUtil
 	public static final String PART_SEPERATOR = "\t";
 	private static final int FILE_BUFFER_SIZE = 65536;
 
-	public static String getSiteRoot(HttpServletRequest req)
+	public static String getSiteRoot(ServletRequest req)
 	{
 		String url = req.getScheme()+"://"+req.getServerName();
 		if (req.getScheme().equals("https") && req.getServerPort() == 443)
@@ -46,7 +47,7 @@ public class HttpUtil
 	}
 
 
-	public static String headerEscape(HttpServletRequest req, String fileName)
+	public static String headerEscape(ServletRequest req, String fileName)
 	{
 		//Firefox:
 		{
@@ -75,7 +76,7 @@ public class HttpUtil
 		}
 	}
 
-	public static void addContentDisposition(HttpServletRequest req, HttpServletResponse resp, boolean attachment, String fileName)
+	public static void addContentDisposition(ServletRequest req, HttpServletResponse resp, boolean attachment, String fileName)
 	{
 		if (attachment)
 		{
