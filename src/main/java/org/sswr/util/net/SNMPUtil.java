@@ -41,4 +41,39 @@ public class SNMPUtil
 			i++;
 		}
 	}
+
+	public static boolean oidStartsWith(byte []oid1, int oid1Len, byte []oid2, int oid2Len)
+	{
+		if (oid1Len < oid2Len)
+			return false;
+		int i = 0;
+		while (i < oid2Len)
+		{
+			if (oid1[i] != oid2[i])
+				return false;
+			i++;
+		}
+		return true;
+	}
+
+
+	public static void oidToString(byte []pdu, int pduSize, StringBuilder sb)
+	{
+		int v = 0;
+		int i = 1;
+		sb.append((pdu[0] & 0xff) / 40);
+		sb.append('.');
+		sb.append((pdu[0] & 0xff) % 40);
+		while (i < pduSize)
+		{
+			v = (v << 7) | (pdu[i] & 0x7f);
+			if ((pdu[i] & 0x80) == 0)
+			{
+				sb.append('.');
+				sb.append(v);
+				v = 0;
+			}
+			i++;
+		}
+	}
 }

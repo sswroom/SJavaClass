@@ -85,4 +85,32 @@ public class SNMPModuleInfo
 		return DataTools.toObjectString(this);
 	}
 
+	public void toString(StringBuilder sb)
+	{
+		sb.append("Module ");
+		sb.append(this.moduleName);
+		sb.append("\r\n");
+		SNMPObjectInfo obj;
+		int i = 0;
+		int j = this.objValues.size();
+		while (i < j)
+		{
+			obj = this.objValues.get(i);
+			sb.append(obj.getObjectName());
+			sb.append(", ");
+			SNMPUtil.oidToString(obj.getOid(), obj.getOidLen(), sb);
+			sb.append(", ");
+			if (obj.getTypeName() != null)
+			{
+				sb.append(obj.getTypeName());
+			}
+			sb.append(", ");
+			if (obj.getTypeVal() != null)
+			{
+				sb.append(obj.getTypeVal());
+			}
+			sb.append("\r\n");
+			i++;
+		}
+	}
 }

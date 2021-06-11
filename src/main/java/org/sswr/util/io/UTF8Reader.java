@@ -328,7 +328,9 @@ public class UTF8Reader
 				}
 				this.fillBuffer();
 				if (this.currOfst >= this.buffSize)
+				{
 					return true;
+				}
 			}
 	
 			byte c = this.buff[this.currOfst + currSize];

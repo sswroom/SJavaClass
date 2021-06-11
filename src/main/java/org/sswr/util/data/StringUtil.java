@@ -711,6 +711,10 @@ public class StringUtil
 	public static void trimLeft(StringBuilder sb)
 	{
 		int len = sb.length();
+		if (len <= 0)
+		{
+			return;
+		}
 		char c;
 		c = sb.charAt(0);
 		if (c == ' ' || c == '\t')
@@ -748,6 +752,10 @@ public class StringUtil
 				len++;
 				break;
 			}
+		}
+		if (len < 0)
+		{
+			len = 0;
 		}
 		sb.setLength(len);
 	}
@@ -831,6 +839,10 @@ public class StringUtil
 	 */
 	public static boolean endsWith(StringBuilder sb, String value)
 	{
+		if (sb.length() < value.length())
+		{
+			return false;
+		}
 		return sb.substring(sb.length() - value.length()).equals(value);
 	}
 
@@ -844,6 +856,10 @@ public class StringUtil
 	 */
 	public static boolean endsWith(StringBuilder sb, char value)
 	{
+		if (sb.length() <= 0)
+		{
+			return false;
+		}
 		return sb.charAt(sb.length() - 1) == value;
 	}
 }

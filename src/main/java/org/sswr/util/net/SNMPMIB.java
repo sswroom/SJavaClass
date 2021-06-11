@@ -762,6 +762,7 @@ public class SNMPMIB
 								impCnt = 0;
 								while (impCnt < impSarr.length)
 								{
+									impSarr[impCnt] = impSarr[impCnt].trim();
 									impInd = StringUtil.sortedIndexOf(impModule.getObjKeys(), impSarr[impCnt]);
 									if (impInd >= 0)
 									{
@@ -950,7 +951,7 @@ public class SNMPMIB
 							obj.setOidLen(0);
 							obj.setValName(new ArrayList<String>());
 							obj.setValCont(new ArrayList<String>());
-							int ui = StringUtil.sortedIndexOf(module.getObjKeys(), obj.getObjectName());
+							int ui = StringUtil.sortedInsert(module.getObjKeys(), obj.getObjectName());
 							module.getObjValues().add(ui, obj);
 							ui = StringUtil.sortedInsert(this.globalModule.getObjKeys(), obj.getObjectName());
 							this.globalModule.getObjValues().add(ui, obj);
@@ -1183,5 +1184,22 @@ public class SNMPMIB
 		}
 		fs.close();
 		return succ;
+	}
+
+	public void toString(StringBuilder sb)
+	{
+		Iterator<SNMPModuleInfo> itModules = this.moduleMap.values().iterator();
+		while (itModules.hasNext())
+		{
+			itModules.next().toString(sb);
+			sb.append("\r\n");
+		}
+	}
+
+	public String toString()
+	{
+		StringBuilder sb = new StringBuilder();
+		toString(sb);
+		return sb.toString();
 	}
 }

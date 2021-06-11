@@ -86,10 +86,21 @@ public class FileStream extends SeekableStream
 	{
 		try
 		{
-			return this.file.read(ByteBuffer.wrap(buff, ofst, size));
+			int ret = this.file.read(ByteBuffer.wrap(buff, ofst, size));
+			if (ret == -1)
+			{
+				return 0;
+			}
+			return ret;
 		}
 		catch (IOException ex)
 		{
+			return 0;
+		}
+		catch (IndexOutOfBoundsException ex)
+		{
+			System.out.println("Ofst = "+ofst+", size = "+size);
+			ex.printStackTrace();
 			return 0;
 		}
 	}
@@ -102,6 +113,12 @@ public class FileStream extends SeekableStream
 		}
 		catch (IOException ex)
 		{
+			return 0;
+		}
+		catch (IndexOutOfBoundsException ex)
+		{
+			System.out.println("Ofst = "+ofst+", size = "+size);
+			ex.printStackTrace();
 			return 0;
 		}
 	}
