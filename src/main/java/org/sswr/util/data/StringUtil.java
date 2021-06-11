@@ -4,6 +4,7 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 public class StringUtil
@@ -668,5 +669,181 @@ public class StringUtil
 			v = -v;
 		}
 		return v;
+	}
+
+	/**
+	* Concat char array with a string
+	*
+	* @param  buff  char array to concat
+	* @param  ofst  offset of the array to concat
+	* @param  s     string to be concated
+	* @return     end offset of the string in buff
+	*/
+	public static int concat(char []buff, int ofst, String s)
+	{
+		char[] carr = s.toCharArray();
+		int i = 0;
+		int j = carr.length;
+		while (i < j)
+		{
+			buff[ofst + i] = carr[i];
+			i++;
+		}
+		return ofst + j;
+	}
+
+	/**
+	* Trim L and R of StringBuilder for white space 
+	*
+	* @param  sb  StringBuilder to trim
+	*/
+	public static void trim(StringBuilder sb)
+	{
+		trimRight(sb);
+		trimLeft(sb);
+	}
+
+	/**
+	* Trim Left of StringBuilder for white space 
+	*
+	* @param  sb  StringBuilder to trim
+	*/
+	public static void trimLeft(StringBuilder sb)
+	{
+		int len = sb.length();
+		char c;
+		c = sb.charAt(0);
+		if (c == ' ' || c == '\t')
+		{
+			int i = 1;
+			while (i < len)
+			{
+				c = sb.charAt(i);
+				if (c != ' ' && c != '\t')
+				{
+					break;
+				}
+
+				i++;
+			}
+			sb.delete(0, i);
+			len -= i;
+		}
+	}
+
+	/**
+	* Trim Right of StringBuilder for white space 
+	*
+	* @param  sb  StringBuilder to trim
+	*/
+	public static void trimRight(StringBuilder sb)
+	{
+		int len = sb.length();
+		char c;
+		while (len-- > 0)
+		{
+			c = sb.charAt(len);
+			if (c != ' ' && c != '\t')
+			{
+				len++;
+				break;
+			}
+		}
+		sb.setLength(len);
+	}
+
+	/**
+	 * Binary search of value from list
+	 * 
+	 * @param  list List of string
+	 * @param  value Value to search
+	 * @return  >= 0 for exact match
+	 *          < 0 for not matching, ~return = position for sorted value to insert
+	 */
+	public static int sortedIndexOf(List<String> list, String value)
+	{
+		int i;
+		int j;
+		int k;
+		int l;
+		i = 0;
+		j = list.size() - 1;
+		while (i <= j)
+		{
+			k = (i + j) >> 1;
+			l = list.get(k).compareTo(value);
+			if (l > 0)
+			{
+				j = k - 1;
+			}
+			else if (l < 0)
+			{
+				i = k + 1;
+			}
+			else
+			{
+				return k;
+			}
+		}
+		return -i - 1;
+	}
+
+	/**
+	 * Insert a value into sorted list
+	 * 
+	 * @param  list List of string
+	 * @param  value Value to insert
+	 * @return  index of list has been inserted
+	 */
+	public static int sortedInsert(List<String> list, String value)
+	{
+		int i = sortedIndexOf(list, value);
+		if (i >= 0)
+		{
+			list.add(i, value);
+			return i;
+		}
+		else
+		{
+			list.add(~i, value);
+			return ~i;
+		}
+	}
+
+	/**
+	 * Check whether the StringBuilder is starts with a string
+	 * 
+	 * @param  sb StringBuilder to check
+	 * @param  value Value to check
+	 * @return  whether it is starts with a string
+	 */
+	public static boolean startsWith(StringBuilder sb, String value)
+	{
+		return sb.length() >= value.length() && sb.substring(0, value.length()).equals(value);
+	}
+
+	/**
+	 * Check whether the StringBuilder is ends with a string
+	 * 
+	 * @param  sb StringBuilder to check
+	 * @param  value Value to check
+	 * @return  whether it is ends with a string
+	 */
+	public static boolean endsWith(StringBuilder sb, String value)
+	{
+		return sb.substring(sb.length() - value.length()).equals(value);
+	}
+
+
+	/**
+	 * Check whether the StringBuilder is ends with a char
+	 * 
+	 * @param  sb StringBuilder to check
+	 * @param  value Value to check
+	 * @return  whether it is ends with a char
+	 */
+	public static boolean endsWith(StringBuilder sb, char value)
+	{
+		return sb.charAt(sb.length() - 1) == value;
 	}
 }
