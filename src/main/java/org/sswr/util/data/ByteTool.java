@@ -316,11 +316,21 @@ public class ByteTool {
 
 	public static void copyArray(byte destArr[], int destOfst, byte srcArr[], int srcOfst, int size)
 	{
-		int i = 0;
-		while (i < size)
+		if (destArr == srcArr && destOfst > srcOfst)
 		{
-			destArr[destOfst + i] = srcArr[srcOfst + i];
-			i++;
+			while (size-- > 0)
+			{
+				destArr[destOfst + size] = srcArr[srcOfst + size];
+			}
+		}
+		else
+		{
+			int i = 0;
+			while (i < size)
+			{
+				destArr[destOfst + i] = srcArr[srcOfst + i];
+				i++;
+			}
 		}
 	}
 
