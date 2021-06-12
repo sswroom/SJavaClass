@@ -58,6 +58,20 @@ public class ByteTool {
 		return Double.longBitsToDouble(readInt64(buff, index));
 	}
 
+	public static void writeInt16(byte buff[], int index, int val)
+	{
+		buff[index + 0] = (byte)(val & 0xff);
+		buff[index + 1] = (byte)((val >> 8) & 0xff);
+	}
+
+	public static void writeInt32(byte buff[], int index, int val)
+	{
+		buff[index + 0] = (byte)(val & 0xff);
+		buff[index + 1] = (byte)((val >> 8) & 0xff);
+		buff[index + 2] = (byte)((val >> 16) & 0xff);
+		buff[index + 3] = (byte)((val >> 24) & 0xff);
+	}
+
 	public static void writeMInt32(byte buff[], int index, int val)
 	{
 		buff[index + 0] = (byte)((val >> 24) & 0xff);
