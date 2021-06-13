@@ -261,28 +261,28 @@ public class StringUtil
 	/**
 	* Convert byte array to hexadecimal String
 	*
+	* @param  sb  StringBuilder to build the output string
 	* @param  buff  byte array to convert
 	* @param  ch  Char to seperate for every byte
 	* @param  lbt  LineBreakType to seperate for every 16 bytes
-	* @param  sb  StringBuilder to build the output string
 	*/
-	public static void toHex(byte buff[], char ch, LineBreakType lbt, StringBuilder sb)
+	public static void appendHex(StringBuilder sb, byte buff[], char ch, LineBreakType lbt)
 	{
-		toHex(buff, 0, buff.length, ch, lbt, sb);
+		appendHex(sb, buff, 0, buff.length, ch, lbt);
 	}
 
 
 	/**
 	* Convert byte array to hexadecimal String
 	*
+	* @param  sb  StringBuilder to build the output string
 	* @param  buff  byte array to convert
 	* @param  ofst  offset of byte array to convert
 	* @param  count  number of bytes to convert
 	* @param  ch  Char to seperate for every byte
 	* @param  lbt  LineBreakType to seperate for every 16 bytes
-	* @param  sb  StringBuilder to build the output string
 	*/
-	public static void toHex(byte buff[], int ofst, int count, char ch, LineBreakType lbt, StringBuilder sb)
+	public static void appendHex(StringBuilder sb, byte buff[], int ofst, int count, char ch, LineBreakType lbt)
 	{
 		int i = ofst;
 		int j = ofst + count;
@@ -869,7 +869,6 @@ public class StringUtil
 		return sb.substring(sb.length() - value.length()).equals(value);
 	}
 
-
 	/**
 	 * Check whether the StringBuilder is ends with a char
 	 * 
@@ -884,5 +883,20 @@ public class StringUtil
 			return false;
 		}
 		return sb.charAt(sb.length() - 1) == value;
+	}
+
+	/**
+	 * Append chars to StringBuilder
+	 * 
+	 * @param  sb StringBuilder to append
+	 * @param  c  Char to append
+	 * @param  cnt Number of char to append
+	 */
+	public static void appendChar(StringBuilder sb, char c, int cnt)
+	{
+		while (cnt-- > 0)
+		{
+			sb.append(c);
+		}
 	}
 }

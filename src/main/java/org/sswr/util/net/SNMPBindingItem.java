@@ -3,7 +3,6 @@ package org.sswr.util.net;
 import java.util.Objects;
 
 import org.sswr.util.data.ByteTool;
-import org.sswr.util.data.DataTools;
 
 public class SNMPBindingItem
 {
@@ -78,6 +77,14 @@ public class SNMPBindingItem
 
 	@Override
 	public String toString() {
-		return DataTools.toObjectString(this);
+		StringBuilder sb = new StringBuilder();
+		sb.append("SNMPBindingItem{oid=");
+		SNMPUtil.oidToString(oid, 0, oidLen, sb);
+		sb.append("\", type=\"");
+		sb.append(SNMPUtil.typeGetName(valType));
+		sb.append("\", value=");
+		SNMPInfo.valueToString(valType, valBuff, 0, valLen, sb);
+		sb.append("}");
+		return sb.toString();
 	}
 }

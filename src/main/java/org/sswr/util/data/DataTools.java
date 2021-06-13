@@ -884,6 +884,14 @@ public class DataTools {
 		{
 			return JSText.quoteString(o.toString());
 		}
+		else if (cls.equals(Byte.class) || cls.equals(byte.class))
+		{
+			return o.toString();
+		}
+		else if (cls.equals(Short.class) || cls.equals(short.class))
+		{
+			return o.toString();
+		}
 		else if (cls.equals(Integer.class) || cls.equals(int.class))
 		{
 			return o.toString();

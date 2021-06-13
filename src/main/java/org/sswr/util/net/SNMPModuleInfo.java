@@ -98,7 +98,7 @@ public class SNMPModuleInfo
 			obj = this.objValues.get(i);
 			sb.append(obj.getObjectName());
 			sb.append(", ");
-			SNMPUtil.oidToString(obj.getOid(), obj.getOidLen(), sb);
+			SNMPUtil.oidToString(obj.getOid(), 0, obj.getOidLen(), sb);
 			sb.append(", ");
 			if (obj.getTypeName() != null)
 			{

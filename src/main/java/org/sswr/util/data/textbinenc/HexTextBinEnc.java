@@ -13,7 +13,7 @@ public class HexTextBinEnc extends TextBinEnc
 	public String encodeBin(byte []dataBuff, int dataOfst, int buffSize)
 	{
 		StringBuilder sb = new StringBuilder();
-		StringUtil.toHex(dataBuff, dataOfst, buffSize, ' ', LineBreakType.CRLF, sb);
+		StringUtil.appendHex(sb, dataBuff, dataOfst, buffSize, ' ', LineBreakType.CRLF);
 		return sb.toString();
 	}
 

@@ -242,17 +242,17 @@ public class SNMPUtil
 	}
 
 
-	public static void oidToString(byte []pdu, int pduSize, StringBuilder sb)
+	public static void oidToString(byte []pdu, int pduOfst, int pduSize, StringBuilder sb)
 	{
 		int v = 0;
 		int i = 1;
-		sb.append((pdu[0] & 0xff) / 40);
+		sb.append((pdu[pduOfst + 0] & 0xff) / 40);
 		sb.append('.');
-		sb.append((pdu[0] & 0xff) % 40);
+		sb.append((pdu[pduOfst + 0] & 0xff) % 40);
 		while (i < pduSize)
 		{
-			v = (v << 7) | (pdu[i] & 0x7f);
-			if ((pdu[i] & 0x80) == 0)
+			v = (v << 7) | (pdu[pduOfst + i] & 0x7f);
+			if ((pdu[pduOfst + i] & 0x80) == 0)
 			{
 				sb.append('.');
 				sb.append(v);
@@ -356,5 +356,46 @@ public class SNMPUtil
 			}
 		}
 		return retSize;
+	}
+
+	public static String typeGetName(byte type)
+	{
+		switch (type & 0xff)
+		{
+		case 2:
+			return "INTEGER";
+		case 4:
+			return "OCTET STRING";
+		case 5:
+			return "NULL";
+		case 6:
+			return "OBJECT IDENTIFIER";
+		case 0x30:
+			return "SEQUENCE";
+		case 0x40:
+			return "IpAddress";
+		case 0x41:
+			return "Counter32";
+		case 0x42:
+			return "Gauge32";
+		case 0x43:
+			return "Timeticks";
+		case 0x44:
+			return "Opaque";
+		case 0x46:
+			return "Counter64";
+		case 0xA0:
+			return "GetRequest-PDU";
+		case 0xA1:
+			return "GetNextRequest-PDU";
+		case 0xA2:
+			return "GetResponse-PDU";
+		case 0xA3:
+			return "SetRequest-PDU";
+		case 0xA4:
+			return "Trap-PDU";
+		default:
+			return "UNKNOWN";
+		}
 	}
 }
