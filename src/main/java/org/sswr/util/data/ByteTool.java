@@ -29,6 +29,13 @@ public class ByteTool {
 			(buff[index + 1] & 0xff);
 	}
 
+	public static int readMUInt24(byte buff[], int index)
+	{
+		return ((buff[index] & 0xff) << 16) | 
+			((buff[index + 1] & 0xff) << 8) | 
+			(buff[index + 2] & 0xff);
+	}
+
 	public static long readInt64(byte buff[], int index)
 	{
 		return ((long) buff[index + 7] << 56)
@@ -70,6 +77,19 @@ public class ByteTool {
 		buff[index + 1] = (byte)((val >> 8) & 0xff);
 		buff[index + 2] = (byte)((val >> 16) & 0xff);
 		buff[index + 3] = (byte)((val >> 24) & 0xff);
+	}
+
+	public static void writeMInt16(byte buff[], int index, int val)
+	{
+		buff[index + 0] = (byte)((val >> 8) & 0xff);
+		buff[index + 1] = (byte)(val & 0xff);
+	}
+
+	public static void writeMInt24(byte buff[], int index, int val)
+	{
+		buff[index + 0] = (byte)((val >> 16) & 0xff);
+		buff[index + 1] = (byte)((val >> 8) & 0xff);
+		buff[index + 2] = (byte)(val & 0xff);
 	}
 
 	public static void writeMInt32(byte buff[], int index, int val)

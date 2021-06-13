@@ -65,7 +65,7 @@ public class SNMPMIB
 		{
 			k = (i + j) >> 1;
 			obj2 = oidList.get(k);
-			l = SNMPUtil.oidCompare(obj2.getOid(), obj.getOid());
+			l = SNMPUtil.oidCompare(obj2.getOid(), obj2.getOidLen(), obj.getOid(), obj.getOidLen());
 			if (l > 0)
 			{
 				j = k - 1;

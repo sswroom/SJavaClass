@@ -395,6 +395,29 @@ public class StringUtil
 	}
 
 	/**
+	* Parse String to Integer with fail value
+	*
+	* @param  s  String to parse
+	* @param  failVal  value to assign on fail
+	* @return     failVal if it is not valid Integer
+	*/
+	public static int toIntegerS(String s, int failVal)
+	{
+		try
+		{
+			if (isNullOrEmpty(s))
+			{
+				return failVal;
+			}
+			return Integer.parseInt(s);
+		}
+		catch (NumberFormatException ex)
+		{
+			return failVal;
+		}
+	}
+
+	/**
 	* Parse String to Long
 	*
 	* @param  s  String to parse
