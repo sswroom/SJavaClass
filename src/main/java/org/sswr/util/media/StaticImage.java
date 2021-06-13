@@ -132,7 +132,7 @@ public class StaticImage
 		}
 		catch (IllegalArgumentException ex)
 		{
-			StringUtil.toHex(profile.getData(), ' ', LineBreakType.CRLF, sb);
+			StringUtil.appendHex(sb, profile.getData(), ' ', LineBreakType.CRLF);
 		}
 	}
 
