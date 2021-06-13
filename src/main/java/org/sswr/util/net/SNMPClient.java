@@ -51,9 +51,14 @@ public class SNMPClient implements UDPPacketListener
 
 	public SNMPClient()
 	{
+		this(null);
+	}
+
+	public SNMPClient(InetAddress bindaddr)
+	{
 		this.scanMut = new Object();
 		this.scanList = null;
-		this.svr = new UDPServer(null, 0, null, this, null, null, 1, false);
+		this.svr = new UDPServer(bindaddr, 0, null, this, null, null, 1, false);
 		this.reqId = 1;
 		this.respEvt = new ThreadEvent(true);
 		this.hasResp = true;

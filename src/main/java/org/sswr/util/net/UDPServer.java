@@ -173,8 +173,11 @@ public class UDPServer
 		catch (SocketException ex)
 		{
 			ex.printStackTrace();
-			this.socV4.close();
-			this.socV4 = null;
+			if (this.socV4 != null)
+			{
+				this.socV4.close();
+				this.socV4 = null;
+			}
 		}
 		catch (IOException ex)
 		{
