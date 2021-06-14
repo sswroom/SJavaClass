@@ -96,7 +96,7 @@ public class SNMPClient implements UDPPacketListener
 			pdu.appendInt32(0);
 			pdu.appendString(community);
 			pdu.sequenceBegin((byte)0xA0);
-			pdu.appendUInt32(this.reqId);
+			pdu.appendInt32(this.reqId);
 			pdu.appendInt32(0);
 			pdu.appendInt32(0);
 			pdu.sequenceBegin((byte)0x30);
@@ -143,7 +143,7 @@ public class SNMPClient implements UDPPacketListener
 			pdu.appendInt32(0);
 			pdu.appendString(community);
 			pdu.sequenceBegin((byte)0xA1);
-			pdu.appendUInt32(this.reqId);
+			pdu.appendInt32(this.reqId);
 			pdu.appendInt32(0);
 			pdu.appendInt32(0);
 			pdu.sequenceBegin((byte)0x30);
@@ -226,7 +226,7 @@ public class SNMPClient implements UDPPacketListener
 			pdu.appendInt32(0);
 			pdu.appendString(community);
 			pdu.sequenceBegin((byte)0xA0);
-			pdu.appendUInt32(this.reqId);
+			pdu.appendInt32(this.reqId);
 			pdu.appendInt32(0);
 			pdu.appendInt32(0);
 			pdu.sequenceBegin((byte)0x30);

@@ -99,6 +99,11 @@ public class SNMPUtil
 				reqId.value = ByteTool.readMInt32(pdu, i + 2);
 				i += 6;
 			}
+			else if (pdu[i + 1] == 5)
+			{
+				reqId.value = ByteTool.readMInt32(pdu, i + 3);
+				i += 7;
+			}
 			else
 			{
 				reqId.value = 0;
