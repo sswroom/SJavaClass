@@ -203,6 +203,242 @@ public class SNMPUtil
 		}
 	}
 	
+	public static SNMPErrorStatus pduParseTrapMessage(byte[] pdu, int pduOfst, int pduSize, SNMPTrapInfo trap, List<SNMPBindingItem> itemList)
+	{
+		int i;
+		if (pdu[pduOfst + 0] != 0x30)
+		{
+			return SNMPErrorStatus.UNKRESP;
+		}
+		int pduEndOfst = pduOfst + pduSize;;
+		SNMPBindingItem item;
+		SharedInt bindingLen = new SharedInt();
+		int bindingEnd;
+		SharedInt pduLen = new SharedInt();
+		i = ASN1Util.pduParseLen(pdu, pduOfst + 1, pduEndOfst, pduLen);
+		if (i > pduEndOfst)
+		{
+			return SNMPErrorStatus.UNKRESP;
+		}
+		if (i + pduLen.value != pduEndOfst)
+		{
+			return SNMPErrorStatus.UNKRESP;
+		}
+		if (pdu[i] != 2 || pdu[i + 1] != 1)
+		{
+			return SNMPErrorStatus.UNKRESP;
+		}
+		if (pdu[i + 2] == 0 || pdu[i + 2] == 1) //v1 message / v2c message
+		{
+			i += 3;
+			if (pdu[i] != 4)
+			{
+				return SNMPErrorStatus.UNKRESP;
+			}
+			i = ASN1Util.pduParseLen(pdu, i + 1, pduEndOfst, pduLen);
+			if (i > pduEndOfst)
+			{
+				return SNMPErrorStatus.UNKRESP;
+			}
+			if (i + pduLen.value >= pduEndOfst)
+			{
+				return SNMPErrorStatus.UNKRESP;
+			}
+			trap.setCommunity(new String(pdu, i, pduLen.value));
+			i += pduLen.value;
+			if ((pdu[i] & 0xff) != 0xa4)
+			{
+				return SNMPErrorStatus.UNKRESP;
+			}
+			i = ASN1Util.pduParseLen(pdu, i + 1, pduEndOfst, pduLen);
+			if (i > pduEndOfst)
+			{
+				return SNMPErrorStatus.UNKRESP;
+			}
+			if (i + pduLen.value != pduEndOfst)
+			{
+				return SNMPErrorStatus.UNKRESP;
+			}
+			if (pdu[i] != 6)
+			{
+				return SNMPErrorStatus.UNKRESP;
+			}
+			i = ASN1Util.pduParseLen(pdu, i + 1, pduEndOfst, pduLen);
+			if (i > pduEndOfst || pduLen.value > 64)
+			{
+				return SNMPErrorStatus.UNKRESP;
+			}
+			trap.setEntOID(pdu, i, pduLen.value);
+			i += pduLen.value;
+			if (pdu[i] != 0x40)
+			{
+				return SNMPErrorStatus.UNKRESP;
+			}
+			i = ASN1Util.pduParseLen(pdu, i + 1, pduEndOfst, pduLen);
+			if (pduLen.value != 4)
+			{
+				return SNMPErrorStatus.UNKRESP;
+			}
+			trap.setAgentIPv4(ByteTool.readMInt32(pdu, i));
+			i += 4;
+			if (pdu[i] != 2)
+			{
+				return SNMPErrorStatus.UNKRESP;
+			}
+			if (pdu[i + 1] == 1)
+			{
+				trap.setGenericTrap(pdu[i + 2] & 0xff);
+				i += 3;
+			}
+			else if (pdu[i + 1] == 2)
+			{
+				trap.setGenericTrap(ByteTool.readMUInt16(pdu, i + 2));
+				i += 4;
+			}
+			else if (pdu[i + 1] == 3)
+			{
+				trap.setGenericTrap(ByteTool.readMUInt24(pdu, i + 2));
+				i += 5;
+			}
+			else if (pdu[i + 1] == 4)
+			{
+				trap.setGenericTrap(ByteTool.readMInt32(pdu, i + 2));
+				i += 6;
+			}
+			else
+			{
+				return SNMPErrorStatus.UNKRESP;
+			}
+			if (pdu[i] != 2)
+			{
+				return SNMPErrorStatus.UNKRESP;
+			}
+			if (pdu[i + 1] == 1)
+			{
+				trap.setSpecificTrap(pdu[i + 2] & 0xff);
+				i += 3;
+			}
+			else if (pdu[i + 1] == 2)
+			{
+				trap.setSpecificTrap(ByteTool.readMUInt16(pdu, i + 2));
+				i += 4;
+			}
+			else if (pdu[i + 1] == 3)
+			{
+				trap.setSpecificTrap(ByteTool.readMUInt24(pdu, i + 2));
+				i += 5;
+			}
+			else if (pdu[i + 1] == 4)
+			{
+				trap.setSpecificTrap(ByteTool.readMInt32(pdu, i + 2));
+				i += 6;
+			}
+			else
+			{
+				return SNMPErrorStatus.UNKRESP;
+			}
+			if (pdu[i] != 0x43)
+			{
+				return SNMPErrorStatus.UNKRESP;
+			}
+			if (pdu[i + 1] == 1)
+			{
+				trap.setTimeStamp(pdu[i + 2] & 0xff);
+				i += 3;
+			}
+			else if (pdu[i + 1] == 2)
+			{
+				trap.setTimeStamp(ByteTool.readMUInt16(pdu, i + 2));
+				i += 4;
+			}
+			else if (pdu[i + 1] == 3)
+			{
+				trap.setTimeStamp(ByteTool.readMUInt24(pdu, i + 2));
+				i += 5;
+			}
+			else if (pdu[i + 1] == 4)
+			{
+				trap.setTimeStamp(ByteTool.readMInt32(pdu, i + 2));
+				i += 6;
+			}
+			else
+			{
+				return SNMPErrorStatus.UNKRESP;
+			}
+	
+			if (pdu[i] != 0x30)
+			{
+				return SNMPErrorStatus.UNKRESP;
+			}
+			i = ASN1Util.pduParseLen(pdu, i + 1, pduEndOfst, pduLen);
+			if (i > pduEndOfst)
+			{
+				return SNMPErrorStatus.UNKRESP;
+			}
+			if (i + pduLen.value != pduEndOfst)
+			{
+				return SNMPErrorStatus.UNKRESP;
+			}
+			while (i < pduEndOfst)
+			{
+				if (pdu[i] != 0x30)
+				{
+					return SNMPErrorStatus.UNKRESP;
+				}
+				i = ASN1Util.pduParseLen(pdu, i + 1, pduSize, bindingLen);
+				if (i > pduEndOfst)
+				{
+					return SNMPErrorStatus.UNKRESP;
+				}
+				bindingEnd = i + bindingLen.value;
+				if (pdu[i] != 6)
+				{
+					return SNMPErrorStatus.UNKRESP;
+				}
+				i = ASN1Util.pduParseLen(pdu, i + 1, pduSize, pduLen);
+				if (i > pduEndOfst || pduLen.value > 64)
+				{
+					return SNMPErrorStatus.UNKRESP;
+				}
+				if (i + pduLen.value > bindingEnd)
+				{
+					return SNMPErrorStatus.UNKRESP;
+				}
+				item = new SNMPBindingItem();
+				item.setOid(pdu, i, pduLen.value);;
+				i += pduLen.value;
+				if (i + 2 > bindingEnd)
+				{
+					return SNMPErrorStatus.UNKRESP;
+				}
+				item.setValType(pdu[i]);
+				i = ASN1Util.pduParseLen(pdu, i + 1, pduEndOfst, pduLen);
+				if (i + pduLen.value != bindingEnd)
+				{
+					return SNMPErrorStatus.UNKRESP;
+				}
+				item.setValLen(pduLen.value);
+				if (pduLen.value == 0)
+				{
+					item.setValBuff(null);
+				}
+				else
+				{
+					byte[] valBuff = new byte[pduLen.value];
+					ByteTool.copyArray(valBuff, 0, pdu, i, pduLen.value);
+					item.setValBuff(valBuff);
+				}
+				itemList.add(item);
+				i += pduLen.value;
+			}
+			return SNMPErrorStatus.NOERROR;
+		}
+		else
+		{
+			return SNMPErrorStatus.UNKRESP;
+		}
+	}
+	
 	public static int oidCompare(byte []oid1, int oid1Len, byte[] oid2, int oid2Len)
 	{
 		int i = 0;
@@ -402,5 +638,95 @@ public class SNMPUtil
 		default:
 			return "UNKNOWN";
 		}
+	}
+
+	public static boolean valueToInt32(byte type, byte[] pduBuff, int pduOfst, int valLen, SharedInt outVal)
+	{
+		switch (type)
+		{
+		case 2:
+			if (valLen == 1)
+			{
+				outVal.value = pduBuff[pduOfst + 0];
+				return true;
+			}
+			else if (valLen == 2)
+			{
+				outVal.value = ByteTool.readMInt16(pduBuff, pduOfst);
+				return true;
+			}
+			else if (valLen == 3)
+			{
+				outVal.value = ByteTool.readMInt24(pduBuff, pduOfst);
+				return true;
+			}
+			else if (valLen == 4)
+			{
+				outVal.value = ByteTool.readMInt32(pduBuff, pduOfst);
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		case 0x41:
+		case 0x42:
+		case 0x43:
+			if (valLen == 1)
+			{
+				outVal.value = pduBuff[pduOfst] & 0xff;
+				return true;
+			}
+			else if (valLen == 2)
+			{
+				outVal.value = ByteTool.readMUInt16(pduBuff, pduOfst);
+				return true;
+			}
+			else if (valLen == 3)
+			{
+				outVal.value = ByteTool.readMUInt24(pduBuff, pduOfst);
+				return true;
+			}
+			else if (valLen == 4)
+			{
+				outVal.value = ByteTool.readMInt32(pduBuff, pduOfst);
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		case 0x46:
+			if (valLen == 1)
+			{
+				outVal.value = pduBuff[pduOfst] & 0xff;
+				return true;
+			}
+			else if (valLen == 2)
+			{
+				outVal.value = ByteTool.readMUInt16(pduBuff, pduOfst);
+				return true;
+			}
+			else if (valLen == 3)
+			{
+				outVal.value = ByteTool.readMUInt24(pduBuff, pduOfst);
+				return true;
+			}
+			else if (valLen == 4)
+			{
+				outVal.value = ByteTool.readMInt32(pduBuff, pduOfst);
+				return true;
+			}
+			else if (valLen == 8)
+			{
+				outVal.value = ByteTool.readMInt32(pduBuff, pduOfst);
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+		return false;
 	}
 }
