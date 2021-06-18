@@ -267,8 +267,35 @@ public class HttpUtil
 		return responseFile(file, true, fileName, req, resp);
 	}
 	
+	private static Map<String, Object> fromParamMap(Map<String, String[]> paramMap)
+	{
+		Iterator<String> itKeys = paramMap.keySet().iterator();
+		String key;
+		String vals[];
+		Map<String, Object> retMap = new HashMap<String, Object>();
+		while (itKeys.hasNext())
+		{
+			key = itKeys.next();
+			vals = paramMap.get(key);
+			if (vals.length == 1)
+			{
+				retMap.put(key, vals[0]);
+			}
+			else
+			{
+				retMap.put(key, DataTools.createList(vals));
+			}
+		}
+		return retMap;
+
+	}
+
 	public static Map<String, Object> parseParams(HttpServletRequest req, List<Part> fileList)
 	{
+		if (req.getMethod().equals("GET"))
+		{
+			return fromParamMap(req.getParameterMap());
+		}
 		String contentType = req.getContentType();
 		if (contentType != null)
 		{
@@ -327,25 +354,7 @@ public class HttpUtil
 			}
 			else if (contentType.startsWith("application/x-www-form-urlencoded"))
 			{
-				Map<String, String[]> paramMap = req.getParameterMap();
-				Iterator<String> itKeys = paramMap.keySet().iterator();
-				String key;
-				String vals[];
-				Map<String, Object> retMap = new HashMap<String, Object>();
-				while (itKeys.hasNext())
-				{
-					key = itKeys.next();
-					vals = paramMap.get(key);
-					if (vals.length == 1)
-					{
-						retMap.put(key, vals[0]);
-					}
-					else
-					{
-						retMap.put(key, DataTools.createList(vals));
-					}
-				}
-				return retMap;
+				return fromParamMap(req.getParameterMap());
 			}
 			else if (contentType.startsWith("application/json"))
 			{
