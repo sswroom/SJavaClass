@@ -16,6 +16,7 @@ public class JWTSessionManager
 	private JWTHandler jwt;
 	private int timeoutMs;
 	private Map<Long, JWTSession> sessMap;
+	private JWTSessionListener listener;
 
 	public JWTSessionManager(String password, int timeoutMs)
 	{
@@ -51,10 +52,22 @@ public class JWTSessionManager
 			sess = (JWTSession)sessArr[i];
 			if (currTime - sess.getLastAccessTime() >= timeoutMs)
 			{
+				this.listener.sessionDestroy(sess);
 				this.sessMap.remove(sess.getSessId());
 			}
 			i++;
 		}
+	}
+
+	public synchronized boolean removeSession(JWTSession sess)
+	{
+		JWTSession removedSess = this.sessMap.remove(sess.getSessId());
+		if (removedSess != null)
+		{
+			this.listener.sessionDestroy(removedSess);
+			return true;
+		}
+		return false;
 	}
 
 	public String createToken(JWTSession sess)
@@ -79,5 +92,10 @@ public class JWTSessionManager
 			return sess;
 		}
 		return null;
+	}
+
+	public synchronized void setSessionListener(JWTSessionListener listener)
+	{
+		this.listener = listener;
 	}
 }
