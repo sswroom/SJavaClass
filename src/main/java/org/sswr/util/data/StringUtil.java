@@ -651,7 +651,7 @@ public class StringUtil
 			iVal = (int)v;
 			v = v - iVal;
 			sb.append((char)(iVal + 48));
-			if (v > 1.0e-14)
+			if (v > 1.0e-10)
 			{
 				sb.append('.');
 				v = v * 10.0;
