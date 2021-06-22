@@ -261,6 +261,37 @@ public class StringUtil
 	/**
 	* Convert byte array to hexadecimal String
 	*
+	* @param  buff  byte array to convert
+	* @param  index  start index of the data
+	* @param  len  length of the data
+	* @param  seperator  char for seperating bytes
+	* @return    Upper case Hexadecimal String, must be 3 * len - 1 characters long
+	*/
+	public static String toHex(byte buff[], int index, int len, char seperator)
+	{
+		int i = index;
+		int j = index + len;
+		int k = 0;
+		int v;
+		char carr[] = new char[len * 3 - 1];
+		while (i < j)
+		{
+			if (i > 0)
+			{
+				carr[k - 1] = seperator;
+			}
+			v = buff[i] & 0xff;
+			carr[k] = HEX_ARRAY[v >> 4];
+			carr[k + 1] = HEX_ARRAY[v & 15];
+			i++;
+			k += 3;
+		}
+		return new String(carr);
+	}
+
+	/**
+	* Convert byte array to hexadecimal String
+	*
 	* @param  sb  StringBuilder to build the output string
 	* @param  buff  byte array to convert
 	* @param  ch  Char to seperate for every byte
