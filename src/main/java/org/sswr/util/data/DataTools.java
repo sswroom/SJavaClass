@@ -4,6 +4,7 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.Inet4Address;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -911,6 +912,10 @@ public class DataTools {
 		else if (cls.equals(UUID.class))
 		{
 			return JSText.quoteString(o.toString());
+		}
+		else if (cls.equals(Inet4Address.class))
+		{
+			return JSText.quoteString(((Inet4Address)o).getHostAddress());
 		}
 		else if (cls.isEnum())
 		{

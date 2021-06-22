@@ -845,7 +845,7 @@ public class SNMPManager
 		int ret = 0;
 		if (addr instanceof Inet4Address)
 		{
-			if (addr.isMulticastAddress())
+			if (SocketUtil.getIPType(addr) == IPType.BROADCAST)
 			{
 				InetAddress agentAddr;
 				List<InetAddress> addrList = new ArrayList<InetAddress>();
