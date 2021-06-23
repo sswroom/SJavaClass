@@ -1,8 +1,15 @@
 package org.sswr.util.net;
 
 import java.net.Inet4Address;
+import java.net.Inet6Address;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.net.SocketAddress;
 import java.net.UnknownHostException;
+
+import org.sswr.util.crypto.CRC32R;
+import org.sswr.util.data.ByteTool;
 
 public class SocketUtil
 {
@@ -101,5 +108,38 @@ public class SocketUtil
 		{
 			return IPType.PRIVATE;
 		}
+	}
+
+	public static long genSocketId(Socket s)
+	{
+		int lPort = s.getLocalPort();
+		int rPort = 0;
+		InetAddress rAddr = null;
+		SocketAddress remAddr = s.getRemoteSocketAddress();
+		if (remAddr != null && (remAddr instanceof InetSocketAddress))
+		{
+			InetSocketAddress netAddr = (InetSocketAddress)remAddr;
+			rAddr = netAddr.getAddress();
+			rPort = netAddr.getPort();
+		}
+		return (calcCliId(rAddr) & (long)0xffffffff) | (((long)rPort) << 32) | (((long)lPort) << 48);
+	}
+
+	public static long calcCliId(InetAddress addr)
+	{
+		if (addr instanceof Inet4Address)
+		{
+			return ByteTool.readMInt32(((Inet4Address)addr).getAddress(), 0);
+		}
+		else if (addr instanceof Inet6Address)
+		{
+			CRC32R crc = new CRC32R();
+			byte[] ret;
+			byte[] addrBuff = addr.getAddress();
+			crc.calc(addrBuff, 0, addrBuff.length);
+			ret = crc.getValue();
+			return ByteTool.readMInt32(ret, 0);
+		}
+		return 0;
 	}
 }
