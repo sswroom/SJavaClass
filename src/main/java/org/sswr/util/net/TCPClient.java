@@ -7,15 +7,12 @@ import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.nio.ByteBuffer;
-import java.nio.channels.SocketChannel;
 
 import org.sswr.util.io.IOStream;
 
 public class TCPClient extends IOStream
 {
 	private Socket s;
-	private SocketChannel ch;
 	private long totalRecvSize;
 	private long totalSendSize;
 	long cliId;
@@ -43,7 +40,6 @@ public class TCPClient extends IOStream
 		try
 		{
 			this.s = new Socket(addr, port);
-			this.ch = this.s.getChannel();
 		}
 		catch (IOException ex)
 		{
@@ -65,7 +61,6 @@ public class TCPClient extends IOStream
 		try
 		{
 			this.s = new Socket(addr, port);
-			this.ch = this.s.getChannel();
 		}
 		catch (IOException ex)
 		{
@@ -86,7 +81,6 @@ public class TCPClient extends IOStream
 		this.totalSendSize = 0;
 		if (s != null)
 		{
-			this.ch = this.s.getChannel();
 			this.cliId = SocketUtil.genSocketId(s);
 			this.setSourceName(this.getRemoteName());
 		}
@@ -104,7 +98,7 @@ public class TCPClient extends IOStream
 		{
 			try
 			{
-				int recvSize = this.ch.read(ByteBuffer.wrap(buff, ofst, size));
+				int recvSize = this.s.getInputStream().read(buff, ofst, size);
 				if (recvSize > 0)
 				{
 					this.totalRecvSize += recvSize;
@@ -130,13 +124,9 @@ public class TCPClient extends IOStream
 		{
 			try
 			{
-				int sendSize = this.ch.write(ByteBuffer.wrap(buff, ofst, size));
-				if (sendSize > 0)
-				{
-					this.totalSendSize += sendSize;
-					return sendSize;
-				}
-				return 0;
+				this.s.getOutputStream().write(buff, ofst, size);
+				this.totalSendSize += size;
+				return size;
 			}
 			catch (IOException ex)
 			{
