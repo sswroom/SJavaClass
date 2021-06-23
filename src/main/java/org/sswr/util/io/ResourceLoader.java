@@ -11,6 +11,10 @@ public class ResourceLoader
 {
 	public static InputStream load(Class<?> cls, String resourceName)
 	{
+		if (OSInfo.getOSType() == OSType.ANDROID)
+		{
+			return cls.getClassLoader().getResourceAsStream(resourceName);
+		}
 		Module module = cls.getModule();
 		try
 		{
@@ -22,7 +26,7 @@ public class ResourceLoader
 		}
 	}
 
-	public static <T> List<T> loadObjects(Class<T> cls, String resourceName)
+	public static <T> List<T> loadObjects(Class<T> cls, String resourceName, String[] fieldNames)
 	{
 		InputStream stm = load(cls, resourceName);
 		if (stm == null)
@@ -46,9 +50,14 @@ public class ResourceLoader
 		CPPObjectParser<T> parser;
 		try
 		{
-			parser = new CPPObjectParser<T>(cls);
+			parser = new CPPObjectParser<T>(cls, fieldNames);
 		}
 		catch (NoSuchMethodException ex)
+		{
+			ex.printStackTrace();
+			return null;
+		}
+		catch (NoSuchFieldException ex)
 		{
 			ex.printStackTrace();
 			return null;
@@ -67,6 +76,7 @@ public class ResourceLoader
 				}
 				else if (c != ',')
 				{
+					System.out.println("ResourceLoader: not comma");
 					return null;
 				}
 			}

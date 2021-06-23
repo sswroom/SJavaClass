@@ -46,6 +46,15 @@ public class CharReader
 		return sb.charAt(this.charInd);
 	}
 
+	public String currLine()
+	{
+		if (this.charInd >= sb.length())
+		{
+			return "";
+		}
+		return sb.substring(this.charInd);
+	}
+
 	private boolean appendLine()
 	{
 		boolean succ = this.reader.readLine(sb, 512);

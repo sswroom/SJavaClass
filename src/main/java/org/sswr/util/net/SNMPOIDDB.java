@@ -8,9 +8,14 @@ public class SNMPOIDDB
 {
 	private static List<SNMPOIDInfo> oidList;
 
+	private static boolean loadOIDList()
+	{
+		return (oidList = ResourceLoader.loadObjects(SNMPOIDInfo.class, "SNMPOIDDB.oidList.txt", new String[] {"name", "len", "oid"})) != null;
+	}
+
 	public static void oidToNameString(byte[] pdu, int pduOfst, int pduSize, StringBuilder sb)
 	{
-		if (oidList == null && (oidList = ResourceLoader.loadObjects(SNMPOIDInfo.class, "SNMPOIDDB.oidList.txt")) == null)
+		if (oidList == null && !loadOIDList())
 		{
 			return;
 		}
@@ -43,7 +48,7 @@ public class SNMPOIDDB
 
 	public static SNMPOIDInfo oidGetEntry(byte[] pdu, int pduOfst, int pduSize)
 	{
-		if (oidList == null && (oidList = ResourceLoader.loadObjects(SNMPOIDInfo.class, "SNMPOIDDB.oidList.txt")) == null)
+		if (oidList == null && !loadOIDList())
 		{
 			return null;
 		}

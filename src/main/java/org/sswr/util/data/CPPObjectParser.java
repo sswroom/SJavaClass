@@ -13,17 +13,30 @@ public class CPPObjectParser<T>
 	public Constructor<T> constructor;
 	public List<FieldSetter> setters;
 
-	public CPPObjectParser(Class<T> cls) throws NoSuchMethodException
+	public CPPObjectParser(Class<T> cls, String[] fieldNames) throws NoSuchMethodException, NoSuchFieldException
 	{
 		this.constructor = cls.getConstructor(new Class[0]);
 		this.setters = new ArrayList<FieldSetter>();
-		Field[] fields = cls.getDeclaredFields();
-		int i = 0;
-		int j = fields.length;
-		while (i < j)
+		if (fieldNames == null)
 		{
-			setters.add(new FieldSetter(fields[i]));
-			i++;
+			Field[] fields = cls.getDeclaredFields();
+			int i = 0;
+			int j = fields.length;
+			while (i < j)
+			{
+				setters.add(new FieldSetter(fields[i]));
+				i++;
+			}
+		}
+		else
+		{
+			int i = 0;
+			int j = fieldNames.length;
+			while (i < j)
+			{
+				setters.add(new FieldSetter(cls.getDeclaredField(fieldNames[i])));
+				i++;
+			}
 		}
 	}
 
@@ -35,7 +48,9 @@ public class CPPObjectParser<T>
 		while (reader.startsWith("//"))
 		{
 			if (!reader.nextLine())
+			{
 				return null;
+			}
 			reader.skipWS();
 		}
 		if (reader.nextChar() != '{')
@@ -199,7 +214,9 @@ public class CPPObjectParser<T>
 						while (reader.startsWith("//"))
 						{
 							if (!reader.nextLine())
+							{
 								return null;
+							}
 							reader.skipWS();
 						}
 						c = reader.nextChar();
@@ -232,7 +249,9 @@ public class CPPObjectParser<T>
 				while (reader.startsWith("//"))
 				{
 					if (!reader.nextLine())
+					{
 						return null;
+					}
 					reader.skipWS();
 				}
 				c = reader.nextChar();
@@ -263,7 +282,9 @@ public class CPPObjectParser<T>
 			while (reader.startsWith("//"))
 			{
 				if (!reader.nextLine())
+				{
 					return null;
+				}
 				reader.skipWS();
 			}
 			c = reader.currChar();
