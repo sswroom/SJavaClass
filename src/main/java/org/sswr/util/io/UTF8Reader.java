@@ -33,7 +33,11 @@ public class UTF8Reader
 		}
 		try
 		{
-			this.buffSize += this.stm.read(this.buff, this.buffSize, BUFFSIZE - this.buffSize);
+			int readSize = this.stm.read(this.buff, this.buffSize, BUFFSIZE - this.buffSize);
+			if (readSize >= 0)
+			{
+				this.buffSize += readSize;
+			}
 		}
 		catch (IOException ex)
 		{

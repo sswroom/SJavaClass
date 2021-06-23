@@ -29,4 +29,9 @@ public class FieldSetter
 			this.field.set(o, v);
 		}
 	}
+
+	public Field getField()
+	{
+		return this.field;
+	}
 }
