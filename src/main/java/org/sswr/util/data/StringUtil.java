@@ -233,6 +233,42 @@ public class StringUtil
 		return v;
 	}
 
+
+	/**
+	* Convert Hexadecimal String to Long
+	*
+	* @param  s  Hexadecimal String to convert
+	* @return    Long value, null if error
+	*/
+	public static Long hex2Long(String s)
+	{
+		if (s.length() > 16)
+		{
+			return null;
+		}
+		char carr[] = s.toCharArray();
+		int i = 0;
+		int j = carr.length;
+		long v = 0;
+		while (i < j)
+		{
+			if (carr[i] >= '0' && carr[i] <= '9')
+			{
+				v = (v << 4) | (carr[i] - 0x30);
+			}
+			else if (carr[i] >= 'A' && carr[i] <= 'Z')
+			{
+				v = (v << 4) | (carr[i] - 0x37);
+			}
+			else if (carr[i] >= 'a' && carr[i] <= 'z')
+			{
+				v = (v << 4) | (carr[i] - 0x57);
+			}
+			i++;
+		}
+		return v;
+	}
+
 	/**
 	* Convert byte to Hexadecimal String
 	*
@@ -500,6 +536,10 @@ public class StringUtil
 			if (isNullOrEmpty(s))
 			{
 				return null;
+			}
+			if (s.startsWith("0x"))
+			{
+				return hex2Long(s.substring(2));
 			}
 			return Long.parseLong(s);
 		}

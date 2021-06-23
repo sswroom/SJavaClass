@@ -163,6 +163,52 @@ public class CPPObjectParser<T>
 					}
 					setters.get(objInd).set(o, iVal);
 				}
+				else if (f.getType().equals(long.class))
+				{
+					StringBuilder sb = new StringBuilder();
+					boolean isHex = false;
+					while (true)
+					{
+						c = reader.currChar();
+						if (c >= '0' && c <= '9')
+						{
+							sb.append(c);
+						}
+						else if (c == 'x' && sb.toString().equals("0"))
+						{
+							sb.append(c);
+							isHex = true;
+						}
+						else if (isHex && c >= 'A' && c <= 'F')
+						{
+							sb.append(c);
+						}
+						else if (isHex && c >= 'a' && c <= 'f')
+						{
+							sb.append(c);
+						}
+						else if (c == 'L')
+						{
+							if (reader.startsWith("LL"))
+							{
+								reader.nextChar();
+								reader.nextChar();
+							}
+							break;
+						}
+						else
+						{
+							break;
+						}
+						reader.nextChar();
+					}
+					Long lVal = StringUtil.toLong(sb.toString());
+					if (lVal == null)
+					{
+						return null;
+					}
+					setters.get(objInd).set(o, lVal);
+				}
 				else if (f.getType().equals(byte[].class))
 				{
 					List<Integer> intList = new ArrayList<Integer>();
