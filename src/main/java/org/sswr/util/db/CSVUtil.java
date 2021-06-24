@@ -106,7 +106,6 @@ public class CSVUtil {
 		return cols.toArray(new String[cols.size()]);
 	}
 
-
 	private static <T> void appendRow(StringBuilder sb, T data, List<FieldGetter<T>> getters) throws IllegalAccessException, InvocationTargetException
 	{
 		int i = 0;
@@ -117,7 +116,15 @@ public class CSVUtil {
 			{
 				sb.append(",");
 			}
-			Object o = getters.get(i).get(data);
+			Object o;
+			try
+			{
+				o = getters.get(i).get(data);
+			}
+			catch (Exception ex)
+			{
+				o = null;
+			}
 			if (o == null)
 			{
 				sb.append("\"\"");
