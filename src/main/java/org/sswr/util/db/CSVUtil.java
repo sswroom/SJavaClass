@@ -215,7 +215,10 @@ public class CSVUtil {
 	{
 		try
 		{
-			return createFile(new FileWriter(file, cs), datas, cols);
+			FileWriter writer = new FileWriter(file, cs);
+			boolean ret = createFile(writer, datas, cols);
+			writer.close();
+			return ret;
 		}
 		catch (IOException ex)
 		{
