@@ -29,7 +29,7 @@ public class ParamValidator {
 	protected HttpServletRequest req;
 	protected HttpServletResponse resp;
 	protected String errMsg;
-	protected String errVarName;
+	protected String errVarDispName;
 	protected String errVarValue;
 	protected String errFuncDesc;
 	protected String exDetail;
@@ -44,7 +44,7 @@ public class ParamValidator {
 		this.req = req;
 		this.resp = resp;
 		this.errMsg = null;
-		this.errVarName = null;
+		this.errVarDispName = null;
 		this.errVarValue = null;
 		this.errFuncDesc = null;
 		this.exDetail = null;
@@ -63,7 +63,7 @@ public class ParamValidator {
 		this.forceRespStatus = status;
 	}
 	
-	public Timestamp str2Timestamp(String varName, String strTime)
+	public Timestamp str2Timestamp(String varDispName, String strTime)
 	{
 		if (this.errMsg != null) return null;
 		try
@@ -73,16 +73,16 @@ public class ParamValidator {
 		catch (Exception ex)
 		{
 		}
-		this.errMsg = this.funcName + ": "+varName+" is not valid: "+strTime;
+		this.errMsg = this.funcName + ": "+varDispName+" is not valid: "+strTime;
 		setRespStatus(HttpServletResponse.SC_BAD_REQUEST);
 		this.logger.logMessage(this.errMsg, LogLevel.ERROR);
-		this.errVarName = varName;
+		this.errVarDispName = varDispName;
 		this.errVarValue = strTime;
-		this.errFuncDesc = varName+" is not in format of 'yyyyMMdd' or 'yyyyMMddHHmm'";
+		this.errFuncDesc = varDispName+" is not in format of 'yyyyMMdd' or 'yyyyMMddHHmm'";
 		return null;
 	}
 
-	public Integer str2Integer(String varName, String varValue)
+	public Integer str2Integer(String varDispName, String varValue)
 	{
 		try
 		{
@@ -90,17 +90,17 @@ public class ParamValidator {
 		}
 		catch (NumberFormatException ex)
 		{
-			this.errMsg = this.funcName + ": "+varName+" is not an integer: "+varValue;
+			this.errMsg = this.funcName + ": "+varDispName+" is not an integer: "+varValue;
 			setRespStatus(HttpServletResponse.SC_BAD_REQUEST);
 			this.logger.logMessage(this.errMsg, LogLevel.ERROR);
-			this.errVarName = varName;
+			this.errVarDispName = varDispName;
 			this.errVarValue = varValue;
-			this.errFuncDesc = varName+" is not an integer: "+varValue;
+			this.errFuncDesc = varDispName+" is not an integer: "+varValue;
 			return null;
 		}
 	}
 
-	public Double str2Double(String varName, String varValue)
+	public Double str2Double(String varDispName, String varValue)
 	{
 		try
 		{
@@ -108,33 +108,33 @@ public class ParamValidator {
 		}
 		catch (NumberFormatException ex)
 		{
-			this.errMsg = this.funcName + ": "+varName+" is not a number: "+varValue;
+			this.errMsg = this.funcName + ": "+varDispName+" is not a number: "+varValue;
 			setRespStatus(HttpServletResponse.SC_BAD_REQUEST);
 			this.logger.logMessage(this.errMsg, LogLevel.ERROR);
-			this.errVarName = varName;
+			this.errVarDispName = varDispName;
 			this.errVarValue = varValue;
-			this.errFuncDesc = varName+" is not a number: "+varValue;
+			this.errFuncDesc = varDispName+" is not a number: "+varValue;
 			return null;
 		}
 	}
 
-	public <T extends Enum<T>> T str2Enum(Class<T> cls, String varName, String varValue)
+	public <T extends Enum<T>> T str2Enum(Class<T> cls, String varDispName, String varValue)
 	{
 		if (this.errMsg != null) return null;
 		T ret = DataTools.getEnum(cls, varValue);
 		if (ret == null)
 		{
-			this.errMsg = this.funcName + ": "+varName+" is not valid: "+varValue;
+			this.errMsg = this.funcName + ": "+varDispName+" is not valid: "+varValue;
 			setRespStatus(HttpServletResponse.SC_BAD_REQUEST);
 			this.logger.logMessage(this.errMsg, LogLevel.ERROR);
-			this.errVarName = varName;
+			this.errVarDispName = varDispName;
 			this.errVarValue = varValue;
-			this.errFuncDesc = varName+" cannot map to any value of Enum "+cls.getName();
+			this.errFuncDesc = varDispName+" cannot map to any value of Enum "+cls.getName();
 		}
 		return ret;
 	}
 
-	public Geometry str2Geometry(String varName, String varValue, int srid)
+	public Geometry str2Geometry(String varDispName, String varValue, int srid)
 	{
 		try
 		{
@@ -144,12 +144,12 @@ public class ParamValidator {
 		}
 		catch (ParseException ex)
 		{
-			this.errMsg = this.funcName + ": "+varName+" is not valid: "+varValue;
+			this.errMsg = this.funcName + ": "+varDispName+" is not valid: "+varValue;
 			setRespStatus(HttpServletResponse.SC_BAD_REQUEST);
 			this.logger.logMessage(this.errMsg, LogLevel.ERROR);
-			this.errVarName = varName;
+			this.errVarDispName = varDispName;
 			this.errVarValue = varValue;
-			this.errFuncDesc = varName+" cannot be parsed to geometry";
+			this.errFuncDesc = varDispName+" cannot be parsed to geometry";
 			return null;
 		}
 	}
@@ -170,8 +170,9 @@ public class ParamValidator {
 		return varValue;
 	}
 
-	public String getReqString(String varName)
+	public String getReqString(String varName, String varDispName)
 	{
+		if (varDispName == null) varDispName = varName;
 		if (this.errMsg != null) return null;
 		if (this.req == null) { this.setReqEmptyErr(); return null; }
 		String varValue;
@@ -185,18 +186,19 @@ public class ParamValidator {
 		}
 		if (varValue == null)
 		{
-			this.errMsg = this.funcName + ": "+varName+" is not found";
+			this.errMsg = this.funcName + ": "+varDispName+" is not found";
 			setRespStatus(HttpServletResponse.SC_BAD_REQUEST);
 			this.logger.logMessage(this.errMsg, LogLevel.ERROR);
-			this.errVarName = varName;
+			this.errVarDispName = varDispName;
 			this.errVarValue = null;
-			this.errFuncDesc = varName+" is not found";
+			this.errFuncDesc = varDispName+" is not found";
 		}
 		return varValue;
 	}
 
-	public String []getReqStrings(String varName)
+	public String []getReqStrings(String varName, String varDispName)
 	{
+		if (varDispName == null) varDispName = varName;
 		if (this.errMsg != null) return null;
 		if (this.req == null) { this.setReqEmptyErr(); return null; }
 		String varValue[];
@@ -218,36 +220,39 @@ public class ParamValidator {
 		}
 		if (varValue == null)
 		{
-			this.errMsg = this.funcName + ": "+varName+" is not found";
+			this.errMsg = this.funcName + ": "+varDispName+" is not found";
 			setRespStatus(HttpServletResponse.SC_BAD_REQUEST);
 			this.logger.logMessage(this.errMsg, LogLevel.ERROR);
-			this.errVarName = varName;
+			this.errVarDispName = varDispName;
 			this.errVarValue = null;
-			this.errFuncDesc = varName+" is not found";
+			this.errFuncDesc = varDispName+" is not found";
 		}
 		return varValue;
 	}
 
-	public String getReqStringLen(String varName, int minCharCnt, int maxCharCnt)
+	public String getReqStringLen(String varName, String varDispName, int minCharCnt, int maxCharCnt)
 	{
-		String varValue = getReqString(varName);
+		if (varDispName == null) varDispName = varName;
+		String varValue = getReqString(varName, varDispName);
 		if (varValue == null) return null;
-		if (this.checkStringCharDbLen(varName, varValue, minCharCnt, maxCharCnt)) return null;
+		if (this.checkStringCharDbLen(varDispName, varValue, minCharCnt, maxCharCnt)) return null;
 		return varValue;
 	}
 
-	public Timestamp getReqTimestamp(String varName)
+	public Timestamp getReqTimestamp(String varName, String varDispName)
 	{
+		if (varDispName == null) varDispName = varName;
 		String varValue;
-		if ((varValue = this.getReqString(varName)) == null) return null;
-		return str2Timestamp(varName, varValue);
+		if ((varValue = this.getReqString(varName, varDispName)) == null) return null;
+		return str2Timestamp(varDispName, varValue);
 	}
 
-	public Integer getReqInt(String varName)
+	public Integer getReqInt(String varName, String varDispName)
 	{
+		if (varDispName == null) varDispName = varName;
 		String varValue;
-		if ((varValue = this.getReqString(varName)) == null) return null;
-		return str2Integer(varName, varValue);
+		if ((varValue = this.getReqString(varName, varDispName)) == null) return null;
+		return str2Integer(varDispName, varValue);
 	}
 
 	public Integer getReqIntOpt(String varName)
@@ -257,43 +262,48 @@ public class ParamValidator {
 		return StringUtil.toInteger(varValue);
 	}
 
-	public Integer getReqIntRange(String varName, int min, int max, boolean noZero)
+	public Integer getReqIntRange(String varName, String varDispName, int min, int max, boolean noZero)
 	{
-		Integer varValue = this.getReqInt(varName);
+		if (varDispName == null) varDispName = varName;
+		Integer varValue = this.getReqInt(varName, varDispName);
 		if (varValue == null) return null;
-		if (this.checkRange(varName, varValue, min, max, noZero)) return null;
+		if (this.checkRange(varDispName, varValue, min, max, noZero)) return null;
 		return varValue;
 	}
 
-	public Double getReqDouble(String varName)
+	public Double getReqDouble(String varName, String varDispName)
 	{
+		if (varDispName == null) varDispName = varName;
 		String varValue;
-		if ((varValue = this.getReqString(varName)) == null) return null;
-		return str2Double(varName, varValue);
+		if ((varValue = this.getReqString(varName, varDispName)) == null) return null;
+		return str2Double(varDispName, varValue);
 	}
 
-	public Double getReqDoubleRange(String varName, double min, double max)
+	public Double getReqDoubleRange(String varName, String varDispName, double min, double max)
 	{
-		Double varValue = this.getReqDouble(varName);
+		if (varDispName == null) varDispName = varName;
+		Double varValue = this.getReqDouble(varName, varDispName);
 		if (varValue == null) return null;
-		if (this.checkRangeDbl(varName, varValue, min, max)) return null;
+		if (this.checkRangeDbl(varDispName, varValue, min, max)) return null;
 		return varValue;
 	}
 
-	public <T extends Enum<T>> T getReqEnum(String varName, Class<T> cls)
+	public <T extends Enum<T>> T getReqEnum(String varName, String varDispName, Class<T> cls)
 	{
+		if (varDispName == null) varDispName = varName;
 		String varValue;
 		if (this.errMsg != null) return null;
-		if ((varValue = this.getReqString(varName)) == null) return null;
-		return str2Enum(cls, varName, varValue);
+		if ((varValue = this.getReqString(varName, varDispName)) == null) return null;
+		return str2Enum(cls, varDispName, varValue);
 	}
 
-	public Geometry getReqGeometry(String varName, int srid)
+	public Geometry getReqGeometry(String varName, String varDispName, int srid)
 	{
+		if (varDispName == null) varDispName = varName;
 		String varValue;
 		if (this.errMsg != null) return null;
-		if ((varValue = this.getReqString(varName)) == null) return null;
-		return str2Geometry(varName, varValue, srid);
+		if ((varValue = this.getReqString(varName, varDispName)) == null) return null;
+		return str2Geometry(varDispName, varValue, srid);
 	}
 
 	public int getReqFileCount()
@@ -311,7 +321,7 @@ public class ParamValidator {
 	}
 
 
-	public <T extends Enum<T>> boolean checkEnum(T val, String varName, T[] validVals)
+	public <T extends Enum<T>> boolean checkEnum(T val, String varDispName, T[] validVals)
 	{
 		int i = validVals.length;
 		while (i-- > 0)
@@ -319,137 +329,137 @@ public class ParamValidator {
 			if (val == validVals[i])
 				return false;
 		}
-		this.errMsg = this.funcName + ": "+varName+" is out of range: "+val.toString();
+		this.errMsg = this.funcName + ": "+varDispName+" is out of range: "+val.toString();
 		setRespStatus(HttpServletResponse.SC_BAD_REQUEST);
 		this.logger.logMessage(this.errMsg, LogLevel.ERROR);
-		this.errVarName = varName;
+		this.errVarDispName = varDispName;
 		this.errVarValue = val.toString();
-		this.errFuncDesc = varName+" is out of range: "+val.toString();
+		this.errFuncDesc = varDispName+" is out of range: "+val.toString();
 		return true;
 	}
 
-	public boolean checkVarcharLen(String varName, String varValue, int maxLen)
+	public boolean checkVarcharLen(String varDispName, String varValue, int maxLen)
 	{
 		if (this.errMsg != null) return true;
 		byte b[] = varValue.getBytes(StandardCharsets.UTF_8);
 		if (b.length > maxLen)
 		{
-			this.errMsg = this.funcName + ": "+varName+" is too long: "+varValue;
+			this.errMsg = this.funcName + ": "+varDispName+" is too long: "+varValue;
 			setRespStatus(HttpServletResponse.SC_BAD_REQUEST);
 			this.logger.logMessage(this.errMsg, LogLevel.ERROR);
-			this.errVarName = varName;
+			this.errVarDispName = varDispName;
 			this.errVarValue = varValue;
-			this.errFuncDesc = varName+" is longer than "+maxLen+" of varchar";
+			this.errFuncDesc = varDispName+" is longer than "+maxLen+" of varchar";
 			return true;
 		}
 		return false;
 	}
 
-	public boolean checkStringDbLen(String varName, String varValue, int maxLen, boolean notEmpty)
+	public boolean checkStringDbLen(String varDispName, String varValue, int maxLen, boolean notEmpty)
 	{
 		if (this.errMsg != null) return true;
 		byte b[] = varValue.getBytes(StandardCharsets.UTF_16LE);
 		if ((b.length >> 1) > maxLen)
 		{
-			this.errMsg = this.funcName + ": "+varName+" is too long: "+varValue;
+			this.errMsg = this.funcName + ": "+varDispName+" is too long: "+varValue;
 			setRespStatus(HttpServletResponse.SC_BAD_REQUEST);
 			this.logger.logMessage(this.errMsg, LogLevel.ERROR);
-			this.errVarName = varName;
+			this.errVarDispName = varDispName;
 			this.errVarValue = varValue;
-			this.errFuncDesc = varName+" is longer than "+maxLen+" of nvarchar";
+			this.errFuncDesc = varDispName+" is longer than "+maxLen+" of nvarchar";
 			return true;
 		}
 		if (notEmpty && b.length == 0)
 		{
-			this.errMsg = this.funcName + ": "+varName+" is empty";
+			this.errMsg = this.funcName + ": "+varDispName+" is empty";
 			setRespStatus(HttpServletResponse.SC_BAD_REQUEST);
 			this.logger.logMessage(this.errMsg, LogLevel.ERROR);
-			this.errVarName = varName;
+			this.errVarDispName = varDispName;
 			this.errVarValue = varValue;
-			this.errFuncDesc = varName+" is empty";
+			this.errFuncDesc = varDispName+" is empty";
 			return true;
 		}
 		return false;
 	}
 
-	public boolean checkStringCharDbLen(String varName, String varValue, int minCharCnt, int maxCharCnt)
+	public boolean checkStringCharDbLen(String varDispName, String varValue, int minCharCnt, int maxCharCnt)
 	{
 		if (this.errMsg != null) return true;
 		int leng = varValue.length();
 		if (leng > maxCharCnt)
 		{
-			this.errMsg = this.funcName + ": "+varName+" is too long: "+varValue;
+			this.errMsg = this.funcName + ": "+varDispName+" is too long: "+varValue;
 			setRespStatus(HttpServletResponse.SC_BAD_REQUEST);
 			this.logger.logMessage(this.errMsg, LogLevel.ERROR);
-			this.errVarName = varName;
+			this.errVarDispName = varDispName;
 			this.errVarValue = varValue;
-			this.errFuncDesc = varName+" is longer than "+maxCharCnt+" Characters";
+			this.errFuncDesc = varDispName+" is longer than "+maxCharCnt+" Characters";
 			return true;
 		}
 		if (leng < minCharCnt)
 		{
-			this.errMsg = this.funcName + ": "+varName+" is too short: "+varValue;
+			this.errMsg = this.funcName + ": "+varDispName+" is too short: "+varValue;
 			setRespStatus(HttpServletResponse.SC_BAD_REQUEST);
 			this.logger.logMessage(this.errMsg, LogLevel.ERROR);
-			this.errVarName = varName;
+			this.errVarDispName = varDispName;
 			this.errVarValue = varValue;
-			this.errFuncDesc = varName+" is shorter than "+minCharCnt+" Characters";
+			this.errFuncDesc = varDispName+" is shorter than "+minCharCnt+" Characters";
 			return true;
 		}
 		byte b[] = varValue.getBytes(StandardCharsets.UTF_16LE);
 		if ((b.length >> 2) > (maxCharCnt << 1))
 		{
-			this.errMsg = this.funcName + ": "+varName+" is too long for db: "+varValue;
+			this.errMsg = this.funcName + ": "+varDispName+" is too long for db: "+varValue;
 			setRespStatus(HttpServletResponse.SC_BAD_REQUEST);
 			this.logger.logMessage(this.errMsg, LogLevel.ERROR);
-			this.errVarName = varName;
+			this.errVarDispName = varDispName;
 			this.errVarValue = varValue;
-			this.errFuncDesc = varName+" is longer than "+(maxCharCnt << 1)+" of nvarchar";
+			this.errFuncDesc = varDispName+" is longer than "+(maxCharCnt << 1)+" of nvarchar";
 			return true;
 		}
 		return false;
 	}
 
-	public boolean checkRange(String varName, int varValue, int min, int max, boolean noZero)
+	public boolean checkRange(String varDispName, int varValue, int min, int max, boolean noZero)
 	{
 		if (this.errMsg != null) return true;
 		if ((noZero && varValue == 0) || varValue < min || varValue > max)
 		{
-			this.errMsg = this.funcName + ": "+varName+" out of range: "+varValue;
+			this.errMsg = this.funcName + ": "+varDispName+" out of range: "+varValue;
 			setRespStatus(HttpServletResponse.SC_BAD_REQUEST);
 			this.logger.logMessage(this.errMsg, LogLevel.ERROR);
-			this.errVarName = varName;
+			this.errVarDispName = varDispName;
 			this.errVarValue = ""+varValue;
 			if (noZero)
 			{
-				this.errFuncDesc = varName+" cannot be zero and range is >= "+ min +" and <= "+max;
+				this.errFuncDesc = varDispName+" cannot be zero and range is >= "+ min +" and <= "+max;
 			}
 			else
 			{
-				this.errFuncDesc = varName+" must be in range >= "+ min +" and <= "+max;
+				this.errFuncDesc = varDispName+" must be in range >= "+ min +" and <= "+max;
 			}
 			return true;
 		}
 		return false;
 	}
 
-	public boolean checkRangeDbl(String varName, double varValue, double min, double max)
+	public boolean checkRangeDbl(String varDispName, double varValue, double min, double max)
 	{
 		if (this.errMsg != null) return true;
 		if (varValue < min || varValue > max)
 		{
-			this.errMsg = this.funcName + ": "+varName+" out of range: "+varValue;
+			this.errMsg = this.funcName + ": "+varDispName+" out of range: "+varValue;
 			setRespStatus(HttpServletResponse.SC_BAD_REQUEST);
 			this.logger.logMessage(this.errMsg, LogLevel.ERROR);
-			this.errVarName = varName;
+			this.errVarDispName = varDispName;
 			this.errVarValue = ""+varValue;
-			this.errFuncDesc = varName+" must be in range >= "+ min +" and <= "+max;
+			this.errFuncDesc = varDispName+" must be in range >= "+ min +" and <= "+max;
 			return true;
 		}
 		return false;
 	}
 
-	public <T> boolean checkInList(String varName, T varValue, List<T> validList)
+	public <T> boolean checkInList(String varDispName, T varValue, List<T> validList)
 	{
 		if (this.errMsg != null) return true;
 		boolean found = false;
@@ -464,12 +474,12 @@ public class ParamValidator {
 		}
 		if (!found)
 		{
-			this.errMsg = this.funcName + ": "+varName+" is not valid: "+varValue;
+			this.errMsg = this.funcName + ": "+varDispName+" is not valid: "+varValue;
 			setRespStatus(HttpServletResponse.SC_BAD_REQUEST);
 			this.logger.logMessage(this.errMsg, LogLevel.ERROR);
-			this.errVarName = varName;
+			this.errVarDispName = varDispName;
 			this.errVarValue = ""+varValue;
-			this.errFuncDesc = varName+" is not in valid list";
+			this.errFuncDesc = varDispName+" is not in valid list";
 			return true;
 		}
 		return false;
@@ -497,12 +507,12 @@ public class ParamValidator {
 		this.errMsg = funcName+": req is null";
 		setRespStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 		this.logger.logMessage(this.errMsg, LogLevel.ERROR);
-		this.errVarName = "req";
+		this.errVarDispName = "req";
 		this.errVarValue = null;
 		this.errFuncDesc = "req is null";
 	}
 
-	public Map<String, Object> setError(String varName, String varValue, String funcDesc, String errMsg)
+	public Map<String, Object> setError(String varDispName, String varValue, String funcDesc, String errMsg)
 	{
 		if (errMsg == null)
 		{
@@ -518,13 +528,13 @@ public class ParamValidator {
 		}
 		setRespStatus(HttpServletResponse.SC_BAD_REQUEST);
 		this.logger.logMessage(this.errMsg, LogLevel.ERROR);
-		this.errVarName = varName;
+		this.errVarDispName = varDispName;
 		this.errVarValue = varValue;
 		this.errFuncDesc = funcDesc;
 		return getErrorObj();
 	}
 
-	public Map<String, Object> setError(String varName, String varValue, String funcDesc)
+	public Map<String, Object> setError(String varDispName, String varValue, String funcDesc)
 	{
 		if (varValue != null)
 		{
@@ -536,7 +546,7 @@ public class ParamValidator {
 		}
 		setRespStatus(HttpServletResponse.SC_BAD_REQUEST);
 		this.logger.logMessage(this.errMsg, LogLevel.ERROR);
-		this.errVarName = varName;
+		this.errVarDispName = varDispName;
 		this.errVarValue = varValue;
 		this.errFuncDesc = funcDesc;
 		return getErrorObj();
@@ -547,9 +557,9 @@ public class ParamValidator {
 		Map<String, Object> retMap = new HashMap<String, Object>();
 		retMap.put("errorMsg", this.errMsg);
 		retMap.put("funcName", this.funcName);
-		if (this.errVarName != null)
+		if (this.errVarDispName != null)
 		{
-			retMap.put("varName", this.errVarName);
+			retMap.put("varName", this.errVarDispName);
 		}
 		if (this.errVarValue != null)
 		{
