@@ -14,6 +14,7 @@ import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
 
 import org.sswr.util.data.RectangleArea;
+import org.sswr.util.io.StreamUtil;
 public class ImageUtil {
 	public static String getImageFmt(byte buff[])
 	{
@@ -63,6 +64,13 @@ public class ImageUtil {
 		}
 		catch (IOException ex)
 		{
+			ex.printStackTrace();
+			if (StreamUtil.seekFromBeginning(stm, 0))
+			{
+//					byte[] buff = stm.readAllBytes();
+//					System.out.println(buff.length +" bytes left");
+			}
+
 			return null;
 		}
 	}
