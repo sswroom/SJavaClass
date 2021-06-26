@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import javax.imageio.IIOException;
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
@@ -14,8 +15,9 @@ import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
 
 import org.sswr.util.data.RectangleArea;
-import org.sswr.util.io.StreamUtil;
-public class ImageUtil {
+
+public class ImageUtil
+{
 	public static String getImageFmt(byte buff[])
 	{
 		if ((buff[0] & 0xff) == 0x89 && buff[1] == 0x50 && buff[2] == 0x4e && buff[3] == 0x47 && buff[4] == 0x0d && buff[5] == 0x0a && buff[6] == 0x1a && buff[7] == 0x0a)
@@ -57,7 +59,14 @@ public class ImageUtil {
 			int j = reader.getNumImages(true);
 			while (i < j)
 			{
-				imgList.add(new StaticImage(reader.read(i, null), reader.getImageMetadata(i)), 0);
+				try
+				{
+					imgList.add(new StaticImage(reader.read(i, null), reader.getImageMetadata(i)), 0);
+				}
+				catch (IIOException ex2)
+				{
+				//	ex2.printStackTrace();
+				}
 				i++;
 			}
 			return imgList;
@@ -65,11 +74,11 @@ public class ImageUtil {
 		catch (IOException ex)
 		{
 			ex.printStackTrace();
-			if (StreamUtil.seekFromBeginning(stm, 0))
-			{
+//			if (StreamUtil.seekFromBeginning(stm, 0))
+//			{
 //					byte[] buff = stm.readAllBytes();
 //					System.out.println(buff.length +" bytes left");
-			}
+//			}
 
 			return null;
 		}
