@@ -73,6 +73,7 @@ public class ImageUtil
 			{
 				return null;
 			}
+			imgList.sortImage();
 			return imgList;
 		}
 		catch (IOException ex)

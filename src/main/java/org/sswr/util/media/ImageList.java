@@ -1,7 +1,10 @@
 package org.sswr.util.media;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+
+import org.sswr.util.data.ArtificialQuickSort;
 
 public class ImageList
 {
@@ -49,5 +52,33 @@ public class ImageList
 	public int size()
 	{
 		return this.imgList.size();
+	}
+
+	public void sortImage()
+	{
+		if (this.imgList.size() <= 1)
+		{
+			return;
+		}
+		ArtificialQuickSort.sort(this.imgList, new Comparator<ImageInfo>(){
+
+			@Override
+			public int compare(ImageInfo arg0, ImageInfo arg1) {
+				int size0 = arg0.img.getWidth() * arg0.img.getHeight();
+				int size1 = arg1.img.getWidth() * arg1.img.getHeight();
+				if (size0 > size1)
+				{
+					return -1;
+				}
+				else if (size0 < size1)
+				{
+					return 1;
+				}
+				else
+				{
+					return 0;
+				}
+			}
+		});
 	}
 }
