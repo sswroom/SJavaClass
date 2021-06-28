@@ -12,6 +12,7 @@ import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
+import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.stream.ImageOutputStream;
 
 import org.sswr.util.data.RectangleArea;
@@ -50,9 +51,10 @@ public class ImageUtil
 
 	public static ImageList load(InputStream stm)
 	{
+		String fmt = "jpg";
 		try
 		{
-			ImageReader reader = ImageIO.getImageReadersBySuffix("jpg").next();
+			ImageReader reader = ImageIO.getImageReadersBySuffix(fmt).next();
 			reader.setInput(ImageIO.createImageInputStream(stm));
 			ImageList imgList = new ImageList();
 			int i = 0;
@@ -61,11 +63,17 @@ public class ImageUtil
 			{
 				try
 				{
-					imgList.add(new StaticImage(reader.read(i, null), reader.getImageMetadata(i)), 0);
+					BufferedImage bimg = reader.read(i, null);
+					IIOMetadata metadata = reader.getImageMetadata(i);
+					imgList.add(new StaticImage(bimg, metadata), 0);
+					if (fmt.equals("jpg"))
+					{
+						break;
+					}
 				}
 				catch (IIOException ex2)
 				{
-				//	ex2.printStackTrace();
+					//ex2.printStackTrace();
 				}
 				i++;
 			}
