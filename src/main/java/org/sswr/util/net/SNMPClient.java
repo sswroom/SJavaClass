@@ -6,6 +6,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.sswr.util.basic.MyThread;
 import org.sswr.util.basic.ThreadEvent;
 import org.sswr.util.data.SharedInt;
 
@@ -265,14 +266,7 @@ public class SNMPClient implements UDPPacketListener
 				this.svr.setBroadcast(true);
 				this.svr.sendTo(broadcastAddr, 161, buff, 0, buffSize.value);
 			}
-			try
-			{
-				Thread.sleep(timeoutMS);
-			}
-			catch (InterruptedException ex)
-			{
-				ex.printStackTrace();
-			}
+			MyThread.sleep(timeoutMS);
 			synchronized(this.scanMut)
 			{
 				this.scanList = null;

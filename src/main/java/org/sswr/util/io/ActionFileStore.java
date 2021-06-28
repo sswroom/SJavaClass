@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.TimeZone;
 
+import org.sswr.util.basic.MyThread;
 import org.sswr.util.db.CSVUtil;
 import org.sswr.util.db.DBUpdateHandler;
 
@@ -114,14 +115,7 @@ public class ActionFileStore implements Runnable, DBUpdateHandler {
 			}
 			while (this.threadRunning)
 			{
-				try
-				{
-					Thread.sleep(10);
-				}
-				catch (InterruptedException ex)
-				{
-
-				}
+				MyThread.sleep(10);
 			}
 		}
 	}

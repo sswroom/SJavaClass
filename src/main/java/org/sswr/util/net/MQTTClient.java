@@ -5,6 +5,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.sswr.util.basic.MyThread;
 import org.sswr.util.basic.ThreadEvent;
 import org.sswr.util.data.ByteTool;
 import org.sswr.util.io.IOStream;
@@ -168,14 +169,7 @@ public class MQTTClient implements Runnable, ProtocolDataListener
 			new Thread(this).start();
 			while (!this.recvStarted)
 			{
-				try
-				{
-					Thread.sleep(1);
-				}
-				catch (InterruptedException ex)
-				{
-
-				}
+				MyThread.sleep(1);
 			}
 		}
 	}
@@ -190,14 +184,7 @@ public class MQTTClient implements Runnable, ProtocolDataListener
 			}
 			while (this.recvRunning)
 			{
-				try
-				{
-					Thread.sleep(1);
-				}
-				catch (InterruptedException ex)
-				{
-
-				}
+				MyThread.sleep(1);
 			}
 			this.protoHdlr.deleteStreamData(this.cli, this.cliData);
 			this.cli.close();
