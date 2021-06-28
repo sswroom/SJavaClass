@@ -6,8 +6,10 @@ import java.time.LocalDateTime;
 import org.sswr.util.basic.Matrix3;
 import org.sswr.util.basic.Vector3;
 import org.sswr.util.data.ByteTool;
+import org.sswr.util.data.SharedDouble;
 import org.sswr.util.data.StringUtil;
 import org.sswr.util.media.LUTInt.DataFormat;
+import org.sswr.util.media.cs.TransferFunc;
 import org.sswr.util.media.cs.TransferParam;
 import org.sswr.util.media.cs.TransferType;
 
@@ -1125,7 +1127,7 @@ public class ICCProfile
 		int nCh;
 		int val;
 		Vector3 xyz;
-		//Media::CS::TransferType tt;
+		TransferType tt;
 		//double gamma;
 		switch(typ)
 		{
@@ -1227,13 +1229,14 @@ public class ICCProfile
 				sb.append(" entries, ");
 				sb.append("Closed to ");
 			}
-/*			tt = FindTransferType((UInt32)val, (UInt16*)&buff[12], &gamma);
-			sb.append(Media::CS::TransferFunc::GetTransferFuncName(tt));
-			if (tt == Media::CS::TRANT_GAMMA)
+			SharedDouble gamma = new SharedDouble();
+			tt = findTransferType(val, buff, 12, gamma);
+			sb.append(tt);
+			if (tt == TransferType.GAMMA)
 			{
 				sb.append(", gamma = ");
-				Text::SBAppendF64(sb, gamma);
-			}*/
+				sb.append(gamma.value);
+			}
 			break;
 		case 0x70617261: //parametricCurveType
 			sb.append("CurveType: ");
@@ -1363,5 +1366,64 @@ public class ICCProfile
 			sb.append("Unknown");
 			break;
 		}
+	}
+
+
+	public static TransferType findTransferType(int colorCount, byte[] curveColors, int ofst, SharedDouble gamma)
+	{
+		TransferType trans[] = new TransferType[] {TransferType.SRGB, TransferType.BT709, TransferType.GAMMA, TransferType.LINEAR, TransferType.SMPTE240};
+		int tranCnt = trans.length;
+		if (colorCount == 0)
+		{
+			gamma.value = 1.0;
+			return TransferType.LINEAR;
+		}
+		else if (colorCount == 1)
+		{
+			gamma.value = readU8Fixed8Number(curveColors, ofst);
+			return TransferType.GAMMA;
+		}
+	
+		TransferFunc[] funcs = new TransferFunc[tranCnt];
+		double[] diffSqrSum = new double[tranCnt];
+		int i = tranCnt;
+		while (i-- > 0)
+		{
+			TransferParam param = new TransferParam(trans[i], 2.2);
+			funcs[i] = TransferFunc.createFunc(param);
+			diffSqrSum[i] = 0;
+		}
+	
+		double mulVal = 1.0 / (double)(colorCount - 1);
+		double colVal = 1.0 / 65535.0;
+		double v;
+		double tv;
+	
+		int j = 0;
+		while (j < colorCount)
+		{
+			v = ByteTool.readMInt16(curveColors, ofst + j * 2) * colVal;
+			i = tranCnt;
+			while (i-- > 0)
+			{
+				tv = funcs[i].inverseTransfer(j * mulVal);
+				diffSqrSum[i] += (tv - v) * (tv - v);
+			}
+			j++;
+		}
+		double minVal = diffSqrSum[0];
+		TransferType minType = trans[0];
+		i = tranCnt;
+		while (i-- > 1)
+		{
+			if (diffSqrSum[i] < minVal)
+			{
+				minType = trans[i];
+				minVal = diffSqrSum[i];
+			}
+		}
+	
+		gamma.value = 2.2;
+		return minType;
 	}
 }
