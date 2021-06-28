@@ -8,4 +8,9 @@ public class SharedInt
 	{
 		this.value = 0;
 	}
+	
+	public SharedInt(int value)
+	{
+		this.value = value;
+	}
 }

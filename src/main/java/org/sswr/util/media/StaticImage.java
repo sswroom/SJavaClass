@@ -18,6 +18,8 @@ public class StaticImage
 {
 	private BufferedImage img;
 	private IIOMetadata metadata;
+	private boolean metadataParsed;
+	private EXIFData exif;
 
 	public StaticImage(BufferedImage img, IIOMetadata metadata)
 	{

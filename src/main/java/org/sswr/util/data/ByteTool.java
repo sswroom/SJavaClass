@@ -1,5 +1,7 @@
 package org.sswr.util.data;
 
+import java.nio.charset.StandardCharsets;
+
 public class ByteTool {
 	public static int readInt32(byte buff[], int index)
 	{
@@ -15,6 +17,18 @@ public class ByteTool {
 			((buff[index + 1] & 0xff) << 16) |
 			((buff[index + 2] & 0xff) << 8) |
 			(buff[index + 3] & 0xff);
+	}
+
+	public static int readUInt16(byte buff[], int index)
+	{
+		return ((buff[index + 1] & 0xff) << 8) | 
+			(buff[index] & 0xff);
+	}
+
+	public static int readInt16(byte buff[], int index)
+	{
+		return (((int)buff[index + 1]) << 8) | 
+			(buff[index] & 0xff);
 	}
 
 	public static int readMUInt16(byte buff[], int index)
@@ -67,9 +81,24 @@ public class ByteTool {
        | ((long) buff[index + 7] & 0xff);
 	}
 
+	public static float readSingle(byte buff[], int index)
+	{
+		return Float.intBitsToFloat(readInt32(buff, index));
+	}
+
+	public static float readMSingle(byte buff[], int index)
+	{
+		return Float.intBitsToFloat(readMInt32(buff, index));
+	}
+
 	public static double readDouble(byte buff[], int index)
 	{
 		return Double.longBitsToDouble(readInt64(buff, index));
+	}
+
+	public static double readMDouble(byte buff[], int index)
+	{
+		return Double.longBitsToDouble(readMInt64(buff, index));
 	}
 
 	public static void writeInt16(byte buff[], int index, int val)
@@ -419,5 +448,27 @@ public class ByteTool {
 		{
 			destArr[destOfst++] = b;
 		}
+	}
+
+	public static boolean strEquals(byte[] buff, int ofst, String s)
+	{
+		byte[] sbuff = s.getBytes(StandardCharsets.UTF_8);
+		int i = sbuff.length;
+		if (buff.length < ofst + i + 1)
+		{
+			return false;
+		}
+		if (buff[ofst + i] != 0)
+		{
+			return false;
+		}
+		while (i-- > 0)
+		{
+			if (buff[ofst + i] != sbuff[i])
+			{
+				return false;
+			}
+		}
+		return true;
 	}
 }
