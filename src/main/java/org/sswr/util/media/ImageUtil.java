@@ -69,6 +69,10 @@ public class ImageUtil
 				}
 				i++;
 			}
+			if (imgList.size() == 0)
+			{
+				return null;
+			}
 			return imgList;
 		}
 		catch (IOException ex)
