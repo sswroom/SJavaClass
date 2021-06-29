@@ -12,6 +12,47 @@ import java.time.temporal.ChronoUnit;
 
 public class DateTimeUtil
 {
+	private static ZonedDateTime setDate(ZonedDateTime dt, int year, int month, int day)
+	{
+		while (month <= 0)
+		{
+			month += 12;
+			year--;
+		}
+		while (month > 12)
+		{
+			month -= 12;
+			year++;
+		}
+		while (day <= 0)
+		{
+			month--;
+			if (month <= 0)
+			{
+				month += 12;
+				year--;
+			}
+			YearMonth ym = YearMonth.of(year, month);
+			day += ym.lengthOfMonth();
+		}
+		while (true)
+		{
+			YearMonth ym = YearMonth.of(year, month);
+			if (day <= ym.lengthOfMonth())
+			{
+				break;
+			}
+			day -= ym.lengthOfMonth();
+			month++;
+			if (month > 12)
+			{
+				year++;
+				month -= 12;
+			}
+		}
+		return dt.withDayOfMonth(1).withYear(year).withMonth(month).withDayOfMonth(day);
+	}
+
 	private static ZonedDateTime setDate(ZonedDateTime dt, String strs[])
 	{
 		int vals[] = new int[3];
@@ -20,28 +61,28 @@ public class DateTimeUtil
 		vals[2] = Integer.parseInt(strs[2]);
 		if (vals[0] > 100)
 		{
-			return dt.withDayOfMonth(1).withYear(vals[0]).withMonth(vals[1]).withDayOfMonth(vals[2]);
+			return setDate(dt, vals[0], vals[1], vals[2]);
 		}
 		else if (vals[2] > 100)
 		{
 			if (vals[0] > 12)
 			{
-				return dt.withDayOfMonth(1).withYear(vals[2]).withMonth(vals[1]).withDayOfMonth(vals[0]);
+				return setDate(dt, vals[2], vals[1], vals[0]);
 			}
 			else
 			{
-				return dt.withDayOfMonth(1).withYear(vals[2]).withMonth(vals[0]).withDayOfMonth(vals[1]);
+				return setDate(dt, vals[2], vals[0], vals[1]);
 			}
 		}
 		else
 		{
 			if (vals[1] > 12)
 			{
-				return dt.withDayOfMonth(1).withYear(((dt.getYear() / 100) * 100) + vals[2]).withMonth(vals[0]).withDayOfMonth(vals[1]);
+				return setDate(dt, ((dt.getYear() / 100) * 100) + vals[2], vals[0], vals[1]);
 			}
 			else
 			{
-				return dt.withDayOfMonth(1).withYear(((dt.getYear() / 100) * 100) + vals[0]).withMonth(vals[1]).withDayOfMonth(vals[2]);
+				return setDate(dt, ((dt.getYear() / 100) * 100) + vals[0], vals[1], vals[2]);
 			}
 		}
 	}
