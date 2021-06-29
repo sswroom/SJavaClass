@@ -1166,4 +1166,52 @@ public class DataTools {
 		}
 		return retMap;
 	}
+	public static <T> boolean hasNullField(T o, boolean checkEmpty)
+	{
+		if (o == null)
+		{
+			return true;
+		}
+		Class<?> cls = o.getClass();
+		Field[] fields = cls.getDeclaredFields();
+		int i = 0;
+		int j = fields.length;
+		while (i < j)
+		{
+			try
+			{
+				FieldGetter<T> getter = new FieldGetter<T>(fields[i]);
+				Object val = getter.get(o);
+				if (val == null)
+				{
+					return true;
+				}
+				if (checkEmpty && (val instanceof String))
+				{
+					if (((String)val).length() == 0)
+					{
+						return true;
+					}
+				}
+			}
+			catch (IllegalArgumentException ex)
+			{
+				return true;
+			}
+			catch (InvocationTargetException ex)
+			{
+				ex.printStackTrace();
+				return true;
+			}
+			catch (IllegalAccessException ex)
+			{
+				ex.printStackTrace();
+				return true;
+			}
+			
+			i++;
+		}
+
+		return false;
+	}
 }
