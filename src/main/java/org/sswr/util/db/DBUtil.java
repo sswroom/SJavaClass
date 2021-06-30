@@ -1702,7 +1702,6 @@ public class DBUtil {
 		}
 		else if (dbType == DBType.DT_MSSQL)
 		{
-			val = val.replace("\\", "\\\\");
 			val = val.replace("\'", "\'\'");
 			return "N'"+val+"'";
 		}
