@@ -2185,7 +2185,7 @@ public class DBUtil {
 		}
 	}
 
-	public static Connection openAccessFile(String accessPath)
+	public static Connection openAccessFile(String accessPath, String accessPwd)
 	{
 		String jdbcStr;
 		try
@@ -2206,7 +2206,14 @@ public class DBUtil {
 		}
 		try
 		{
-			return DriverManager.getConnection(jdbcStr);
+			if (accessPwd != null)
+			{
+				return DriverManager.getConnection(jdbcStr, null, accessPwd);
+			}
+			else
+			{
+				return DriverManager.getConnection(jdbcStr);
+			}
 		}
 		catch (SQLException ex)
 		{
