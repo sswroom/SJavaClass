@@ -206,11 +206,32 @@ public class StaticImage
 		sb.append(bImage.getRaster());
 	}
 
+	private void parseMetadata()
+	{
+		String clsName = this.metadata.getClass().getName();
+		if (clsName.equals("com.sun.imageio.plugins.jpeg.JPEGMetadata"))
+		{
+			//////////////////////////////
+		}
+		else
+		{
+			System.out.println("Unknown metadata class: "+clsName);
+		}
+	}
+
 	public void toString(StringBuilder sb)
 	{
 		toBufferedImageString(this.img, sb);
 		if (this.metadata != null)
 		{
+			if (!this.metadataParsed)
+			{
+				this.parseMetadata();
+			}
+			if (this.exif != null)
+			{
+				this.exif.toString(sb, null);
+			}
 			sb.append("\r\n");
 			sb.append(DataTools.toObjectString(this.metadata));
 		}

@@ -1,0 +1,14 @@
+{
+	{1, "RecordingMode"},
+	{2, "Quality"},
+	{3, "FocusingMode"},
+	{4, "FlashMode"},
+	{5, "FlashIntensity"},
+	{6, "ObjectDistance"},
+	{7, "WhiteBalance"},
+	{10, "DigitalZoom"},
+	{11, "Sharpness"},
+	{12, "Contract"},
+	{13, "Saturation"},
+	{20, "CCDSensitivity"}
+}

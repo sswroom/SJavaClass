@@ -1,0 +1,23 @@
+{
+	{0x0000, "FocusInfoVersion"},
+	{0x0209, "AutoFocus"},
+	{0x0210, "SceneDetect"},
+	{0x0211, "SceneArea"},
+	{0x0212, "SceneDetectData"},
+	{0x0300, "ZoomStepCount"},
+	{0x0301, "FocusStepCount"},
+	{0x0303, "FocusStepInfinity"},
+	{0x0304, "FocusStepNear"},
+	{0x0305, "FocusDistance"},
+	{0x0308, "AFPoint"},
+	{0x0328, "AFInfo"},
+	{0x1201, "ExternalFlash"},
+	{0x1203, "ExternalFlashGuideNumber"},
+	{0x1204, "ExternalFlashBounce"},
+	{0x1205, "ExternalFlashZoom"},
+	{0x1208, "InternalFlash"},
+	{0x1209, "ManualFlash"},
+	{0x120a, "MacroLED"},
+	{0x1500, "SensorTemperature"},
+	{0x1600, "ImageStabilization"}
+}

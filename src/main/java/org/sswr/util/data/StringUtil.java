@@ -1,5 +1,6 @@
 package org.sswr.util.data;
 
+import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -279,6 +280,19 @@ public class StringUtil
 	{
 		int v = b & 0xff;
 		return new String(new char[]{HEX_ARRAY[v >> 4], HEX_ARRAY[v & 15]});
+	}
+
+	/**
+	* Convert Int16 to Hexadecimal String
+	*
+	* @param  v  int16 to convert
+	* @return    Upper case Hexadecimal String, must be 4 char long
+	*/
+	public static String toHex16(int v)
+	{
+		int v1 = (v >> 8) & 0xff;
+		int v2 = v & 0xff;
+		return new String(new char[]{HEX_ARRAY[v1 >> 4], HEX_ARRAY[v1 & 15], HEX_ARRAY[v2 >> 4], HEX_ARRAY[v2 & 15]});
 	}
 
 	/**
@@ -1008,5 +1022,27 @@ public class StringUtil
 		{
 			sb.append(c);
 		}
+	}
+
+	/**
+	 * Convert byte array of UTF8 to String with zero ended
+	 * 
+	 * @param  buff     byte array of UTF8
+	 * @param  buffOfst start offset of the UTF8 string
+	 * @return  result string
+	 */
+	public static String fromUTF8Z(byte[] buff, int buffOfst)
+	{
+		int len = buff.length;
+		int endOfst = buffOfst;
+		while (endOfst < len)
+		{
+			if (buff[endOfst] == 0)
+			{
+				break;
+			}
+			endOfst++;
+		}
+		return new String(buff, buffOfst, endOfst - buffOfst, StandardCharsets.UTF_8);
 	}
 }

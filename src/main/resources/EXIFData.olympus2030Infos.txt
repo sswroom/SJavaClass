@@ -1,0 +1,16 @@
+{
+	{0x0000, "RawDevVersion"},
+	{0x0100, "RawDevExposureBiasValue"},
+	{0x0101, "RawDevWhiteBalanceValue"},
+	{0x0102, "RawDevWBFineAdjustment"},
+	{0x0103, "RawDevGrayPoint"},
+	{0x0104, "RawDevSaturationEmphasis"},
+	{0x0105, "RawDevMemoryColorEmphasis"},
+	{0x0106, "RawDevContrastValue"},
+	{0x0107, "RawDevSharpnessValue"},
+	{0x0108, "RawDevColorSpace"},
+	{0x0109, "RawDevEngine"},
+	{0x010a, "RawDevNoiseReduction"},
+	{0x010b, "RawDevEditStatus"},
+	{0x010c, "RawDevSettings"}
+}
