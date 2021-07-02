@@ -3,6 +3,7 @@ package org.sswr.util.web;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -22,6 +23,7 @@ import org.sswr.util.data.DataTools;
 import org.sswr.util.data.JSONParser;
 import org.sswr.util.data.StringUtil;
 import org.sswr.util.io.FileUtil;
+import org.sswr.util.io.StreamUtil;
 
 public class HttpUtil
 {
@@ -101,15 +103,22 @@ public class HttpUtil
 		{
 			return false;
 		}
+		FileInputStream fis = new FileInputStream(file);
+		boolean ret = responseFileStream(fis, file.lastModified(), attachment, fileName, req, resp);
+		fis.close();
+		return ret;
+	}
+
+	public static boolean responseFileStream(InputStream stm, long lastModified, boolean attachment, String fileName, HttpServletRequest req, HttpServletResponse resp) throws IOException
+	{
 		long since = req.getDateHeader("If-Modified-Since");
-		long lastModified = file.lastModified();
-		if (since >= 0 && since + 999 >= lastModified)
+		if (lastModified != 0 && since >= 0 && since + 999 >= lastModified)
 		{
 			resp.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
 			resp.addDateHeader("Last-Modified", lastModified);
 			return true;
 		}
-		long fileLen = file.length();
+		long fileLen = StreamUtil.getLength(stm);
 		String range = req.getHeader("Range");
 		if (range != null && range.startsWith("bytes="))
 		{
@@ -131,15 +140,15 @@ public class HttpUtil
 					}
 					if (startOfst >= 0 && endOfst >= startOfst && endOfst < fileLen)
 					{
-						return partialResponse(resp, file, startOfst, endOfst);
+						return partialResponse(resp, stm, lastModified, fileName, fileLen, startOfst, endOfst);
 					}
 					else if (startOfst < 0 && endOfst >= 0 && endOfst <= fileLen)
 					{
-						return partialResponse(resp, file, fileLen - endOfst, fileLen - 1);
+						return partialResponse(resp, stm, lastModified, fileName, fileLen, fileLen - endOfst, fileLen - 1);
 					}
 					else if (startOfst >= 0 && startOfst < fileLen && endOfst < 0)
 					{
-						return partialResponse(resp, file, startOfst, fileLen - 1);
+						return partialResponse(resp, stm, lastModified, fileName, fileLen, startOfst, fileLen - 1);
 					}
 				}
 				catch (Exception ex)
@@ -150,7 +159,7 @@ public class HttpUtil
 		}
 
 		resp.setStatus(HttpServletResponse.SC_OK);
-		resp.setContentType(URLConnection.guessContentTypeFromName(file.getName()));
+		resp.setContentType(URLConnection.guessContentTypeFromName(fileName));
 		if (fileName != null || attachment)
 		{
 			addContentDisposition(req, resp, attachment, fileName);
@@ -160,21 +169,18 @@ public class HttpUtil
 		resp.setContentLengthLong(fileLen);
 		if (fileLen <= FILE_BUFFER_SIZE)
 		{
-			FileInputStream fis = new FileInputStream(file);
-			byte fileBuff[] = fis.readAllBytes();
-			fis.close();
+			byte fileBuff[] = stm.readAllBytes();
 			resp.getOutputStream().write(fileBuff);
 		}
 		else
 		{
 			long lengLeft = fileLen;
-			FileInputStream fis = new FileInputStream(file);
 			ServletOutputStream ostm = resp.getOutputStream();
 			byte fileBuff[] = new byte[FILE_BUFFER_SIZE];
 			int readCnt;
 			while (lengLeft > FILE_BUFFER_SIZE)
 			{
-				readCnt = fis.read(fileBuff, 0, FILE_BUFFER_SIZE);
+				readCnt = stm.read(fileBuff, 0, FILE_BUFFER_SIZE);
 				if (readCnt <= 0)
 				{
 					break;
@@ -184,47 +190,43 @@ public class HttpUtil
 			}
 			if (lengLeft > 0)
 			{
-				readCnt = fis.read(fileBuff, 0, FILE_BUFFER_SIZE);
+				readCnt = stm.read(fileBuff, 0, FILE_BUFFER_SIZE);
 				if (readCnt > 0)
 				{
 					ostm.write(fileBuff, 0, readCnt);
 					lengLeft -= readCnt;
 				}
 			}
-			fis.close();
 			ostm.close();
 		}
 
 		return true;
 	}
 
-	private static boolean partialResponse(HttpServletResponse resp, File file, long startOfst, long endOfst) throws IOException
+	private static boolean partialResponse(HttpServletResponse resp, InputStream stm, long lastModified, String fileName, long fileLeng, long startOfst, long endOfst) throws IOException
 	{
 		resp.setStatus(HttpServletResponse.SC_PARTIAL_CONTENT);
-		resp.setContentType(URLConnection.guessContentTypeFromName(file.getName()));
-		resp.addDateHeader("Last-Modified", file.lastModified());
+		resp.setContentType(URLConnection.guessContentTypeFromName(fileName));
+		resp.addDateHeader("Last-Modified", lastModified);
 		resp.addHeader("Accept-Ranges", "bytes");
-		resp.addHeader("Content-Range", "bytes "+startOfst+"-"+endOfst+"/"+file.length());
+		resp.addHeader("Content-Range", "bytes "+startOfst+"-"+endOfst+"/"+fileLeng);
 		long lengLeft = endOfst - startOfst + 1;
 		resp.setContentLengthLong(lengLeft);
 		if (lengLeft <= FILE_BUFFER_SIZE)
 		{
-			FileInputStream fis = new FileInputStream(file);
-			fis.skip(startOfst);
-			byte fileBuff[] = fis.readNBytes((int)lengLeft);
-			fis.close();
+			stm.skip(startOfst);
+			byte fileBuff[] = stm.readNBytes((int)lengLeft);
 			resp.getOutputStream().write(fileBuff);
 		}
 		else
 		{
-			FileInputStream fis = new FileInputStream(file);
 			ServletOutputStream ostm = resp.getOutputStream();
 			byte fileBuff[] = new byte[FILE_BUFFER_SIZE];
 			int readCnt;
-			fis.skip(startOfst);
+			stm.skip(startOfst);
 			while (lengLeft > FILE_BUFFER_SIZE)
 			{
-				readCnt = fis.read(fileBuff, 0, FILE_BUFFER_SIZE);
+				readCnt = stm.read(fileBuff, 0, FILE_BUFFER_SIZE);
 				if (readCnt <= 0)
 				{
 					break;
@@ -234,14 +236,13 @@ public class HttpUtil
 			}
 			if (lengLeft > 0)
 			{
-				readCnt = fis.read(fileBuff, 0, FILE_BUFFER_SIZE);
+				readCnt = stm.read(fileBuff, 0, FILE_BUFFER_SIZE);
 				if (readCnt > 0)
 				{
 					ostm.write(fileBuff, 0, readCnt);
 					lengLeft -= readCnt;
 				}
 			}
-			fis.close();
 			ostm.close();
 		}
 		return true;

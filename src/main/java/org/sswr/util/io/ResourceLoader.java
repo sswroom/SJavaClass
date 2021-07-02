@@ -2,23 +2,37 @@ package org.sswr.util.io;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.sswr.util.data.CPPObjectParser;
+import org.sswr.util.data.SharedLong;
 
 public class ResourceLoader
 {
-	public static InputStream load(Class<?> cls, String resourceName)
+	public static InputStream load(Class<?> cls, String resourceName, SharedLong lastModified)
 	{
 		if (OSInfo.getOSType() == OSType.ANDROID)
 		{
+			if (lastModified != null)
+			{
+				lastModified.value = 0;
+			}
 			return cls.getClassLoader().getResourceAsStream(resourceName);
 		}
 		Module module = cls.getModule();
 		try
 		{
-			return module.getResourceAsStream(resourceName);
+			URL url = module.getClassLoader().getResource(resourceName);
+			URLConnection conn = url.openConnection();
+			if (lastModified != null)
+			{
+				lastModified.value = conn.getLastModified();
+			}
+			return conn.getInputStream();
+			//return module.getResourceAsStream(resourceName);
 		}
 		catch (IOException ex)
 		{
@@ -28,7 +42,7 @@ public class ResourceLoader
 
 	public static <T> List<T> loadObjects(Class<T> cls, String resourceName, String[] fieldNames)
 	{
-		InputStream stm = load(cls, resourceName);
+		InputStream stm = load(cls, resourceName, null);
 		if (stm == null)
 		{
 			return null;

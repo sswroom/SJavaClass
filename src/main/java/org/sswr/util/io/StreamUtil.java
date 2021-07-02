@@ -23,4 +23,24 @@ public class StreamUtil
 			return false;
 		}
 	}
+
+	public static long getLength(InputStream stm)
+	{
+		try
+		{
+			if (stm instanceof FileInputStream)
+			{
+				FileInputStream fis = (FileInputStream)stm;
+				return fis.getChannel().size();
+			}
+			else
+			{
+				return stm.available();
+			}
+		}
+		catch (IOException ex)
+		{
+			return 0;
+		}
+	}
 }
