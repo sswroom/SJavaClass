@@ -9,10 +9,18 @@ import java.awt.image.ColorModel;
 import java.awt.image.DataBuffer;
 
 import javax.imageio.metadata.IIOMetadata;
+import javax.imageio.metadata.IIOMetadataNode;
 
+import org.sswr.util.data.ByteIO;
+import org.sswr.util.data.ByteIOLSB;
+import org.sswr.util.data.ByteIOMSB;
+import org.sswr.util.data.ClassTools;
 import org.sswr.util.data.DataTools;
 import org.sswr.util.data.LineBreakType;
+import org.sswr.util.data.SharedInt;
 import org.sswr.util.data.StringUtil;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 public class StaticImage
 {
@@ -208,10 +216,61 @@ public class StaticImage
 
 	private void parseMetadata()
 	{
+		if (this.metadataParsed)
+		{
+			return;
+		}
+		this.metadataParsed = true;
 		String clsName = this.metadata.getClass().getName();
 		if (clsName.equals("com.sun.imageio.plugins.jpeg.JPEGMetadata"))
 		{
-			//////////////////////////////
+			Node treeNode = this.metadata.getAsTree("javax_imageio_jpeg_image_1.0");
+			Node node;
+			if (treeNode != null)
+			{
+				NodeList nodeList = treeNode.getChildNodes();
+				int i = 0;
+				int j = nodeList.getLength();
+				while (i < j)
+				{
+					node = nodeList.item(i);
+					if (node != null && node.getNodeName().equals("markerSequence"))
+					{
+						NodeList markerSequenceList = node.getChildNodes();
+						int k = 0;
+						int l = markerSequenceList.getLength();
+						while (k < l)
+						{
+							IIOMetadataNode mnode = (IIOMetadataNode)markerSequenceList.item(k);
+							byte[] barr = (byte[])mnode.getUserObject();
+							if (barr != null && barr.length > 18)
+							{
+								if (barr[0] == 'E' && barr[1] == 'x' && barr[2] == 'i' && barr[3] == 'f')
+								{
+									ByteIO byteIO = null;
+									if (barr[6] == 'I' && barr[7] == 'I')
+									{
+										byteIO = new ByteIOLSB();
+									}
+									else if (barr[6] == 'M' && barr[7] == 'M')
+									{
+										byteIO = new ByteIOMSB();
+									}
+									if (byteIO != null && byteIO.readInt16(barr, 8) == 42 && byteIO.readInt32(barr, 10) == 8)
+									{
+										SharedInt nextOfst = new SharedInt();
+										this.exif = EXIFData.parseIFD(barr, 14, barr.length - 14, byteIO, nextOfst, EXIFMaker.STANDARD, 6);
+									}
+								}
+							}
+	
+							k++;
+						}
+						//////////////////////////////
+					}
+					i++;
+				}
+			}
 		}
 		else
 		{
@@ -224,12 +283,10 @@ public class StaticImage
 		toBufferedImageString(this.img, sb);
 		if (this.metadata != null)
 		{
-			if (!this.metadataParsed)
-			{
-				this.parseMetadata();
-			}
+			this.parseMetadata();
 			if (this.exif != null)
 			{
+				sb.append("\r\n");
 				this.exif.toString(sb, null);
 			}
 			sb.append("\r\n");

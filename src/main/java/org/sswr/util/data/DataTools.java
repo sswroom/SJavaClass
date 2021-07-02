@@ -977,14 +977,38 @@ public class DataTools {
 			int j = Array.getLength(o);
 			StringBuilder sb = new StringBuilder();
 			sb.append('[');
-			while (i < j)
+			if (j > 64)
 			{
-				if (i > 0)
+				while (i < 32)
+				{
+					if (i > 0)
+					{
+						sb.append(",");
+					}
+					sb.append(toObjectStringInner(Array.get(o, i), maxLevel - 1));
+					i++;
+				}
+
+				sb.append(", ... ");
+				i = j - 32;
+				while (i < j)
 				{
 					sb.append(",");
+					sb.append(toObjectStringInner(Array.get(o, i), maxLevel - 1));
+					i++;
 				}
-				sb.append(toObjectStringInner(Array.get(o, i), maxLevel - 1));
-				i++;
+			}
+			else
+			{
+				while (i < j)
+				{
+					if (i > 0)
+					{
+						sb.append(",");
+					}
+					sb.append(toObjectStringInner(Array.get(o, i), maxLevel - 1));
+					i++;
+				}
 			}
 			sb.append(']');
 			return sb.toString();
@@ -1235,5 +1259,26 @@ public class DataTools {
 			return obj2;
 		}
 		return obj3;
+	}
+
+	public static Object getObjValue(Object o, String fieldName)
+	{
+		try
+		{
+			FieldGetter<Object> getter = new FieldGetter<Object>(o.getClass(), fieldName);
+			return getter.get(o);
+		}
+		catch (NoSuchFieldException ex)
+		{
+			return null;
+		}
+		catch (IllegalAccessException ex)
+		{
+			return null;
+		}
+		catch (InvocationTargetException ex)
+		{
+			return null;
+		}
 	}
 }

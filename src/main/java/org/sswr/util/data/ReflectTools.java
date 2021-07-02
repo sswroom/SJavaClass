@@ -48,7 +48,8 @@ public class ReflectTools {
 		try
 		{
 			Method meth = cls.getMethod(funcName, new Class<?>[0]);
-			if (meth.getReturnType().equals(field.getType()))
+///			if (meth.getReturnType().equals(field.getType()))
+			if (meth.getReturnType().isAssignableFrom(field.getType()))
 			{
 				return meth;
 			}
