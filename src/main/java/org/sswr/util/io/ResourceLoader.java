@@ -26,6 +26,10 @@ public class ResourceLoader
 		try
 		{
 			URL url = module.getClassLoader().getResource(resourceName);
+			if (url == null)
+			{
+				return null;
+			}
 			URLConnection conn = url.openConnection();
 			if (lastModified != null)
 			{
