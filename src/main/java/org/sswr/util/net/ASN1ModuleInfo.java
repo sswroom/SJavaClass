@@ -5,18 +5,18 @@ import java.util.Objects;
 
 import org.sswr.util.data.DataTools;
 
-public class SNMPModuleInfo
+public class ASN1ModuleInfo
 {
 	private String moduleName;
 	private String moduleFileName;
 	private List<String> objKeys;
-	private List<SNMPObjectInfo> objValues;
-	private List<SNMPObjectInfo> oidList;
+	private List<ASN1ObjectInfo> objValues;
+	private List<ASN1ObjectInfo> oidList;
 
-	public SNMPModuleInfo() {
+	public ASN1ModuleInfo() {
 	}
 
-	public SNMPModuleInfo(String moduleName, String moduleFileName, List<String> objKeys, List<SNMPObjectInfo> objValues, List<SNMPObjectInfo> oidList) {
+	public ASN1ModuleInfo(String moduleName, String moduleFileName, List<String> objKeys, List<ASN1ObjectInfo> objValues, List<ASN1ObjectInfo> oidList) {
 		this.moduleName = moduleName;
 		this.moduleFileName = moduleFileName;
 		this.objKeys = objKeys;
@@ -48,19 +48,19 @@ public class SNMPModuleInfo
 		this.objKeys = objKeys;
 	}
 
-	public List<SNMPObjectInfo> getObjValues() {
+	public List<ASN1ObjectInfo> getObjValues() {
 		return this.objValues;
 	}
 
-	public void setObjValues(List<SNMPObjectInfo> objValues) {
+	public void setObjValues(List<ASN1ObjectInfo> objValues) {
 		this.objValues = objValues;
 	}
 
-	public List<SNMPObjectInfo> getOidList() {
+	public List<ASN1ObjectInfo> getOidList() {
 		return this.oidList;
 	}
 
-	public void setOidList(List<SNMPObjectInfo> oidList) {
+	public void setOidList(List<ASN1ObjectInfo> oidList) {
 		this.oidList = oidList;
 	}
 
@@ -68,10 +68,10 @@ public class SNMPModuleInfo
 	public boolean equals(Object o) {
 		if (o == this)
 			return true;
-		if (!(o instanceof SNMPModuleInfo)) {
+		if (!(o instanceof ASN1ModuleInfo)) {
 			return false;
 		}
-		SNMPModuleInfo sNMPModuleInfo = (SNMPModuleInfo) o;
+		ASN1ModuleInfo sNMPModuleInfo = (ASN1ModuleInfo) o;
 		return Objects.equals(moduleName, sNMPModuleInfo.moduleName) && Objects.equals(moduleFileName, sNMPModuleInfo.moduleFileName) && Objects.equals(objKeys, sNMPModuleInfo.objKeys) && Objects.equals(objValues, sNMPModuleInfo.objValues) && Objects.equals(oidList, sNMPModuleInfo.oidList);
 	}
 
@@ -90,7 +90,7 @@ public class SNMPModuleInfo
 		sb.append("Module ");
 		sb.append(this.moduleName);
 		sb.append("\r\n");
-		SNMPObjectInfo obj;
+		ASN1ObjectInfo obj;
 		int i = 0;
 		int j = this.objValues.size();
 		while (i < j)

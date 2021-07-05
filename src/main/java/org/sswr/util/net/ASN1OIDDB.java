@@ -4,13 +4,13 @@ import java.util.List;
 
 import org.sswr.util.io.ResourceLoader;
 
-public class SNMPOIDDB
+public class ASN1OIDDB
 {
-	private static List<SNMPOIDInfo> oidList;
+	private static List<ASN1OIDInfo> oidList;
 
 	private static boolean loadOIDList()
 	{
-		return (oidList = ResourceLoader.loadObjects(SNMPOIDInfo.class, "SNMPOIDDB.oidList.txt", new String[] {"name", "len", "oid"})) != null;
+		return (oidList = ResourceLoader.loadObjects(ASN1OIDInfo.class, "SNMPOIDDB.oidList.txt", new String[] {"name", "len", "oid"})) != null;
 	}
 
 	public static void oidToNameString(byte[] pdu, int pduOfst, int pduSize, StringBuilder sb)
@@ -19,7 +19,7 @@ public class SNMPOIDDB
 		{
 			return;
 		}
-		SNMPOIDInfo oid;
+		ASN1OIDInfo oid;
 		int v;
 		int checkSize = pduSize;
 		while (checkSize > 0)
@@ -46,13 +46,13 @@ public class SNMPOIDDB
 		}
 	}
 
-	public static SNMPOIDInfo oidGetEntry(byte[] pdu, int pduOfst, int pduSize)
+	public static ASN1OIDInfo oidGetEntry(byte[] pdu, int pduOfst, int pduSize)
 	{
 		if (oidList == null && !loadOIDList())
 		{
 			return null;
 		}
-		SNMPOIDInfo oid;
+		ASN1OIDInfo oid;
 		int i = 0;
 		int j = oidList.size() - 1;
 		int k;

@@ -15,12 +15,12 @@ import org.sswr.util.io.FileStream.BufferType;
 import org.sswr.util.io.FileStream.FileMode;
 import org.sswr.util.io.FileStream.FileShare;
 
-public class SNMPMIB
+public class ASN1MIB
 {
 	private static final String DEBUGOBJ = "gdStatusBytes";
 
-	private Map<String, SNMPModuleInfo> moduleMap;
-	private SNMPModuleInfo globalModule;
+	private Map<String, ASN1ModuleInfo> moduleMap;
+	private ASN1ModuleInfo globalModule;
 
 	private static int calcLineSpace(String txt)
 	{
@@ -49,14 +49,14 @@ public class SNMPMIB
 		return ret;
 	}
 
-	private static void moduleAppendOID(SNMPModuleInfo module, SNMPObjectInfo obj)
+	private static void moduleAppendOID(ASN1ModuleInfo module, ASN1ObjectInfo obj)
 	{
 		int i;
 		int j;
 		int k;
 		int l;
-		SNMPObjectInfo obj2;
-		List<SNMPObjectInfo> oidList = module.getOidList();
+		ASN1ObjectInfo obj2;
+		List<ASN1ObjectInfo> oidList = module.getOidList();
 		if (obj.getOid() == null)
 			return;
 		i = 0;
@@ -82,7 +82,7 @@ public class SNMPMIB
 		oidList.add(i, obj);
 	}
 
-	private boolean parseObjectOID(SNMPModuleInfo module, SNMPObjectInfo obj, String s, StringBuilder errMessage)
+	private boolean parseObjectOID(ASN1ModuleInfo module, ASN1ObjectInfo obj, String s, StringBuilder errMessage)
 	{
 		char sarr[] = s.toCharArray();
 		int sofst = 0;
@@ -172,7 +172,7 @@ public class SNMPMIB
 		else
 		{
 			int i = StringUtil.sortedIndexOf(module.getObjKeys(), sb.toString());
-			SNMPObjectInfo obj2;
+			ASN1ObjectInfo obj2;
 			if (i < 0)
 			{
 	//			i = this.globalModule.objKeys.SortedIndexOf(sb.ToString());
@@ -334,7 +334,7 @@ public class SNMPMIB
 		}
 	}
 
-	private boolean parseObjectBegin(UTF8Reader reader, SNMPObjectInfo obj, StringBuilder errMessage)
+	private boolean parseObjectBegin(UTF8Reader reader, ASN1ObjectInfo obj, StringBuilder errMessage)
 	{
 		StringBuilder sb = new StringBuilder();
 		int i;
@@ -368,14 +368,14 @@ public class SNMPMIB
 		}
 	}
 
-	private boolean parseModule(UTF8Reader reader, SNMPModuleInfo module, StringBuilder errMessage)
+	private boolean parseModule(UTF8Reader reader, ASN1ModuleInfo module, StringBuilder errMessage)
 	{
 		StringBuilder sb = new StringBuilder();
 		int i;
 		int j;
 		int lineSpace;
-		SNMPObjectInfo obj;
-		SNMPObjectInfo currObj = null;
+		ASN1ObjectInfo obj;
+		ASN1ObjectInfo currObj = null;
 		StringBuilder sbObjValName = new StringBuilder();
 		StringBuilder sbObjValCont = new StringBuilder();
 		int objLineSpace = 0;
@@ -417,8 +417,8 @@ public class SNMPMIB
 				}
 				else if (StringUtil.endsWith(sb, "END"))
 				{
-					List<SNMPObjectInfo> objList = module.getObjValues();
-					SNMPObjectInfo iobj;
+					List<ASN1ObjectInfo> objList = module.getObjValues();
+					ASN1ObjectInfo iobj;
 					int ui = 0;
 					int uj = objList.size();
 					while (ui < uj)
@@ -714,9 +714,9 @@ public class SNMPMIB
 					{
 						boolean isEnd = false;
 						StringBuilder impObjNames = new StringBuilder();
-						SNMPModuleInfo impModule;
-						SNMPObjectInfo impObj;
-						SNMPObjectInfo impObj2;
+						ASN1ModuleInfo impModule;
+						ASN1ObjectInfo impObj;
+						ASN1ObjectInfo impObj2;
 						String []impSarr;
 						int impCnt;
 						int impInd;
@@ -767,7 +767,7 @@ public class SNMPMIB
 									if (impInd >= 0)
 									{
 										impObj = impModule.getObjValues().get(impInd);
-										impObj2 = new SNMPObjectInfo();
+										impObj2 = new ASN1ObjectInfo();
 										impObj2.setObjectName(impSarr[impCnt]);
 										if (impObj.getTypeName() != null)
 										{
@@ -933,7 +933,7 @@ public class SNMPMIB
 							{
 								k = l;
 							}
-							obj = new SNMPObjectInfo();
+							obj = new ASN1ObjectInfo();
 							obj.setObjectName(sb.substring(0, k));
 							if (j > k)
 							{
@@ -1031,7 +1031,7 @@ public class SNMPMIB
 								}
 							}
 	
-							obj = new SNMPObjectInfo();
+							obj = new ASN1ObjectInfo();
 							obj.setObjectName(sb.substring(0, i));
 							while (sb.charAt(i) == ' ' || sb.charAt(i) == '\t')
 							{
@@ -1063,24 +1063,24 @@ public class SNMPMIB
 		}
 	}
 
-	public SNMPMIB()
+	public ASN1MIB()
 	{
-		this.moduleMap = new HashMap<String, SNMPModuleInfo>();
-		this.globalModule = new SNMPModuleInfo();
+		this.moduleMap = new HashMap<String, ASN1ModuleInfo>();
+		this.globalModule = new ASN1ModuleInfo();
 		this.globalModule.setObjKeys(new ArrayList<String>());
-		this.globalModule.setObjValues(new ArrayList<SNMPObjectInfo>());
-		this.globalModule.setOidList(new ArrayList<SNMPObjectInfo>());
+		this.globalModule.setObjValues(new ArrayList<ASN1ObjectInfo>());
+		this.globalModule.setOidList(new ArrayList<ASN1ObjectInfo>());
 	}
 
-	public SNMPModuleInfo getGlobalModule()
+	public ASN1ModuleInfo getGlobalModule()
 	{
 		return this.globalModule;		
 	}
 
-	public SNMPModuleInfo getModuleByFileName(String fileName)
+	public ASN1ModuleInfo getModuleByFileName(String fileName)
 	{
-		Iterator<SNMPModuleInfo> itMmodule = this.moduleMap.values().iterator();
-		SNMPModuleInfo module;
+		Iterator<ASN1ModuleInfo> itMmodule = this.moduleMap.values().iterator();
+		ASN1ModuleInfo module;
 		while (itMmodule.hasNext())
 		{
 			module = itMmodule.next();
@@ -1105,7 +1105,7 @@ public class SNMPMIB
 		FileStream fs;
 		UTF8Reader reader;
 		int i;
-		SNMPModuleInfo module;
+		ASN1ModuleInfo module;
 		boolean moduleFound = false;
 		boolean succ;
 		fs = new FileStream(fileName, FileMode.READONLY, FileShare.DENY_NONE, BufferType.NORMAL);
@@ -1158,12 +1158,12 @@ public class SNMPMIB
 					errMessage.append(" already loaded");
 					break;
 				}
-				module = new SNMPModuleInfo();
+				module = new ASN1ModuleInfo();
 				module.setModuleName(sb.toString());
 				module.setModuleFileName(fileName);
 				module.setObjKeys(new ArrayList<String>());
-				module.setObjValues(new ArrayList<SNMPObjectInfo>());
-				module.setOidList(new ArrayList<SNMPObjectInfo>());
+				module.setObjValues(new ArrayList<ASN1ObjectInfo>());
+				module.setOidList(new ArrayList<ASN1ObjectInfo>());
 				this.moduleMap.put(module.getModuleName(), module);
 				succ = this.parseModule(reader, module, errMessage);
 				moduleFound = true;
@@ -1188,7 +1188,7 @@ public class SNMPMIB
 
 	public void toString(StringBuilder sb)
 	{
-		Iterator<SNMPModuleInfo> itModules = this.moduleMap.values().iterator();
+		Iterator<ASN1ModuleInfo> itModules = this.moduleMap.values().iterator();
 		while (itModules.hasNext())
 		{
 			itModules.next().toString(sb);

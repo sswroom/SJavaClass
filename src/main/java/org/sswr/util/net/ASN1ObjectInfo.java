@@ -6,7 +6,7 @@ import java.util.Objects;
 import org.sswr.util.data.ByteTool;
 import org.sswr.util.data.DataTools;
 
-public class SNMPObjectInfo
+public class ASN1ObjectInfo
 {
 	private String objectName;
 	private String typeName;
@@ -16,7 +16,7 @@ public class SNMPObjectInfo
 	private List<String> valName;
 	private List<String> valCont;
 
-	public SNMPObjectInfo()
+	public ASN1ObjectInfo()
 	{
 		oid = new byte[32];
 		this.oidLen = 0;
@@ -95,10 +95,10 @@ public class SNMPObjectInfo
 	public boolean equals(Object o) {
 		if (o == this)
 			return true;
-		if (!(o instanceof SNMPObjectInfo)) {
+		if (!(o instanceof ASN1ObjectInfo)) {
 			return false;
 		}
-		SNMPObjectInfo sNMPObjectInfo = (SNMPObjectInfo) o;
+		ASN1ObjectInfo sNMPObjectInfo = (ASN1ObjectInfo) o;
 		return Objects.equals(objectName, sNMPObjectInfo.objectName) && Objects.equals(typeName, sNMPObjectInfo.typeName) && Objects.equals(typeVal, sNMPObjectInfo.typeVal) && Objects.equals(oid, sNMPObjectInfo.oid) && Objects.equals(valName, sNMPObjectInfo.valName) && Objects.equals(valCont, sNMPObjectInfo.valCont);
 	}
 
@@ -112,7 +112,7 @@ public class SNMPObjectInfo
 		return DataTools.toObjectString(this);
 	}
 
-	public void copyOidFrom(SNMPObjectInfo obj)
+	public void copyOidFrom(ASN1ObjectInfo obj)
 	{
 		ByteTool.copyArray(this.oid, 0, obj.oid, 0, obj.oidLen);
 		this.oidLen = obj.oidLen;

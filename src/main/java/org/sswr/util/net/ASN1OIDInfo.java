@@ -4,16 +4,16 @@ import java.util.Objects;
 
 import org.sswr.util.data.DataTools;
 
-public class SNMPOIDInfo
+public class ASN1OIDInfo
 {
 	private String name;
 	private int len;
 	private byte[] oid;
 
-	public SNMPOIDInfo() {
+	public ASN1OIDInfo() {
 	}
 
-	public SNMPOIDInfo(String name, int len, byte[] oid) {
+	public ASN1OIDInfo(String name, int len, byte[] oid) {
 		this.name = name;
 		this.len = len;
 		this.oid = oid;
@@ -47,10 +47,10 @@ public class SNMPOIDInfo
 	public boolean equals(Object o) {
 		if (o == this)
 			return true;
-		if (!(o instanceof SNMPOIDInfo)) {
+		if (!(o instanceof ASN1OIDInfo)) {
 			return false;
 		}
-		SNMPOIDInfo sNMPOIDInfo = (SNMPOIDInfo) o;
+		ASN1OIDInfo sNMPOIDInfo = (ASN1OIDInfo) o;
 		return Objects.equals(name, sNMPOIDInfo.name) && len == sNMPOIDInfo.len && Objects.equals(oid, sNMPOIDInfo.oid);
 	}
 
