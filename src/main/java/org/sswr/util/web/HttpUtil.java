@@ -104,12 +104,17 @@ public class HttpUtil
 			return false;
 		}
 		FileInputStream fis = new FileInputStream(file);
-		boolean ret = responseFileStream(fis, file.lastModified(), attachment, fileName, req, resp);
+		boolean ret = responseFileStream(fis, file.lastModified(), attachment, file.getAbsolutePath(), fileName, req, resp);
 		fis.close();
 		return ret;
 	}
 
 	public static boolean responseFileStream(InputStream stm, long lastModified, boolean attachment, String fileName, HttpServletRequest req, HttpServletResponse resp) throws IOException
+	{
+		return responseFileStream(stm, lastModified, attachment, fileName, fileName, req, resp);
+	}
+
+	public static boolean responseFileStream(InputStream stm, long lastModified, boolean attachment, String srcFileName, String respFileName, HttpServletRequest req, HttpServletResponse resp) throws IOException
 	{
 		long since = req.getDateHeader("If-Modified-Since");
 		if (lastModified != 0 && since >= 0 && since + 999 >= lastModified)
@@ -140,15 +145,15 @@ public class HttpUtil
 					}
 					if (startOfst >= 0 && endOfst >= startOfst && endOfst < fileLen)
 					{
-						return partialResponse(resp, stm, lastModified, fileName, fileLen, startOfst, endOfst);
+						return partialResponse(resp, stm, srcFileName, lastModified, respFileName, fileLen, startOfst, endOfst);
 					}
 					else if (startOfst < 0 && endOfst >= 0 && endOfst <= fileLen)
 					{
-						return partialResponse(resp, stm, lastModified, fileName, fileLen, fileLen - endOfst, fileLen - 1);
+						return partialResponse(resp, stm, srcFileName, lastModified, respFileName, fileLen, fileLen - endOfst, fileLen - 1);
 					}
 					else if (startOfst >= 0 && startOfst < fileLen && endOfst < 0)
 					{
-						return partialResponse(resp, stm, lastModified, fileName, fileLen, startOfst, fileLen - 1);
+						return partialResponse(resp, stm, srcFileName, lastModified, respFileName, fileLen, startOfst, fileLen - 1);
 					}
 				}
 				catch (Exception ex)
@@ -159,10 +164,10 @@ public class HttpUtil
 		}
 
 		resp.setStatus(HttpServletResponse.SC_OK);
-		resp.setContentType(URLConnection.guessContentTypeFromName(fileName));
-		if (fileName != null || attachment)
+		resp.setContentType(URLConnection.guessContentTypeFromName(srcFileName));
+		if (respFileName != null || attachment)
 		{
-			addContentDisposition(req, resp, attachment, fileName);
+			addContentDisposition(req, resp, attachment, respFileName);
 		}
 		resp.addDateHeader("Last-Modified", lastModified);
 		resp.addHeader("Accept-Ranges", "bytes");
@@ -203,10 +208,10 @@ public class HttpUtil
 		return true;
 	}
 
-	private static boolean partialResponse(HttpServletResponse resp, InputStream stm, long lastModified, String fileName, long fileLeng, long startOfst, long endOfst) throws IOException
+	private static boolean partialResponse(HttpServletResponse resp, InputStream stm, String srcFileName, long lastModified, String respFileName, long fileLeng, long startOfst, long endOfst) throws IOException
 	{
 		resp.setStatus(HttpServletResponse.SC_PARTIAL_CONTENT);
-		resp.setContentType(URLConnection.guessContentTypeFromName(fileName));
+		resp.setContentType(URLConnection.guessContentTypeFromName(srcFileName));
 		resp.addDateHeader("Last-Modified", lastModified);
 		resp.addHeader("Accept-Ranges", "bytes");
 		resp.addHeader("Content-Range", "bytes "+startOfst+"-"+endOfst+"/"+fileLeng);
