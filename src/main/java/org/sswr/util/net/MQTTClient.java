@@ -1,8 +1,10 @@
 package org.sswr.util.net;
 
 import java.net.InetAddress;
+import java.util.ArrayList;
+import java.util.List;
 
-public class MQTTClient implements Runnable
+public class MQTTClient implements Runnable, MQTTPublishMessageHdlr
 {
 	public enum ConnError
 	{
@@ -18,11 +20,13 @@ public class MQTTClient implements Runnable
 	private int packetId;
 	private int keepAliveS;
 	private Thread thread;
+	private List<MQTTPublishMessageHdlr> hdlrList;
 
 	public MQTTClient(InetAddress brokerAddr, int port, TCPClientType cliType, int keepAliveS, String username, String password)
 	{
 		this.packetId = 1;
 		this.keepAliveS = keepAliveS;
+		this.hdlrList = new ArrayList<MQTTPublishMessageHdlr>();
 		this.conn = new MQTTConn(brokerAddr, port, cliType);
 		if (this.conn.isError())
 		{
@@ -31,6 +35,7 @@ public class MQTTClient implements Runnable
 			return;
 		}
 		String clientId = "sswrMQTT/" + System.currentTimeMillis();
+		this.conn.handlePublishMessage(this);
 		if (this.conn.sendConnect((byte)4, keepAliveS, clientId, username, password))
 		{
 			if (this.conn.waitConnAck(30000) == MQTTConnectStatus.ACCEPTED)
@@ -63,7 +68,10 @@ public class MQTTClient implements Runnable
 
 	public void handlePublishMessage(MQTTPublishMessageHdlr hdlr)
 	{
-		this.conn.handlePublishMessage(hdlr);
+		synchronized(this.hdlrList)
+		{
+			this.hdlrList.add(hdlr);
+		}
 	}
 
 	private synchronized int nextPacketId()
@@ -109,6 +117,47 @@ public class MQTTClient implements Runnable
 			catch (InterruptedException ex)
 			{
 				break;
+			}
+		}
+	}
+
+	@Override
+	public void onPublishMessage(String topic, byte[] buff, int buffOfst, int buffSize)
+	{
+		synchronized (this.hdlrList)
+		{
+			int i = this.hdlrList.size();
+			while (i-- > 0)
+			{
+				try
+				{
+					this.hdlrList.get(i).onPublishMessage(topic, buff, buffOfst, buffSize);
+				}
+				catch (Exception ex)
+				{
+					ex.printStackTrace();
+				}
+			}
+		}
+	}
+
+	@Override
+	public void onDisconnect()
+	{
+		this.connError = ConnError.DISCONNECT;
+		synchronized (this.hdlrList)
+		{
+			int i = this.hdlrList.size();
+			while (i-- > 0)
+			{
+				try
+				{
+					this.hdlrList.get(i).onDisconnect();
+				}
+				catch (Exception ex)
+				{
+					ex.printStackTrace();
+				}
 			}
 		}
 	}

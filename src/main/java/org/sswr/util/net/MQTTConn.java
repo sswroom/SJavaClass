@@ -114,6 +114,7 @@ public class MQTTConn implements Runnable, ProtocolDataListener
 		}
 		this.onDisconnect();
 		this.recvRunning = false;
+		this.packetEvt.set();
 	}
 
 	private void onPublishMessage(String topic, byte[] message, int ofst, int msgSize)
@@ -153,7 +154,7 @@ public class MQTTConn implements Runnable, ProtocolDataListener
 				}
 			}
 			t = System.currentTimeMillis() - initT;
-			if (t >= timeoutMS)
+			if (!this.recvRunning || t >= timeoutMS)
 				return null;
 			this.packetEvt.waitEvent(timeoutMS - (int)t);
 		}	
