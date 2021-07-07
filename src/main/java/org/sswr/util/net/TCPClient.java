@@ -8,6 +8,9 @@ import java.net.SocketAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
+
 import org.sswr.util.io.IOStream;
 
 public class TCPClient extends IOStream
@@ -18,7 +21,7 @@ public class TCPClient extends IOStream
 	long cliId;
 	int flags; //1 = shutdown send, 2 = shutdown recv, 4 = closed, 8 = connect error
 
-	public TCPClient(String hostName, int port)
+	public TCPClient(String hostName, int port, TCPClientType cliType)
 	{
 		super(hostName);
 		this.totalRecvSize = 0;
@@ -39,7 +42,16 @@ public class TCPClient extends IOStream
 		}
 		try
 		{
-			this.s = new Socket(addr, port);
+			if (cliType == TCPClientType.SSL)
+			{
+				SSLSocketFactory factory = (SSLSocketFactory)SSLSocketFactory.getDefault();
+				this.s = factory.createSocket(addr, port);
+				((SSLSocket)this.s).startHandshake();
+			}
+			else
+			{
+				this.s = new Socket(addr, port);
+			}
 		}
 		catch (IOException ex)
 		{
@@ -51,7 +63,7 @@ public class TCPClient extends IOStream
 		this.cliId = SocketUtil.genSocketId(s);
 	}
 
-	public TCPClient(InetAddress addr, int port)
+	public TCPClient(InetAddress addr, int port, TCPClientType cliType)
 	{
 		super("");
 		this.totalRecvSize = 0;
@@ -60,7 +72,16 @@ public class TCPClient extends IOStream
 		this.flags = 0;
 		try
 		{
-			this.s = new Socket(addr, port);
+			if (cliType == TCPClientType.SSL)
+			{
+				SSLSocketFactory factory = (SSLSocketFactory)SSLSocketFactory.getDefault();
+				this.s = factory.createSocket(addr, port);
+				((SSLSocket)this.s).startHandshake();
+			}
+			else
+			{
+				this.s = new Socket(addr, port);
+			}
 		}
 		catch (IOException ex)
 		{

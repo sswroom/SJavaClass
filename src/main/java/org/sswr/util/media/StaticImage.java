@@ -14,7 +14,6 @@ import javax.imageio.metadata.IIOMetadataNode;
 import org.sswr.util.data.ByteIO;
 import org.sswr.util.data.ByteIOLSB;
 import org.sswr.util.data.ByteIOMSB;
-import org.sswr.util.data.ClassTools;
 import org.sswr.util.data.DataTools;
 import org.sswr.util.data.LineBreakType;
 import org.sswr.util.data.SharedInt;
