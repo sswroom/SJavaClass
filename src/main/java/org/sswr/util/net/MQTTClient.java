@@ -8,7 +8,7 @@ public class MQTTClient implements Runnable, MQTTPublishMessageHdlr
 {
 	public enum ConnError
 	{
-		SUCCESS,
+		CONNECTED,
 		CONNECT_ERROR,
 		SEND_CONNECT_ERROR,
 		NOT_ACCEPT,
@@ -40,7 +40,7 @@ public class MQTTClient implements Runnable, MQTTPublishMessageHdlr
 		{
 			if (this.conn.waitConnAck(30000) == MQTTConnectStatus.ACCEPTED)
 			{
-				this.connError = ConnError.SUCCESS;
+				this.connError = ConnError.CONNECTED;
 				this.thread = new Thread(this);
 				this.thread.start();
 			}
@@ -79,12 +79,12 @@ public class MQTTClient implements Runnable, MQTTPublishMessageHdlr
 		return this.packetId++;
 	}
 
-	public boolean subscribe(String topic)
+	public boolean subscribe(String topic, boolean waitReply)
 	{
 		int packetId = this.nextPacketId();
 		if (this.conn.sendSubscribe(packetId, topic))
 		{
-			if (this.conn.waitSubAck(packetId, 30000) <= 2)
+			if (!waitReply || this.conn.waitSubAck(packetId, 30000) <= 2)
 			{
 				return true;
 			}
