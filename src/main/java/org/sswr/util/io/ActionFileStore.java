@@ -45,6 +45,7 @@ public class ActionFileStore implements Runnable, DBUpdateHandler {
 		this.threadToStop = false;
 		this.logPath = logPath;
 		this.logger = logger;
+		this.packageName = packageName;
 		if (this.logPath != null)
 		{
 			this.logPath = FileUtil.getRealPath(this.logPath);
