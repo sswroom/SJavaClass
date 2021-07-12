@@ -4,7 +4,7 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MQTTClient implements Runnable, MQTTPublishMessageHdlr
+public class MQTTClient implements Runnable, MQTTEventHdlr
 {
 	public enum ConnError
 	{
@@ -15,58 +15,99 @@ public class MQTTClient implements Runnable, MQTTPublishMessageHdlr
 		DISCONNECT
 	}
 
+	class TopicInfo
+	{
+		public String topic;
+		public MQTTPublishMessageHdlr hdlr;
+	}
+
 	private MQTTConn conn;
 	private ConnError connError;
 	private int packetId;
 	private int keepAliveS;
 	private Thread thread;
-	private List<MQTTPublishMessageHdlr> hdlrList;
+	private boolean autoReconnect;
+	private List<MQTTEventHdlr> hdlrList;
+	private InetAddress brokerAddr;
+	private int port;
+	private TCPClientType cliType;
+	private String clientId;
+	private String username;
+	private String password;
+	private List<TopicInfo> topicList;
 
-	public MQTTClient(InetAddress brokerAddr, int port, TCPClientType cliType, int keepAliveS, String username, String password)
+	public MQTTClient(InetAddress brokerAddr, int port, TCPClientType cliType, int keepAliveS, String username, String password, boolean autoReconnect)
 	{
 		this.packetId = 1;
 		this.keepAliveS = keepAliveS;
-		this.hdlrList = new ArrayList<MQTTPublishMessageHdlr>();
-		this.conn = new MQTTConn(brokerAddr, port, cliType);
+		this.hdlrList = new ArrayList<MQTTEventHdlr>();
+		this.topicList = new ArrayList<TopicInfo>();
+		this.autoReconnect = autoReconnect;
+
+		this.brokerAddr = brokerAddr;
+		this.port = port;
+		this.cliType = cliType;
+		this.clientId = "sswrMQTT/" + System.currentTimeMillis();
+		this.username = username;
+		this.password = password;
+
+		this.connError = this.connect();
+		this.thread = new Thread(this);
+		this.thread.start();
+	}
+
+	private ConnError connect()
+	{
+		this.packetId = 1;
+		this.conn = new MQTTConn(this.brokerAddr, this.port, this.cliType);
 		if (this.conn.isError())
 		{
 			this.conn.close();
-			this.connError = ConnError.CONNECT_ERROR;
-			return;
+			this.conn = null;
+			return ConnError.CONNECT_ERROR;
 		}
-		String clientId = "sswrMQTT/" + System.currentTimeMillis();
-		this.conn.handlePublishMessage(this);
-		if (this.conn.sendConnect((byte)4, keepAliveS, clientId, username, password))
+		this.conn.handleEvents(this);
+		if (this.conn.sendConnect((byte)4, keepAliveS, this.clientId, this.username, this.password))
 		{
 			if (this.conn.waitConnAck(30000) == MQTTConnectStatus.ACCEPTED)
 			{
-				this.connError = ConnError.CONNECTED;
-				this.thread = new Thread(this);
-				this.thread.start();
+				return ConnError.CONNECTED;
 			}
 			else
 			{
-				this.connError = ConnError.NOT_ACCEPT;
+				this.conn.close();
+				this.conn = null;
+				return ConnError.NOT_ACCEPT;
 			}
 		}
 		else
 		{
-			this.connError = ConnError.SEND_CONNECT_ERROR;
+			this.conn.close();
+			this.conn = null;
+			return ConnError.SEND_CONNECT_ERROR;
 		}
 	}
 
 	public void close()
 	{
-		this.conn.close();
+		this.autoReconnect = false;
 		if (this.thread != null)
 		{
 			this.thread.interrupt();
 			this.thread = null;
 		}
+		synchronized (this)
+		{
+			if (this.conn != null)
+			{
+				this.conn.close();
+				this.conn = null;
+			}
+		}
 		this.connError = ConnError.DISCONNECT;
 	}
 
-	public void handlePublishMessage(MQTTPublishMessageHdlr hdlr)
+	public void handleEvents(MQTTEventHdlr hdlr)
 	{
 		synchronized(this.hdlrList)
 		{
@@ -79,25 +120,35 @@ public class MQTTClient implements Runnable, MQTTPublishMessageHdlr
 		return this.packetId++;
 	}
 
-	public boolean subscribe(String topic, boolean waitReply)
+	public void subscribe(String topic, MQTTPublishMessageHdlr hdlr)
 	{
-		int packetId = this.nextPacketId();
-		if (this.conn.sendSubscribe(packetId, topic))
+		TopicInfo info = new TopicInfo();
+		info.topic = topic;
+		info.hdlr = hdlr;
+		synchronized(this)
 		{
-			if (!waitReply || this.conn.waitSubAck(packetId, 30000) <= 2)
+			this.topicList.add(info);
+			if (this.conn != null)
 			{
-				return true;
+				int packetId = this.nextPacketId();
+				this.conn.sendSubscribe(packetId, topic);
 			}
 		}
-		return false;
 	}
 
 	public boolean publish(String topic, String message)
 	{
-		return this.conn.sendPublish(topic, message);
+		synchronized (this)
+		{
+			if (this.conn == null)
+			{
+				return false;
+			}
+			return this.conn.sendPublish(topic, message);
+		}
 	}
 
-	public ConnError getConnError()
+	public synchronized ConnError getConnError()
 	{
 		return this.connError;
 	}
@@ -112,7 +163,29 @@ public class MQTTClient implements Runnable, MQTTPublishMessageHdlr
 				{
 					this.wait(this.keepAliveS * 500);
 				}
-				this.conn.sendPing();
+
+				synchronized(this)
+				{
+					if (this.conn == null)
+					{
+						if (this.autoReconnect)
+						{
+							this.connError = this.connect();
+							if (this.conn != null && this.connError == ConnError.CONNECTED)
+							{
+								int i = this.topicList.size();
+								while (i-- > 0)
+								{
+									this.conn.sendSubscribe(this.nextPacketId(), this.topicList.get(i).topic);
+								}
+							}
+						}
+					}
+					else
+					{
+						this.conn.sendPing();
+					}
+				}
 			}
 			catch (InterruptedException ex)
 			{
@@ -145,6 +218,14 @@ public class MQTTClient implements Runnable, MQTTPublishMessageHdlr
 	public void onDisconnect()
 	{
 		this.connError = ConnError.DISCONNECT;
+		synchronized(this)
+		{
+			if (this.conn != null)
+			{
+				this.conn.close();
+				this.conn = null;
+			}
+		}
 		synchronized (this.hdlrList)
 		{
 			int i = this.hdlrList.size();

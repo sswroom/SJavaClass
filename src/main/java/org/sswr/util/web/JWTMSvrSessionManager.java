@@ -13,9 +13,9 @@ import org.sswr.util.data.JSONMapper;
 import org.sswr.util.data.JSONParser;
 import org.sswr.util.data.StringUtil;
 import org.sswr.util.net.MQTTClient;
-import org.sswr.util.net.MQTTPublishMessageHdlr;
+import org.sswr.util.net.MQTTEventHdlr;
 
-public class JWTMSvrSessionManager extends JWTSessionManager implements MQTTPublishMessageHdlr
+public class JWTMSvrSessionManager extends JWTSessionManager implements MQTTEventHdlr
 {
 	private static final String TOPIC = "/jwtsessmgr";
 	class JWTRequest
@@ -43,8 +43,8 @@ public class JWTMSvrSessionManager extends JWTSessionManager implements MQTTPubl
 		this.reqMap = new HashMap<Integer, JWTRequest>();
 		this.reqNextId = 0;
 		this.remoteSessMap = new HashMap<Integer, Map<Long, JWTSession>>();
-		this.cli.handlePublishMessage(this);
-		this.cli.subscribe(TOPIC, false);
+		this.cli.handleEvents(this);
+		this.cli.subscribe(TOPIC, null);
 	}
 
 	public synchronized JWTSession newSession(String userName, List<String> roleList)

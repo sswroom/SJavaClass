@@ -20,7 +20,7 @@ public class MQTTConn implements Runnable, ProtocolDataListener
 	private boolean recvRunning;
 	private boolean recvStarted;
 
-	private List<MQTTPublishMessageHdlr> hdlrList;
+	private List<MQTTEventHdlr> hdlrList;
 
 	private List<MQTTPacketInfo> packetList;
 	private ThreadEvent packetEvt;
@@ -112,9 +112,9 @@ public class MQTTConn implements Runnable, ProtocolDataListener
 				buffSize = readSize;
 			}
 		}
-		this.onDisconnect();
 		this.recvRunning = false;
 		this.packetEvt.set();
+		this.onDisconnect();
 	}
 
 	private void onPublishMessage(String topic, byte[] message, int ofst, int msgSize)
@@ -164,7 +164,7 @@ public class MQTTConn implements Runnable, ProtocolDataListener
 	{
 		this.recvRunning = false;
 		this.recvStarted = false;
-		this.hdlrList = new ArrayList<MQTTPublishMessageHdlr>();
+		this.hdlrList = new ArrayList<MQTTEventHdlr>();
 	
 		this.packetList = new ArrayList<MQTTPacketInfo>();
 		this.packetEvt = new ThreadEvent(true);
@@ -205,7 +205,7 @@ public class MQTTConn implements Runnable, ProtocolDataListener
 		}
 	}
 
-	public void handlePublishMessage(MQTTPublishMessageHdlr hdlr)
+	public void handleEvents(MQTTEventHdlr hdlr)
 	{
 		this.hdlrList.add(hdlr);
 	}
