@@ -26,6 +26,7 @@ public class MQTTClient implements Runnable, MQTTEventHdlr
 	private int packetId;
 	private int keepAliveS;
 	private Thread thread;
+	private boolean threadToStop;
 	private boolean autoReconnect;
 	private List<MQTTEventHdlr> hdlrList;
 	private InetAddress brokerAddr;
@@ -52,6 +53,7 @@ public class MQTTClient implements Runnable, MQTTEventHdlr
 		this.password = password;
 
 		this.connError = this.connect();
+		this.threadToStop = false;
 		this.thread = new Thread(this);
 		this.thread.start();
 	}
@@ -91,6 +93,7 @@ public class MQTTClient implements Runnable, MQTTEventHdlr
 	public void close()
 	{
 		this.autoReconnect = false;
+		this.threadToStop = true;
 		if (this.thread != null)
 		{
 			this.thread.interrupt();
@@ -155,7 +158,7 @@ public class MQTTClient implements Runnable, MQTTEventHdlr
 
 	public void run()
 	{
-		while (true)
+		while (!this.threadToStop)
 		{
 			try
 			{
@@ -197,18 +200,52 @@ public class MQTTClient implements Runnable, MQTTEventHdlr
 	@Override
 	public void onPublishMessage(String topic, byte[] buff, int buffOfst, int buffSize)
 	{
-		synchronized (this.hdlrList)
+		List<MQTTPublishMessageHdlr> hdlrList = new ArrayList<MQTTPublishMessageHdlr>();
+		TopicInfo info;
+		int i;
+		synchronized (this)
 		{
-			int i = this.hdlrList.size();
+			i = this.topicList.size();
+			while (i-- > 0)
+			{
+				info = this.topicList.get(i);
+				if (info.hdlr != null && MQTTUtil.topicMatch(topic, info.topic))
+				{
+					hdlrList.add(info.hdlr);
+				}
+			}
+		}
+
+		if (hdlrList.size() > 0)
+		{
+			i = hdlrList.size();
 			while (i-- > 0)
 			{
 				try
 				{
-					this.hdlrList.get(i).onPublishMessage(topic, buff, buffOfst, buffSize);
+					hdlrList.get(i).onPublishMessage(topic, buff, buffOfst, buffSize);
 				}
 				catch (Exception ex)
 				{
 					ex.printStackTrace();
+				}
+			}
+		}
+		else
+		{
+			synchronized (this.hdlrList)
+			{
+				i = this.hdlrList.size();
+				while (i-- > 0)
+				{
+					try
+					{
+						this.hdlrList.get(i).onPublishMessage(topic, buff, buffOfst, buffSize);
+					}
+					catch (Exception ex)
+					{
+						ex.printStackTrace();
+					}
 				}
 			}
 		}
