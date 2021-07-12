@@ -12,11 +12,11 @@ import org.sswr.util.data.StringUtil;
 
 public class JWTSessionManager
 {
-	private long lastId;
-	private JWTHandler jwt;
-	private int timeoutMs;
-	private Map<Long, JWTSession> sessMap;
-	private JWTSessionListener listener;
+	protected long lastId;
+	protected JWTHandler jwt;
+	protected int timeoutMs;
+	protected Map<Long, JWTSession> sessMap;
+	protected JWTSessionListener listener;
 
 	public JWTSessionManager(String password, int timeoutMs)
 	{

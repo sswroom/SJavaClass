@@ -3,20 +3,19 @@ package org.sswr.util.web;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import org.sswr.util.basic.ThreadEvent;
-import org.sswr.util.crypto.JWTHandler;
 import org.sswr.util.crypto.JWTParam;
-import org.sswr.util.crypto.JWTHandler.Algorithm;
 import org.sswr.util.data.JSONMapper;
 import org.sswr.util.data.JSONParser;
 import org.sswr.util.data.StringUtil;
 import org.sswr.util.net.MQTTClient;
 import org.sswr.util.net.MQTTPublishMessageHdlr;
 
-public class JWTMSvrSessionManager implements MQTTPublishMessageHdlr
+public class JWTMSvrSessionManager extends JWTSessionManager implements MQTTPublishMessageHdlr
 {
 	class JWTRequest
 	{
@@ -30,23 +29,16 @@ public class JWTMSvrSessionManager implements MQTTPublishMessageHdlr
 	}
 	private MQTTClient cli;
 	private int serverId;
-	private long lastId;
-	private JWTHandler jwt;
-	private int timeoutMs;
-	private Map<Long, JWTSession> sessMap;
 	private Map<Integer, Map<Long, JWTSession>> remoteSessMap;
-	private JWTSessionListener listener;
 	private Map<Integer, JWTRequest> reqMap;
 	private int reqNextId;
 
 	public JWTMSvrSessionManager(String password, int timeoutMs, MQTTClient cli, int serverId)
 	{
+		super(password, timeoutMs);
+
 		this.cli = cli;
 		this.serverId = serverId;
-		this.lastId = 0;
-		this.timeoutMs = timeoutMs;
-		this.jwt = JWTHandler.createHMAC(Algorithm.HS512, password.getBytes(StandardCharsets.UTF_8));
-		this.sessMap = new HashMap<Long, JWTSession>();
 		this.reqMap = new HashMap<Integer, JWTRequest>();
 		this.reqNextId = 0;
 		this.remoteSessMap = new HashMap<Integer, Map<Long, JWTSession>>();
@@ -83,6 +75,26 @@ public class JWTMSvrSessionManager implements MQTTPublishMessageHdlr
 				this.sessMap.remove(sess.getSessId());
 			}
 			i++;
+		}
+		synchronized(this.remoteSessMap)
+		{
+			Iterator<Map<Long, JWTSession>> itSessMap = this.remoteSessMap.values().iterator();
+			Map<Long, JWTSession> sessMap;
+			Iterator<JWTSession> itSess;
+			while (itSessMap.hasNext())
+			{
+				sessMap = itSessMap.next();
+				itSess = sessMap.values().iterator();
+				while (itSess.hasNext())
+				{
+					sess = itSess.next();
+					if (currTime - sess.getLastAccessTime() >= timeoutMs)
+					{
+						sessMap.remove(sess.getSessId());
+					}
+				}
+			}
+
 		}
 	}
 
@@ -155,6 +167,10 @@ public class JWTMSvrSessionManager implements MQTTPublishMessageHdlr
 							sess = null;
 						}
 					}
+					else
+					{
+						sess.setLastAccessTime(System.currentTimeMillis());
+					}
 				}
 				else
 				{
@@ -163,6 +179,7 @@ public class JWTMSvrSessionManager implements MQTTPublishMessageHdlr
 					{
 						synchronized(this.remoteSessMap)
 						{
+							sess.setLastAccessTime(System.currentTimeMillis());
 							sessMap.put(sessId, sess);
 						}
 					}
