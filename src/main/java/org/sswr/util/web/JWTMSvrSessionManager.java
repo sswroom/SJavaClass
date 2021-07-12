@@ -17,6 +17,7 @@ import org.sswr.util.net.MQTTPublishMessageHdlr;
 
 public class JWTMSvrSessionManager extends JWTSessionManager implements MQTTPublishMessageHdlr
 {
+	private static final String TOPIC = "/jwtsessmgr";
 	class JWTRequest
 	{
 		ThreadEvent evt;
@@ -43,6 +44,7 @@ public class JWTMSvrSessionManager extends JWTSessionManager implements MQTTPubl
 		this.reqNextId = 0;
 		this.remoteSessMap = new HashMap<Integer, Map<Long, JWTSession>>();
 		this.cli.handlePublishMessage(this);
+		this.cli.subscribe(TOPIC, false);
 	}
 
 	public synchronized JWTSession newSession(String userName, List<String> roleList)
@@ -197,7 +199,7 @@ public class JWTMSvrSessionManager extends JWTSessionManager implements MQTTPubl
 
 	private boolean sendReq(Map<String, Object> reqMap)
 	{
-		return cli.publish("/jwtsessmgr", JSONMapper.object2Json(reqMap));
+		return cli.publish(TOPIC, JSONMapper.object2Json(reqMap));
 	}
 
 	private int nextReqId()
@@ -240,6 +242,10 @@ public class JWTMSvrSessionManager extends JWTSessionManager implements MQTTPubl
 			return false;
 		}
 		req.evt.waitEvent(500);
+		synchronized(this.reqMap)
+		{
+			this.reqMap.remove(req.reqId);
+		}
 		return req.reqResult;
 	}
 
@@ -280,6 +286,10 @@ public class JWTMSvrSessionManager extends JWTSessionManager implements MQTTPubl
 			}
 			req.evt.waitEvent(2000 - (int)t);
 		}
+		synchronized(this.reqMap)
+		{
+			this.reqMap.remove(req.reqId);
+		}
 		if (req.reqEnd && req.reqUserName != null && req.reqCnt == req.reqRoles.size())
 		{
 			JWTSession sess;
@@ -295,7 +305,7 @@ public class JWTMSvrSessionManager extends JWTSessionManager implements MQTTPubl
 					sessMap = new HashMap<Long, JWTSession>();
 					this.remoteSessMap.put(serverId, sessMap);
 				}
-				sess = sessMap.put(sessId, sess);
+				sessMap.put(sessId, sess);
 			}
 			return sess;
 		}
@@ -321,7 +331,7 @@ public class JWTMSvrSessionManager extends JWTSessionManager implements MQTTPubl
 			Long sessId = StringUtil.toLong((String)retMap.get("sessId"));
 			Integer reqServerId = StringUtil.toInteger((String)retMap.get("reqSvr"));
 			Integer reqId = StringUtil.toInteger((String)retMap.get("reqId"));
-			if (action != null && serverId != this.serverId && sessId != null && reqServerId != null && reqId != null)
+			if (action != null && serverId == this.serverId && sessId != null && reqServerId != null && reqId != null)
 			{
 				switch (action)
 				{
@@ -373,6 +383,7 @@ public class JWTMSvrSessionManager extends JWTSessionManager implements MQTTPubl
 					if (sess == null)
 					{
 						reqMap.put("cnt", "0");
+						reqMap.put("end", "1");
 						this.sendReq(reqMap);
 					}
 					else
