@@ -230,6 +230,31 @@ public class ParamValidator {
 		return varValue;
 	}
 
+	public String []getReqStringsOpt(String varName, String varDispName)
+	{
+		if (varDispName == null) varDispName = varName;
+		if (this.errMsg != null) return null;
+		if (this.req == null) { this.setReqEmptyErr(); return null; }
+		String varValue[];
+		if (this.mpartReq != null)
+		{
+			String s = this.mpartReq.get(varName);
+			if (s == null)
+			{
+				varValue = null;
+			}
+			else
+			{
+				varValue = s.split(HttpUtil.PART_SEPERATOR);
+			}
+		}
+		else
+		{
+			varValue = this.req.getParameterValues(varName);
+		}
+		return varValue;
+	}
+
 	public String getReqStringLen(String varName, String varDispName, int minCharCnt, int maxCharCnt)
 	{
 		if (varDispName == null) varDispName = varName;
