@@ -52,7 +52,7 @@ public class Base32Enc extends TextBinEnc
 		sb.ensureCapacity(outSize);
 		tmp1 = buffSize / 5;
 		tmp2 = buffSize - tmp1 * 5;
-		while (tmp2-- > 0)
+		while (tmp1-- > 0)
 		{
 			sb.append(encArr[ByteTool.shr8(dataBuff[dataOfst + 0], 3)]);
 			sb.append(encArr[((dataBuff[dataOfst + 0] << 2) | ByteTool.shr8(dataBuff[dataOfst + 1], 6)) & 0x1f]);
@@ -64,19 +64,19 @@ public class Base32Enc extends TextBinEnc
 			sb.append(encArr[dataBuff[dataOfst + 4] & 0x1f]);
 			dataOfst += 5;
 		}
-		if (tmp1 == 1)
+		if (tmp2 == 1)
 		{
 			sb.append(encArr[ByteTool.shr8(dataBuff[dataOfst + 0], 3)]);
 			sb.append(encArr[(dataBuff[dataOfst + 0] << 2) & 0x1f]);
 		}
-		else if (tmp1 == 2)
+		else if (tmp2 == 2)
 		{
 			sb.append(encArr[ByteTool.shr8(dataBuff[dataOfst + 0], 3)]);
 			sb.append(encArr[((dataBuff[dataOfst + 0] << 2) | ByteTool.shr8(dataBuff[dataOfst + 1], 6)) & 0x1f]);
 			sb.append(encArr[(ByteTool.shr8(dataBuff[dataOfst + 1], 1)) & 0x1f]);
 			sb.append(encArr[(dataBuff[dataOfst + 1] << 4) & 0x1f]);
 		}
-		else if (tmp1 == 3)
+		else if (tmp2 == 3)
 		{
 			sb.append(encArr[ByteTool.shr8(dataBuff[dataOfst + 0], 3)]);
 			sb.append(encArr[((dataBuff[dataOfst + 0] << 2) | ByteTool.shr8(dataBuff[dataOfst + 1], 6)) & 0x1f]);
@@ -84,7 +84,7 @@ public class Base32Enc extends TextBinEnc
 			sb.append(encArr[((dataBuff[dataOfst + 1] << 4) | ByteTool.shr8(dataBuff[dataOfst + 2], 4)) & 0x1f]);
 			sb.append(encArr[(dataBuff[dataOfst + 2] << 1) & 0x1f]);
 		}
-		else if (tmp1 == 4)
+		else if (tmp2 == 4)
 		{
 			sb.append(encArr[ByteTool.shr8(dataBuff[dataOfst + 0], 3)]);
 			sb.append(encArr[((dataBuff[dataOfst + 0] << 2) | ByteTool.shr8(dataBuff[dataOfst + 1], 6)) & 0x1f]);

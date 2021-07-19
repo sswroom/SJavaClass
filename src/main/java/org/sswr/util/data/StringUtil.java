@@ -10,7 +10,7 @@ import java.util.Set;
 
 public class StringUtil
 {
-	private static final char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
+	public static final char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
 
 	/**
 	* Check whether the string is numeric

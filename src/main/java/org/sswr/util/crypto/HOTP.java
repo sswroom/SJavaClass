@@ -1,10 +1,8 @@
 package org.sswr.util.crypto;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-
 import org.sswr.util.data.ByteTool;
 import org.sswr.util.data.textbinenc.Base32Enc;
+import org.sswr.util.data.textenc.URIEncoding;
 
 public class HOTP extends OTP
 {
@@ -81,7 +79,7 @@ public class HOTP extends OTP
 	{
 		StringBuilder sb = new StringBuilder();
 		sb.append("otpauth://hotp/");
-		sb.append(URLEncoder.encode(name, StandardCharsets.UTF_8));
+		sb.append(URIEncoding.uriEncode(name));
 		sb.append("?secret=");
 		Base32Enc b32 = new Base32Enc();
 		sb.append(b32.encodeBin(this.key, 0, this.key.length));
