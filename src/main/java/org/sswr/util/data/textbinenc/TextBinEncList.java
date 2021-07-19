@@ -21,6 +21,7 @@ public class TextBinEncList
 	//		encList.add(new QuotedPrintableEnc());
 			encList.add(new UCS2TextBinEnc());
 	//		encList.add(new SNMPOIDBinEnc());
+			encList.add(new Base32Enc());
 		}
 		return encList;
 	}

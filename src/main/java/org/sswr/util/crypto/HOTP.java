@@ -18,6 +18,12 @@ public class HOTP extends OTP
 		this.counter = counter;
 	}
 
+	public HOTP(String key, long counter)
+	{
+		super(6);
+		this.key = new Base32Enc().decodeBin(key);
+		this.counter = counter;
+	}
 
 	public long getCounter()
 	{

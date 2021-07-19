@@ -17,6 +17,13 @@ public class TOTP extends OTP
 		this.intervalMS = 30000;
 	}
 
+	public TOTP(String key)
+	{
+		super(6);
+		this.key = new Base32Enc().decodeBin(key);
+		this.intervalMS = 30000;
+	}
+
 	public long getCounter()
 	{
 		return (System.currentTimeMillis() / this.intervalMS);
