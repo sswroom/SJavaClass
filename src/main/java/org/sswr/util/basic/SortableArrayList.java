@@ -1,0 +1,67 @@
+package org.sswr.util.basic;
+
+import java.util.ArrayList;
+
+public abstract class SortableArrayList<T> extends ArrayList<T>
+{
+	public abstract int compareItem(T obj1, T obj2);
+
+	public int sortedInsert(T val)
+	{
+		int i;
+		int j;
+		int k;
+		int l;
+		i = 0;
+		j = this.size() - 1;
+		while (i <= j)
+		{
+			k = (i + j) >> 1;
+			l = compareItem(this.get(k), val);
+			if (l > 0)
+			{
+				j = k - 1;
+			}
+			else if (l < 0)
+			{
+				i = k + 1;
+			}
+			else
+			{
+				i = k + 1;
+				break;
+			}
+		}
+
+		this.add(i, val);
+		return i;
+	}
+
+	public int sortedIndexOf(T val)
+	{
+		int i;
+		int j;
+		int k;
+		int l;
+		i = 0;
+		j = this.size() - 1;
+		while (i <= j)
+		{
+			k = (i + j) >> 1;
+			l = this.compareItem(this.get(k), val);
+			if (l > 0)
+			{
+				j = k - 1;
+			}
+			else if (l < 0)
+			{
+				i = k + 1;
+			}
+			else
+			{
+				return k;
+			}
+		}
+		return -i - 1;
+	}
+}
