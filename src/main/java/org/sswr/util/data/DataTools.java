@@ -1281,4 +1281,13 @@ public class DataTools {
 			return null;
 		}
 	}
+
+	public static <T> T tryGetFirst(List<T> dataList)
+	{
+		if (dataList == null || dataList.size() == 0)
+		{
+			return null;
+		}
+		return dataList.get(0);
+	}
 }
