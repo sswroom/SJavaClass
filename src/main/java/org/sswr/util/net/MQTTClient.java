@@ -68,25 +68,28 @@ public class MQTTClient implements Runnable, MQTTEventHdlr
 			this.conn = null;
 			return ConnError.CONNECT_ERROR;
 		}
-		this.conn.handleEvents(this);
-		if (this.conn.sendConnect((byte)4, keepAliveS, this.clientId, this.username, this.password))
+		synchronized(this)
 		{
-			if (this.conn.waitConnAck(30000) == MQTTConnectStatus.ACCEPTED)
+			this.conn.handleEvents(this);
+			if (this.conn.sendConnect((byte)4, keepAliveS, this.clientId, this.username, this.password))
 			{
-				return ConnError.CONNECTED;
+				if (this.conn.waitConnAck(30000) == MQTTConnectStatus.ACCEPTED)
+				{
+					return ConnError.CONNECTED;
+				}
+				else
+				{
+					this.conn.close();
+					this.conn = null;
+					return ConnError.NOT_ACCEPT;
+				}
 			}
 			else
 			{
 				this.conn.close();
 				this.conn = null;
-				return ConnError.NOT_ACCEPT;
+				return ConnError.SEND_CONNECT_ERROR;
 			}
-		}
-		else
-		{
-			this.conn.close();
-			this.conn = null;
-			return ConnError.SEND_CONNECT_ERROR;
 		}
 	}
 
