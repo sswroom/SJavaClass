@@ -17,7 +17,6 @@ import org.sswr.util.net.MQTTEventHdlr;
 
 public class JWTMSvrSessionManager extends JWTSessionManager implements MQTTEventHdlr
 {
-	private static final String TOPIC = "/jwtsessmgr";
 	class JWTRequest
 	{
 		ThreadEvent evt;
@@ -33,18 +32,20 @@ public class JWTMSvrSessionManager extends JWTSessionManager implements MQTTEven
 	private Map<Integer, Map<Long, JWTSession>> remoteSessMap;
 	private Map<Integer, JWTRequest> reqMap;
 	private int reqNextId;
+	private String topicName;
 
-	public JWTMSvrSessionManager(String password, int timeoutMs, MQTTClient cli, int serverId)
+	public JWTMSvrSessionManager(String password, int timeoutMs, MQTTClient cli, int serverId, String topicName)
 	{
 		super(password, timeoutMs);
 
+		this.topicName = topicName;
 		this.cli = cli;
 		this.serverId = serverId;
 		this.reqMap = new HashMap<Integer, JWTRequest>();
 		this.reqNextId = 0;
 		this.remoteSessMap = new HashMap<Integer, Map<Long, JWTSession>>();
 		this.cli.handleEvents(this);
-		this.cli.subscribe(TOPIC, null);
+		this.cli.subscribe(this.topicName, null);
 	}
 
 	public synchronized JWTSession newSession(String userName, List<String> roleList)
@@ -96,7 +97,6 @@ public class JWTMSvrSessionManager extends JWTSessionManager implements MQTTEven
 					}
 				}
 			}
-
 		}
 	}
 
@@ -199,7 +199,7 @@ public class JWTMSvrSessionManager extends JWTSessionManager implements MQTTEven
 
 	private boolean sendReq(Map<String, Object> reqMap)
 	{
-		return cli.publish(TOPIC, JSONMapper.object2Json(reqMap));
+		return cli.publish(this.topicName, JSONMapper.object2Json(reqMap));
 	}
 
 	private int nextReqId()
