@@ -12,16 +12,22 @@ import org.sswr.util.data.StringUtil;
 
 public class JWTSessionManager
 {
+	public interface JWTSesionInitializator
+	{
+		public void initSession(JWTSession sess);
+	}
 	protected long lastId;
 	protected JWTHandler jwt;
 	protected int timeoutMs;
 	protected Map<Long, JWTSession> sessMap;
 	protected JWTSessionListener listener;
+	protected JWTSesionInitializator sessInit;
 
-	public JWTSessionManager(String password, int timeoutMs)
+	public JWTSessionManager(String password, int timeoutMs, JWTSesionInitializator sessInit)
 	{
 		this.lastId = 0;
 		this.timeoutMs = timeoutMs;
+		this.sessInit = sessInit;
 		this.jwt = JWTHandler.createHMAC(Algorithm.HS512, password.getBytes(StandardCharsets.UTF_8));
 		this.sessMap = new HashMap<Long, JWTSession>();
 	}
@@ -37,6 +43,10 @@ public class JWTSessionManager
 		JWTSession sess = new JWTSession(id, userName, roleList);
 		sessMap.put(id, sess);
 		sess.setLastAccessTime(System.currentTimeMillis());
+		if (this.sessInit != null)
+		{
+			this.sessInit.initSession(sess);
+		}
 		return sess;
 	}
 
