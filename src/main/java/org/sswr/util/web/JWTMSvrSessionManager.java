@@ -59,6 +59,10 @@ public class JWTMSvrSessionManager extends JWTSessionManager implements MQTTEven
 		JWTSession sess = new JWTSession(id, userName, roleList);
 		sessMap.put(id, sess);
 		sess.setLastAccessTime(System.currentTimeMillis());
+		if (this.sessInit != null)
+		{
+			this.sessInit.initSession(sess);
+		}
 		return sess;
 	}
 
