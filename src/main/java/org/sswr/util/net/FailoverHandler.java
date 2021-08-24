@@ -1,0 +1,100 @@
+package org.sswr.util.net;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class FailoverHandler<T extends FailoverChannel>
+{
+	private FailoverType foType;
+	private int lastIndex;
+	private List<T> channelList;
+
+	public FailoverHandler(FailoverType foType)
+	{
+		this.foType = foType;
+		this.lastIndex = 0;
+		this.channelList = new ArrayList<T>();
+	}
+
+	public synchronized T getCurrChannel()
+	{
+		if (this.channelList.size() == 0)
+		{
+			return null;
+		}
+		int initIndex;
+		int currIndex;
+		T channel;
+		switch (this.foType)
+		{
+		case ACTIVE_PASSIVE:
+			initIndex = this.lastIndex;
+			break;
+		case MASTER_SLAVE:
+			initIndex = 0;
+			break;
+		case ROUND_ROBIN:
+			initIndex = (this.lastIndex + 1) % this.channelList.size();
+			break;
+		default:
+			return null;
+		}
+		channel = this.channelList.get(initIndex);
+		if (!channel.channelFail())
+		{
+			this.lastIndex = initIndex;
+			return channel;
+		}
+		currIndex = (initIndex + 1) % this.channelList.size();
+		while (currIndex != initIndex)
+		{
+			channel = this.channelList.get(currIndex);
+			if (!channel.channelFail())
+			{
+				this.lastIndex = currIndex;
+				return channel;
+			}
+			currIndex = (currIndex + 1) % this.channelList.size();
+		}
+		return null;
+	}
+
+	public synchronized List<T> getOtherChannels()
+	{
+		List<T> chList = new ArrayList<T>();
+		T channel;
+		int j = this.channelList.size();
+		int i = (this.lastIndex + 1) % j;
+		while (i != this.lastIndex)
+		{
+			channel = this.channelList.get(i);
+			if (!channel.channelFail())
+			{
+				chList.add(channel);
+			}
+			i = (i + 1) % j;
+		}
+		return chList;
+	}
+
+	public synchronized void setCurrChannel(T channel)
+	{
+		int i = this.channelList.indexOf(channel);
+		if (i >= 0)
+		{
+			this.lastIndex = i;
+		}
+	}
+
+	public synchronized List<T> getAllChannels()
+	{
+		List<T> ret = new ArrayList<T>();
+		ret.addAll(this.channelList);
+		return ret;
+	}
+
+	public synchronized void addChannel(T channel)
+	{
+		this.channelList.add(channel);
+	}
+}
