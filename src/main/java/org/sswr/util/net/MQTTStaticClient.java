@@ -51,6 +51,7 @@ public class MQTTStaticClient implements Runnable, MQTTEventHdlr, MQTTClient, Fa
 		this.username = username;
 		this.password = password;
 
+		this.conn = null;
 		this.connError = this.connect();
 		this.threadToStop = false;
 		this.thread = new Thread(this);
@@ -60,33 +61,31 @@ public class MQTTStaticClient implements Runnable, MQTTEventHdlr, MQTTClient, Fa
 	private ConnError connect()
 	{
 		this.packetId = 1;
-		this.conn = new MQTTConn(this.brokerHost, this.port, this.cliType);
-		if (this.conn.isError())
+		MQTTConn conn = new MQTTConn(this.brokerHost, this.port, this.cliType);
+		if (conn.isError())
 		{
-			this.conn.close();
-			this.conn = null;
+			conn.close();
 			return ConnError.CONNECT_ERROR;
 		}
 		synchronized(this)
 		{
-			this.conn.handleEvents(this);
-			if (this.conn.sendConnect((byte)4, keepAliveS, this.clientId, this.username, this.password))
+			conn.handleEvents(this);
+			if (conn.sendConnect((byte)4, keepAliveS, this.clientId, this.username, this.password))
 			{
-				if (this.conn.waitConnAck(30000) == MQTTConnectStatus.ACCEPTED)
+				if (conn.waitConnAck(30000) == MQTTConnectStatus.ACCEPTED)
 				{
+					this.conn = conn;
 					return ConnError.CONNECTED;
 				}
 				else
 				{
-					this.conn.close();
-					this.conn = null;
+					conn.close();
 					return ConnError.NOT_ACCEPT;
 				}
 			}
 			else
 			{
-				this.conn.close();
-				this.conn = null;
+				conn.close();
 				return ConnError.SEND_CONNECT_ERROR;
 			}
 		}
