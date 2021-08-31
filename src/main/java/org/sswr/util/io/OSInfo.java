@@ -1,5 +1,7 @@
 package org.sswr.util.io;
 
+import java.nio.charset.Charset;
+
 public class OSInfo
 {
 	public static OSType getOSType()
@@ -20,5 +22,10 @@ public class OSInfo
 		{
 			return OSType.UNKNOWN;
 		}
+	}
+
+	public static Charset getDefaultCharset()
+	{
+		return Charset.forName(System.getProperty("sun.jnu.encoding"));
 	}
 }

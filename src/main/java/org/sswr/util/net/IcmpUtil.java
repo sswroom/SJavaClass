@@ -6,7 +6,6 @@ import java.io.InputStreamReader;
 import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;
-import java.nio.charset.Charset;
 
 import org.sswr.util.data.SharedInt;
 import org.sswr.util.io.OSInfo;
@@ -82,8 +81,7 @@ public class IcmpUtil
 				}
 				ProcessBuilder pb = new ProcessBuilder(cmd.split(" "));
 				Process proc = pb.start();
-				Charset cs = Charset.forName(System.getProperty("sun.jnu.encoding"));
-				BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream(), cs));
+				BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream(), OSInfo.getDefaultCharset()));
 				String line = null;
 				int i = 2;
 				while (true)
