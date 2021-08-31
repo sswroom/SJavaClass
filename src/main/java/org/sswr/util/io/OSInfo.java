@@ -12,7 +12,7 @@ public class OSInfo
 		{
 			return OSType.LINUX;
 		}
-		else if (System.getProperty("os.name").equalsIgnoreCase("Windows"))
+		else if (System.getProperty("os.name").toUpperCase().startsWith("WINDOWS"))
 		{
 			return OSType.WINDOWS;
 		}
