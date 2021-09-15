@@ -78,6 +78,14 @@ public class JSONMapper
 				sb.append((Double)obj);
 			}
 		}
+		else if (obj instanceof Byte)
+		{
+			sb.append((Byte)obj);
+		}
+		else if (obj instanceof Short)
+		{
+			sb.append((Short)obj);
+		}
 		else if (obj instanceof Integer)
 		{
 			sb.append((Integer)obj);
