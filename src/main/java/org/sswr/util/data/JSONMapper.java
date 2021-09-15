@@ -57,7 +57,26 @@ public class JSONMapper
 		}
 		else if (obj instanceof Double)
 		{
-			sb.append((Double)obj);
+			double dVal = (Double)obj;
+			if (Double.isNaN(dVal))
+			{
+				sb.append("\"NaN\"");
+			}
+			else if (Double.isInfinite(dVal))
+			{
+				if (dVal < 0)
+				{
+					sb.append("\"-Infinity\"");
+				}
+				else
+				{
+					sb.append("\"Infinity\"");
+				}
+			}
+			else
+			{
+				sb.append((Double)obj);
+			}
 		}
 		else if (obj instanceof Integer)
 		{
