@@ -901,6 +901,10 @@ public class DataTools {
 		{
 			return o.toString();
 		}
+		else if (cls.equals(Float.class) || cls.equals(float.class))
+		{
+			return o.toString();
+		}
 		else if (cls.equals(Double.class) || cls.equals(double.class))
 		{
 			return o.toString();
