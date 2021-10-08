@@ -36,7 +36,7 @@ public class TCPClient extends IOStream
 		}
 		catch (UnknownHostException ex)
 		{
-			ex.printStackTrace();
+			//ex.printStackTrace();
 			this.flags = 12;
 			return;
 		}
@@ -55,7 +55,7 @@ public class TCPClient extends IOStream
 		}
 		catch (IOException ex)
 		{
-			ex.printStackTrace();
+			//ex.printStackTrace();
 			this.flags = 12;
 			return;
 		}

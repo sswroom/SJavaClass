@@ -23,6 +23,7 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 
+
 public class ParamValidator {
 	protected String funcName;
 	protected LogTool logger;
@@ -80,6 +81,42 @@ public class ParamValidator {
 		this.errVarValue = strTime;
 		this.errFuncDesc = varDispName+" is not in format of 'yyyyMMdd' or 'yyyyMMddHHmm'";
 		return null;
+	}
+
+	public Long str2Long(String varDispName, String varValue)
+	{
+		try
+		{
+			return Long.valueOf(varValue);
+		}
+		catch (NumberFormatException ex)
+		{
+			this.errMsg = this.funcName + ": "+varDispName+" is not a long: "+varValue;
+			setRespStatus(HttpServletResponse.SC_BAD_REQUEST);
+			this.logger.logMessage(this.errMsg, LogLevel.ERROR);
+			this.errVarDispName = varDispName;
+			this.errVarValue = varValue;
+			this.errFuncDesc = varDispName+" is not a long: "+varValue;
+			return null;
+		}
+	}
+
+	public Byte str2Byte(String varDispName, String varValue)
+	{
+		try
+		{
+			return Byte.valueOf(varValue);
+		}
+		catch (NumberFormatException ex)
+		{
+			this.errMsg = this.funcName + ": "+varDispName+" is not a byte: "+varValue;
+			setRespStatus(HttpServletResponse.SC_BAD_REQUEST);
+			this.logger.logMessage(this.errMsg, LogLevel.ERROR);
+			this.errVarDispName = varDispName;
+			this.errVarValue = varValue;
+			this.errFuncDesc = varDispName+" is not a byte: "+varValue;
+			return null;
+		}
 	}
 
 	public Integer str2Integer(String varDispName, String varValue)
@@ -270,6 +307,22 @@ public class ParamValidator {
 		String varValue;
 		if ((varValue = this.getReqString(varName, varDispName)) == null) return null;
 		return str2Timestamp(varDispName, varValue);
+	}
+
+	public Long getReqLong(String varName, String varDispName)
+	{
+		if (varDispName == null) varDispName = varName;
+		String varValue;
+		if ((varValue = this.getReqString(varName, varDispName)) == null) return null;
+		return str2Long(varDispName, varValue);
+	}
+
+	public Byte getReqByte(String varName, String varDispName)
+	{
+		if (varDispName == null) varDispName = varName;
+		String varValue;
+		if ((varValue = this.getReqString(varName, varDispName)) == null) return null;
+		return str2Byte(varDispName, varValue);
 	}
 
 	public Integer getReqInt(String varName, String varDispName)

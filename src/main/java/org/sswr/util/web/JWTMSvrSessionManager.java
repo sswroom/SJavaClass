@@ -34,9 +34,9 @@ public class JWTMSvrSessionManager extends JWTSessionManager implements MQTTEven
 	private int reqNextId;
 	private String topicName;
 
-	public JWTMSvrSessionManager(String password, int timeoutMs, MQTTClient cli, int serverId, String topicName)
+	public JWTMSvrSessionManager(String password, int timeoutMs, JWTSesionInitializator sessInit, MQTTClient cli, int serverId, String topicName)
 	{
-		super(password, timeoutMs);
+		super(password, timeoutMs, sessInit);
 
 		this.topicName = topicName;
 		this.cli = cli;
@@ -59,6 +59,10 @@ public class JWTMSvrSessionManager extends JWTSessionManager implements MQTTEven
 		JWTSession sess = new JWTSession(id, userName, roleList);
 		sessMap.put(id, sess);
 		sess.setLastAccessTime(System.currentTimeMillis());
+		if (this.sessInit != null)
+		{
+			this.sessInit.initSession(sess);
+		}
 		return sess;
 	}
 
@@ -183,6 +187,10 @@ public class JWTMSvrSessionManager extends JWTSessionManager implements MQTTEven
 						{
 							sess.setLastAccessTime(System.currentTimeMillis());
 							sessMap.put(sessId, sess);
+						}
+						if (this.sessInit != null)
+						{
+							this.sessInit.initSession(sess);
 						}
 					}
 				}

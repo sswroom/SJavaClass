@@ -1,5 +1,7 @@
 package org.sswr.util.io;
 
+import java.nio.charset.Charset;
+
 public class OSInfo
 {
 	public static OSType getOSType()
@@ -12,7 +14,7 @@ public class OSInfo
 		{
 			return OSType.LINUX;
 		}
-		else if (System.getProperty("os.name").equalsIgnoreCase("Windows"))
+		else if (System.getProperty("os.name").toUpperCase().startsWith("WINDOWS"))
 		{
 			return OSType.WINDOWS;
 		}
@@ -20,5 +22,10 @@ public class OSInfo
 		{
 			return OSType.UNKNOWN;
 		}
+	}
+
+	public static Charset getDefaultCharset()
+	{
+		return Charset.forName(System.getProperty("sun.jnu.encoding"));
 	}
 }

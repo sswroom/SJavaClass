@@ -12,6 +12,7 @@ public class LogTool
 	private List<LogLevel> levArr;
 	private List<LogHandler> fileLogArr;
 	private boolean closed;
+	private boolean skipStarted;
 
 	public LogTool()
 	{
@@ -19,6 +20,7 @@ public class LogTool
 		this.levArr = new ArrayList<LogLevel>();
 		this.fileLogArr = new ArrayList<LogHandler>();
 		this.closed = false;
+		this.skipStarted = false;
 	}
 
 	public void close()
@@ -42,6 +44,10 @@ public class LogTool
 	{
 		if (closed)
 			return;
+		if (dateFormat == null)
+		{
+			dateFormat = "yyyy-MM-dd HH:mm:ss.SSS";
+		}
 		if (directWrite)
 		{
 			FileLog logs = new FileLog(fileName, style, groupStyle, dateFormat);
@@ -55,7 +61,7 @@ public class LogTool
 			fileLogArr.add(logs);
 		}
 	}
-	
+
 	public LogTool addPrintLog(PrintStream pstm, LogLevel logLev)
 	{
 		if (closed)
@@ -74,12 +80,15 @@ public class LogTool
 			this.levArr.add(logLev);
 		}
 	
-		long t = System.currentTimeMillis();
-		StringBuilder sb = new StringBuilder();
-		sb.append("Program ");
-		sb.append(JavaEnv.getProgName());
-		sb.append(" started");
-		hdlr.logAdded(t, sb.toString(), LogLevel.FORCE);
+		if (!this.skipStarted)
+		{
+			long t = System.currentTimeMillis();
+			StringBuilder sb = new StringBuilder();
+			sb.append("Program ");
+			sb.append(JavaEnv.getProgName());
+			sb.append(" started");
+			hdlr.logAdded(t, sb.toString(), LogLevel.FORCE);
+		}
 	}
 	
 	public void removeLogHandler(LogHandler hdlr)
@@ -121,5 +130,10 @@ public class LogTool
 		StringWriter writer = new StringWriter();
 		ex.printStackTrace(new PrintWriter(writer));
 		this.logMessage(writer.toString(), LogLevel.ERR_DETAIL);
+	}
+	
+	public void skipStarted()
+	{
+		this.skipStarted = true;
 	}
 }

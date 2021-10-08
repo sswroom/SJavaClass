@@ -1,11 +1,13 @@
 package org.sswr.util.data;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Iterator;
 import java.util.Map;
 
 public class JSONMapper
 {
-	private static void object2Json(StringBuilder sb, Object obj)
+	private static <T> void object2Json(StringBuilder sb, T obj)
 	{
 		if (obj == null)
 		{
@@ -55,9 +57,59 @@ public class JSONMapper
 		{
 			JSText.toJSTextDQuote(sb, (String)obj);
 		}
+		else if (obj instanceof Float)
+		{
+			float dVal = (Float)obj;
+			if (Float.isNaN(dVal))
+			{
+				sb.append("\"NaN\"");
+			}
+			else if (Float.isInfinite(dVal))
+			{
+				if (dVal < 0)
+				{
+					sb.append("\"-Infinity\"");
+				}
+				else
+				{
+					sb.append("\"Infinity\"");
+				}
+			}
+			else
+			{
+				sb.append((Float)obj);
+			}
+		}
 		else if (obj instanceof Double)
 		{
-			sb.append((Double)obj);
+			double dVal = (Double)obj;
+			if (Double.isNaN(dVal))
+			{
+				sb.append("\"NaN\"");
+			}
+			else if (Double.isInfinite(dVal))
+			{
+				if (dVal < 0)
+				{
+					sb.append("\"-Infinity\"");
+				}
+				else
+				{
+					sb.append("\"Infinity\"");
+				}
+			}
+			else
+			{
+				sb.append((Double)obj);
+			}
+		}
+		else if (obj instanceof Byte)
+		{
+			sb.append((Byte)obj);
+		}
+		else if (obj instanceof Short)
+		{
+			sb.append((Short)obj);
 		}
 		else if (obj instanceof Integer)
 		{
@@ -69,7 +121,39 @@ public class JSONMapper
 		}
 		else
 		{
-			JSText.toJSTextDQuote(sb, obj.toString());
+			sb.append("{");
+			boolean found = false;
+			Class<?> cls = obj.getClass();
+			Field[] fields = cls.getDeclaredFields();
+			FieldGetter<T> getter;
+			int i = 0;
+			int j = fields.length;
+			while (i < j)
+			{
+				try
+				{
+					getter = new FieldGetter<T>(fields[i]);
+					Object o = getter.get(obj);
+					if (found)
+					{
+						sb.append(",");
+					}
+					found = true;
+					JSText.toJSTextDQuote(sb, fields[i].getName());
+					sb.append(":");
+					object2Json(sb, o);
+				}
+				catch (IllegalAccessException ex)
+				{
+
+				}
+				catch (InvocationTargetException ex)
+				{
+
+				}
+				i++;
+			}
+			sb.append("}");
 		}
 	}
 
