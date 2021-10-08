@@ -287,6 +287,38 @@ public class CPPObjectParser<T>
 					}
 					setters.get(objInd).set(o, byteBuff);
 				}
+				else if (f.getType().equals(boolean.class))
+				{
+					c = reader.currChar();
+					if (c == 't')
+					{
+						if (reader.nextChar() == 'r' && reader.nextChar() == 'u' && reader.nextChar() == 'e')
+						{
+							setters.get(objInd).set(o, true);
+							reader.nextChar();
+						}
+						else
+						{
+							return null;
+						}
+					}
+					else if (c == 'f')
+					{
+						if (reader.nextChar() == 'a' && reader.nextChar() == 'l' && reader.nextChar() == 's' && reader.nextChar() == 'e')
+						{
+							setters.get(objInd).set(o, true);
+							reader.nextChar();
+						}
+						else
+						{
+							return null;
+						}
+					}
+					else
+					{
+						return null;
+					}
+				}
 				else
 				{
 					return null;
