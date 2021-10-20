@@ -35,6 +35,7 @@ public class HTTPMyClient extends IOStream
 		this.url = url;
 		this.method = method;
 		URL targetURL = new URL(url);
+		HttpURLConnection.setFollowRedirects(false);
 		this.svrAddr = InetAddress.getByName(targetURL.getHost());
 		this.conn = (HttpURLConnection)targetURL.openConnection();
 		this.conn.setRequestMethod(method);
@@ -151,8 +152,26 @@ public class HTTPMyClient extends IOStream
 		return this.url;
 	}
 
+	public void endRequest()
+	{
+		if (this.canWrite && this.sbForm != null)
+		{
+			this.canWrite = false;
+			byte []buff = sbForm.toString().getBytes(StandardCharsets.UTF_8);
+			this.addContentLength(buff.length);
+			try
+			{
+				this.conn.getOutputStream().write(buff);
+			}
+			catch (IOException ex)
+			{
+			}
+		}
+	}
+
 	public int GetRespStatus() throws IOException
 	{
+		this.endRequest();
 		return this.conn.getResponseCode();
 	}
 
@@ -172,6 +191,7 @@ public class HTTPMyClient extends IOStream
 	@Override
 	public int read(byte[] buff, int ofst, int size)
 	{
+		this.endRequest();
 		try
 		{
 			int ret = this.conn.getInputStream().read(buff, ofst, size);
@@ -191,8 +211,15 @@ public class HTTPMyClient extends IOStream
 	public int write(byte[] buff, int ofst, int size) {
 		try
 		{
-			this.conn.getOutputStream().write(buff, ofst, size);
-			return size;
+			if (this.canWrite)
+			{
+				this.conn.getOutputStream().write(buff, ofst, size);
+				return size;
+			}
+			else
+			{
+				return 0;
+			}
 		}
 		catch (Exception ex)
 		{
