@@ -8,8 +8,11 @@ import java.nio.charset.StandardCharsets;
 import java.time.DayOfWeek;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.Iterator;
+import java.util.Map;
 
 import org.sswr.util.data.DateTimeUtil;
+import org.sswr.util.data.SharedInt;
 import org.sswr.util.data.textenc.URIEncoding;
 import org.sswr.util.io.IOStream;
 
@@ -235,6 +238,84 @@ public class HTTPMyClient extends IOStream
 	public static String getAsString(String url, int expectedStatusCode)
 	{
 		byte []ret = getAsBytes(url, expectedStatusCode);
+		if (ret == null)
+		{
+			return null;
+		}
+		return new String(ret, StandardCharsets.UTF_8);
+	}
+
+	public static byte[] getAsBytes(String url, SharedInt statusCode)
+	{
+		try
+		{
+			HTTPMyClient cli = new HTTPMyClient(url, "GET");
+			if (cli.GetRespStatus() <= 0)
+			{
+				cli.close();
+				return null;
+			}
+			if (statusCode != null)
+			{
+				statusCode.value = cli.GetRespStatus();
+			}
+			byte[] buff = cli.readToEnd();
+			cli.close();
+			return buff;
+		}
+		catch (IOException ex)
+		{
+			return null;
+		}
+	}
+
+	public static String getAsString(String url, SharedInt statusCode)
+	{
+		byte []ret = getAsBytes(url, statusCode);
+		if (ret == null)
+		{
+			return null;
+		}
+		return new String(ret, StandardCharsets.UTF_8);
+	}
+
+	public static byte[] formPostAsBytes(String url, Map<String, String> formParams, SharedInt statusCode)
+	{
+		try
+		{
+			HTTPMyClient cli = new HTTPMyClient(url, "POST");
+			if (cli.GetRespStatus() <= 0)
+			{
+				cli.close();
+				return null;
+			}
+			Iterator<String> names = formParams.keySet().iterator();
+			if (names != null && names.hasNext())
+			{
+				cli.formBegin();
+				while (names.hasNext())
+				{
+					String name = names.next();
+					cli.formAdd(name, formParams.get(name));
+				}
+			}
+			if (statusCode != null)
+			{
+				statusCode.value = cli.GetRespStatus();
+			}
+			byte[] buff = cli.readToEnd();
+			cli.close();
+			return buff;
+		}
+		catch (IOException ex)
+		{
+			return null;
+		}
+	}
+
+	public static String formPostAsString(String url, Map<String, String> formParams, SharedInt statusCode)
+	{
+		byte []ret = formPostAsBytes(url, formParams, statusCode);
 		if (ret == null)
 		{
 			return null;
