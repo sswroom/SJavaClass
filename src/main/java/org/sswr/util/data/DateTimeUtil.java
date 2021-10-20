@@ -8,6 +8,7 @@ import java.time.YearMonth;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 
 public class DateTimeUtil
@@ -532,5 +533,10 @@ public class DateTimeUtil
 			t2 = t2.withZoneSameInstant(t1.getZone());
 		}
 		return isSameMonth(t1, t2) && t1.getDayOfMonth() == t2.getDayOfMonth();
+	}
+
+	public static String toString(ZonedDateTime t, String format)
+	{
+		return DateTimeFormatter.ofPattern(format).format(t);
 	}
 }

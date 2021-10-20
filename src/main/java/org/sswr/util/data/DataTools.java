@@ -1294,4 +1294,41 @@ public class DataTools {
 		}
 		return dataList.get(0);
 	}
+
+	private static void printClassTreeInt(Class<?> cls, int level)
+	{
+		int i = level;
+		while (i-- > 0)
+		{
+			System.out.print("\t");
+		}
+		if (cls.isInterface())
+		{
+			System.out.print("interface ");
+		}
+		else
+		{
+			System.out.print("class ");
+		}
+		System.out.println(cls.getName());
+		Class<?> []interfaces = cls.getInterfaces();
+		int j = interfaces.length;
+		i = 0;
+		while (i < j)
+		{
+			printClassTreeInt(interfaces[i], level + 1);
+			i++;
+		}
+		Class<?> superCls = cls.getSuperclass();
+		if (superCls != null)
+		{
+			printClassTreeInt(superCls, level + 1);
+		}
+	}
+
+	public static void printClassTree(Class<?> cls)
+	{
+		printClassTreeInt(cls, 0);
+	}
+	
 }

@@ -1,0 +1,213 @@
+package org.sswr.util.net;
+
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.InetAddress;
+import java.net.URL;
+import java.time.DayOfWeek;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+
+import org.sswr.util.data.DateTimeUtil;
+import org.sswr.util.data.textenc.URIEncoding;
+import org.sswr.util.io.IOStream;
+
+public class HTTPMyClient extends IOStream
+{
+	private HttpURLConnection conn;
+	private String method;
+	private String url;
+	private StringBuilder sbForm;
+	private boolean canWrite;
+	private InetAddress svrAddr;
+
+	public HTTPMyClient(String url, String method) throws IOException
+	{
+		super(url);
+		if (!url.startsWith("http://") && !url.startsWith("https://"))
+		{
+			throw new IOException("Not http/https request");
+		}
+		this.url = url;
+		this.method = method;
+		URL targetURL = new URL(url);
+		this.svrAddr = InetAddress.getByName(targetURL.getHost());
+		this.conn = (HttpURLConnection)targetURL.openConnection();
+		this.conn.setRequestMethod(method);
+		this.conn.setDoOutput(true);
+		switch (this.method)
+		{
+		case "POST":
+		case "PUT":
+		case "PATCH":
+			this.canWrite = true;
+			break;
+		default:
+			this.canWrite = false;
+		}
+	}
+
+	public void addHeader(String name, String value)
+	{
+		this.conn.addRequestProperty(name, value);
+	}
+
+	public boolean formBegin()
+	{
+		if (this.canWrite && this.sbForm == null)
+		{
+			this.addContentType("application/x-www-form-urlencoded");
+			this.sbForm = new StringBuilder();
+			return true;
+		}
+		return false;
+	}
+
+	public boolean formAdd(String name, String value)
+	{
+		if (this.sbForm == null)
+		{
+			return false;
+		}
+		if (this.sbForm.length() > 0)
+		{
+			this.sbForm.append('&');
+		}
+		this.sbForm.append(URIEncoding.uriEncode(name));
+		this.sbForm.append('=');
+		this.sbForm.append(URIEncoding.uriEncode(value));
+		return true;
+	}
+
+	public void addTimeHeader(String name, ZonedDateTime dt)
+	{
+		this.addHeader(name, date2Str(dt));
+	}
+
+	public void addContentType(String contType)
+	{
+		this.addHeader("Content-Type", contType);
+	}
+
+	public void addContentLength(long leng)
+	{
+		this.addHeader("Content-Length", String.valueOf(leng));
+	}
+
+	public int getRespHeaderCnt()
+	{
+		return this.conn.getHeaderFields().size() - 1;
+	}
+
+	public String getRespHeader(int index)
+	{
+		String name = this.conn.getHeaderFieldKey(index + 1);
+		if (name == null)
+		{
+			return null;
+		}
+		else
+		{
+			return name+": "+this.conn.getHeaderField(index + 1);
+		}
+	}
+
+	public String getRespHeader(String name)
+	{
+		String val = this.conn.getHeaderField(name);
+		if (val == null)
+		{
+			return null;
+		}
+		return name+": "+this.conn.getHeaderField(name);
+	}
+
+	public long getContentLength()
+	{
+		return this.conn.getContentLengthLong();
+	}
+
+	public String getContentEncoding()
+	{
+		return this.conn.getContentEncoding();
+	}
+	
+	public ZonedDateTime getLastModified()
+	{
+		long mod = this.conn.getLastModified();
+		if (mod == 0)
+		{
+			return null;
+		}
+		return DateTimeUtil.newZonedDateTime(mod);
+	}
+
+	public String getURL()
+	{
+		return this.url;
+	}
+
+	public int GetRespStatus() throws IOException
+	{
+		return this.conn.getResponseCode();
+	}
+
+	public InetAddress getSvrAddr() throws IOException
+	{
+		return this.svrAddr;
+	}
+
+	public static String date2Str(ZonedDateTime dt)
+	{
+		String wds[] = {"Mon, ", "Tue, ", "Wed, ", "Thu, ", "Fri, ", "Sat, ", "Sun, "};
+		ZonedDateTime t = dt.withZoneSameInstant(ZoneOffset.UTC);
+		DayOfWeek wd = t.getDayOfWeek();
+		return wds[wd.ordinal()] + DateTimeUtil.toString(t, "dd MMM yyyy HH:mm:ss") + " GMT";
+	}
+
+	@Override
+	public int read(byte[] buff, int ofst, int size)
+	{
+		try
+		{
+			int ret = this.conn.getInputStream().read(buff, ofst, size);
+			if (ret < 0)
+			{
+				return 0;
+			}
+			return ret;
+		}
+		catch (Exception ex)
+		{
+			return 0;
+		}
+	}
+
+	@Override
+	public int write(byte[] buff, int ofst, int size) {
+		try
+		{
+			this.conn.getOutputStream().write(buff, ofst, size);
+			return size;
+		}
+		catch (Exception ex)
+		{
+			return 0;
+		}
+	}
+
+	@Override
+	public int flush() {
+		return 0;
+	}
+
+	@Override
+	public void close() {
+		this.conn.disconnect();
+	}
+
+	@Override
+	public boolean recover() {
+		return false;
+	}
+}
