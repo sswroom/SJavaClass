@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.time.DayOfWeek;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -209,5 +210,35 @@ public class HTTPMyClient extends IOStream
 	@Override
 	public boolean recover() {
 		return false;
+	}
+
+	public static byte[] getAsBytes(String url, int expectedStatusCode)
+	{
+		try
+		{
+			HTTPMyClient cli = new HTTPMyClient(url, "GET");
+			if (cli.GetRespStatus() != expectedStatusCode)
+			{
+				cli.close();
+				return null;
+			}
+			byte[] buff = cli.readToEnd();
+			cli.close();
+			return buff;
+		}
+		catch (IOException ex)
+		{
+			return null;
+		}
+	}
+
+	public static String getAsString(String url, int expectedStatusCode)
+	{
+		byte []ret = getAsBytes(url, expectedStatusCode);
+		if (ret == null)
+		{
+			return null;
+		}
+		return new String(ret, StandardCharsets.UTF_8);
 	}
 }
