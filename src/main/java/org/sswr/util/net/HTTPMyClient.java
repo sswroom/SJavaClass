@@ -18,6 +18,7 @@ import org.sswr.util.io.IOStream;
 
 public class HTTPMyClient extends IOStream
 {
+	private static final boolean debug = false;
 	private HttpURLConnection conn;
 	private String method;
 	private String url;
@@ -311,11 +312,6 @@ public class HTTPMyClient extends IOStream
 		try
 		{
 			HTTPMyClient cli = new HTTPMyClient(url, "POST");
-			if (cli.GetRespStatus() <= 0)
-			{
-				cli.close();
-				return null;
-			}
 			Iterator<String> names = formParams.keySet().iterator();
 			if (names != null && names.hasNext())
 			{
@@ -329,6 +325,16 @@ public class HTTPMyClient extends IOStream
 			if (statusCode != null)
 			{
 				statusCode.value = cli.GetRespStatus();
+			}
+			if (debug)
+			{
+				int i = 0;
+				int j = cli.getRespHeaderCnt();
+				while (i < j)
+				{
+					System.out.println("Header "+i+" = "+cli.getRespHeader(i));
+					i++;
+				}
 			}
 			byte[] buff = cli.readToEnd();
 			cli.close();
