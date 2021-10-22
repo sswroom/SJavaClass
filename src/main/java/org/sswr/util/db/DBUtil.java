@@ -69,12 +69,16 @@ public class DBUtil {
 	}
 
 	public static final int MAX_SQL_ITEMS = 100;
-	private static DBUpdateHandler updateHandler = null;
+	private static List<DBUpdateHandler> updateHandlers = null;
 	private static LogTool sqlLogger = new LogTool();
 
-	public static void setUpdateHandler(DBUpdateHandler updateHandler)
+	public static void addUpdateHandler(DBUpdateHandler updateHandler)
 	{
-		DBUtil.updateHandler = updateHandler;
+		if (DBUtil.updateHandlers == null)
+		{
+			DBUtil.updateHandlers = new ArrayList<DBUpdateHandler>();
+		}
+		DBUtil.updateHandlers.add(updateHandler);
 	}
 
 	public static void setSqlLogger(LogTool sqlLogger)
@@ -1955,9 +1959,20 @@ public class DBUtil {
 					i++;
 				}
 				boolean ret = executeNonQuery(conn, sb.toString());
-				if (ret && updateHandler != null)
+				if (ret && updateHandlers != null)
 				{
-					updateHandler.dbUpdated(oriObj, newObj);
+					i = updateHandlers.size();
+					while (i-- > 0)
+					{
+						try
+						{
+							updateHandlers.get(i).dbUpdated(oriObj, newObj);
+						}
+						catch (Exception ex)
+						{
+
+						}
+					}
 				}
 				return ret;
 			}
@@ -2013,9 +2028,20 @@ public class DBUtil {
 							col.setter.set(newObj, getLastIdentity32(conn));
 						}
 					}
-					if (updateHandler != null)
+					if (updateHandlers != null)
 					{
-						updateHandler.dbUpdated(oriObj, newObj);
+						i = updateHandlers.size();
+						while (i-- > 0)
+						{
+							try
+							{
+								updateHandlers.get(i).dbUpdated(oriObj, newObj);
+							}
+							catch (Exception ex)
+							{
+	
+							}
+						}
 					}
 				}
 				return found;
@@ -2070,9 +2096,20 @@ public class DBUtil {
 				}
 				if (executeNonQuery(conn, sb.toString()))
 				{
-					if (updateHandler != null)
+					if (updateHandlers != null)
 					{
-						updateHandler.dbUpdated(oriObj, newObj);
+						i = updateHandlers.size();
+						while (i-- > 0)
+						{
+							try
+							{
+								updateHandlers.get(i).dbUpdated(oriObj, newObj);
+							}
+							catch (Exception ex)
+							{
+	
+							}
+						}
 					}
 					i = 0;
 					j = table.allCols.size();
