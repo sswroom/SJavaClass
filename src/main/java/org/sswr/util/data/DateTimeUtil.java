@@ -93,12 +93,28 @@ public class DateTimeUtil
 		int h;
 		int m;
 		int s;
+		int i;
 		if (strs.length == 3)
 		{
 			h = Integer.parseInt(strs[0]);
 			m = Integer.parseInt(strs[1]);
-			s = Integer.parseInt(strs[2]);
-			return dt.withHour(h).withMinute(m).withSecond(s).truncatedTo(ChronoUnit.SECONDS);
+			i = strs[2].indexOf(".");
+			if (i >= 0)
+			{
+				s = Integer.parseInt(strs[2].substring(0, i));
+				int ns = Integer.parseInt(strs[2].substring(i + 1));
+				i = 9 - (strs[2].length() - i - 1);
+				while (i-- > 0)
+				{
+					ns = ns * 10;
+				}
+				return dt.withHour(h).withMinute(m).withSecond(s).withNano(ns);
+			}
+			else
+			{
+				s = Integer.parseInt(strs[2]);
+				return dt.withHour(h).withMinute(m).withSecond(s).truncatedTo(ChronoUnit.SECONDS);
+			}
 		}
 		else if (strs.length == 2)
 		{
@@ -111,6 +127,7 @@ public class DateTimeUtil
 			throw new IllegalArgumentException();
 		}
 	}
+
 	private static ZonedDateTime setTZ(ZonedDateTime dt, String tzStr)
 	{
 		if (tzStr.length() == 6)
@@ -137,9 +154,9 @@ public class DateTimeUtil
 			{
 				throw new IllegalArgumentException();
 			}
-			dt.withZoneSameLocal(ZoneOffset.ofTotalSeconds(min * 60));
+			return dt.withZoneSameLocal(ZoneOffset.ofTotalSeconds(min * 60));
 		}
-		throw new IllegalArgumentException();
+		throw new IllegalArgumentException("Unknown tz: "+tzStr);
 	}
 
 	public static ZonedDateTime clearTime(ZonedDateTime dt)
@@ -302,23 +319,32 @@ public class DateTimeUtil
 			{
 				throw new IllegalArgumentException();
 			}
+			String tz = null;
+			int i = strs2[1].indexOf('+');
+			if (i < 0)
+			{
+				i = strs2[1].indexOf('-');
+			}
+			if (i >= 0)
+			{
+				tz = strs2[1].substring(i);
+				strs2[1] = strs2[1].substring(0, i);
+			}
 			strs = strs2[1].split(":");
 			if (strs.length == 3)
 			{
-				if (strs[2].length() > 2 && (strs[2].charAt(2) == '-' || strs[2].charAt(2) == '+'))
+				if (strs[2].endsWith("Z"))
 				{
-					String tz = strs[2].substring(2);
-					strs[2] = strs[2].substring(0, 2);
+					strs[2] = strs[2].substring(0, strs[2].length() - 1);
+					dt = dt.withZoneSameLocal(ZoneOffset.UTC);
+				}
+				else if (tz != null)
+				{
 					dt = setTime(dt, strs);
 					dt = setTZ(dt, tz);
 				}
 				else
 				{
-					if (strs[2].endsWith("Z"))
-					{
-						strs[2] = strs[2].substring(0, strs[2].length() - 1);
-						dt = dt.withZoneSameLocal(ZoneOffset.UTC);
-					}
 					dt = setTime(dt, strs);
 				}
 				return dt;
@@ -326,6 +352,10 @@ public class DateTimeUtil
 			else if (strs.length == 2)
 			{
 				dt = setTime(dt, strs);
+				if (tz != null)
+				{
+					dt = setTZ(dt, tz);
+				}
 				return dt;
 			}
 			else
