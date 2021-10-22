@@ -25,6 +25,7 @@ public class HTTPMyClient extends IOStream
 	private StringBuilder sbForm;
 	private boolean canWrite;
 	private InetAddress svrAddr;
+	private int respCode;
 
 	public HTTPMyClient(String url, String method) throws IOException
 	{
@@ -41,6 +42,7 @@ public class HTTPMyClient extends IOStream
 		this.conn = (HttpURLConnection)targetURL.openConnection();
 		this.conn.setRequestMethod(method);
 		this.conn.setDoOutput(true);
+		this.respCode = 0;
 		switch (this.method)
 		{
 		case "POST":
@@ -168,12 +170,23 @@ public class HTTPMyClient extends IOStream
 			{
 			}
 		}
+		if (this.respCode == 0)
+		{
+			try
+			{
+				this.respCode = this.conn.getResponseCode();
+			}
+			catch (IOException ex)
+			{
+
+			}
+		}
 	}
 
 	public int GetRespStatus() throws IOException
 	{
 		this.endRequest();
-		return this.conn.getResponseCode();
+		return this.respCode;
 	}
 
 	public InetAddress getSvrAddr() throws IOException
@@ -195,7 +208,19 @@ public class HTTPMyClient extends IOStream
 		this.endRequest();
 		try
 		{
-			int ret = this.conn.getInputStream().read(buff, ofst, size);
+			int ret;
+			if (this.respCode >= 400 && this.respCode < 600)
+			{
+				ret = this.conn.getErrorStream().read(buff, ofst, size);
+			}
+			else
+			{
+				ret = this.conn.getInputStream().read(buff, ofst, size);
+			}
+			if (debug)
+			{
+				System.out.println("read = "+ret);
+			}
 			if (ret < 0)
 			{
 				return 0;
@@ -204,6 +229,10 @@ public class HTTPMyClient extends IOStream
 		}
 		catch (Exception ex)
 		{
+			if (debug)
+			{
+				ex.printStackTrace();
+			}
 			return 0;
 		}
 	}
