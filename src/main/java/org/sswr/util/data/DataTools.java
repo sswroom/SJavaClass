@@ -1071,6 +1071,72 @@ public class DataTools {
 				}
 				i++;
 			}
+			if (!found)
+			{
+				Method meths[] = cls.getMethods();
+				i = 0;
+				j = meths.length;
+				while (i < j)
+				{
+					if (meths[i].getParameterCount() == 0)
+					{
+						String methName = meths[i].getName();
+					
+						if (methName.equals("getClass"))
+						{
+	
+						}
+						else if (methName.startsWith("get") && methName.length() > 3 && Character.isUpperCase(methName.charAt(3)))
+						{
+							try
+							{
+								Object innerObj = meths[i].invoke(o);
+								if (found)
+								{
+									sb.append(',');
+									sb.append(' ');
+								}
+								sb.append(Character.toLowerCase(methName.charAt(3))+methName.substring(4));
+								sb.append('=');
+								if (innerObj == o)
+								{
+									sb.append("self");
+								}
+								else
+								{
+									sb.append(toObjectStringInner(innerObj, maxLevel - 1));
+								}
+								found = true;
+							}
+							catch (Exception ex)
+							{
+
+							}	
+						}
+						else if (methName.startsWith("is") && methName.length() > 2 && Character.isUpperCase(methName.charAt(2)) && meths[i].getReturnType().equals(boolean.class))
+						{
+							try
+							{
+								Boolean res = (Boolean)meths[i].invoke(o);
+								if (found)
+								{
+									sb.append(',');
+									sb.append(' ');
+								}
+								sb.append(Character.toLowerCase(methName.charAt(2))+methName.substring(3));
+								sb.append('=');
+								sb.append(res.toString());
+								found = true;
+							}
+							catch (Exception ex)
+							{
+
+							}
+						}
+					}
+					i++;
+				}
+			}
 			sb.append('}');
 			return sb.toString();
 		}
@@ -1330,5 +1396,4 @@ public class DataTools {
 	{
 		printClassTreeInt(cls, 0);
 	}
-	
 }
