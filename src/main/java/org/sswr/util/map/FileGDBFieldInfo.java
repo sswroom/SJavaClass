@@ -1,0 +1,107 @@
+package org.sswr.util.map;
+
+import java.util.Objects;
+
+import org.sswr.util.data.DataTools;
+
+public class FileGDBFieldInfo {
+	private String name;
+	private String alias;
+	private byte fieldType;
+	private int fieldSize;
+	private byte flags;
+	private byte defSize;
+	private byte[] defValue;
+
+
+	public FileGDBFieldInfo() {
+	}
+
+	public FileGDBFieldInfo(String name, String alias, byte fieldType, int fieldSize, byte flags, byte defSize, byte[] defValue) {
+		this.name = name;
+		this.alias = alias;
+		this.fieldType = fieldType;
+		this.fieldSize = fieldSize;
+		this.flags = flags;
+		this.defSize = defSize;
+		this.defValue = defValue;
+	}
+
+	public String getName() {
+		return this.name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String getAlias() {
+		return this.alias;
+	}
+
+	public void setAlias(String alias) {
+		this.alias = alias;
+	}
+
+	public byte getFieldType() {
+		return this.fieldType;
+	}
+
+	public void setFieldType(byte fieldType) {
+		this.fieldType = fieldType;
+	}
+
+	public int getFieldSize() {
+		return this.fieldSize;
+	}
+
+	public void setFieldSize(int fieldSize) {
+		this.fieldSize = fieldSize;
+	}
+
+	public byte getFlags() {
+		return this.flags;
+	}
+
+	public void setFlags(byte flags) {
+		this.flags = flags;
+	}
+
+	public byte getDefSize() {
+		return this.defSize;
+	}
+
+	public void setDefSize(byte defSize) {
+		this.defSize = defSize;
+	}
+
+	public byte[] getDefValue() {
+		return this.defValue;
+	}
+
+	public void setDefValue(byte[] defValue) {
+		this.defValue = defValue;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (o == this)
+			return true;
+		if (!(o instanceof FileGDBFieldInfo)) {
+			return false;
+		}
+		FileGDBFieldInfo fileGDBFieldInfo = (FileGDBFieldInfo) o;
+		return Objects.equals(name, fileGDBFieldInfo.name) && Objects.equals(alias, fileGDBFieldInfo.alias) && fieldType == fileGDBFieldInfo.fieldType && fieldSize == fileGDBFieldInfo.fieldSize && flags == fileGDBFieldInfo.flags && defSize == fileGDBFieldInfo.defSize && Objects.equals(defValue, fileGDBFieldInfo.defValue);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(name, alias, fieldType, fieldSize, flags, defSize, defValue);
+	}
+
+	@Override
+	public String toString() {
+		return DataTools.toObjectString(this);
+	}
+
+}
