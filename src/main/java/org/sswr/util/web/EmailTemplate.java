@@ -9,6 +9,14 @@ import java.util.Map;
 
 import org.sswr.util.data.XmlUtil;
 
+/***
+ * Template format:
+ * [@xxxx] Attribute Text
+ * [#xxxx] HTML Text
+ * [$xxxx] Direct HTML Tag
+ * [xxxx]  Subject Text
+ * [[ output [ character
+ */
 public class EmailTemplate {
 	public class TemplateFormatException extends Exception
 	{
@@ -135,7 +143,7 @@ public class EmailTemplate {
 				String paramName = template.substring(j + 1, k);
 				String param;
 				String keyName;
-				if (paramName.startsWith("@") || paramName.startsWith("#"))
+				if (paramName.startsWith("@") || paramName.startsWith("#") || paramName.startsWith("$"))
 				{
 					keyName = paramName.substring(1);
 				}
@@ -159,6 +167,12 @@ public class EmailTemplate {
 				else if (paramName.startsWith("#"))
 				{
 					param = XmlUtil.toHTMLText(param);
+				}
+				else if (paramName.startsWith("$")) //Direct output
+				{
+				}
+				else //Subject
+				{
 				}
 				sb.append(template.substring(i, j));
 				sb.append(param);
