@@ -1,6 +1,11 @@
 package org.sswr.util.math;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.sswr.util.data.ByteTool;
+import org.sswr.util.data.SharedBool;
 import org.sswr.util.data.SharedDouble;
 
 public class Polyline extends PointCollection
@@ -335,8 +340,13 @@ public class Polyline extends PointCollection
 		double calPtX;
 		double calPtY;
 		boolean isPoint;
-		int minId = this.getPointNo(x, y, &isPoint, &calPtX, &calPtY);
-	
+		SharedDouble tmpX = new SharedDouble();
+		SharedDouble tmpY = new SharedDouble();
+		SharedBool tmpBool = new SharedBool();
+		int minId = this.getPointNo(x, y, tmpBool, tmpX, tmpY);
+		isPoint = tmpBool.value;
+		calPtX = tmpX.value;
+		calPtY = tmpY.value;
 		int []oldPtOfsts;
 		int []newPtOfsts;
 		double []oldPoints;
@@ -460,6 +470,8 @@ public class Polyline extends PointCollection
 	public void optimizePolyline()
 	{
 		double []tmpPoints = new double[this.pointArr.length];
+		int nPoint = this.pointArr.length >> 1;
+		int nPtOfst = this.ptOfstArr.length;
 		int lastPoints = this.pointArr.length >> 1;
 		int thisPoints;
 		int lastChkPoint;
@@ -476,34 +488,34 @@ public class Polyline extends PointCollection
 				thisChkPoint = this.ptOfstArr[j];
 				if (this.pointArr[((lastChkPoint - 1) << 1)] == this.pointArr[(thisPoints << 1)] && this.pointArr[((lastChkPoint - 1) << 1) + 1] == this.pointArr[(thisPoints << 1) + 1])
 				{
-					MemCopyNO(tmpPoints, &this.pointArr[thisPoints << 1], sizeof(Double) * 2 * (lastPoints - thisPoints));
-					if (lastPoints < this.nPoint)
+					ByteTool.copyArray(tmpPoints, 0, this.pointArr, thisPoints << 1, 2 * (lastPoints - thisPoints));
+					if (lastPoints < nPoint)
 					{
-						MemCopyO(&this.pointArr[(lastPoints << 1) - 2], &this.pointArr[(lastPoints << 1)], sizeof(Double) * 2 * (this.nPoint - lastPoints));
+						ByteTool.copyArray(this.pointArr, (lastPoints << 1) - 2, this.pointArr, (lastPoints << 1), 2 * (nPoint - lastPoints));
 					}
 					if (lastChkPoint < thisPoints)
 					{
-						MemCopyNO(&tmpPoints[2 * (lastPoints - thisPoints)], &this.pointArr[lastChkPoint << 1], sizeof(Double) * 2 * (thisPoints - lastChkPoint));
-						MemCopyNO(&this.pointArr[lastChkPoint << 1], tmpPoints + 2, sizeof(Double) * 2 * (lastPoints - lastChkPoint - 1));
+						ByteTool.copyArray(tmpPoints, 2 * (lastPoints - thisPoints), this.pointArr, lastChkPoint << 1, 2 * (thisPoints - lastChkPoint));
+						ByteTool.copyArray(this.pointArr, lastChkPoint << 1, tmpPoints, 2, 2 * (lastPoints - lastChkPoint - 1));
 					}
 					else
 					{
-						MemCopyNO(&this.pointArr[lastChkPoint << 1], tmpPoints + 2, sizeof(Double) * 2 * (lastPoints - thisPoints - 1));
+						ByteTool.copyArray(this.pointArr, lastChkPoint << 1, tmpPoints, 2, 2 * (lastPoints - thisPoints - 1));
 					}
-					this.nPtOfst -= 1;
+					nPtOfst -= 1;
 					while (++j < i)
 					{
 						this.ptOfstArr[j] += lastPoints - thisPoints - 1;
 					}
-					while (j < this.nPtOfst)
+					while (j < nPtOfst)
 					{
 						this.ptOfstArr[j] = this.ptOfstArr[j + 1] - 1;
 						j++;
 					}
-					this.nPoint -= 1;
-					if (i >= this.nPtOfst)
+					nPoint -= 1;
+					if (i >= nPtOfst)
 					{
-						thisPoints = (int)this.nPoint;
+						thisPoints = nPoint;
 					}
 					else
 					{
@@ -513,29 +525,27 @@ public class Polyline extends PointCollection
 				}
 				else if (this.pointArr[(thisChkPoint << 1)] == this.pointArr[((lastPoints - 1) << 1)] && this.pointArr[(thisChkPoint << 1) + 1] == this.pointArr[((lastPoints - 1) << 1) + 1])
 				{
-					MemCopyNO(tmpPoints, &this.pointArr[thisPoints << 1], sizeof(Double) * 2 * (lastPoints - thisPoints));
-					if (lastPoints < this.nPoint)
+					ByteTool.copyArray(tmpPoints, 0, this.pointArr, thisPoints << 1, 2 * (lastPoints - thisPoints));
+					if (lastPoints < nPoint)
 					{
-						MemCopyO(&this.pointArr[(lastPoints << 1) - 2], &this.pointArr[(lastPoints << 1)], sizeof(Double) * 2 * (this.nPoint - lastPoints));
+						ByteTool.copyArray(this.pointArr, (lastPoints << 1) - 2, this.pointArr, (lastPoints << 1), 2 * (nPoint - lastPoints));
 					}
-	//				MemCopyO(&points[(thisChkPoint + lastPoints - thisPoints - 1) << 1], &points[thisChkPoint << 1], sizeof(Double) * 2 * (thisPoints - thisChkPoint));
-	//				MemCopyNO(&points[thisChkPoint << 1], tmpPoints, sizeof(Double) * 2 * (lastPoints - thisPoints - 1));
-					MemCopyNO(&tmpPoints[(lastPoints - thisPoints) << 1], &this.pointArr[(thisChkPoint + 1) << 1], sizeof(Double) * 2 * (thisPoints - thisChkPoint - 1));
-					MemCopyNO(&this.pointArr[thisChkPoint << 1], tmpPoints, sizeof(Double) * 2 * (lastPoints - thisChkPoint - 1));
-					this.nPtOfst -= 1;
+					ByteTool.copyArray(tmpPoints, (lastPoints - thisPoints) << 1, this.pointArr, (thisChkPoint + 1) << 1, 2 * (thisPoints - thisChkPoint - 1));
+					ByteTool.copyArray(this.pointArr, thisChkPoint << 1, tmpPoints, 0, 2 * (lastPoints - thisChkPoint - 1));
+					nPtOfst -= 1;
 					while (++j < i)
 					{
 						this.ptOfstArr[j] += lastPoints - thisPoints - 1;
 					}
-					while (j < this.nPtOfst)
+					while (j < nPtOfst)
 					{
 						this.ptOfstArr[j] = this.ptOfstArr[j + 1] - 1;
 						j++;
 					}
-					this.nPoint -= 1;
-					if (i >= this.nPtOfst)
+					nPoint -= 1;
+					if (i >= nPtOfst)
 					{
-						thisPoints = (int)this.nPoint;
+						thisPoints = nPoint;
 					}
 					else
 					{
@@ -546,39 +556,39 @@ public class Polyline extends PointCollection
 				else if (this.pointArr[(thisChkPoint << 1)] == this.pointArr[(thisPoints << 1)] && this.pointArr[(thisChkPoint << 1) + 1] == this.pointArr[(thisPoints << 1) + 1])
 				{
 					double []srcPt;
-					double []destPt;
+					int destOfst;
 					int ptCnt;
 	
-					MemCopyNO(tmpPoints, &this.pointArr[thisPoints << 1], sizeof(Double) * 2 * (lastPoints - thisPoints));
-					if (lastPoints < this.nPoint)
+					ByteTool.copyArray(tmpPoints, 0, this.pointArr, thisPoints << 1, 2 * (lastPoints - thisPoints));
+					if (lastPoints < nPoint)
 					{
-						MemCopyO(&this.pointArr[(lastPoints << 1) - 2], &this.pointArr[(lastPoints << 1)], sizeof(Double) * 2 * (this.nPoint - lastPoints));
+						ByteTool.copyArray(this.pointArr, (lastPoints << 1) - 2, this.pointArr, (lastPoints << 1), 2 * (nPoint - lastPoints));
 					}
-					MemCopyO(&this.pointArr[(thisChkPoint + lastPoints - thisPoints - 1) << 1], &this.pointArr[thisChkPoint << 1], sizeof(Double) * 2 * (thisPoints - thisChkPoint));
+					ByteTool.copyArray(this.pointArr, (thisChkPoint + lastPoints - thisPoints - 1) << 1, this.pointArr, thisChkPoint << 1, 2 * (thisPoints - thisChkPoint));
 	
 					srcPt = tmpPoints;
-					destPt = &this.pointArr[thisChkPoint << 1];
+					destOfst = thisChkPoint << 1;
 					ptCnt = (lastPoints - thisPoints - 1);
 					while (ptCnt-- > 0)
 					{
-						destPt[0] = srcPt[(ptCnt << 1) + 2];
-						destPt[1] = srcPt[(ptCnt << 1) + 3];
-						destPt += 2;
+						this.pointArr[destOfst] = srcPt[(ptCnt << 1) + 2];
+						this.pointArr[destOfst + 1] = srcPt[(ptCnt << 1) + 3];
+						destOfst += 2;
 					}
-					this.nPtOfst -= 1;
+					nPtOfst -= 1;
 					while (++j < i)
 					{
 						this.ptOfstArr[j] += lastPoints - thisPoints - 1;
 					}
-					while (j < this.nPtOfst)
+					while (j < nPtOfst)
 					{
 						this.ptOfstArr[j] = this.ptOfstArr[j + 1] - 1;
 						j++;
 					}
-					this.nPoint -= 1;
-					if (i >= this.nPtOfst)
+					nPoint -= 1;
+					if (i >= nPtOfst)
 					{
-						thisPoints = (int)this.nPoint;
+						thisPoints = nPoint;
 					}
 					else
 					{
@@ -589,41 +599,41 @@ public class Polyline extends PointCollection
 				else if (this.pointArr[((lastChkPoint - 1) << 1)] == this.pointArr[((lastPoints - 1) << 1)] && this.pointArr[((lastChkPoint - 1) << 1) + 1] == this.pointArr[((lastPoints - 1) << 1) + 1])
 				{
 					double []srcPt;
-					double []destPt;
+					int destOfst;
 					int ptCnt;
 	
-					MemCopyNO(tmpPoints, &this.pointArr[thisPoints << 1], sizeof(Double) * 2 * (lastPoints - thisPoints));
-					if (lastPoints < this.nPoint)
+					ByteTool.copyArray(tmpPoints, 0, this.pointArr, thisPoints << 1, 2 * (lastPoints - thisPoints));
+					if (lastPoints < nPoint)
 					{
-						MemCopyO(&this.pointArr[(lastPoints << 1) - 2], &this.pointArr[(lastPoints << 1)], sizeof(Double) * 2 * (this.nPoint - lastPoints));
+						ByteTool.copyArray(this.pointArr, (lastPoints << 1) - 2, this.pointArr, (lastPoints << 1), 2 * (nPoint - lastPoints));
 					}
 					if (lastChkPoint < thisPoints)
 					{
-						MemCopyO(&this.pointArr[(lastChkPoint + lastPoints - thisPoints - 1) << 1], &this.pointArr[lastChkPoint << 1], sizeof(Double) * 2 * (thisPoints - lastChkPoint));
+						ByteTool.copyArray(this.pointArr, (lastChkPoint + lastPoints - thisPoints - 1) << 1, this.pointArr, lastChkPoint << 1, 2 * (thisPoints - lastChkPoint));
 					}
 					srcPt = tmpPoints;
-					destPt = &this.pointArr[lastChkPoint << 1];
+					destOfst = lastChkPoint << 1;
 					ptCnt = (lastPoints - thisPoints - 1);
 					while (ptCnt-- > 0)
 					{
-						destPt[0] = srcPt[(ptCnt << 1)];
-						destPt[1] = srcPt[(ptCnt << 1) + 1];
-						destPt += 2;
+						this.pointArr[destOfst] = srcPt[(ptCnt << 1)];
+						this.pointArr[destOfst + 1] = srcPt[(ptCnt << 1) + 1];
+						destOfst += 2;
 					}
-					this.nPtOfst -= 1;
+					nPtOfst -= 1;
 					while (++j < i)
 					{
 						this.ptOfstArr[j] += lastPoints - thisPoints - 1;
 					}
-					while (j < this.nPtOfst)
+					while (j < nPtOfst)
 					{
 						this.ptOfstArr[j] = this.ptOfstArr[j + 1] - 1;
 						j++;
 					}
-					this.nPoint -= 1;
-					if (i >= this.nPtOfst)
+					nPoint -= 1;
+					if (i >= nPtOfst)
 					{
-						thisPoints = (int)this.nPoint;
+						thisPoints = nPoint;
 					}
 					else
 					{
@@ -635,35 +645,43 @@ public class Polyline extends PointCollection
 			}
 			lastPoints = thisPoints;
 		}
+		if (nPoint != this.pointArr.length << 1)
+		{
+			this.pointArr = Arrays.copyOf(this.pointArr, nPoint << 1);
+		}
+		if (nPtOfst != this.ptOfstArr.length)
+		{
+			this.ptOfstArr = Arrays.copyOf(this.ptOfstArr, nPtOfst);
+		}	
 	}
 
-	public int getPointNo(double x, double y, SharedBool isPoint, SharedDouble calPtX, SharedDouble calPtY)
+	public int getPointNo(double x, double y, SharedBool isPoint, SharedDouble calPtXOut, SharedDouble calPtYOut)
 	{
 		int k;
 		int l;
 		int m;
-		int *ptOfsts;
-		Double *points;
+		int []ptOfsts;
+		double []points;
 	
 		ptOfsts = this.ptOfstArr;
 		points = this.pointArr;
 	
-		k = this.nPtOfst;
-		l = this.nPoint;
+		k = this.ptOfstArr.length;
+		l = this.pointArr.length >> 1;
 	
-		Double calBase;
-		Double calH;
-		Double calW;
-		Double calX;
-		Double calY;
-		Double calD;
-		Double dist = 0x7fffffff;
-		Double calPtX = 0;
-		Double calPtY = 0;
-		OSInt minId = -1;
-		Bool isPointI = false;
+		double calBase;
+		double calH;
+		double calW;
+		double calX;
+		double calY;
+		double calD;
+		double dist = 0x7fffffff;
+		double calPtX = 0;
+		double calPtY = 0;
+		int minId = -1;
+		boolean isPointI = false;
 	
-		while (k--)
+		while (k-- > 0)
 		{
 			m = ptOfsts[k];
 			l--;
@@ -733,11 +751,11 @@ public class Polyline extends PointCollection
 					calPtX = calX;
 					calPtY = calY;
 					isPointI = false;
-					minId = (OSInt)l;
+					minId = l;
 				}
 			}
 		}
-		k = this.nPoint;
+		k = this.pointArr.length >> 1;
 		while (k-- > 0)
 		{
 			calH = y - points[(k << 1) + 1];
@@ -748,34 +766,35 @@ public class Polyline extends PointCollection
 				dist = calD;
 				calPtX = points[(k << 1) + 0];
 				calPtY = points[(k << 1) + 1];
-				minId = (OSInt)k;
+				minId = k;
 				isPointI = true;
 			}
 		}
 	
-		if (isPoint)
+		if (isPoint != null)
 		{
-			*isPoint = isPointI;
+			isPoint.value = isPointI;
 		}
-		if (calPtXOut)
+		if (calPtXOut != null)
 		{
-			*calPtXOut = calPtX;
+			calPtXOut.value = calPtX;
 		}
-		if (calPtYOut)
+		if (calPtYOut != null)
 		{
-			*calPtYOut = calPtY;
+			calPtYOut.value = calPtY;
 		}
 		return minId;
 	}
 
 	public Polygon createPolygonByDist(double dist)
 	{
-		if (this.nPoint < 2)
-			return 0;
-		if (this.nPtOfst > 1)
-			return 0;
+		int nPoint = this.pointArr.length >> 1;
+		if (nPoint < 2)
+			return null;
+		if (this.ptOfstArr.length > 1)
+			return null;
 
-		ArrayList<Double> outPoints;
+		List<Double> outPoints;
 		double lastPtX = 0;
 		double lastPtY = 0;
 		double thisPtX = 0;
@@ -792,11 +811,11 @@ public class Polyline extends PointCollection
 		lastPtX = -Math.cos(deg) * dist + this.pointArr[0];
 		lastPtY = Math.sin(deg) * dist + this.pointArr[1];
 
-		outPoints.Add(lastPtX);
-		outPoints.Add(lastPtY);
+		outPoints.add(lastPtX);
+		outPoints.add(lastPtY);
 
 		i = 2;
-		while (i < this.nPoint)
+		while (i < nPoint)
 		{
 			deg = Math.atan2(this.pointArr[(i << 1) + 0] - this.pointArr[(i << 1) - 2], this.pointArr[(i << 1) + 1] - this.pointArr[(i << 1) - 1]);
 			nextPtX = -Math.cos(deg) * dist + this.pointArr[(i << 1) - 2];
@@ -823,8 +842,8 @@ public class Polyline extends PointCollection
 				else
 					thisPtY = y4 + (y2 - y1) / (x2 - x1) * (thisPtX - x4);
 
-				outPoints.Add(thisPtX);
-				outPoints.Add(thisPtY);
+				outPoints.add(thisPtX);
+				outPoints.add(thisPtY);
 
 			}
 			lastPtX = thisPtX;
@@ -832,20 +851,20 @@ public class Polyline extends PointCollection
 			i += 1;
 		}
 
-		deg = Math.atan2(this.pointArr[(this.nPoint << 1) - 2] - this.pointArr[(this.nPoint << 1) - 4], this.pointArr[(this.nPoint << 1) - 1] - this.pointArr[(this.nPoint << 1) - 3]);
-		lastPtX = -Math.cos(deg) * dist + this.pointArr[(this.nPoint << 1) - 2];
-		lastPtY = Math.sin(deg) * dist + this.pointArr[(this.nPoint << 1) - 1];
+		deg = Math.atan2(this.pointArr[(nPoint << 1) - 2] - this.pointArr[(nPoint << 1) - 4], this.pointArr[(nPoint << 1) - 1] - this.pointArr[(nPoint << 1) - 3]);
+		lastPtX = -Math.cos(deg) * dist + this.pointArr[(nPoint << 1) - 2];
+		lastPtY = Math.sin(deg) * dist + this.pointArr[(nPoint << 1) - 1];
 
-		outPoints.Add(lastPtX);
-		outPoints.Add(lastPtY);
+		outPoints.add(lastPtX);
+		outPoints.add(lastPtY);
 
-		lastPtX = Math.cos(deg) * dist + this.pointArr[(this.nPoint << 1) - 2];
-		lastPtY = -Math.sin(deg) * dist + this.pointArr[(this.nPoint << 1) - 1];
+		lastPtX = Math.cos(deg) * dist + this.pointArr[(nPoint << 1) - 2];
+		lastPtY = -Math.sin(deg) * dist + this.pointArr[(nPoint << 1) - 1];
 
-		outPoints.Add(lastPtX);
-		outPoints.Add(lastPtY);
+		outPoints.add(lastPtX);
+		outPoints.add(lastPtY);
 
-		i = this.nPoint;
+		i = nPoint;
 		while (i > 2)
 		{
 			i -= 1;
@@ -877,8 +896,8 @@ public class Polyline extends PointCollection
 				else
 					thisPtY = y4 + (y2 - y1) / (x2 - x1) * (thisPtX - x4);
 
-				outPoints.Add(thisPtX);
-				outPoints.Add(thisPtY);
+				outPoints.add(thisPtX);
+				outPoints.add(thisPtY);
 			}
 
 			lastPtX = thisPtX;
@@ -889,19 +908,19 @@ public class Polyline extends PointCollection
 		lastPtX = Math.cos(deg) * dist + this.pointArr[0];
 		lastPtY = -Math.sin(deg) * dist + this.pointArr[1];
 
-		outPoints.Add(lastPtX);
-		outPoints.Add(lastPtY);
+		outPoints.add(lastPtX);
+		outPoints.add(lastPtY);
 
 		Polygon pg;
 		int nPoints;
 		double []pts;
-		pg = new Polygon(this.srid, 1, outPoints.getCount() >> 1);
-		pts = pg.getPointList(&nPoints);
+		pg = new Polygon(this.srid, 1, outPoints.size() >> 1);
+		pts = pg.getPointList();
 		nPoints = pts.length;
 		i = 0;
 		while (i < nPoints)
 		{
-			pts[i] = outPoints.GetItem(i);
+			pts[i] = outPoints.get(i);
 			i++;
 		}
 		return pg;
