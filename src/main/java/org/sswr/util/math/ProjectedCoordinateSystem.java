@@ -5,13 +5,13 @@ import org.sswr.util.math.unit.Distance;
 
 public abstract class ProjectedCoordinateSystem extends CoordinateSystem
 {
-	private GeographicCoordinateSystem gcs;
-	private double falseEasting;
-	private double falseNorthing;
-	private double centralMeridian;
-	private double latitudeOfOrigin;
-	private double scaleFactor;
-	private UnitType unit;
+	protected GeographicCoordinateSystem gcs;
+	protected double falseEasting;
+	protected double falseNorthing;
+	protected double centralMeridian;
+	protected double latitudeOfOrigin;
+	protected double scaleFactor;
+	protected UnitType unit;
 
 	public ProjectedCoordinateSystem(String sourceName, int srid, String projName, double falseEasting, double falseNorthing, double centralMeridian, double latitudeOfOrigin, double scaleFactor, GeographicCoordinateSystem gcs, UnitType unit)
 	{
@@ -109,7 +109,7 @@ public abstract class ProjectedCoordinateSystem extends CoordinateSystem
 		return totalDist;
 	}
 
-	public abstract CoordinateSystem Clone();
+	public abstract CoordinateSystem clone();
 	public abstract CoordinateSystemType getCoordSysType();
 	
 	public boolean isProjected()

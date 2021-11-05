@@ -5,9 +5,9 @@ import java.io.IOException;
 
 import org.sswr.util.data.SharedInt;
 import org.sswr.util.data.StringUtil;
-import org.sswr.util.data.TimestampValidator;
 import org.sswr.util.math.CoordinateSystem.PrimemType;
 import org.sswr.util.math.CoordinateSystem.UnitType;
+import org.sswr.util.math.unit.Angle.AngleUnit;
 
 public class CoordinateSystemManager
 {
@@ -57,11 +57,11 @@ public class CoordinateSystemManager
 				return null;
 			j = tmpInt.value;
 			nameOfst = i + 1;
-			prjBuff[i + j - 1] = 0;
+			prjBuff[ofst + i + j - 1] = 0;
 			i += j;
 			while (true)
 			{
-				c = prjBuff[i];
+				c = prjBuff[ofst + i];
 				if (c == ']')
 				{
 					i++;
@@ -77,11 +77,11 @@ public class CoordinateSystemManager
 							return null;
 						j = tmpInt.value;
 						datumOfst = i + 1;
-						prjBuff[i + j - 1] = 0;
+						prjBuff[ofst + i + j - 1] = 0;
 						i += j;
 						while (true)
 						{
-							c = prjBuff[i];
+							c = prjBuff[ofst + i];
 							if (c == ']')
 							{
 								break;
@@ -99,13 +99,13 @@ public class CoordinateSystemManager
 									if (!parsePRJString(prjBuff, ofst + i, tmpInt))
 										return null;
 									j = tmpInt.value;
-									prjBuff[i + j - 1] = 0;
+									prjBuff[ofst + i + j - 1] = 0;
 									i += j;
 									j = -1;
 									spIndex = 1;
 									while (true)
 									{
-										c = prjBuff[i];
+										c = prjBuff[ofst + i];
 										if (c == ']' || c == ',')
 										{
 											if (j >= 0)
@@ -156,7 +156,7 @@ public class CoordinateSystemManager
 						i += j;
 						while (true)
 						{
-							c = prjBuff[i];
+							c = prjBuff[ofst + i];
 							if (c == ']')
 								break;
 							if (c == 0)
@@ -176,7 +176,7 @@ public class CoordinateSystemManager
 						i += j;
 						while (true)
 						{
-							c = prjBuff[i];
+							c = prjBuff[ofst + i];
 							if (c == ']')
 								break;
 							if (c == 0)
@@ -233,20 +233,17 @@ public class CoordinateSystemManager
 			if (eet != EarthEllipsoid.EarthEllipsoidType.OTHER)
 			{
 				EarthEllipsoid ellipsoid = new EarthEllipsoid(a, f_1, eet);
-				const Math::CoordinateSystemManager::DatumInfo *datum = GetDatumInfoByName((const UTF8Char*)&prjBuff[datumOfst]);
-	
-				DatumData data;
-				FillDatumData(&data, datum, &prjBuff[datumOfst], &ellipsoid, 0);
-				csys = new GeographicCoordinateSystem(sourceName, srid, (const UTF8Char*)&prjBuff[nameOfst], &data, primem, unit);
+				DatumInfo datum = getDatumInfoByName(StringUtil.byte2String(prjBuff, ofst + datumOfst));
+				DatumData data = fillDatumData(datum, StringUtil.byte2String(prjBuff, ofst + datumOfst), ellipsoid, null);
+				csys = new GeographicCoordinateSystem(sourceName, srid, StringUtil.byte2String(prjBuff, ofst + nameOfst), data, primem, unit);
 				return csys;
 			}
 			else
 			{
 				EarthEllipsoid ellipsoid = new EarthEllipsoid(a, f_1, eet);
-				const Math::CoordinateSystemManager::DatumInfo *datum = GetDatumInfoByName((const UTF8Char*)&prjBuff[datumOfst]);
-				DatumData1 data;
-				FillDatumData(&data, datum, &prjBuff[datumOfst], &ellipsoid, 0);
-				csys = new GeographicCoordinateSystem(sourceName, srid, (const UTF8Char*)&prjBuff[nameOfst], data, primem, unit);
+				DatumInfo datum = getDatumInfoByName(StringUtil.byte2String(prjBuff, ofst + datumOfst));
+				DatumData data = fillDatumData(datum, StringUtil.byte2String(prjBuff, ofst + datumOfst), ellipsoid, null);
+				csys = new GeographicCoordinateSystem(sourceName, srid, StringUtil.byte2String(prjBuff, ofst + nameOfst), data, primem, unit);
 				return csys;
 			}
 		}
@@ -264,14 +261,14 @@ public class CoordinateSystemManager
 	
 			i = 7;
 			if (!parsePRJString(prjBuff, ofst + i, tmpInt))
-				return 0;
+				return null;
 			j = tmpInt.value;
 			nameOfst = i + 1;
-			prjBuff[i + j - 1] = 0;
+			prjBuff[ofst + i + j - 1] = 0;
 			i += j;
 			while (true)
 			{
-				c = prjBuff[i];
+				c = prjBuff[ofst + i];
 				if (c == ']')
 				{
 					i++;
@@ -284,7 +281,7 @@ public class CoordinateSystemManager
 					{
 						tmpInt.value = j;
 						gcs = (GeographicCoordinateSystem)parsePRJBuff(sourceName, prjBuff, ofst + i, tmpInt);
-						if (gcs == 0)
+						if (gcs == null)
 							return null;
 						j = tmpInt.value;
 						i += j;
@@ -294,21 +291,20 @@ public class CoordinateSystemManager
 						if (StringUtil.startsWith(prjBuff, ofst + i + 11, "\"Transverse_Mercator\"]"))
 						{
 							i += 33;
-							cst = Math::CoordinateSystem::CST_MERCATORPROJECTED;
+							cst = CoordinateSystemType.MercatorProjected;
 						}
 						else if (StringUtil.startsWith(prjBuff, ofst + i + 11, "\"Mercator_1SP\"]"))
 						{
 							i += 26;
-							cst = Math::CoordinateSystem::CST_MERCATOR1SPPROJECTED;
+							cst = CoordinateSystemType.Mercator1SPProjected;
 						}
 						else if (StringUtil.startsWith(prjBuff, ofst + i + 11, "\"Gauss_Kruger\"]"))
 						{
 							i += 26;
-							cst = Math::CoordinateSystem::CST_GAUSSKRUGERPROJECTED;
+							cst = CoordinateSystemType.GausskrugerProjected;
 						}
 						else
 						{
-							SDEL_CLASS(gcs);
 							return null;
 						}
 					}
@@ -317,13 +313,13 @@ public class CoordinateSystemManager
 						i += 10;
 						if (!parsePRJString(prjBuff, ofst + i, tmpInt))
 						{
-							return 0;
+							return null;
 						}
 						j = tmpInt.value;
 						nOfst = i + 1;
-						prjBuff[i + j - 1] = 0;
+						prjBuff[ofst + i + j - 1] = 0;
 						i += j;
-						if (prjBuff[i] != ',')
+						if (prjBuff[ofst + i] != ',')
 						{
 							return null;
 						}
@@ -331,38 +327,37 @@ public class CoordinateSystemManager
 						i++;
 						while (true)
 						{
-							c = prjBuff[i];
+							c = prjBuff[ofst + i];
 							if (c == 0 || c == ',')
 							{
 								return null;
 							}
 							else if (c == ']')
 							{
-								prjBuff[i] = 0;
+								prjBuff[ofst + i] = 0;
 								i++;
-								if (Text::StrEqualsICase(&prjBuff[nOfst], "False_Easting"))
+								if (StringUtil.equalsICase(prjBuff, ofst + nOfst, "False_Easting"))
 								{
-									falseEasting = Text::StrToDouble(&prjBuff[vOfst]);
+									falseEasting = StringUtil.toDouble(prjBuff, ofst + vOfst);
 								}
-								else if (Text::StrEqualsICase(&prjBuff[nOfst], "False_Northing"))
+								else if (StringUtil.equalsICase(prjBuff, ofst + nOfst, "False_Northing"))
 								{
-									falseNorthing = Text::StrToDouble(&prjBuff[vOfst]);
+									falseNorthing = StringUtil.toDouble(prjBuff, ofst + vOfst);
 								}
-								else if (Text::StrEqualsICase(&prjBuff[nOfst], "Central_Meridian"))
+								else if (StringUtil.equalsICase(prjBuff, ofst + nOfst, "Central_Meridian"))
 								{
-									centralMeridian = Text::StrToDouble(&prjBuff[vOfst]);
+									centralMeridian = StringUtil.toDouble(prjBuff, ofst + vOfst);
 								}
-								else if (Text::StrEqualsICase(&prjBuff[nOfst], "Scale_Factor"))
+								else if (StringUtil.equalsICase(prjBuff, ofst + nOfst, "Scale_Factor"))
 								{
-									scaleFactor = Text::StrToDouble(&prjBuff[vOfst]);
+									scaleFactor = StringUtil.toDouble(prjBuff, ofst + vOfst);
 								}
-								else if (Text::StrEqualsICase(&prjBuff[nOfst], "Latitude_Of_Origin"))
+								else if (StringUtil.equalsICase(prjBuff, ofst + nOfst, "Latitude_Of_Origin"))
 								{
-									latitudeOfOrigin = Text::StrToDouble(&prjBuff[vOfst]);
+									latitudeOfOrigin = StringUtil.toDouble(prjBuff, ofst + vOfst);
 								}
 								else
 								{
-									SDEL_CLASS(gcs);
 									return null;
 								}
 								break;
@@ -373,25 +368,24 @@ public class CoordinateSystemManager
 							}
 						}
 					}
-					else if (Text::StrStartsWith(&prjBuff[i], "UNIT["))
+					else if (StringUtil.startsWith(prjBuff, ofst + i, "UNIT["))
 					{
 						i += 5;
-						if (!ParsePRJString(&prjBuff[i], &j))
+						if (!parsePRJString(prjBuff, ofst + i, tmpInt))
 						{
-							SDEL_CLASS(gcs);
 							return null;
 						}
+						j = tmpInt.value;
 						i += j;
 						commaFound = false;
 						while (true)
 						{
-							c = prjBuff[i];
+							c = prjBuff[ofst + i];
 							if (c == ',')
 							{
 								i++;
 								if (commaFound)
 								{
-									SDEL_CLASS(gcs);
 									return null;
 								}
 								commaFound = true;
@@ -401,14 +395,12 @@ public class CoordinateSystemManager
 								i++;
 								if (!commaFound)
 								{
-									SDEL_CLASS(gcs);
 									return null;
 								}
 								break;
 							}
 							else if (c == 0)
 							{
-								SDEL_CLASS(gcs);
 								return null;
 							}
 							else
@@ -419,34 +411,29 @@ public class CoordinateSystemManager
 					}
 					else
 					{
-						SDEL_CLASS(gcs);
 						return null;
 					}
 				}
 				else
 				{
-					SDEL_CLASS(gcs);
 					return null;
 				}
 			}
-			if (cst == Math::CoordinateSystem::CST_GEOGRAPHIC || falseEasting == -1 || falseNorthing == -1 || centralMeridian == -1 || scaleFactor == -1 || latitudeOfOrigin == -1 || gcs == 0)
+			if (cst == CoordinateSystemType.Geographic || falseEasting == -1 || falseNorthing == -1 || centralMeridian == -1 || scaleFactor == -1 || latitudeOfOrigin == -1 || gcs == null)
 			{
-				SDEL_CLASS(gcs);
 				return null;
 			}
 			if (parsedSize != null)
 			{
 				parsedSize.value = i;
 			}
-			if (cst == Math::CoordinateSystem::CST_MERCATORPROJECTED || cst == Math::CoordinateSystem::CST_GAUSSKRUGERPROJECTED)
+			if (cst == CoordinateSystemType.MercatorProjected || cst == CoordinateSystemType.GausskrugerProjected)
 			{
-				NEW_CLASS(csys, Math::MercatorProjectedCoordinateSystem(sourceName, srid, (const UTF8Char*)&prjBuff[nameOfst], falseEasting, falseNorthing, centralMeridian, latitudeOfOrigin, scaleFactor, gcs, unit));
-				return csys;
+				return new MercatorProjectedCoordinateSystem(sourceName, srid, StringUtil.byte2String(prjBuff, ofst + nameOfst), falseEasting, falseNorthing, centralMeridian, latitudeOfOrigin, scaleFactor, gcs, unit);
 			}
-			else if (cst == Math::CoordinateSystem::CST_MERCATOR1SPPROJECTED)
+			else if (cst == CoordinateSystemType.Mercator1SPProjected)
 			{
-				NEW_CLASS(csys, Math::Mercator1SPProjectedCoordinateSystem(sourceName, srid, (const UTF8Char*)&prjBuff[nameOfst], falseEasting, falseNorthing, centralMeridian, latitudeOfOrigin, scaleFactor, gcs, unit));
-				return csys;
+				return new Mercator1SPProjectedCoordinateSystem(sourceName, srid, StringUtil.byte2String(prjBuff, ofst + nameOfst), falseEasting, falseNorthing, centralMeridian, latitudeOfOrigin, scaleFactor, gcs, unit);
 			}
 			else
 			{
@@ -455,5 +442,98 @@ public class CoordinateSystemManager
 		}
 	
 		return null;
+	}
+	public static DatumInfo getDatumInfoByName(String name)
+	{
+		if (name.startsWith("D_"))
+		{
+			name = name.substring(2);
+		}
+		switch (name.toUpperCase())
+		{
+		case "WGS_1984":
+			return new DatumInfo(6326,  7030,  "WGS_1984", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, AngleUnit.Radian);
+		case "ANGUILLA_1957":
+			return new DatumInfo(6600,  7012,  "Anguilla_1957", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, AngleUnit.Radian);
+		case "ANTIGUA_1943":
+			return new DatumInfo(6601,  7012,  "Antigua_1943", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, AngleUnit.Radian);
+		case "DOMINICA_1945":
+			return new DatumInfo(6602,  7012,  "Dominica_1945", 0, 0, 0, 725, 685, 536, 0, 0, 0, 0, AngleUnit.Arcsecond);
+		case "GRENADA_1953":
+			return new DatumInfo(6603,  7012,  "Grenada_1953", 0, 0, 0, 72, 213.7, 93, 0, 0, 0, 0, AngleUnit.Arcsecond);
+		case "HONG_KONG_1980":
+			return new DatumInfo(6611,  7022,  "Hong_Kong_1980", 0, 0, 0, -162.619, -276.959, -161.764, 0.067753, -2.24365, -1.15883, -1.09425, AngleUnit.Arcsecond);
+		}
+		return null;
+	}
+
+	public static DatumData fillDatumData(DatumInfo datum, String name, EarthEllipsoid ee, SpheroidInfo spheroid)
+	{
+		DatumData data = new DatumData();
+		if (datum != null)
+		{
+			data.setSrid(datum.getSrid());
+			if (spheroid != null)
+			{
+				data.setSpheroid(new SpheroidData(datum.getSpheroid(), spheroid.getName(), ee));
+			}
+			else
+			{
+				data.setSpheroid(new SpheroidData(datum.getSpheroid(), datum.getDatumName(), ee));
+			}
+			data.setName(datum.getDatumName());
+			data.setX0(datum.getX0());
+			data.setY0(datum.getY0());
+			data.setZ0(datum.getZ0());
+			data.setCX(datum.getCX());
+			data.setCY(datum.getCY());
+			data.setCZ(datum.getCZ());
+			data.setXAngle(datum.getXAngle());
+			data.setYAngle(datum.getYAngle());
+			data.setZAngle(datum.getZAngle());
+			data.setScale(datum.getScale());
+			data.setAunit(datum.getAunit());
+		}
+		else
+		{
+			data.setSrid(0);
+			data.setSpheroid(new SpheroidData(0, name, ee));
+			data.setName(name);
+			data.setX0(0);
+			data.setY0(0);
+			data.setZ0(0);
+			data.setCX(0);
+			data.setCY(0);
+			data.setCZ(0);
+			data.setXAngle(0);
+			data.setYAngle(0);
+			data.setZAngle(0);
+			data.setScale(0);
+			data.setAunit(AngleUnit.Radian);
+		}
+		return data;
+	}
+
+	private static boolean parsePRJString(byte []prjBuff, int ofst, SharedInt strSize)
+	{
+		int i;
+		byte c;
+		if (prjBuff[ofst] != '\"')
+			return false;
+		i = 1;
+		while (ofst + i < prjBuff.length)
+		{
+			c = prjBuff[ofst + i];
+			if (c == 0)
+				return false;
+			if (c == '\"')
+			{
+				i++;
+				strSize.value = i;
+				return true;
+			}
+			i++;
+		}
+		return false;
 	}
 }

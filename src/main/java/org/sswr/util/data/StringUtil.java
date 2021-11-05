@@ -1045,4 +1045,120 @@ public class StringUtil
 		}
 		return new String(buff, buffOfst, endOfst - buffOfst, StandardCharsets.UTF_8);
 	}
+
+	/**
+	 * Convert UTF-8 byte buffer to string
+	 * 
+	 * @param  buff byte buffer to convert
+	 * @param  ofst offset of byte buffer start
+	 * @return  converted string
+	 */
+	public static String byte2String(byte[] buff, int ofst)
+	{
+		int endOfst = ofst;
+		int j = buff.length;
+		while (endOfst < j)
+		{
+			if (buff[endOfst] == 0)
+			{
+				break;
+			}
+			endOfst++;
+		}
+		return new String(buff, ofst, endOfst - ofst, StandardCharsets.UTF_8);
+	}
+
+	/**
+	 * Check whether the byte buffer is starts with a string
+	 * 
+	 * @param  buff byte buffer to check
+	 * @param  ofst offset of byte buffer start
+	 * @param  value Value to check
+	 * @return  whether it is starts with a string
+	 */
+	public static boolean startsWith(byte[] buff, int ofst, String value)
+	{
+		byte[] valueBuff = value.getBytes(StandardCharsets.UTF_8);
+		if (ofst + valueBuff.length > buff.length)
+		{
+			return false;
+		}
+		int i = 0;
+		int j = valueBuff.length;
+		while (i < j)
+		{
+			if (buff[ofst + i] != valueBuff[i])
+			{
+				return false;
+			}
+			i++;
+		}
+		return true;
+	}
+
+	/**
+	 * Check whether the byte buffer is equals to a string ignore case
+	 * 
+	 * @param  buff byte buffer to check
+	 * @param  ofst offset of byte buffer start
+	 * @param  value Value to check
+	 * @return  whether it is equals to a string
+	 */
+	public static boolean equalsICase(byte[] buff, int ofst, String value)
+	{
+		byte[] valueBuff = value.getBytes(StandardCharsets.UTF_8);
+		if (ofst + valueBuff.length > buff.length)
+		{
+			return false;
+		}
+		if (ofst + valueBuff.length != buff.length && buff[ofst + valueBuff.length] != 0)
+		{
+			return false;
+		}
+		int i = 0;
+		int j = valueBuff.length;
+		while (i < j)
+		{
+			if (toUpper(buff[ofst + i]) != toUpper(valueBuff[i]))
+			{
+				return false;
+			}
+			i++;
+		}
+		return true;
+	}
+
+	/**
+	 * Convert byte of utf-8 char to upper case
+	 * 
+	 * @param  c the char to convert
+	 * @return  converted char
+	 */
+	public static byte toUpper(byte c)
+	{
+		if (c >= 'a' && c <= 'z')
+		{
+			return (byte)(c - 32);
+		}
+		else
+		{
+			return c;
+		}
+	}
+
+	/**
+	 * Convert byte of utf-8 char to double
+	 * 
+	 * @param  c the char to convert
+	 * @return  converted char
+	 */
+	public static double toDouble(byte[] buff, int ofst)
+	{
+		Double d = toDouble(byte2String(buff, ofst));
+		if (d == null)
+		{
+			return 0;
+		}
+		return d.doubleValue();
+	}
 }

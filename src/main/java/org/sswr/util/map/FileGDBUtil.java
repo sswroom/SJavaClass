@@ -11,6 +11,7 @@ import java.util.Arrays;
 import org.sswr.util.data.ByteTool;
 import org.sswr.util.data.SharedInt;
 import org.sswr.util.data.SharedLong;
+import org.sswr.util.math.CoordinateSystemManager;
 
 public class FileGDBUtil
 {
