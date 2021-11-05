@@ -6,6 +6,39 @@ import org.sswr.util.math.unit.Distance;
 
 public abstract class CoordinateSystem extends ParsedObject
 {
+	public enum PrimemType
+	{
+		Greenwich;
+
+		public int getId(PrimemType t)
+		{
+			switch (t)
+			{
+			case Greenwich:
+				return 8901;
+			}
+			return 0;
+		}
+	}
+
+	public enum UnitType
+	{
+		Metre,
+		Degree;
+
+		public int getId(UnitType t)
+		{
+			switch (t)
+			{
+			case Metre:
+				return 9001;
+			case Degree:
+				return 9122;
+			}
+			return 0;
+		}
+	}
+
 	protected String csysName;
 	protected int srid;
 
@@ -68,7 +101,7 @@ public abstract class CoordinateSystem extends ParsedObject
 			ProjectedCoordinateSystem pcs = (ProjectedCoordinateSystem)srcCoord;
 			tmpX = new SharedDouble();
 			tmpY = new SharedDouble();
-			pcs.ToGeographicCoordinate(srcX, srcY, tmpX, tmpY);
+			pcs.toGeographicCoordinate(srcX, srcY, tmpX, tmpY);
 			srcCoord = pcs.getGeographicCoordinateSystem();
 			srcX = tmpX.value;
 			srcY = tmpY.value;
@@ -89,19 +122,19 @@ public abstract class CoordinateSystem extends ParsedObject
 		srcY = tmpY.value;
 		srcZ = tmpZ.value;
 	
-		if (destCoord.IsProjected())
+		if (destCoord.isProjected())
 		{
 			ProjectedCoordinateSystem pcs = (ProjectedCoordinateSystem)destCoord;
 			GeographicCoordinateSystem gcs = pcs.getGeographicCoordinateSystem();
-			gcs.rromCartesianCoord(srcX, srcY, srcZ, tmpY, tmpX, tmpZ);
-			pcs.rromGeographicCoordinate(tmpX.value, tmpY.value, destX, destY);
+			gcs.fromCartesianCoord(srcX, srcY, srcZ, tmpY, tmpX, tmpZ);
+			pcs.fromGeographicCoordinate(tmpX.value, tmpY.value, destX, destY);
 			if (destZ != null)
 				destZ.value = tmpZ.value;
 		}
 		else
 		{
 			GeographicCoordinateSystem gcs = (GeographicCoordinateSystem)destCoord;;
-			gcs.FromCartesianCoord(srcX, srcY, srcZ, destY, destX, tmpZ);
+			gcs.fromCartesianCoord(srcX, srcY, srcZ, destY, destX, tmpZ);
 			if (destZ != null)
 				destZ.value = tmpZ.value;
 		}

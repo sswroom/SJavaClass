@@ -2,6 +2,7 @@ package org.sswr.util.map;
 
 import java.util.Objects;
 
+import org.sswr.util.data.ByteTool;
 import org.sswr.util.data.DataTools;
 
 public class FileGDBFieldInfo {
@@ -104,4 +105,21 @@ public class FileGDBFieldInfo {
 		return DataTools.toObjectString(this);
 	}
 
+	public FileGDBFieldInfo clone()
+	{
+		FileGDBFieldInfo newField = new FileGDBFieldInfo();
+		newField.name = this.name;
+		newField.alias = this.alias;
+		newField.fieldType = this.fieldType;
+		newField.fieldSize = this.fieldSize;
+		newField.flags = this.flags;
+		newField.defSize = this.defSize;
+		newField.defValue = null;
+		if (this.defValue != null)
+		{
+			newField.defValue = new byte[this.defSize];
+			ByteTool.copyArray(newField.defValue, 0, this.defValue, 0, this.defSize);
+		}
+		return newField;	
+	}
 }

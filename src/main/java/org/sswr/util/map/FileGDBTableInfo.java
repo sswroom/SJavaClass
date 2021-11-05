@@ -1,5 +1,6 @@
 package org.sswr.util.map;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -295,5 +296,50 @@ public class FileGDBTableInfo
 	@Override
 	public String toString() {
 		return DataTools.toObjectString(this);
+	}
+
+	public FileGDBTableInfo clone()
+	{
+		FileGDBTableInfo newTable = new FileGDBTableInfo();
+		newTable.nullableCnt = nullableCnt;
+		newTable.geometryType = geometryType;
+		newTable.tableFlags = tableFlags;
+		newTable.geometryFlags = geometryFlags;
+		newTable.fields = fields;
+		newTable.csys = csys;
+		newTable.xOrigin = xOrigin;
+		newTable.yOrigin = yOrigin;
+		newTable.xyScale = xyScale;
+		newTable.zOrigin = zOrigin;
+		newTable.zScale = zScale;
+		newTable.mOrigin = mOrigin;
+		newTable.mScale = mScale;
+		newTable.xyTolerance = xyTolerance;
+		newTable.zTolerance = zTolerance;
+		newTable.mTolerance = mTolerance;
+		newTable.xMin = xMin;
+		newTable.yMin = yMin;
+		newTable.xMax = xMax;
+		newTable.yMax = yMax;
+		newTable.zMin = zMin;
+		newTable.zMax = zMax;
+		newTable.mMin = mMin;
+		newTable.mMax = mMax;
+		newTable.spatialGridCnt = spatialGridCnt;
+		newTable.spatialGrid = spatialGrid;
+		if (this.csys != null)
+		{
+			newTable.csys = this.csys.clone();
+		}
+		newTable.fields = new ArrayList<FileGDBFieldInfo>();
+		int i = 0;
+		int j = this.fields.size();
+		while (i < j)
+		{
+			newTable.fields.add(this.fields.get(i).clone());
+			i++;
+		}
+		return newTable;
+	
 	}
 }
