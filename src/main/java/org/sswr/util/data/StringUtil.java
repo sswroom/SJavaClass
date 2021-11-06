@@ -296,6 +296,26 @@ public class StringUtil
 	}
 
 	/**
+	* Convert Int32 to Hexadecimal String
+	*
+	* @param  v  int32 to convert
+	* @return    Upper case Hexadecimal String, must be 8 char long
+	*/
+	public static String toHex32(int v)
+	{
+		int v1 = (v >> 24) & 0xff;
+		int v2 = (v >> 16) & 0xff;
+		int v3 = (v >> 8) & 0xff;
+		int v4 = v & 0xff;
+		return new String(new char[]{
+			HEX_ARRAY[v1 >> 4], HEX_ARRAY[v1 & 15],
+			HEX_ARRAY[v2 >> 4], HEX_ARRAY[v2 & 15],
+			HEX_ARRAY[v3 >> 4], HEX_ARRAY[v3 & 15],
+			HEX_ARRAY[v4 >> 4], HEX_ARRAY[v4 & 15]
+		});
+	}
+
+	/**
 	* Convert byte array to hexadecimal String
 	*
 	* @param  buff  byte array to convert
