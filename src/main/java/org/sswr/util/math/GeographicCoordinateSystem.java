@@ -15,9 +15,8 @@ public class GeographicCoordinateSystem extends CoordinateSystem
 	{
 		super(sourceName, srid, csysName);
 		this.csysName = csysName;
-		this.datum.getSpheroid().setSrid(datum.getSpheroid().getSrid());
-		this.datum.getSpheroid().setEllipsoid(datum.getSpheroid().getEllipsoid().clone());
-		this.datum.getSpheroid().setName(datum.getSpheroid().getName());
+		this.datum = new DatumData();
+		this.datum.setSpheroid(new SpheroidData(datum.getSpheroid()));
 		this.datum.setSrid(datum.getSrid());
 		Double aRatio = Angle.getUnitRatio(datum.getAunit());
 		this.datum.setName(datum.getName());

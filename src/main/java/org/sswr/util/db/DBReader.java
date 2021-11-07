@@ -1,6 +1,8 @@
 package org.sswr.util.db;
 
 import java.time.ZonedDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.sswr.util.math.Vector2D;
 
@@ -25,4 +27,17 @@ public abstract class DBReader
 	public abstract String getName(int colIndex);
 	public abstract ColumnType getColumnType(int colIndex);
 	public abstract ColumnDef getColumnDef(int colIndex);	
+
+	public Map<String, Object> getRowMap()
+	{
+		int i = 0;
+		int j = this.colCount();
+		Map<String, Object> map = new HashMap<String, Object>();
+		while (i < j)
+		{
+			map.put(this.getName(i), this.getObject(i));
+			i++;
+		}
+		return map;
+	}
 }

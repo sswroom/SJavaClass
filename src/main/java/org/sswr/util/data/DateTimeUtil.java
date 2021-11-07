@@ -567,6 +567,6 @@ public class DateTimeUtil
 
 	public static String toString(ZonedDateTime t, String format)
 	{
-		return DateTimeFormatter.ofPattern(format).format(t);
+		return DateTimeFormatter.ofPattern(format.replace('f', 'n')).format(t);
 	}
 }

@@ -6,6 +6,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.Inet4Address;
 import java.sql.Timestamp;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -920,6 +921,10 @@ public class DataTools {
 		else if (cls.equals(Inet4Address.class))
 		{
 			return JSText.quoteString(((Inet4Address)o).getHostAddress());
+		}
+		else if (cls.equals(ZonedDateTime.class))
+		{
+			return DateTimeUtil.toString((ZonedDateTime)o, "yyyy-MM-dd HH:mm:ss.fff");
 		}
 		else if (cls.isEnum())
 		{

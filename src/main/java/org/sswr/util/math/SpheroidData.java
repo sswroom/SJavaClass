@@ -19,6 +19,13 @@ public class SpheroidData
 		this.ellipsoid = ellipsoid;
 	}
 
+	public SpheroidData(SpheroidData data)
+	{
+		this.srid = data.srid;
+		this.name = data.name;
+		this.ellipsoid = data.ellipsoid.clone();
+	}
+
 	public int getSrid() {
 		return this.srid;
 	}

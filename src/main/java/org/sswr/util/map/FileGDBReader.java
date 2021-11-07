@@ -20,6 +20,7 @@ import org.sswr.util.math.Polygon;
 import org.sswr.util.math.Polyline;
 import org.sswr.util.math.Polyline3D;
 import org.sswr.util.math.Vector2D;
+import org.sswr.util.math.WKTWriter;
 
 public class FileGDBReader extends DBReader
 {
@@ -254,7 +255,7 @@ public class FileGDBReader extends DBReader
 		case 12:
 		case 4:
 			ofst = FileGDBUtil.readVarUInt(this.rowData, this.fieldOfst[colIndex], v);
-			return new String(this.rowData, ofst, ofst + (int)v.value, StandardCharsets.UTF_8);
+			return new String(this.rowData, ofst, (int)v.value, StandardCharsets.UTF_8);
 		case 5:
 			{
 				ZonedDateTime dt = FileGDBUtil.toDateTime(ByteTool.readDouble(this.rowData, this.fieldOfst[colIndex]));
@@ -777,7 +778,7 @@ public class FileGDBReader extends DBReader
 		case 12:
 		case 4:
 			ofst = FileGDBUtil.readVarUInt(this.rowData, this.fieldOfst[colIndex], v);
-			return new String(this.rowData, ofst, ofst + (int)v.value, StandardCharsets.UTF_8);
+			return new String(this.rowData, ofst, (int)v.value, StandardCharsets.UTF_8);
 		case 5:
 			return FileGDBUtil.toDateTime(ByteTool.readDouble(this.rowData, this.fieldOfst[colIndex]));
 		case 6:
