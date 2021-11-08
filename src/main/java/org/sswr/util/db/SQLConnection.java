@@ -1,6 +1,182 @@
 package org.sswr.util.db;
 
-public class SQLConnection
+import java.lang.reflect.Constructor;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import javax.persistence.Table;
+
+import org.sswr.util.data.FieldComparator;
+import org.sswr.util.data.StringUtil;
+import org.sswr.util.db.DBUtil.DBType;
+import org.sswr.util.io.LogLevel;
+import org.sswr.util.io.LogTool;
+
+public class SQLConnection extends DBConnection
 {
-	
+	private Connection conn;
+	private DBType dbType;
+	private String errorMsg;
+	private List<String> tableNames;
+
+	public SQLConnection(Connection conn, LogTool logger)
+	{
+		super(logger);
+		this.conn = conn;
+		this.logger = logger;
+		this.dbType = DBUtil.connGetDBType(this.conn);
+		this.errorMsg = null;
+		this.tableNames = null;
+	}
+
+	public void close()
+	{
+		if (this.conn != null)
+		{
+			try
+			{
+				this.conn.close();
+			}
+			catch (SQLException ex)
+			{
+				this.errorMsg = ex.getMessage();
+			}
+			this.conn = null;
+		}
+	}
+
+	public int getTableNames(List<String> names)
+	{
+//		names.addAll(this.tables.keySet());
+//		return this.tables.size();
+		return 0;
+	}
+
+	public DBReader getTableData(String name, int maxCnt, String sortString, QueryConditions<?> condition)
+	{
+/*		FileGDBTable table = this.tables.get(name);
+		if (table == null)
+		{
+			return null;
+		}
+		return table.openReader();*/
+		return null;
+	}
+
+	public <T> List<T> loadItemsAsList(Class<T> cls, Object parent, QueryConditions<T> conditions, List<String> joinFields, String sortString, int dataOfst, int dataCnt)
+	{
+		StringBuilder sb;
+		Table tableAnn = parseClassTable(cls);
+		if (tableAnn == null)
+		{
+			throw new IllegalArgumentException("Class annotation is not valid");
+		}
+
+		Constructor<T> constr = getConstructor(cls, parent);
+		FieldComparator<T> fieldComp;
+		if (sortString == null)
+		{
+			fieldComp = null;
+		}
+		else
+		{
+			try
+			{
+				fieldComp = new FieldComparator<T>(cls, sortString);
+			}
+			catch (NoSuchFieldException ex)
+			{
+				if (this.logger != null) this.logger.logException(ex);
+				throw new IllegalArgumentException("sortString is not valid ("+sortString+")");
+			}
+		}
+
+		ArrayList<DBColumnInfo> cols = new ArrayList<DBColumnInfo>();
+		ArrayList<DBColumnInfo> idCols = new ArrayList<DBColumnInfo>();
+		DBUtil.parseDBCols(cls, cols, idCols, joinFields);
+
+		if (cols.size() == 0)
+		{
+			throw new IllegalArgumentException("No selectable column found");
+		}
+
+		DBType dbType = DBUtil.connGetDBType(conn);
+		Map<String, DBColumnInfo> colsMap = dbCols2Map(cols);
+		sb = new StringBuilder();
+		PageStatus status = DBUtil.appendSelect(sb, cols, tableAnn, dbType, dataOfst, dataCnt);
+
+		List<QueryConditions<T>.Condition> clientConditions = new ArrayList<QueryConditions<T>.Condition>();
+		if (conditions != null)
+		{
+			String whereClause = conditions.toWhereClause(colsMap, dbType, clientConditions, DBUtil.MAX_SQL_ITEMS);
+			if (!StringUtil.isNullOrEmpty(whereClause))
+			{
+				sb.append(" where ");
+				sb.append(whereClause);
+			}
+		}
+		if (fieldComp != null)
+		{
+			sb.append(" order by ");
+			sb.append(fieldComp.toOrderClause(colsMap, dbType));
+		}
+		if ((dataOfst != 0 || dataCnt != 0) && status != PageStatus.SUCC)
+		{
+			if (dbType == DBType.MySQL)
+			{
+				sb.append(" LIMIT ");
+				sb.append(dataOfst);
+				sb.append(", ");
+				sb.append(dataCnt);
+				status = PageStatus.SUCC;
+			}
+			else if (dbType == DBType.MSSQL)
+			{
+				if (fieldComp != null)
+				{
+					sb.append(" offset ");
+					sb.append(dataOfst);
+					sb.append(" row fetch next ");
+					sb.append(dataCnt);
+					sb.append(" row only");
+					status = PageStatus.SUCC;
+				}
+			}
+		}
+		try
+		{
+			if (this.logger != null) this.logger.logMessage(sb.toString(), LogLevel.COMMAND);
+
+			PreparedStatement stmt = conn.prepareStatement(sb.toString());
+			DBReader r = new SQLReader(this.dbType, stmt.executeQuery());
+			List<T> retList = this.readAsList(r, status, dataOfst, dataCnt, parent, constr, cols, clientConditions);
+			r.close();
+			return retList;
+		}
+		catch (SQLException ex)
+		{
+			if (this.logger != null) this.logger.logException(ex);
+			return null;
+		}
+	}
+
+	public void closeReader(DBReader r)
+	{
+		r.close();
+	}
+
+	public void getErrorMsg(StringBuilder str)
+	{
+		if (this.errorMsg != null)
+			str.append(this.errorMsg);
+	}
+
+	public void reconnect()
+	{
+	}
+
 }

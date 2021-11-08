@@ -1,23 +1,34 @@
 package org.sswr.util.map;
 
+import java.lang.reflect.Constructor;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import javax.persistence.Table;
+
+import org.sswr.util.data.DataTools;
 import org.sswr.util.data.StringUtil;
+import org.sswr.util.db.DBColumnInfo;
+import org.sswr.util.db.DBConnection;
 import org.sswr.util.db.DBReader;
+import org.sswr.util.db.DBUtil;
+import org.sswr.util.db.PageStatus;
 import org.sswr.util.db.QueryConditions;
 import org.sswr.util.io.DirectoryPackage;
+import org.sswr.util.io.LogTool;
 import org.sswr.util.io.PackageFile;
 import org.sswr.util.io.StreamData;
 
-public class FileGDBDir
+public class FileGDBDir extends DBConnection
 {
 	private Map<String, FileGDBTable> tables;
 
-	private FileGDBDir(String sourceName)
+	private FileGDBDir(String sourceName, LogTool logger)
 	{
+		super(logger);
 		this.tables = new HashMap<String, FileGDBTable>();
 	}
 
@@ -37,14 +48,14 @@ public class FileGDBDir
 		return this.tables.size();
 	}
 
-	public DBReader getTableData(String name, int maxCnt, String ordering, QueryConditions<?> condition)
+	public DBReader getTableData(String name, List<String> colNames, int maxCnt, String ordering, QueryConditions<?> condition)
 	{
 		FileGDBTable table = this.tables.get(name);
 		if (table == null)
 		{
 			return null;
 		}
-		return table.openReader();
+		return table.openReader(colNames);
 	}
 
 	public void closeReader(DBReader r)
@@ -65,7 +76,7 @@ public class FileGDBDir
 		this.tables.put(table.getName(), table);
 	}
 
-	public static FileGDBDir openDir(PackageFile pkg)
+	public static FileGDBDir openDir(PackageFile pkg, LogTool logger)
 	{
 		StreamData fd = pkg.getItemStmData("a00000001.gdbtable");
 		FileGDBTable table;
@@ -80,13 +91,13 @@ public class FileGDBDir
 			table.close();
 			return null;
 		}
-		FileGDBReader reader = (FileGDBReader)table.openReader();
+		FileGDBReader reader = (FileGDBReader)table.openReader(null);
 		if (reader == null)
 		{
 			table.close();
 			return null;
 		}
-		FileGDBDir dir = new FileGDBDir(pkg.getSourceNameObj());
+		FileGDBDir dir = new FileGDBDir(pkg.getSourceNameObj(), logger);
 		dir.addTable(table);
 		while (reader.readNext())
 		{
@@ -117,9 +128,27 @@ public class FileGDBDir
 		return dir;
 	}
 
-	public static FileGDBDir openDir(String pathName)
+	public static FileGDBDir openDir(String pathName, LogTool logger)
 	{
 		DirectoryPackage pkg = new DirectoryPackage(pathName);
-		return openDir(pkg);
+		return openDir(pkg, logger);
+	}
+
+	@Override
+	public <T> List<T> loadItemsAsList(Class<T> cls, Object parent, QueryConditions<T> conditions, List<String> joinFields, String sortString, int dataOfst, int dataCnt)
+	{
+		Table tableAnn = parseClassTable(cls);
+		if (tableAnn == null)
+		{
+			throw new IllegalArgumentException("Class annotation is not valid");
+		}
+		Constructor<T> constr = getConstructor(cls, parent);
+		ArrayList<DBColumnInfo> cols = new ArrayList<DBColumnInfo>();
+		ArrayList<DBColumnInfo> idCols = new ArrayList<DBColumnInfo>();
+		DBUtil.parseDBCols(cls, cols, idCols, joinFields);
+		DBReader r = this.getTableData(tableAnn.name(), DataTools.createValueList(String.class, cols, "colName", null), 0, null, conditions);
+		List<T> retList = this.readAsList(r, PageStatus.NO_PAGE, dataOfst, dataCnt, parent, constr, cols, conditions.toList());
+		r.close();
+		return retList;
 	}
 }

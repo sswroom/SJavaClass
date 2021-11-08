@@ -1042,6 +1042,11 @@ public class QueryConditions<T>
 		return this.conditionList.get(index);
 	}
 
+	public List<Condition> toList()
+	{
+		return this.conditionList;
+	}
+
 	public static String getCondStr(CompareCondition cond)
 	{
 		switch (cond)

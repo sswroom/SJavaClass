@@ -2,8 +2,11 @@ package org.sswr.util.map;
 
 import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.sswr.util.data.ByteTool;
 import org.sswr.util.data.DateTimeUtil;
@@ -32,17 +35,32 @@ public class FileGDBReader extends DBReader
 	private int objectId;
 	private boolean []fieldNull;
 	private int []fieldOfst;
+	private List<Integer> colList;
 
-	private FileGDBFieldInfo getField(int colIndex)
+	private FileGDBFieldInfo getField(int fieldIndex)
 	{
 		List<FileGDBFieldInfo> fields = this.tableInfo.getFields();
-		if (colIndex < 0 || colIndex >= fields.size())
+		if (fieldIndex < 0 || fieldIndex >= fields.size())
 		{
 			return null;
 		}
-		return fields.get(colIndex);
+		return fields.get(fieldIndex);
 	}
-	public FileGDBReader(StreamData fd, long ofst, FileGDBTableInfo tableInfo)
+
+	private int getFieldIndex(int colIndex)
+	{
+		if (this.colList == null || this.colList.size() == 0)
+		{
+			return colIndex;
+		}
+		if (colIndex < 0 || colIndex >= this.colList.size())
+		{
+			return -1;
+		}
+		return this.colList.get(colIndex);
+	}
+
+	public FileGDBReader(StreamData fd, long ofst, FileGDBTableInfo tableInfo, List<String> colList)
 	{
 		this.fd = fd.getPartialData(ofst, fd.getDataSize() - ofst);
 		this.currOfst = 0;
@@ -53,6 +71,34 @@ public class FileGDBReader extends DBReader
 		int fieldCnt = tableInfo.getFields().size();
 		this.fieldNull = new boolean[fieldCnt];
 		this.fieldOfst = new int[fieldCnt];
+		if (colList == null || colList.size() == 0)
+		{
+			this.colList = null;
+			return;
+		}
+		List<FileGDBFieldInfo> fields = this.tableInfo.getFields();
+		Map<String, Integer> fieldMap = new HashMap<String, Integer>();
+		int i = 0;
+		int j = fields.size();
+		while (i < j)
+		{
+			fieldMap.put(fields.get(i).getName().toUpperCase(), i);
+			i++;
+		}
+		i = 0;
+		j = colList.size();
+		this.colList = new ArrayList<Integer>();
+		Integer fieldIndex;
+		while (i < j)
+		{
+			fieldIndex = fieldMap.get(colList.get(i).toUpperCase());
+			if (fieldIndex == null)
+			{
+				throw new IllegalArgumentException("Column name "+colList.get(i)+" not found");
+			}
+			this.colList.add(fieldIndex);
+			i++;
+		}
 	}
 
 	public void close()
@@ -163,7 +209,14 @@ public class FileGDBReader extends DBReader
 
 	public int colCount()
 	{
-		return this.tableInfo.getFields().size();
+		if (this.colList == null)
+		{
+			return this.tableInfo.getFields().size();
+		}
+		else
+		{
+			return this.colList.size();
+		}
 	}
 
 	public int getRowChanged()
@@ -177,23 +230,24 @@ public class FileGDBReader extends DBReader
 		{
 			return 0;
 		}
-		FileGDBFieldInfo field = this.getField(colIndex);
-		if (field == null || this.fieldNull[colIndex])
+		int fieldIndex = getFieldIndex(colIndex);
+		FileGDBFieldInfo field = this.getField(fieldIndex);
+		if (field == null || this.fieldNull[fieldIndex])
 		{
 			return 0;
 		}
 		switch (field.getFieldType())
 		{
 		case 0:
-			return ByteTool.readInt16(this.rowData, this.fieldOfst[colIndex]);
+			return ByteTool.readInt16(this.rowData, this.fieldOfst[fieldIndex]);
 		case 1:
-			return ByteTool.readInt32(this.rowData, this.fieldOfst[colIndex]);
+			return ByteTool.readInt32(this.rowData, this.fieldOfst[fieldIndex]);
 		case 2:
-			return (int)ByteTool.readSingle(this.rowData, this.fieldOfst[colIndex]);
+			return (int)ByteTool.readSingle(this.rowData, this.fieldOfst[fieldIndex]);
 		case 3:
-			return (int)ByteTool.readDouble(this.rowData, this.fieldOfst[colIndex]);
+			return (int)ByteTool.readDouble(this.rowData, this.fieldOfst[fieldIndex]);
 		case 5:
-			return (int)ByteTool.readDouble(this.rowData, this.fieldOfst[colIndex]);
+			return (int)ByteTool.readDouble(this.rowData, this.fieldOfst[fieldIndex]);
 		case 6:
 			return this.objectId;
 		}
@@ -206,23 +260,24 @@ public class FileGDBReader extends DBReader
 		{
 			return 0;
 		}
-		FileGDBFieldInfo field = this.getField(colIndex);
-		if (field == null || this.fieldNull[colIndex])
+		int fieldIndex = getFieldIndex(colIndex);
+		FileGDBFieldInfo field = this.getField(fieldIndex);
+		if (field == null || this.fieldNull[fieldIndex])
 		{
 			return 0;
 		}
 		switch (field.getFieldType())
 		{
 		case 0:
-			return ByteTool.readInt16(this.rowData, this.fieldOfst[colIndex]);
+			return ByteTool.readInt16(this.rowData, this.fieldOfst[fieldIndex]);
 		case 1:
-			return ByteTool.readInt32(this.rowData, this.fieldOfst[colIndex]);
+			return ByteTool.readInt32(this.rowData, this.fieldOfst[fieldIndex]);
 		case 2:
-			return (long)ByteTool.readSingle(this.rowData, this.fieldOfst[colIndex]);
+			return (long)ByteTool.readSingle(this.rowData, this.fieldOfst[fieldIndex]);
 		case 3:
-			return (long)ByteTool.readDouble(this.rowData, this.fieldOfst[colIndex]);
+			return (long)ByteTool.readDouble(this.rowData, this.fieldOfst[fieldIndex]);
 		case 5:
-			return (long)ByteTool.readDouble(this.rowData, this.fieldOfst[colIndex]);
+			return (long)ByteTool.readDouble(this.rowData, this.fieldOfst[fieldIndex]);
 		case 6:
 			return this.objectId;
 		}
@@ -235,8 +290,9 @@ public class FileGDBReader extends DBReader
 		{
 			return null;
 		}
-		FileGDBFieldInfo field = this.getField(colIndex);
-		if (field == null || this.fieldNull[colIndex])
+		int fieldIndex = getFieldIndex(colIndex);
+		FileGDBFieldInfo field = this.getField(fieldIndex);
+		if (field == null || this.fieldNull[fieldIndex])
 		{
 			return null;
 		}
@@ -245,27 +301,27 @@ public class FileGDBReader extends DBReader
 		switch (field.getFieldType())
 		{
 		case 0:
-			return String.valueOf(ByteTool.readInt16(this.rowData, this.fieldOfst[colIndex]));
+			return String.valueOf(ByteTool.readInt16(this.rowData, this.fieldOfst[fieldIndex]));
 		case 1:
-			return String.valueOf(ByteTool.readInt32(this.rowData, this.fieldOfst[colIndex]));
+			return String.valueOf(ByteTool.readInt32(this.rowData, this.fieldOfst[fieldIndex]));
 		case 2:
-			return String.valueOf(ByteTool.readSingle(this.rowData, this.fieldOfst[colIndex]));
+			return String.valueOf(ByteTool.readSingle(this.rowData, this.fieldOfst[fieldIndex]));
 		case 3:
-			return String.valueOf(ByteTool.readDouble(this.rowData, this.fieldOfst[colIndex]));
+			return String.valueOf(ByteTool.readDouble(this.rowData, this.fieldOfst[fieldIndex]));
 		case 12:
 		case 4:
-			ofst = FileGDBUtil.readVarUInt(this.rowData, this.fieldOfst[colIndex], v);
+			ofst = FileGDBUtil.readVarUInt(this.rowData, this.fieldOfst[fieldIndex], v);
 			return new String(this.rowData, ofst, (int)v.value, StandardCharsets.UTF_8);
 		case 5:
 			{
-				ZonedDateTime dt = FileGDBUtil.toDateTime(ByteTool.readDouble(this.rowData, this.fieldOfst[colIndex]));
+				ZonedDateTime dt = FileGDBUtil.toDateTime(ByteTool.readDouble(this.rowData, this.fieldOfst[fieldIndex]));
 				return DateTimeUtil.toString(dt, "yyyy-MM-dd HH:mm:ss.fff");
 			}
 		case 6:
 			return String.valueOf(this.objectId);
 		case 7:
 			{
-				Vector2D vec = this.getVector(colIndex);
+				Vector2D vec = this.getVector(fieldIndex);
 				if (vec != null)
 				{
 					WKTWriter writer = new WKTWriter();
@@ -275,13 +331,13 @@ public class FileGDBReader extends DBReader
 			return null;
 		case 8:
 			{
-				byte[] binBuff = this.getBinary(colIndex);
+				byte[] binBuff = this.getBinary(fieldIndex);
 				return StringUtil.toHex(binBuff, 0, binBuff.length, (char)0);
 			}
 		case 10:
 		case 11:
 			{
-				return new UUID(this.rowData, this.fieldOfst[colIndex]).toString();
+				return new UUID(this.rowData, this.fieldOfst[fieldIndex]).toString();
 			}
 		}
 		return null;
@@ -293,19 +349,20 @@ public class FileGDBReader extends DBReader
 		{
 			return null;
 		}
-		FileGDBFieldInfo field = this.getField(colIndex);
+		int fieldIndex = getFieldIndex(colIndex);
+		FileGDBFieldInfo field = this.getField(fieldIndex);
 		if (field == null)
 		{
 			return null;
 		}
-		else if (this.fieldNull[colIndex])
+		else if (this.fieldNull[fieldIndex])
 		{
 			return null;
 		}
 		switch (field.getFieldType())
 		{
 		case 5:
-			return FileGDBUtil.toDateTime(ByteTool.readDouble(this.rowData, this.fieldOfst[colIndex]));
+			return FileGDBUtil.toDateTime(ByteTool.readDouble(this.rowData, this.fieldOfst[fieldIndex]));
 		}
 		return null;
 	}
@@ -316,23 +373,24 @@ public class FileGDBReader extends DBReader
 		{
 			return 0;
 		}
-		FileGDBFieldInfo field = this.getField(colIndex);
-		if (field == null || this.fieldNull[colIndex])
+		int fieldIndex = getFieldIndex(colIndex);
+		FileGDBFieldInfo field = this.getField(fieldIndex);
+		if (field == null || this.fieldNull[fieldIndex])
 		{
 			return 0;
 		}
 		switch (field.getFieldType())
 		{
 		case 0:
-			return ByteTool.readInt16(this.rowData, this.fieldOfst[colIndex]);
+			return ByteTool.readInt16(this.rowData, this.fieldOfst[fieldIndex]);
 		case 1:
-			return ByteTool.readInt32(this.rowData, this.fieldOfst[colIndex]);
+			return ByteTool.readInt32(this.rowData, this.fieldOfst[fieldIndex]);
 		case 2:
-			return ByteTool.readSingle(this.rowData, this.fieldOfst[colIndex]);
+			return ByteTool.readSingle(this.rowData, this.fieldOfst[fieldIndex]);
 		case 3:
-			return ByteTool.readDouble(this.rowData, this.fieldOfst[colIndex]);
+			return ByteTool.readDouble(this.rowData, this.fieldOfst[fieldIndex]);
 		case 5:
-			return ByteTool.readDouble(this.rowData, this.fieldOfst[colIndex]);
+			return ByteTool.readDouble(this.rowData, this.fieldOfst[fieldIndex]);
 		case 6:
 			return this.objectId;
 		}
@@ -350,8 +408,9 @@ public class FileGDBReader extends DBReader
 		{
 			return null;
 		}
-		FileGDBFieldInfo field = this.getField(colIndex);
-		if (field == null || this.fieldNull[colIndex])
+		int fieldIndex = getFieldIndex(colIndex);
+		FileGDBFieldInfo field = this.getField(fieldIndex);
+		if (field == null || this.fieldNull[fieldIndex])
 		{
 			return null;
 		}
@@ -360,19 +419,19 @@ public class FileGDBReader extends DBReader
 		switch (field.getFieldType())
 		{
 		case 0:
-			return Arrays.copyOfRange(this.rowData, this.fieldOfst[colIndex], this.fieldOfst[colIndex] + 2);
+			return Arrays.copyOfRange(this.rowData, this.fieldOfst[fieldIndex], this.fieldOfst[fieldIndex] + 2);
 		case 1:
-			return Arrays.copyOfRange(this.rowData, this.fieldOfst[colIndex], this.fieldOfst[colIndex] + 4);
+			return Arrays.copyOfRange(this.rowData, this.fieldOfst[fieldIndex], this.fieldOfst[fieldIndex] + 4);
 		case 2:
-			return Arrays.copyOfRange(this.rowData, this.fieldOfst[colIndex], this.fieldOfst[colIndex] + 4);
+			return Arrays.copyOfRange(this.rowData, this.fieldOfst[fieldIndex], this.fieldOfst[fieldIndex] + 4);
 		case 3:
-			return Arrays.copyOfRange(this.rowData, this.fieldOfst[colIndex], this.fieldOfst[colIndex] + 8);
+			return Arrays.copyOfRange(this.rowData, this.fieldOfst[fieldIndex], this.fieldOfst[fieldIndex] + 8);
 		case 12:
 		case 4:
-			ofst = FileGDBUtil.readVarUInt(this.rowData, this.fieldOfst[colIndex], v);
+			ofst = FileGDBUtil.readVarUInt(this.rowData, this.fieldOfst[fieldIndex], v);
 			return Arrays.copyOfRange(this.rowData, ofst, ofst + (int)v.value);
 		case 5:
-			return Arrays.copyOfRange(this.rowData, this.fieldOfst[colIndex], this.fieldOfst[colIndex] + 8);
+			return Arrays.copyOfRange(this.rowData, this.fieldOfst[fieldIndex], this.fieldOfst[fieldIndex] + 8);
 		case 6:
 			{
 				byte []ret = new byte[4];
@@ -380,14 +439,14 @@ public class FileGDBReader extends DBReader
 				return ret;
 			}
 		case 7:
-			ofst = FileGDBUtil.readVarUInt(this.rowData, this.fieldOfst[colIndex], v);
+			ofst = FileGDBUtil.readVarUInt(this.rowData, this.fieldOfst[fieldIndex], v);
 			return Arrays.copyOfRange(this.rowData, ofst, ofst + (int)v.value);
 		case 8:
-			ofst = FileGDBUtil.readVarUInt(this.rowData, this.fieldOfst[colIndex], v);
+			ofst = FileGDBUtil.readVarUInt(this.rowData, this.fieldOfst[fieldIndex], v);
 			return Arrays.copyOfRange(this.rowData, ofst, ofst + (int)v.value);
 		case 10:
 		case 11:
-			return Arrays.copyOfRange(this.rowData, this.fieldOfst[colIndex], this.fieldOfst[colIndex] + 16);
+			return Arrays.copyOfRange(this.rowData, this.fieldOfst[fieldIndex], this.fieldOfst[fieldIndex] + 16);
 		}
 		return null;
 	}
@@ -398,8 +457,9 @@ public class FileGDBReader extends DBReader
 		{
 			return null;
 		}
-		FileGDBFieldInfo field = this.getField(colIndex);
-		if (field == null || this.fieldNull[colIndex])
+		int fieldIndex = getFieldIndex(colIndex);
+		FileGDBFieldInfo field = this.getField(fieldIndex);
+		if (field == null || this.fieldNull[fieldIndex])
 		{
 			return null;
 		}
@@ -410,7 +470,7 @@ public class FileGDBReader extends DBReader
 		SharedLong geometryLen = new SharedLong();
 		SharedLong geometryType = new SharedLong();
 		int ofst;
-		ofst = FileGDBUtil.readVarUInt(this.rowData, this.fieldOfst[colIndex], geometryLen);
+		ofst = FileGDBUtil.readVarUInt(this.rowData, this.fieldOfst[fieldIndex], geometryLen);
 		ofst = FileGDBUtil.readVarUInt(this.rowData, ofst, geometryType);
 		double x;
 		double y;
@@ -758,8 +818,9 @@ public class FileGDBReader extends DBReader
 		{
 			return null;
 		}
-		FileGDBFieldInfo field = this.getField(colIndex);
-		if (field == null || this.fieldNull[colIndex])
+		int fieldIndex = getFieldIndex(colIndex);
+		FileGDBFieldInfo field = this.getField(fieldIndex);
+		if (field == null || this.fieldNull[fieldIndex])
 		{
 			return null;
 		}
@@ -768,19 +829,19 @@ public class FileGDBReader extends DBReader
 		switch (field.getFieldType())
 		{
 		case 0:
-			return ByteTool.readInt16(this.rowData, this.fieldOfst[colIndex]);
+			return ByteTool.readInt16(this.rowData, this.fieldOfst[fieldIndex]);
 		case 1:
-			return ByteTool.readInt32(this.rowData, this.fieldOfst[colIndex]);
+			return ByteTool.readInt32(this.rowData, this.fieldOfst[fieldIndex]);
 		case 2:
-			return ByteTool.readSingle(this.rowData, this.fieldOfst[colIndex]);
+			return ByteTool.readSingle(this.rowData, this.fieldOfst[fieldIndex]);
 		case 3:
-			return ByteTool.readDouble(this.rowData, this.fieldOfst[colIndex]);
+			return ByteTool.readDouble(this.rowData, this.fieldOfst[fieldIndex]);
 		case 12:
 		case 4:
-			ofst = FileGDBUtil.readVarUInt(this.rowData, this.fieldOfst[colIndex], v);
+			ofst = FileGDBUtil.readVarUInt(this.rowData, this.fieldOfst[fieldIndex], v);
 			return new String(this.rowData, ofst, (int)v.value, StandardCharsets.UTF_8);
 		case 5:
-			return FileGDBUtil.toDateTime(ByteTool.readDouble(this.rowData, this.fieldOfst[colIndex]));
+			return FileGDBUtil.toDateTime(ByteTool.readDouble(this.rowData, this.fieldOfst[fieldIndex]));
 		case 6:
 			return this.objectId;
 		case 7:
@@ -789,23 +850,25 @@ public class FileGDBReader extends DBReader
 			return this.getBinary(colIndex);
 		case 10:
 		case 11:
-			return new UUID(this.rowData, this.fieldOfst[colIndex]);
+			return new UUID(this.rowData, this.fieldOfst[fieldIndex]);
 		}
 		return null;
 	}
 
 	public boolean isNull(int colIndex)
 	{
-		if (colIndex >= this.tableInfo.getFields().size())
+		int fieldIndex = getFieldIndex(colIndex);
+		if (fieldIndex < 0 || fieldIndex >= this.tableInfo.getFields().size())
 		{
 			return true;
 		}
-		return this.fieldNull[colIndex];
+		return this.fieldNull[fieldIndex];
 	}
 
 	public String getName(int colIndex)
 	{
-		FileGDBFieldInfo field = this.getField(colIndex);
+		int fieldIndex = getFieldIndex(colIndex);
+		FileGDBFieldInfo field = this.getField(fieldIndex);
 		if (field != null)
 		{
 			return field.getName();
@@ -815,7 +878,8 @@ public class FileGDBReader extends DBReader
 
 	public ColumnType getColumnType(int colIndex)
 	{
-		FileGDBFieldInfo field = this.getField(colIndex);
+		int fieldIndex = getFieldIndex(colIndex);
+		FileGDBFieldInfo field = this.getField(fieldIndex);
 		if (field != null)
 		{
 			switch (field.getFieldType())
@@ -855,14 +919,15 @@ public class FileGDBReader extends DBReader
 	
 	public ColumnDef getColumnDef(int colIndex)
 	{
-		FileGDBFieldInfo field = this.getField(colIndex);
+		int fieldIndex = getFieldIndex(colIndex);
+		FileGDBFieldInfo field = this.getField(fieldIndex);
 		if (field == null)
 		{
 			return null;
 		}
 		ColumnDef colDef = new ColumnDef(field.getName());
 		colDef.setColSize(field.getFieldSize());
-		colDef.setColType(this.getColumnType(colIndex));
+		colDef.setColType(this.getColumnType(fieldIndex));
 		colDef.setNotNull((field.getFlags() & 1) == 0);
 		colDef.setPk(field.getFieldType() == 6);
 		colDef.setAutoInc(field.getFieldType() == 6);

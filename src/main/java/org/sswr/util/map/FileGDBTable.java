@@ -1,5 +1,7 @@
 package org.sswr.util.map;
 
+import java.util.List;
+
 import org.sswr.util.data.ByteTool;
 import org.sswr.util.db.DBReader;
 import org.sswr.util.io.StreamData;
@@ -57,12 +59,12 @@ public class FileGDBTable
 		return this.tableName;
 	}
 
-	public DBReader openReader()
+	public DBReader openReader(List<String> colList)
 	{
 		if (this.tableInfo == null || this.fd == null)
 		{
 			return null;
 		}
-		return new FileGDBReader(this.fd, this.dataOfst, this.tableInfo);
+		return new FileGDBReader(this.fd, this.dataOfst, this.tableInfo, colList);
 	}
 }
