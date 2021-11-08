@@ -9,7 +9,9 @@ import java.util.Map;
 
 import javax.persistence.Table;
 
+import org.sswr.util.data.ArtificialQuickSort;
 import org.sswr.util.data.DataTools;
+import org.sswr.util.data.FieldComparator;
 import org.sswr.util.data.StringUtil;
 import org.sswr.util.db.DBColumnInfo;
 import org.sswr.util.db.DBConnection;
@@ -147,7 +149,65 @@ public class FileGDBDir extends DBConnection
 		ArrayList<DBColumnInfo> idCols = new ArrayList<DBColumnInfo>();
 		DBUtil.parseDBCols(cls, cols, idCols, joinFields);
 		DBReader r = this.getTableData(tableAnn.name(), DataTools.createValueList(String.class, cols, "colName", null), 0, null, conditions);
-		List<T> retList = this.readAsList(r, PageStatus.NO_PAGE, dataOfst, dataCnt, parent, constr, cols, conditions.toList());
+		List<T> retList;
+		List<QueryConditions<T>.Condition> clientConditions;
+		if (conditions == null)
+		{
+			clientConditions = List.of();
+		}
+		else
+		{
+			clientConditions = conditions.toList();
+		}
+
+		if (sortString != null)
+		{
+			FieldComparator<T> fieldComp;
+			try
+			{
+				fieldComp = new FieldComparator<T>(cls, sortString);
+			}
+			catch (NoSuchFieldException ex)
+			{
+				if (this.logger != null) this.logger.logException(ex);
+				throw new IllegalArgumentException("sortString is not valid ("+sortString+")");
+			}
+			retList = this.readAsList(r, PageStatus.NO_PAGE, 0, 0, parent, constr, cols, clientConditions);
+			ArtificialQuickSort.sort(retList, fieldComp);
+			if (dataOfst > 0)
+			{
+				if (dataOfst >= retList.size())
+				{
+					retList.clear();
+				}
+				else
+				{
+					ArrayList<T> remList = new ArrayList<T>();
+					int i = 0;
+					while (i < dataOfst)
+					{
+						remList.add(retList.get(i));
+						i++;
+					}
+					retList.removeAll(remList);
+				}
+			}
+			if (dataCnt > 0)
+			{
+				if (dataCnt < retList.size())
+				{
+					int i = retList.size();
+					while (i-- > dataCnt)
+					{
+						retList.remove(i);
+					}
+				}
+			}
+		}
+		else
+		{
+			retList = this.readAsList(r, PageStatus.NO_PAGE, dataOfst, dataCnt, parent, constr, cols, clientConditions);
+		}
 		r.close();
 		return retList;
 	}

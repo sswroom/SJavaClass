@@ -264,7 +264,10 @@ public abstract class DBConnection
 		}
 		else if (status == PageStatus.NO_PAGE)
 		{
-
+			if (dataCnt == 0)
+			{
+				dataCnt = Integer.MAX_VALUE;
+			}
 		}
 
 		while (r.readNext())
