@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -21,11 +22,11 @@ import org.sswr.util.io.LogLevel;
 import org.sswr.util.io.LogTool;
 import org.sswr.util.math.Vector2D;
 
-public abstract class DBConnection
+public abstract class ReadingConnection
 {
 	protected LogTool logger;
 	
-	protected DBConnection(LogTool logger)
+	protected ReadingConnection(LogTool logger)
 	{
 		this.logger = logger;
 	}
@@ -317,5 +318,69 @@ public abstract class DBConnection
 		return retList;
 	}
 
+	protected <T> Map<Integer, T> readAsMap(DBReader r, Object parent, Constructor<T> constr, List<DBColumnInfo> cols, List<QueryConditions<T>.Condition> clientConditions)
+	{
+		Map<Integer, T> retMap = new HashMap<Integer, T>();
+		while (r.readNext())
+		{
+			try
+			{
+				T obj;
+				if (parent == null)
+				{
+					obj = constr.newInstance(new Object[0]);
+				}
+				else
+				{
+					obj = constr.newInstance(parent);
+				}
+				Integer id = this.fillColVals(r, obj, cols);
+				if (id != null && QueryConditions.objectValid(obj, clientConditions))
+				{
+					retMap.put(id, obj);
+				}
+			}
+			catch (InvocationTargetException ex)
+			{
+				if (this.logger != null) this.logger.logException(ex);
+			}
+			catch (InstantiationException ex)
+			{
+				if (this.logger != null) this.logger.logException(ex);
+			}
+			catch (IllegalAccessException ex)
+			{
+				if (this.logger != null) this.logger.logException(ex);
+			}
+		}
+		return retMap;
+	}
+
+	public <T> Map<Integer, T> loadItemsById(Class<T> cls, Set<Integer> idSet, List<String> joinFields)
+	{
+		ArrayList<DBColumnInfo> cols = new ArrayList<DBColumnInfo>();
+		ArrayList<DBColumnInfo> idCols = new ArrayList<DBColumnInfo>();
+		DBUtil.parseDBCols(cls, cols, idCols, joinFields);
+		if (idCols.size() > 1)
+		{
+			throw new IllegalArgumentException("Multiple id column found");
+		}
+		if (idCols.size() == 0)
+		{
+			throw new IllegalArgumentException("No Id column found");
+		}
+		try
+		{
+			QueryConditions<T> queryConditions = new QueryConditions<T>(cls).intIn(idCols.get(0).setter.getField().getName(), idSet);
+			return this.loadItemsIClass(cls, null, queryConditions, joinFields);
+		}
+		catch (NoSuchFieldException ex)
+		{
+			if (this.logger != null) this.logger.logException(ex);
+			return null;
+		}
+	}
+
 	public abstract <T> List<T> loadItemsAsList(Class<T> cls, Object parent, QueryConditions<T> conditions, List<String> joinFields, String sortString, int dataOfst, int dataCnt);
+	public abstract <T> Map<Integer, T> loadItemsIClass(Class<T> cls, Object parent, QueryConditions<T> conditions, List<String> joinFields);
 }

@@ -14,7 +14,7 @@ import org.sswr.util.data.DataTools;
 import org.sswr.util.data.FieldComparator;
 import org.sswr.util.data.StringUtil;
 import org.sswr.util.db.DBColumnInfo;
-import org.sswr.util.db.DBConnection;
+import org.sswr.util.db.ReadingConnection;
 import org.sswr.util.db.DBReader;
 import org.sswr.util.db.DBUtil;
 import org.sswr.util.db.PageStatus;
@@ -24,7 +24,7 @@ import org.sswr.util.io.LogTool;
 import org.sswr.util.io.PackageFile;
 import org.sswr.util.io.StreamData;
 
-public class FileGDBDir extends DBConnection
+public class FileGDBDir extends ReadingConnection
 {
 	private Map<String, FileGDBTable> tables;
 
@@ -210,5 +210,34 @@ public class FileGDBDir extends DBConnection
 		}
 		r.close();
 		return retList;
+	}
+
+	public <T> Map<Integer, T> loadItemsIClass(Class<T> cls, Object parent, QueryConditions<T> conditions, List<String> joinFields)
+	{
+		Table tableAnn = parseClassTable(cls);
+		if (tableAnn == null)
+		{
+			throw new IllegalArgumentException("Class annotation is not valid");
+		}
+		Constructor<T> constr = getConstructor(cls, parent);
+		ArrayList<DBColumnInfo> cols = new ArrayList<DBColumnInfo>();
+		ArrayList<DBColumnInfo> idCols = new ArrayList<DBColumnInfo>();
+		DBUtil.parseDBCols(cls, cols, idCols, joinFields);
+		if (cols.size() == 0)
+		{
+			throw new IllegalArgumentException("No selectable column found");
+		}
+		if (idCols.size() > 1)
+		{
+			throw new IllegalArgumentException("Multiple id column found");
+		}
+		if (idCols.size() == 0)
+		{
+			throw new IllegalArgumentException("No Id column found");
+		}
+		DBReader r = this.getTableData(tableAnn.name(), DataTools.createValueList(String.class, cols, "colName", null), 0, null, conditions);
+		Map<Integer, T> retMap = this.readAsMap(r, parent, constr, cols, conditions.toList());
+		r.close();
+		return retMap;
 	}
 }

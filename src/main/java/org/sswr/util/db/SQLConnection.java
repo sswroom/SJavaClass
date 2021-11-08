@@ -16,7 +16,7 @@ import org.sswr.util.db.DBUtil.DBType;
 import org.sswr.util.io.LogLevel;
 import org.sswr.util.io.LogTool;
 
-public class SQLConnection extends DBConnection
+public class SQLConnection extends ReadingConnection
 {
 	private Connection conn;
 	private DBType dbType;
@@ -104,10 +104,9 @@ public class SQLConnection extends DBConnection
 			throw new IllegalArgumentException("No selectable column found");
 		}
 
-		DBType dbType = DBUtil.connGetDBType(conn);
 		Map<String, DBColumnInfo> colsMap = dbCols2Map(cols);
 		sb = new StringBuilder();
-		PageStatus status = DBUtil.appendSelect(sb, cols, tableAnn, dbType, dataOfst, dataCnt);
+		PageStatus status = DBUtil.appendSelect(sb, cols, tableAnn, this.dbType, dataOfst, dataCnt);
 
 		List<QueryConditions<T>.Condition> clientConditions = new ArrayList<QueryConditions<T>.Condition>();
 		if (conditions != null)
@@ -156,6 +155,65 @@ public class SQLConnection extends DBConnection
 			List<T> retList = this.readAsList(r, status, dataOfst, dataCnt, parent, constr, cols, clientConditions);
 			r.close();
 			return retList;
+		}
+		catch (SQLException ex)
+		{
+			if (this.logger != null) this.logger.logException(ex);
+			return null;
+		}
+	}
+
+	public <T> Map<Integer, T> loadItemsIClass(Class<T> cls, Object parent, QueryConditions<T> conditions, List<String> joinFields)
+	{
+		StringBuilder sb;
+		Table tableAnn = parseClassTable(cls);
+		if (tableAnn == null)
+		{
+			throw new IllegalArgumentException("Class annotation is not valid");
+		}
+
+		Constructor<T> constr = getConstructor(cls, parent);
+
+		ArrayList<DBColumnInfo> cols = new ArrayList<DBColumnInfo>();
+		ArrayList<DBColumnInfo> idCols = new ArrayList<DBColumnInfo>();
+		DBUtil.parseDBCols(cls, cols, idCols, joinFields);
+
+		if (cols.size() == 0)
+		{
+			throw new IllegalArgumentException("No selectable column found");
+		}
+		if (idCols.size() > 1)
+		{
+			throw new IllegalArgumentException("Multiple id column found");
+		}
+		if (idCols.size() == 0)
+		{
+			throw new IllegalArgumentException("No Id column found");
+		}
+
+		sb = new StringBuilder();
+		DBUtil.appendSelect(sb, cols, tableAnn, this.dbType, 0, 0);
+
+		List<QueryConditions<T>.Condition> clientConditions = new ArrayList<QueryConditions<T>.Condition>();
+		if (conditions != null)
+		{
+			Map<String, DBColumnInfo> colsMap = dbCols2Map(cols);
+			String whereClause = conditions.toWhereClause(colsMap, dbType, clientConditions, DBUtil.MAX_SQL_ITEMS);
+			if (!StringUtil.isNullOrEmpty(whereClause))
+			{
+				sb.append(" where ");
+				sb.append(whereClause);
+			}
+		}
+		try
+		{
+			if (this.logger != null) this.logger.logMessage(sb.toString(), LogLevel.COMMAND);
+
+			PreparedStatement stmt = conn.prepareStatement(sb.toString());
+			DBReader r = new SQLReader(this.dbType, stmt.executeQuery());
+			Map<Integer, T> retMap = this.readAsMap(r, parent, constr, cols, clientConditions);
+			r.close();
+			return retMap;
 		}
 		catch (SQLException ex)
 		{
