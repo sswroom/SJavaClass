@@ -15,7 +15,7 @@ public class ArcGISTools {
 		dbName = DBUtil.uncol(dbName);
 		tableName = DBUtil.uncol(tableName);
 		DBType dbType = DBUtil.connGetDBType(conn);
-		if (dbType == DBType.DT_MSSQL)
+		if (dbType == DBType.MSSQL)
 		{
 			try
 			{

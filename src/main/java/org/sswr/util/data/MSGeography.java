@@ -5,6 +5,9 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.PrecisionModel;
+import org.sswr.util.math.Point2D;
+import org.sswr.util.math.Polygon;
+import org.sswr.util.math.Vector2D;
 
 public class MSGeography
 {
@@ -73,6 +76,77 @@ public class MSGeography
 					}
 					return factory.createLinearRing(coords);
 
+				}
+			}
+		}
+		return null;
+	}
+
+	public static Vector2D parseBinaryAsVector2D(byte[] buff)
+	{
+		if (buff == null || buff.length < 6)
+		{
+			return null;
+		}
+		int srid = ByteTool.readInt32(buff, 0);
+		if (buff[4] == 1 || buff[4] == 2) //version 1 or 2
+		{
+			if (buff[5] == 0x0C) //Point 2D
+			{
+				if (buff.length < 22)
+				{
+					return null;
+				}
+				Point2D pt = new Point2D(srid, ByteTool.readDouble(buff, 6), ByteTool.readDouble(buff, 14));
+				return pt;
+			}
+			else if (buff[5] == 4) //Polygon 2D
+			{
+				int nPoints;
+				int nFigures;
+				int nShapes;
+				int pointInd;
+				int shapeInd;
+				int ind;
+				if (buff.length < 10)
+				{
+					return null;
+				}
+				nPoints = ByteTool.readInt32(buff, 6);
+				pointInd = 10;
+				ind = 10 + nPoints * 16;
+				if (buff.length < ind + 4)
+				{
+					return null;
+				}
+				nFigures = ByteTool.readInt32(buff, ind);
+				ind += 4 + nFigures * 5;
+				if (buff.length < ind + 4)
+				{
+					return null;
+				}
+				nShapes = ByteTool.readInt32(buff, ind);
+				shapeInd = ind + 4;
+				if (buff.length < ind + 4 + nShapes * 9)
+				{
+					return null;
+				}
+				if (nShapes != 1)
+				{
+					return null;
+				}
+				if (buff[shapeInd + 8] == 3)
+				{
+					Polygon pg = new Polygon(srid, 1, nPoints);
+					double []points = pg.getPointList();
+					int i = 0;
+					while (i < nPoints)
+					{
+						points[i << 1] = ByteTool.readDouble(buff, pointInd + i * 16);
+						points[(i << 1) + 1] = ByteTool.readDouble(buff, pointInd + i * 16 + 8);
+						i++;
+					}
+					return pg;
 				}
 			}
 		}

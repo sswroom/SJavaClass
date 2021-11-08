@@ -60,12 +60,12 @@ import org.sswr.util.io.LogTool;
 public class DBUtil {
 	public enum DBType
 	{
-		DT_UNKNOWN,
-		DT_MSSQL,
-		DT_MYSQL,
-		DT_SQLITE,
-		DT_ACCESS,
-		DT_ORACLE
+		Unknown,
+		MSSQL,
+		MySQL,
+		SQLite,
+		Access,
+		Oracle
 	}
 
 	public static final int MAX_SQL_ITEMS = 100;
@@ -94,20 +94,20 @@ public class DBUtil {
 		String clsName = conn.getClass().getName();
 		if (clsName.startsWith("com.microsoft.sqlserver.jdbc.SQLServerConnection"))
 		{
-			return DBType.DT_MSSQL;
+			return DBType.MSSQL;
 		}
 		else if (clsName.startsWith("com.mysql.cj.jdbc.ConnectionImpl"))
 		{
-			return DBType.DT_MYSQL;
+			return DBType.MySQL;
 		}
 		else if (clsName.startsWith("net.ucanaccess.jdbc.UcanaccessConnection"))
 		{
-			return DBType.DT_ACCESS;
+			return DBType.Access;
 		}
 		else
 		{
 			sqlLogger.logMessage("DB class = "+clsName, LogLevel.ERROR);
-			return DBType.DT_UNKNOWN;
+			return DBType.Unknown;
 		}
 	}
 
@@ -332,7 +332,7 @@ public class DBUtil {
 		String catalog = uncol(table.catalog());
 		String schema = uncol(table.schema());
 		String tableName = uncol(table.name());
-		if (dbType == DBType.DT_MYSQL)
+		if (dbType == DBType.MySQL)
 		{
 			if (!catalog.equals(""))
 			{
@@ -425,7 +425,7 @@ public class DBUtil {
 			status = PageStatus.NO_PAGE;
 		}
 		sb.append("select ");
-		if (status == PageStatus.NO_PAGE && dbType == DBType.DT_ACCESS)
+		if (status == PageStatus.NO_PAGE && dbType == DBType.Access)
 		{
 			sb.append("TOP ");
 			sb.append(dataOfst + dataCnt);
@@ -572,7 +572,7 @@ public class DBUtil {
 			else if (fieldType.equals(Geometry.class))
 			{
 				byte bytes[] = rs.getBytes(i + 1);
-				if (dbType == DBType.DT_MSSQL)
+				if (dbType == DBType.MSSQL)
 				{
 					col.setter.set(o, MSGeography.parseBinary(bytes));
 				}
@@ -906,7 +906,7 @@ public class DBUtil {
 		}
 		if ((dataOfst != 0 || dataCnt != 0) && status != PageStatus.SUCC)
 		{
-			if (dbType == DBType.DT_MYSQL)
+			if (dbType == DBType.MySQL)
 			{
 				sb.append(" LIMIT ");
 				sb.append(dataOfst);
@@ -914,7 +914,7 @@ public class DBUtil {
 				sb.append(dataCnt);
 				status = PageStatus.SUCC;
 			}
-			else if (dbType == DBType.DT_MSSQL)
+			else if (dbType == DBType.MSSQL)
 			{
 				if (fieldComp != null)
 				{
@@ -1682,7 +1682,7 @@ public class DBUtil {
 
 	public static String dbStr(DBType dbType, String val)
 	{
-		if (dbType == DBType.DT_MYSQL)
+		if (dbType == DBType.MySQL)
 		{
 			val = val.replace("\\", "\\\\");
 			val = val.replace("\'", "\\\'");
@@ -1694,7 +1694,7 @@ public class DBUtil {
 			val = val.replace("\u001a", "\\Z");
 			return "'"+val+"'";
 		}
-		else if (dbType == DBType.DT_SQLITE)
+		else if (dbType == DBType.SQLite)
 		{
 			val = val.replace("\\", "\\\\");
 			val = val.replace("\'", "\\\'");
@@ -1704,12 +1704,12 @@ public class DBUtil {
 			val = val.replace("\t", "\\t");
 			return "'"+val+"'";
 		}
-		else if (dbType == DBType.DT_MSSQL)
+		else if (dbType == DBType.MSSQL)
 		{
 			val = val.replace("\'", "\'\'");
 			return "N'"+val+"'";
 		}
-		else if (dbType == DBType.DT_ACCESS)
+		else if (dbType == DBType.Access)
 		{
 			val = val.replace("\'", "\'\'");
 			return "'"+val+"'";
@@ -1728,15 +1728,15 @@ public class DBUtil {
 		{
 			return "null";
 		}
-		if (dbType == DBType.DT_ACCESS)
+		if (dbType == DBType.Access)
 		{
 			return "#"+val.toString()+"#";
 		}
-		else if (dbType == DBType.DT_MSSQL || dbType == DBType.DT_SQLITE)
+		else if (dbType == DBType.MSSQL || dbType == DBType.SQLite)
 		{
 			return "'"+new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(val)+"'";
 		}
-		else if (dbType == DBType.DT_ORACLE)
+		else if (dbType == DBType.Oracle)
 		{
 			return "TIMESTAMP '"+new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(val)+"'";
 		}
@@ -1752,11 +1752,11 @@ public class DBUtil {
 		{
 			return "null";
 		}
-		if (dbType == DBType.DT_MYSQL || dbType == DBType.DT_SQLITE)
+		if (dbType == DBType.MySQL || dbType == DBType.SQLite)
 		{
 			return "x'"+StringUtil.toHex(val)+"'";
 		}
-		else if (dbType == DBType.DT_MSSQL)
+		else if (dbType == DBType.MSSQL)
 		{
 			return "0x"+StringUtil.toHex(val);
 		}
@@ -1768,11 +1768,11 @@ public class DBUtil {
 
 	public static String dbGeometry(DBType dbType, Geometry geometry)
 	{
-		if (dbType == DBType.DT_MYSQL)
+		if (dbType == DBType.MySQL)
 		{
 			return "ST_GeomFromText('"+GeometryUtil.toWKT(geometry)+"', "+geometry.getSRID()+")";
 		}
-		else if (dbType == DBType.DT_MSSQL)
+		else if (dbType == DBType.MSSQL)
 		{
 			return "geometry::STGeomFromText('"+GeometryUtil.toWKT(geometry)+"', "+geometry.getSRID()+")";
 		}
@@ -1860,11 +1860,11 @@ public class DBUtil {
 
 	public static String dbCol(DBType dbType, String val)
 	{
-		if (dbType == DBType.DT_MYSQL)
+		if (dbType == DBType.MySQL)
 		{
 			return "`"+val+"`";
 		}
-		else if (dbType == DBType.DT_MSSQL || dbType == DBType.DT_ACCESS)
+		else if (dbType == DBType.MSSQL || dbType == DBType.Access)
 		{
 			return "["+val+"]";
 		}
@@ -1876,13 +1876,13 @@ public class DBUtil {
 
 	public static void dbCol(StringBuilder sb, DBType dbType, String val)
 	{
-		if (dbType == DBType.DT_MYSQL)
+		if (dbType == DBType.MySQL)
 		{
 			sb.append('`');
 			sb.append(val);
 			sb.append('`');
 		}
-		else if (dbType == DBType.DT_MSSQL || dbType == DBType.DT_ACCESS)
+		else if (dbType == DBType.MSSQL || dbType == DBType.Access)
 		{
 			sb.append('[');
 			sb.append(val);
@@ -1897,7 +1897,7 @@ public class DBUtil {
 	public static int getLastIdentity32(Connection conn)
 	{
 		DBType dbType = connGetDBType(conn);
-		if (dbType == DBType.DT_MYSQL || dbType == DBType.DT_MSSQL || dbType == DBType.DT_ACCESS)
+		if (dbType == DBType.MySQL || dbType == DBType.MSSQL || dbType == DBType.Access)
 		{
 			int id = 0;
 			try

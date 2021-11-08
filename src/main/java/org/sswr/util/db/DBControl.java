@@ -20,7 +20,7 @@ public class DBControl {
 		this.conn = conn;
 		this.charset = StandardCharsets.UTF_8;
 		this.dbType = DBUtil.connGetDBType(this.conn);
-		if (this.dbType == DBType.DT_MSSQL)
+		if (this.dbType == DBType.MSSQL)
 		{
 			this.dbVersion = this.getSingleValue("select @@VERSION");
 			String coll = this.getSingleValue("SELECT collation_name FROM sys.databases");
@@ -56,9 +56,9 @@ public class DBControl {
 		}
 		switch (this.dbType)
 		{
-		case DT_MSSQL:
+		case MSSQL:
 			return getNVarcharLen(s);
-		case DT_UNKNOWN:
+		case Unknown:
 		default:
 			return getVarcharLen(s);
 		}
