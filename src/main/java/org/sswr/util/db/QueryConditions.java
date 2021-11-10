@@ -802,7 +802,7 @@ public class QueryConditions<T>
 			}
 			else
 			{
-				ret = ret & cond.isValid(obj);
+				ret = ret && cond.isValid(obj);
 			}
 			i++;
 		}

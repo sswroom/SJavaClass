@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.TimeZone;
 
 import org.sswr.util.basic.MyThread;
+import org.sswr.util.basic.ThreadVar;
 import org.sswr.util.db.CSVUtil;
 import org.sswr.util.db.DBUpdateHandler;
 
@@ -264,15 +265,20 @@ public class ActionFileStore implements Runnable, DBUpdateHandler {
 		}
 		else if (oldObj == null)
 		{
-			this.logAction(2, null, ActionFileStore.ActionType.CREATE, null, newObj.toString());
+			this.logAction(2, getUser(), ActionFileStore.ActionType.CREATE, null, newObj.toString());
 		}
 		else if (newObj == null)
 		{
-			this.logAction(2, null, ActionFileStore.ActionType.DELETE, oldObj.toString(), null);
+			this.logAction(2, getUser(), ActionFileStore.ActionType.DELETE, oldObj.toString(), null);
 		}
 		else
 		{
-			this.logAction(2, null, ActionFileStore.ActionType.UPDATE, oldObj.toString(), newObj.toString());
+			this.logAction(2, getUser(), ActionFileStore.ActionType.UPDATE, oldObj.toString(), newObj.toString());
 		}
+	}
+
+	public String getUser()
+	{
+		return (String)ThreadVar.get("User");
 	}
 }

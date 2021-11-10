@@ -321,7 +321,7 @@ public class FileGDBReader extends DBReader
 			return String.valueOf(this.objectId);
 		case 7:
 			{
-				Vector2D vec = this.getVector(fieldIndex);
+				Vector2D vec = this.getVector(colIndex);
 				if (vec != null)
 				{
 					WKTWriter writer = new WKTWriter();
@@ -331,7 +331,7 @@ public class FileGDBReader extends DBReader
 			return null;
 		case 8:
 			{
-				byte[] binBuff = this.getBinary(fieldIndex);
+				byte[] binBuff = this.getBinary(colIndex);
 				return StringUtil.toHex(binBuff, 0, binBuff.length, (char)0);
 			}
 		case 10:
@@ -927,7 +927,7 @@ public class FileGDBReader extends DBReader
 		}
 		ColumnDef colDef = new ColumnDef(field.getName());
 		colDef.setColSize(field.getFieldSize());
-		colDef.setColType(this.getColumnType(fieldIndex));
+		colDef.setColType(this.getColumnType(colIndex));
 		colDef.setNotNull((field.getFlags() & 1) == 0);
 		colDef.setPk(field.getFieldType() == 6);
 		colDef.setAutoInc(field.getFieldType() == 6);
