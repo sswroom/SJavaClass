@@ -12,6 +12,21 @@ import org.sswr.util.data.SharedLong;
 
 public class ResourceLoader
 {
+	public static String getResourcePath(Class<?> cls, String resourceName)
+	{
+		if (OSInfo.getOSType() == OSType.ANDROID)
+		{
+			return cls.getClassLoader().getResource(resourceName).getPath();
+		}
+		Module module = cls.getModule();
+		URL url = module.getClassLoader().getResource(resourceName);
+		if (url == null)
+		{
+			return null;
+		}
+		return url.getPath();
+	}
+
 	public static InputStream load(Class<?> cls, String resourceName, SharedLong lastModified)
 	{
 		if (OSInfo.getOSType() == OSType.ANDROID)
