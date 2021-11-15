@@ -106,7 +106,7 @@ public class Matrix3
 		this.vec[2].val[2] = tmpVec[0].val[2] * matrix.vec[2].val[0] + tmpVec[1].val[2] * matrix.vec[2].val[1] + tmpVec[2].val[2] * matrix.vec[2].val[2];
 	}
 
-	public Vector3 multiply(Double x, Double y, Double z)
+	public Vector3 multiply(double x, double y, double z)
 	{
 		Vector3 ret = new Vector3();
 		ret.set(x * this.vec[0].val[0] + y * this.vec[0].val[1] + z * this.vec[0].val[2],
