@@ -60,6 +60,19 @@ public class HTTPMyClient extends IOStream
 		this.conn.addRequestProperty(name, value);
 	}
 
+	public void addHeaders(Map<String, String> headers)
+	{
+		if (headers != null)
+		{
+			Iterator<String> hdrNames = headers.keySet().iterator();
+			while (hdrNames.hasNext())
+			{
+				String name = hdrNames.next();
+				this.addHeader(name, headers.get(name));
+			}
+		}
+	}
+
 	public boolean formBegin()
 	{
 		if (this.canWrite && this.sbForm == null)
@@ -304,9 +317,15 @@ public class HTTPMyClient extends IOStream
 
 	public static byte[] getAsBytes(String url, SharedInt statusCode)
 	{
+		return getAsBytes(url, null, statusCode);
+	}
+
+	public static byte[] getAsBytes(String url, Map<String, String> customHeaders, SharedInt statusCode)
+	{
 		try
 		{
 			HTTPMyClient cli = new HTTPMyClient(url, "GET");
+			cli.addHeaders(customHeaders);
 			if (cli.GetRespStatus() <= 0)
 			{
 				cli.close();
@@ -338,9 +357,15 @@ public class HTTPMyClient extends IOStream
 
 	public static byte[] formPostAsBytes(String url, Map<String, String> formParams, SharedInt statusCode)
 	{
+		return formPostAsBytes(url, formParams, null, statusCode);
+	}
+
+	public static byte[] formPostAsBytes(String url, Map<String, String> formParams, Map<String, String> customHeaders, SharedInt statusCode)
+	{
 		try
 		{
 			HTTPMyClient cli = new HTTPMyClient(url, "POST");
+			cli.addHeaders(customHeaders);
 			Iterator<String> names = formParams.keySet().iterator();
 			if (names != null && names.hasNext())
 			{
@@ -378,6 +403,16 @@ public class HTTPMyClient extends IOStream
 	public static String formPostAsString(String url, Map<String, String> formParams, SharedInt statusCode)
 	{
 		byte []ret = formPostAsBytes(url, formParams, statusCode);
+		if (ret == null)
+		{
+			return null;
+		}
+		return new String(ret, StandardCharsets.UTF_8);
+	}
+
+	public static String formPostAsString(String url, Map<String, String> formParams, Map<String, String> customHeaders, SharedInt statusCode)
+	{
+		byte []ret = formPostAsBytes(url, formParams, customHeaders, statusCode);
 		if (ret == null)
 		{
 			return null;
