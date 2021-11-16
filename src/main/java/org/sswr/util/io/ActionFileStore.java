@@ -210,6 +210,17 @@ public class ActionFileStore implements Runnable, DBUpdateHandler {
 				}
 				i++;
 			}
+			try
+			{
+				if (this.fs != null)
+				{
+					fs.flush();
+				}
+			}
+			catch (IOException ex)
+			{
+				ex.printStackTrace();
+			}
 		}
 	}
 
