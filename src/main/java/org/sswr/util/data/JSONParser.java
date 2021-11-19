@@ -399,8 +399,9 @@ public class JSONParser
 				else
 				{
 					SharedInt newEndIndex = new SharedInt();
+					newEndIndex.value = 0;
 					obj = parseJSONStr2(carr, index, endIndex, newEndIndex);
-					if (obj == null)
+					if (obj == null && newEndIndex.value == 0)
 					{
 						return null;
 					}
