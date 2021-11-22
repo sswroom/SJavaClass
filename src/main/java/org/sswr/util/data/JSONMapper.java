@@ -2,6 +2,8 @@ package org.sswr.util.data;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -119,6 +121,14 @@ public class JSONMapper
 		{
 			sb.append((Long)obj);
 		}
+		else if (obj instanceof Boolean)
+		{
+			sb.append((Boolean)obj);
+		}
+		else if (obj instanceof Timestamp)
+		{
+			JSText.toJSTextDQuote(sb, new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format((Timestamp)obj));
+		}
 		else
 		{
 			sb.append("{");
@@ -150,6 +160,10 @@ public class JSONMapper
 				catch (InvocationTargetException ex)
 				{
 
+				}
+				catch (IllegalArgumentException ex)
+				{
+					throw new IllegalArgumentException(cls.getName()+"."+fields[i].getName()+" "+ex.getMessage());
 				}
 				i++;
 			}
