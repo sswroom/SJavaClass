@@ -30,20 +30,64 @@ public class HttpUtil
 	public static final String PART_SEPERATOR = "\t";
 	private static final int FILE_BUFFER_SIZE = 65536;
 
+	public static String getScheme(ServletRequest req)
+	{
+		String scheme = req.getScheme();
+		if (req instanceof HttpServletRequest)
+		{
+			String proto = ((HttpServletRequest)req).getHeader("X-Forwarded-Proto");
+			if (proto != null)
+			{
+				scheme = proto;
+			}
+		}
+		return scheme;
+	}
+
+	public static String getServerName(ServletRequest req)
+	{
+		String serverName = req.getServerName();
+		if (req instanceof HttpServletRequest)
+		{
+			String forHost = ((HttpServletRequest)req).getHeader("X-Forwarded-Host");
+			if (forHost != null)
+			{
+				serverName = forHost;
+			}
+		}
+		return serverName;
+	}
+
+	public static int getServerPort(ServletRequest req)
+	{
+		int port = req.getServerPort();
+		if (req instanceof HttpServletRequest)
+		{
+			Integer iPort = StringUtil.toInteger(((HttpServletRequest)req).getHeader("X-Forwarded-Port"));
+			if (iPort != null)
+			{
+				port = iPort;
+			}
+		}
+		return port;	
+	}
+
 	public static String getSiteRoot(ServletRequest req)
 	{
-		String url = req.getScheme()+"://"+req.getServerName();
-		if (req.getScheme().equals("https") && req.getServerPort() == 443)
+		String scheme = getScheme(req);
+		int serverPort = getServerPort(req);
+		String url = scheme+"://"+getServerName(req);
+		if (scheme.equals("https") && serverPort == 443)
 		{
 
 		}
-		else if (req.getScheme().equals("http") && req.getServerPort() == 80)
+		else if (scheme.equals("http") && serverPort == 80)
 		{
 
 		}
 		else
 		{
-			url += ":"+req.getServerPort();
+			url += ":"+serverPort;
 		}
 		return url;
 	}
