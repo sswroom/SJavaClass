@@ -55,7 +55,7 @@ public class ReflectTools {
 			}
 			else
 			{
-				System.out.println("ReflectTools.findGetter: Field = "+field.getDeclaringClass().getName()+"."+field.getName()+", funcName = "+funcName+", wrong return type: "+meth.getReturnType().toString());
+				System.out.println("ReflectTools.findGetter: Field = "+field.getDeclaringClass().getName()+"."+field.getName()+", fieldType = "+field.getType().toString()+", funcName = "+funcName+", wrong return type: "+meth.getReturnType().toString());
 				return null;
 			}
 		}
