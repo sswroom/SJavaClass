@@ -1754,7 +1754,7 @@ public class DBUtil {
 		}
 	}
 
-	public static <T> boolean update(Connection conn, TableInfo table, T oriObj, T newObj)
+	private static <T> boolean update(Connection conn, TableInfo table, T oriObj, T newObj, DBOptions options)
 	{
 		DBType dbType = connGetDBType(conn);
 		StringBuilder sb;
@@ -1787,7 +1787,7 @@ public class DBUtil {
 					sb.append(dbVal(dbType, col, col.getter.get(oriObj)));
 					i++;
 				}
-				boolean ret = executeNonQuery(conn, sb.toString());
+				boolean ret = executeNonQuery(conn, sb.toString(), options);
 				if (ret && updateHandlers != null)
 				{
 					i = updateHandlers.size();
@@ -1846,7 +1846,7 @@ public class DBUtil {
 					i++;
 				}
 				sb.append(")");
-				found = executeNonQuery(conn, sb.toString());
+				found = executeNonQuery(conn, sb.toString(), options);
 				if (found)
 				{
 					if (table.idCols.size() == 1)
@@ -1923,7 +1923,7 @@ public class DBUtil {
 					sb.append(dbVal(dbType, col, col.getter.get(oriObj)));
 					i++;
 				}
-				if (executeNonQuery(conn, sb.toString()))
+				if (executeNonQuery(conn, sb.toString(), options))
 				{
 					if (updateHandlers != null)
 					{
@@ -1985,14 +1985,35 @@ public class DBUtil {
 		{
 			return false;
 		}
-		return update(conn, table, oriObj, newObj);
+		return update(conn, table, oriObj, newObj, null);
 	}
 
-	public static boolean executeNonQuery(Connection conn, String sql)
+	public static <T> boolean update(Connection conn, T oriObj, T newObj, DBOptions options)
+	{
+		TableInfo table = null;
+		if (oriObj != null)
+		{
+			table = parseTableInfo(oriObj.getClass());
+		}
+		else if (newObj != null)
+		{
+			table = parseTableInfo(newObj.getClass());
+		}
+		else
+		{
+			return false;
+		}
+		return update(conn, table, oriObj, newObj, options);
+	}
+
+	public static boolean executeNonQuery(Connection conn, String sql, DBOptions options)
 	{
 		try
 		{
-			sqlLogger.logMessage(sql, LogLevel.COMMAND);
+			if (options == null || !options.skipLog)
+			{
+				sqlLogger.logMessage(sql, LogLevel.COMMAND);
+			}
 			PreparedStatement stmt;
 			stmt = conn.prepareStatement(sql);
 			int rowCnt = stmt.executeUpdate();
@@ -2000,7 +2021,10 @@ public class DBUtil {
 		}
 		catch (SQLException ex)
 		{
-			sqlLogger.logException(ex);
+			if (options == null || !options.skipLog)
+			{
+				sqlLogger.logException(ex);
+			}
 			return false;
 		}
 	}
@@ -2019,7 +2043,7 @@ public class DBUtil {
 		{
 			sb.append("truncate table ");
 			sb.append(getTableName(tableAnn, dbType));
-			return executeNonQuery(conn, sb.toString());
+			return executeNonQuery(conn, sb.toString(), null);
 		}
 		else
 		{
@@ -2033,7 +2057,7 @@ public class DBUtil {
 			{
 				sb.append("truncate table ");
 				sb.append(getTableName(tableAnn, dbType));
-				return executeNonQuery(conn, sb.toString());
+				return executeNonQuery(conn, sb.toString(), null);
 			}
 			else if (clientConditions.size() == 0)
 			{
@@ -2041,7 +2065,7 @@ public class DBUtil {
 				sb.append(getTableName(tableAnn, dbType));
 				sb.append(" where ");
 				sb.append(whereClause);
-				return executeNonQuery(conn, sb.toString());
+				return executeNonQuery(conn, sb.toString(), null);
 			}
 			else
 			{
