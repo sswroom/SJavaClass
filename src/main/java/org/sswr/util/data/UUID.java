@@ -24,6 +24,11 @@ public class UUID
 		StringUtil.appendHex(sb, this.uuidBuff, 10, 6, (char)0, LineBreakType.NONE);
 	}
 
+	public void getValue(byte[] buff, int ofst)
+	{
+		ByteTool.copyArray(buff, ofst, this.uuidBuff, 0, 16);
+	}
+
 	public String toString()
 	{
 		StringBuilder sb = new StringBuilder();

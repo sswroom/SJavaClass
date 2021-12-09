@@ -115,6 +115,18 @@ public class ByteTool {
 		buff[index + 3] = (byte)((val >> 24) & 0xff);
 	}
 
+	public static void writeInt64(byte buff[], int index, long val)
+	{
+		buff[index + 0] = (byte)(val & 0xff);
+		buff[index + 1] = (byte)((val >> 8) & 0xff);
+		buff[index + 2] = (byte)((val >> 16) & 0xff);
+		buff[index + 3] = (byte)((val >> 24) & 0xff);
+		buff[index + 4] = (byte)((val >> 32) & 0xff);
+		buff[index + 5] = (byte)((val >> 40) & 0xff);
+		buff[index + 6] = (byte)((val >> 48) & 0xff);
+		buff[index + 7] = (byte)((val >> 56) & 0xff);
+	}
+
 	public static void writeMInt16(byte buff[], int index, int val)
 	{
 		buff[index + 0] = (byte)((val >> 8) & 0xff);
@@ -146,6 +158,26 @@ public class ByteTool {
 		buff[index + 5] = (byte)((val >> 16) & 0xff);
 		buff[index + 6] = (byte)((val >> 8) & 0xff);
 		buff[index + 7] = (byte)(val & 0xff);
+	}
+
+	public static void writeSingle(byte buff[], int index, float val)
+	{
+		writeInt32(buff, index, Float.floatToIntBits(val));
+	}
+
+	public static void writeMSingle(byte buff[], int index, float val)
+	{
+		writeMInt32(buff, index, Float.floatToIntBits(val));
+	}
+
+	public static void writeDouble(byte buff[], int index, double val)
+	{
+		writeInt64(buff, index, Double.doubleToLongBits(val));
+	}
+
+	public static void writeMDouble(byte buff[], int index, double val)
+	{
+		writeMInt64(buff, index, Double.doubleToLongBits(val));
 	}
 
 	public static int readUTF8(StringBuilder sb, byte dataBuff[], int dataOfst)
