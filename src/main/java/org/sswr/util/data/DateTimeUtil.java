@@ -219,6 +219,11 @@ public class DateTimeUtil
 		return clearTime(dt).withDayOfMonth(1);
 	}
 
+	public static ZonedDateTime toYearStart(ZonedDateTime dt)
+	{
+		return clearTime(dt).withDayOfYear(1);
+	}
+
 	public static Timestamp toTimestamp(ZonedDateTime dt)
 	{
 		Timestamp ret = new Timestamp(dt.toInstant().toEpochMilli());
