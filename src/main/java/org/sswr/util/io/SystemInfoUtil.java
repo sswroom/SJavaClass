@@ -4,15 +4,14 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.ProcessHandle.Info;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 public class SystemInfoUtil
 {
@@ -49,7 +48,7 @@ public class SystemInfoUtil
 	public long usedMemory;
 	}
 
-	private List<String> processNames;
+/*	private List<String> processNames;
 	private Map<Long, ProcessState> processStatus;
 
 	public SystemInfoUtil(List<String> processNames)
@@ -125,6 +124,87 @@ public class SystemInfoUtil
 			ret.add(status);
 		}
 		return ret;
+	}*/
+
+	public static List<ProcessStatus> getProcessStatus(List<String> processNames)
+	{
+		List<ProcessStatus> ret = new ArrayList<ProcessStatus>();
+		int i;
+		Iterator<ProcessHandle> processes = ProcessHandle.allProcesses().iterator();
+		ProcessHandle process;
+		ProcessStatus status;
+		while (processes.hasNext())
+		{
+			process = processes.next();
+			Info info = process.info();
+			if (OSInfo.getOSType() == OSType.WINDOWS)
+			{
+				String cmdLine = info.command().orElse(null);
+				String []args = info.arguments().orElse(null);
+				if (cmdLine != null || args != null)
+				{
+					int j;
+					List<String> cmds;
+					if (args == null)
+					{
+						cmds = List.of(cmdLine);
+					}
+					else
+					{
+						cmds = new ArrayList<String>();
+						j = args.length;
+						while (j-- > 0)
+						{
+							cmds.add(args[j]);
+						}
+						if (cmdLine != null)
+						{
+							cmds.add(cmdLine);
+						}
+					}
+					j = cmds.size();
+					while (j-- > 0)
+					{
+						cmdLine = cmds.get(j);
+						i = processNames.size();
+						while (i-- > 0)
+						{
+							if (cmdLine.indexOf(processNames.get(i)) >= 0)
+							{
+								status = new ProcessStatus();
+								status.pid = process.pid();
+								status.name = processNames.get(i);
+								status.usedMemory = getProcessMemoryUsed(status.pid);
+								ret.add(status);
+								j = 0;
+								break;
+							}
+						}
+					}
+				}
+			}
+			else
+			{
+				String cmdLine = info.commandLine().orElse(null);
+				if (cmdLine != null)
+				{
+					i = processNames.size();
+					while (i-- > 0)
+					{
+						if (cmdLine.indexOf(processNames.get(i)) >= 0)
+						{
+							status = new ProcessStatus();
+							status.pid = process.pid();
+							status.name = processNames.get(i);
+							status.usedMemory = getProcessMemoryUsed(status.pid);
+							ret.add(status);
+							break;
+						}
+					}
+				}	
+			}
+		}
+		return ret;
 	}
 
 	public static List<FreeSpaceEntry> getFreeSpaces()
@@ -168,6 +248,44 @@ public class SystemInfoUtil
 		{
 			return 0;
 		}
+	}
+
+	public static long executeWmic(String cmdLine)
+	{
+		long ret = 0;
+		try
+		{
+			ProcessBuilder pb = new ProcessBuilder(cmdLine.split(" "));
+			Process proc = pb.start();
+			BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+			String s;
+			while ((s = reader.readLine()) != null)
+			{
+				if (s.length() > 0)
+					break;
+			}
+			String value;
+			while ((value = reader.readLine()) != null)
+			{
+				if (value.length() > 0)
+					break;
+			}
+			if (value != null)
+			{
+				ret = Long.parseLong(value.trim());	
+			}
+			reader.close();
+			proc.waitFor();
+		}
+		catch (IOException ex)
+		{
+
+		}
+		catch (InterruptedException ex)
+		{
+
+		}
+		return ret;
 	}
 
 	public static MemoryStatus getMemoryStatus()
@@ -216,6 +334,14 @@ public class SystemInfoUtil
 			{
 			}
 			break;
+		case WINDOWS:
+			status.totalPhysicalMemory = executeWmic("wmic ComputerSystem get TotalPhysicalMemory");
+			status.freePhysicalMemory = executeWmic("wmic OS get FreePhysicalMemory") * 1024;
+			status.totalSwapMemory = executeWmic("wmic OS get TotalVirtualMemorySize") * 1024;
+			status.freeSwapMemory = executeWmic("wmic OS get FreeVirtualMemory") * 1024;
+			status.usedPhysicalMemory = status.totalPhysicalMemory - status.freePhysicalMemory;
+			status.usedSwapMemory = status.totalSwapMemory - status.freeSwapMemory;
+			break;
 		default:
 			break;
 		}
@@ -243,6 +369,38 @@ public class SystemInfoUtil
 				return ret;
 			}
 			catch (IOException ex)
+			{
+				return 0;
+			}
+		case WINDOWS:
+			try
+			{
+				long ret = 0;
+				ProcessBuilder pb = new ProcessBuilder("tasklist", "/FI", "PID eq "+pid, "/FO", "LIST");
+				Process proc = pb.start();
+				BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+				String s;
+				while ((s = reader.readLine()) != null)
+				{
+					if (s.startsWith("Mem Usage:"))
+					{
+						s = s.substring(10).trim();
+						s = s.replace(",", "");
+						if (s.endsWith(" K"))
+						{
+							ret = Long.parseLong(s.substring(0, s.length() - 2)) * 1024;
+						}
+					}
+				}
+				reader.close();
+				proc.waitFor();
+				return ret;
+			}
+			catch (IOException ex)
+			{
+				return 0;
+			}
+			catch (InterruptedException ex)
 			{
 				return 0;
 			}
