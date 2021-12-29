@@ -1754,7 +1754,7 @@ public class DBUtil {
 		}
 	}
 
-	private static <T> boolean update(Connection conn, TableInfo table, T oriObj, T newObj, DBOptions options)
+	public static <T> boolean update(Connection conn, TableInfo table, T oriObj, T newObj, DBOptions options)
 	{
 		DBType dbType = connGetDBType(conn);
 		StringBuilder sb;
