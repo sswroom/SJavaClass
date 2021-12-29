@@ -129,62 +129,67 @@ public class SystemInfoUtil
 	public static List<ProcessStatus> getProcessStatus(List<String> processNames)
 	{
 		List<ProcessStatus> ret = new ArrayList<ProcessStatus>();
-		int i;
-		Iterator<ProcessHandle> processes = ProcessHandle.allProcesses().iterator();
-		ProcessHandle process;
-		ProcessStatus status;
-		while (processes.hasNext())
+		if (OSInfo.getOSType() == OSType.WINDOWS)
 		{
-			process = processes.next();
-			Info info = process.info();
-			if (OSInfo.getOSType() == OSType.WINDOWS)
+			ProcessBuilder pb = new ProcessBuilder("wmic", "process", "get", "CommandLine,ProcessId,WorkingSetSize", "/format:csv");
+			try
 			{
-				String cmdLine = info.command().orElse(null);
-				String []args = info.arguments().orElse(null);
-				if (cmdLine != null || args != null)
+				Process proc = pb.start();
+				BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+				String s;
+				String[] sarr;
+				int i;
+				ProcessStatus status;
+				while ((s = reader.readLine()) != null && s.length() == 0)
 				{
-					int j;
-					List<String> cmds;
-					if (args == null)
+				}
+				while ((s = reader.readLine()) != null)
+				{
+					if (s.length() > 0)
 					{
-						cmds = List.of(cmdLine);
-					}
-					else
-					{
-						cmds = new ArrayList<String>();
-						j = args.length;
-						while (j-- > 0)
+						sarr = s.split(",");
+						if (sarr.length == 4 && sarr[1].length() > 0)
 						{
-							cmds.add(args[j]);
-						}
-						if (cmdLine != null)
-						{
-							cmds.add(cmdLine);
-						}
-					}
-					j = cmds.size();
-					while (j-- > 0)
-					{
-						cmdLine = cmds.get(j);
-						i = processNames.size();
-						while (i-- > 0)
-						{
-							if (cmdLine.indexOf(processNames.get(i)) >= 0)
+							i = processNames.size();
+							while (i-- > 0)
 							{
-								status = new ProcessStatus();
-								status.pid = process.pid();
-								status.name = processNames.get(i);
-								status.usedMemory = getProcessMemoryUsed(status.pid);
-								ret.add(status);
-								j = 0;
-								break;
+								if (sarr[1].indexOf(processNames.get(i)) >= 0)
+								{
+									status = new ProcessStatus();
+									status.pid = Long.parseLong(sarr[2]);
+									status.name = processNames.get(i);
+									status.usedMemory = Long.parseLong(sarr[3]);
+									ret.add(status);
+									break;
+								}
 							}
+		
 						}
 					}
 				}
+				reader.close();
+				proc.waitFor();
 			}
-			else
+			catch (IOException ex)
 			{
+
+			}
+			catch (InterruptedException ex)
+			{
+
+			}
+			return ret;
+		}
+		else
+		{
+			int i;
+			Iterator<ProcessHandle> processes = ProcessHandle.allProcesses().iterator();
+			ProcessHandle process;
+			ProcessStatus status;
+			while (processes.hasNext())
+			{
+				process = processes.next();
+				Info info = process.info();
 				String cmdLine = info.commandLine().orElse(null);
 				if (cmdLine != null)
 				{
