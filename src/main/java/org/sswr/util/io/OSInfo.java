@@ -10,17 +10,21 @@ public class OSInfo
 		{
 			return OSType.ANDROID;
 		}
-		else if (System.getProperty("os.name").equalsIgnoreCase("Linux"))
-		{
-			return OSType.LINUX;
-		}
-		else if (System.getProperty("os.name").toUpperCase().startsWith("WINDOWS"))
-		{
-			return OSType.WINDOWS;
-		}
 		else
 		{
-			return OSType.UNKNOWN;
+			String osName = System.getProperty("os.name").toUpperCase();
+			if (osName.equals("LINUX"))
+			{
+				return OSType.LINUX;
+			}
+			else if (osName.startsWith("WINDOWS"))
+			{
+				return OSType.WINDOWS;
+			}
+			else
+			{
+				return OSType.UNKNOWN;
+			}
 		}
 	}
 
