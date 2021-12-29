@@ -3,19 +3,41 @@ package org.sswr.util.db;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import javax.sql.DataSource;
+
 import org.sswr.util.db.DBUtil.DBType;
 
-public class DBControl {
+public class DBControl
+{
+	private DataSource ds;
+	private String url;
+	private String userName;
+	private String password;
 	private Connection conn;
 	private Charset charset;
 	private DBType dbType;
 	private String dbVersion;
 
-	public DBControl(Connection conn)
+	public DBControl(DataSource ds) throws SQLException
+	{
+		this.ds = ds;
+		this.init(this.ds.getConnection());
+	}
+
+	public DBControl(String url, String userName, String password) throws SQLException
+	{
+		this.url = url;
+		this.userName = userName;
+		this.password = password;
+		this.init(DriverManager.getConnection(this.url, this.userName, this.password));
+	}
+
+	public void init(Connection conn)
 	{
 		this.conn = conn;
 		this.charset = StandardCharsets.UTF_8;
@@ -79,5 +101,61 @@ public class DBControl {
 	public String getDbVersion()
 	{
 		return this.dbVersion;
+	}
+
+	public synchronized Connection getConn()
+	{
+		try
+		{
+			if (this.conn == null || this.conn.isClosed())
+			{
+				this.reconn();
+			}
+		}
+		catch (SQLException ex)
+		{
+
+		}
+		return this.conn;
+	}
+
+	private void reconn() throws SQLException
+	{
+		Connection newConn;
+		if (this.ds != null)
+		{
+			newConn = this.ds.getConnection();
+		}
+		else
+		{
+			newConn = DriverManager.getConnection(this.url, this.userName, this.password);
+		}
+		try
+		{
+			if (this.conn != null)
+			{
+				this.conn.close();
+			}
+		}
+		catch (SQLException ex)
+		{
+
+		}
+		this.conn = newConn;
+	}
+
+	public void close()
+	{
+		try
+		{
+			if (this.conn != null)
+			{
+				this.conn.close();
+			}
+		}
+		catch (SQLException ex)
+		{
+		}
+		this.conn = null;
 	}
 }
