@@ -9,6 +9,8 @@ import java.lang.ProcessHandle.Info;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -50,6 +52,9 @@ public class SystemInfoUtil
 	public String name;
 	public String cmdLine;
 	public long usedMemory;
+	public ZonedDateTime startTime;
+	public long threadCnt;
+	public long handleCnt;
 	}
 
 /*	private List<String> processNames;
@@ -130,12 +135,53 @@ public class SystemInfoUtil
 		return ret;
 	}*/
 
+	private static ZonedDateTime parseWindowDate(String s)
+	{
+		if (s.length() > 22)
+		{
+			try
+			{
+				if (s.charAt(21) == '+')
+				{
+					return ZonedDateTime.of(Integer.parseInt(s.substring(0, 4)),
+						Integer.parseInt(s.substring(4, 6)),
+						Integer.parseInt(s.substring(6, 8)),
+						Integer.parseInt(s.substring(8, 10)),
+						Integer.parseInt(s.substring(10, 12)),
+						Integer.parseInt(s.substring(12, 14)),
+						Integer.parseInt(s.substring(15, 21)) * 1000,
+						ZoneOffset.ofTotalSeconds(Integer.parseInt(s.substring(22)) * 60));
+				}
+				else if (s.charAt(21) == '-')
+				{
+					return ZonedDateTime.of(Integer.parseInt(s.substring(0, 4)),
+						Integer.parseInt(s.substring(4, 6)),
+						Integer.parseInt(s.substring(6, 8)),
+						Integer.parseInt(s.substring(8, 10)),
+						Integer.parseInt(s.substring(10, 12)),
+						Integer.parseInt(s.substring(12, 14)),
+						Integer.parseInt(s.substring(15, 21)) * 1000,
+						ZoneOffset.ofTotalSeconds(Integer.parseInt(s.substring(22)) * -60));
+				}
+			}
+			catch (Exception ex)
+			{
+				ex.printStackTrace();
+			}
+			return null;
+		}
+		else
+		{
+			return null;
+		}
+	}
+
 	public static List<ProcessStatus> getProcessStatus(List<String> processNames)
 	{
 		List<ProcessStatus> ret = new ArrayList<ProcessStatus>();
 		if (OSInfo.getOSType() == OSType.WINDOWS)
 		{
-			ProcessBuilder pb = new ProcessBuilder("wmic", "process", "get", "CommandLine,ParentProcessId,ProcessId,WorkingSetSize", "/format:csv");
+			ProcessBuilder pb = new ProcessBuilder("wmic", "process", "get", "CommandLine,CreationDate,HandleCount,ParentProcessId,ProcessId,ThreadCount,WorkingSetSize", "/format:csv");
 			try
 			{
 				Process proc = pb.start();
@@ -152,7 +198,7 @@ public class SystemInfoUtil
 					if (s.length() > 0)
 					{
 						sarr = s.split(",");
-						if (sarr.length == 5 && sarr[1].length() > 0)
+						if (sarr.length == 8 && sarr[1].length() > 0)
 						{
 							i = processNames.size();
 							while (i-- > 0)
@@ -160,11 +206,14 @@ public class SystemInfoUtil
 								if (sarr[1].indexOf(processNames.get(i)) >= 0)
 								{
 									status = new ProcessStatus();
-									status.pid = Long.parseLong(sarr[3]);
-									status.ppid = Long.parseLong(sarr[2]);
+									status.pid = Long.parseLong(sarr[5]);
+									status.ppid = Long.parseLong(sarr[4]);
 									status.name = processNames.get(i);
 									status.cmdLine = sarr[1];
-									status.usedMemory = Long.parseLong(sarr[4]);
+									status.usedMemory = Long.parseLong(sarr[7]);
+									status.handleCnt = Long.parseLong(sarr[3]);
+									status.threadCnt = Long.parseLong(sarr[6]);
+									status.startTime = parseWindowDate(sarr[2]);
 									ret.add(status);
 									break;
 								}
@@ -213,6 +262,9 @@ public class SystemInfoUtil
 							status.name = processNames.get(i);
 							status.cmdLine = cmdLine;
 							status.usedMemory = getProcessMemoryUsed(status.pid);
+							status.handleCnt = 0;
+							status.threadCnt = 0;
+							status.startTime = null;
 							ret.add(status);
 							break;
 						}
