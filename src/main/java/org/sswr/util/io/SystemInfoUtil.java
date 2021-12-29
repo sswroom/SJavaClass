@@ -37,14 +37,18 @@ public class SystemInfoUtil
 	public static class ProcessState
 	{
 	public long pid;
+	public long ppid;
 	public String name;
+	public String cmdLine;
 	public ProcessHandle process;
 	}
 
 	public static class ProcessStatus
 	{
 	public long pid;
+	public long ppid;
 	public String name;
+	public String cmdLine;
 	public long usedMemory;
 	}
 
@@ -131,7 +135,7 @@ public class SystemInfoUtil
 		List<ProcessStatus> ret = new ArrayList<ProcessStatus>();
 		if (OSInfo.getOSType() == OSType.WINDOWS)
 		{
-			ProcessBuilder pb = new ProcessBuilder("wmic", "process", "get", "CommandLine,ProcessId,WorkingSetSize", "/format:csv");
+			ProcessBuilder pb = new ProcessBuilder("wmic", "process", "get", "CommandLine,ParentProcessId,ProcessId,WorkingSetSize", "/format:csv");
 			try
 			{
 				Process proc = pb.start();
@@ -148,7 +152,7 @@ public class SystemInfoUtil
 					if (s.length() > 0)
 					{
 						sarr = s.split(",");
-						if (sarr.length == 4 && sarr[1].length() > 0)
+						if (sarr.length == 5 && sarr[1].length() > 0)
 						{
 							i = processNames.size();
 							while (i-- > 0)
@@ -156,9 +160,11 @@ public class SystemInfoUtil
 								if (sarr[1].indexOf(processNames.get(i)) >= 0)
 								{
 									status = new ProcessStatus();
-									status.pid = Long.parseLong(sarr[2]);
+									status.pid = Long.parseLong(sarr[3]);
+									status.ppid = Long.parseLong(sarr[2]);
 									status.name = processNames.get(i);
-									status.usedMemory = Long.parseLong(sarr[3]);
+									status.cmdLine = sarr[1];
+									status.usedMemory = Long.parseLong(sarr[4]);
 									ret.add(status);
 									break;
 								}
@@ -200,7 +206,12 @@ public class SystemInfoUtil
 						{
 							status = new ProcessStatus();
 							status.pid = process.pid();
+							ProcessHandle parProc = process.parent().orElse(null);
+							status.ppid = 0;
+							if (parProc != null)
+								status.ppid = parProc.pid();
 							status.name = processNames.get(i);
+							status.cmdLine = cmdLine;
 							status.usedMemory = getProcessMemoryUsed(status.pid);
 							ret.add(status);
 							break;
