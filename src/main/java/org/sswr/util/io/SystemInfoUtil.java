@@ -15,6 +15,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.sswr.util.data.DateTimeUtil;
+
 public class SystemInfoUtil
 {
 	public static class FreeSpaceEntry
@@ -261,10 +263,7 @@ public class SystemInfoUtil
 								status.ppid = parProc.pid();
 							status.name = processNames.get(i);
 							status.cmdLine = cmdLine;
-							status.usedMemory = getProcessMemoryUsed(status.pid);
-							status.handleCnt = 0;
-							status.threadCnt = 0;
-							status.startTime = null;
+							fillProcessStatus(status);
 							ret.add(status);
 							break;
 						}
@@ -416,35 +415,40 @@ public class SystemInfoUtil
 		return status;
 	}
 
-	public static long getProcessMemoryUsed(long pid)
+	public static boolean fillProcessStatus(ProcessStatus procStatus)
 	{
 		switch (OSInfo.getOSType())
 		{
 		case LINUX:
 			try
 			{
-				long ret = 0;
-				BufferedReader reader = new BufferedReader(new FileReader(new File("/proc/"+pid+"/status")));
+				BufferedReader reader = new BufferedReader(new FileReader(new File("/proc/"+procStatus.pid+"/status")));
 				String s;
 				while ((s = reader.readLine()) != null)
 				{
 					if (s.startsWith("VmRSS:"))
 					{
-						ret = toByte(s.substring(6).trim());
+						procStatus.usedMemory = toByte(s.substring(6).trim());
+					}
+					else if (s.startsWith("Threads:"))
+					{
+						procStatus.threadCnt = Long.parseLong(s.substring(8).trim());
 					}
 				}
 				reader.close();
-				return ret;
+				File file = new File("/proc/"+procStatus.pid+"/fd");
+				procStatus.handleCnt = file.list().length;
+				procStatus.startTime = DateTimeUtil.newZonedDateTime(new File("/proc/"+procStatus.pid).lastModified());
+				return true;
 			}
 			catch (IOException ex)
 			{
-				return 0;
+				return false;
 			}
 		case WINDOWS:
 			try
 			{
-				long ret = 0;
-				ProcessBuilder pb = new ProcessBuilder("tasklist", "/FI", "PID eq "+pid, "/FO", "LIST");
+				ProcessBuilder pb = new ProcessBuilder("tasklist", "/FI", "PID eq "+procStatus.pid, "/FO", "LIST");
 				Process proc = pb.start();
 				BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream()));
 				String s;
@@ -456,24 +460,24 @@ public class SystemInfoUtil
 						s = s.replace(",", "");
 						if (s.endsWith(" K"))
 						{
-							ret = Long.parseLong(s.substring(0, s.length() - 2)) * 1024;
+							procStatus.usedMemory = Long.parseLong(s.substring(0, s.length() - 2)) * 1024;
 						}
 					}
 				}
 				reader.close();
 				proc.waitFor();
-				return ret;
+				return true;
 			}
 			catch (IOException ex)
 			{
-				return 0;
+				return false;
 			}
 			catch (InterruptedException ex)
 			{
-				return 0;
+				return false;
 			}
 		default:
-			return 0;
+			return false;
 		}
 	}
 }
