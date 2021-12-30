@@ -3,6 +3,7 @@ package org.sswr.util.data;
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -615,7 +616,7 @@ public class StringUtil
 	public static Set<Integer> toIntSet(String s, String seperator)
 	{
 		if (s == null) return null;
-		return toIntSet(s.split(seperator));
+		return toIntSet(StringUtil.split(s, seperator));
 	}
 
 	/**
@@ -1180,5 +1181,40 @@ public class StringUtil
 			return 0;
 		}
 		return d.doubleValue();
+	}
+
+	/**
+	 * Split string into array
+	 * 
+	 * @param s the string to split
+	 * @param seperator the seperator to split
+	 * @return  splitted string array
+	 */
+	public static String[] split(String s, String seperator)
+	{
+		ArrayList<String> sarr = new ArrayList<String>();
+		int k = 0;
+		int i = 0;
+		int j = s.length() - seperator.length() + 1;
+		while (i < j)
+		{
+			if (s.regionMatches(i, seperator, 0, seperator.length()))
+			{
+				sarr.add(s.substring(k, i));
+				i += seperator.length();
+				k = i;
+			}
+			else
+			{
+				i++;
+			}
+		}
+		sarr.add(s.substring(k, s.length()));
+		String[] ret = new String[i = sarr.size()];
+		while (i-- > 0)
+		{
+			ret[i] = sarr.get(i);
+		}
+		return ret;
 	}
 }

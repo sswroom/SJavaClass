@@ -248,7 +248,7 @@ public class ParamValidator {
 			}
 			else
 			{
-				varValue = s.split(HttpUtil.PART_SEPERATOR);
+				varValue = StringUtil.split(s, HttpUtil.PART_SEPERATOR);
 			}
 		}
 		else
@@ -282,7 +282,7 @@ public class ParamValidator {
 			}
 			else
 			{
-				varValue = s.split(HttpUtil.PART_SEPERATOR);
+				varValue = StringUtil.split(s, HttpUtil.PART_SEPERATOR);
 			}
 		}
 		else

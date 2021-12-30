@@ -3,6 +3,7 @@ package org.sswr.util.web;
 import java.util.Iterator;
 
 import org.sswr.util.data.DataTools;
+import org.sswr.util.data.StringUtil;
 import org.sswr.util.io.ResourceLoader;
 
 public class EmailChecker<T extends TemplateEmailStatus> implements Runnable
@@ -33,7 +34,7 @@ public class EmailChecker<T extends TemplateEmailStatus> implements Runnable
 			}
 			else
 			{
-				String emailAddrs[] = email.getEmails().split(",");
+				String emailAddrs[] = StringUtil.split(email.getEmails(), ",");
 				String emailAddr;
 				StringBuilder sbSucc = new StringBuilder();
 				StringBuilder sbFail = new StringBuilder();

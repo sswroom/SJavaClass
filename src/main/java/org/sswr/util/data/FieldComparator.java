@@ -14,7 +14,7 @@ public class FieldComparator<T> implements Comparator<T>
 	private int dirs[];
 	public FieldComparator(Class<?> cls, String compareConds) throws NoSuchFieldException
 	{
-		String conds[] = compareConds.split(",");
+		String conds[] = StringUtil.split(compareConds, ",");
 		String cond[];
 		getters = new Object[conds.length];
 		dirs = new int[conds.length];
@@ -23,7 +23,7 @@ public class FieldComparator<T> implements Comparator<T>
 		int j = conds.length;
 		while (i < j)
 		{
-			cond = conds[i].trim().split(" ");
+			cond = StringUtil.split(conds[i].trim(), " ");
 			dirs[i] = 1;
 			if (cond.length > 2)
 			{

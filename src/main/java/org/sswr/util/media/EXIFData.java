@@ -887,7 +887,7 @@ public class EXIFData
 				}
 				if (item2.type == EXIFType.STRING && item2.size == 11)
 				{
-					String[] dateArr = getItemString(item2).split(":");
+					String[] dateArr = StringUtil.split(getItemString(item2), ":");
 					if (dateArr.length != 3)
 					{
 						succ = false;

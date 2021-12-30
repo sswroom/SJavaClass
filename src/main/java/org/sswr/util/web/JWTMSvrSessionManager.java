@@ -453,7 +453,7 @@ public class JWTMSvrSessionManager extends JWTSessionManager implements MQTTEven
 						String roles = (String)retMap.get("roles");
 						if (roles != null)
 						{
-							String[] roleArr = roles.split(",");
+							String[] roleArr = StringUtil.split(roles, ",");
 							int i = 0;
 							int j = roleArr.length;
 							synchronized(req.reqRoles)

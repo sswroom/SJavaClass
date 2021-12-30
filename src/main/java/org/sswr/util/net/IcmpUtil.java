@@ -8,6 +8,7 @@ import java.net.Inet6Address;
 import java.net.InetAddress;
 
 import org.sswr.util.data.SharedInt;
+import org.sswr.util.data.StringUtil;
 import org.sswr.util.io.OSInfo;
 import org.sswr.util.io.UTF8Reader;
 
@@ -33,7 +34,7 @@ public class IcmpUtil
 				{
 					return false;
 				}
-				ProcessBuilder pb = new ProcessBuilder(cmd.split(" "));
+				ProcessBuilder pb = new ProcessBuilder(StringUtil.split(cmd, " "));
 				Process proc = pb.start();
 				UTF8Reader reader = new UTF8Reader(proc.getInputStream());
 				StringBuilder sb = new StringBuilder();
@@ -48,7 +49,7 @@ public class IcmpUtil
 				}
 				if (line.startsWith("icmp_seq="))
 				{
-					String[] sarr = line.split(" ");
+					String[] sarr = StringUtil.split(line, " ");
 					if (sarr.length == 4)
 					{
 						if (ttl != null)
@@ -79,7 +80,7 @@ public class IcmpUtil
 				{
 					return false;
 				}
-				ProcessBuilder pb = new ProcessBuilder(cmd.split(" "));
+				ProcessBuilder pb = new ProcessBuilder(StringUtil.split(cmd, " "));
 				Process proc = pb.start();
 				BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream(), OSInfo.getDefaultCharset()));
 				String line = null;

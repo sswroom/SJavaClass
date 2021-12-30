@@ -16,6 +16,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.sswr.util.data.DateTimeUtil;
+import org.sswr.util.data.StringUtil;
 
 public class SystemInfoUtil
 {
@@ -199,7 +200,7 @@ public class SystemInfoUtil
 				{
 					if (s.length() > 0)
 					{
-						sarr = s.split(",");
+						sarr = StringUtil.split(s, ",");
 						if (sarr.length == 8 && sarr[1].length() > 0)
 						{
 							i = processNames.size();
@@ -322,7 +323,7 @@ public class SystemInfoUtil
 		long ret = 0;
 		try
 		{
-			ProcessBuilder pb = new ProcessBuilder(cmdLine.split(" "));
+			ProcessBuilder pb = new ProcessBuilder(StringUtil.split(cmdLine, " "));
 			Process proc = pb.start();
 			BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream()));
 			String s;

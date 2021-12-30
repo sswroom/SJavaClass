@@ -507,7 +507,7 @@ public class SNMPUtil
 	{
 		Integer v;
 		int retSize = 1;
-		String sarr[] = oid.split("\\.");
+		String sarr[] = StringUtil.split(oid, ".");
 		int i;
 		int j;
 		j = sarr.length;
@@ -537,7 +537,7 @@ public class SNMPUtil
 	{
 		Integer v;
 		int retSize = 1;
-		String sarr[] = oid.split("\\.");
+		String sarr[] = StringUtil.split(oid, "\\.");
 		int i;
 		int j;
 		i = 0;

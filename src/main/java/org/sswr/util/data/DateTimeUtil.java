@@ -300,23 +300,23 @@ public class DateTimeUtil
 			dateStr = dateStr.substring(4).trim();
 		}
 		ZonedDateTime dt = ZonedDateTime.now();
-		String strs2[] = dateStr.split(" ");
+		String strs2[] = StringUtil.split(dateStr, " ");
 		String strs[];
 		if (strs2.length == 1)
 		{
-			strs2 = dateStr.split("T");
+			strs2 = StringUtil.split(dateStr, "T");
 		}
 		if (strs2.length == 2)
 		{
-			if ((strs = strs2[0].split("-")).length == 3)
+			if ((strs = StringUtil.split(strs2[0], "-")).length == 3)
 			{
 				dt = setDate(dt, strs);
 			}
-			else if ((strs = strs2[0].split("/")).length == 3)
+			else if ((strs = StringUtil.split(strs2[0], "/")).length == 3)
 			{
 				dt = setDate(dt, strs);
 			}
-			else if ((strs = strs2[0].split(":")).length == 3)
+			else if ((strs = StringUtil.split(strs2[0], ":")).length == 3)
 			{
 				dt = setDate(dt, strs);
 			}
@@ -335,7 +335,7 @@ public class DateTimeUtil
 				tz = strs2[1].substring(i);
 				strs2[1] = strs2[1].substring(0, i);
 			}
-			strs = strs2[1].split(":");
+			strs = StringUtil.split(strs2[1], ":");
 			if (strs.length == 3)
 			{
 				if (strs[2].endsWith("Z"))
@@ -370,19 +370,19 @@ public class DateTimeUtil
 		}
 		else if (strs2.length == 1)
 		{
-			if ((strs = strs2[0].split("-")).length == 3)
+			if ((strs = StringUtil.split(strs2[0], "-")).length == 3)
 			{
 				dt = setDate(dt, strs);
 				dt = clearTime(dt);
 				return dt;
 			}
-			else if ((strs = strs2[0].split("/")).length == 3)
+			else if ((strs = StringUtil.split(strs2[0], "/")).length == 3)
 			{
 				dt = setDate(dt, strs);
 				dt = clearTime(dt);
 				return dt;
 			}
-			else if ((strs = strs2[0].split(":")).length == 3)
+			else if ((strs = StringUtil.split(strs2[0], ":")).length == 3)
 			{
 				dt = setTime(dt, strs);
 				return dt;
@@ -409,7 +409,7 @@ public class DateTimeUtil
 			{
 				throw new IllegalArgumentException();
 			}
-			strs = strs2[3].split(":");
+			strs = StringUtil.split(strs2[3], ":");
 			if (strs.length == 3)
 			{
 				dt = setTime(dt, strs);

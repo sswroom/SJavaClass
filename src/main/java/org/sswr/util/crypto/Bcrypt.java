@@ -1,6 +1,7 @@
 package org.sswr.util.crypto;
 
 import org.sswr.util.crypto.BlockCipher.ChainMode;
+import org.sswr.util.data.StringUtil;
 import org.sswr.util.data.textbinenc.Radix64Enc;
 
 public class Bcrypt
@@ -31,7 +32,7 @@ public class Bcrypt
 		{
 			return false;
 		}
-		String[] hashArr = hash.substring(1).split("\\$");
+		String[] hashArr = StringUtil.split(hash.substring(1), "$");
 		if (hashArr.length != 3)
 		{
 			return false;

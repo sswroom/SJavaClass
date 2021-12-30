@@ -758,7 +758,7 @@ public class ASN1MIB
 									errMessage.append(" not found");
 									return false;
 								}
-								impSarr = impObjNames.toString().split(",");
+								impSarr = StringUtil.split(impObjNames.toString(), ",");
 								impCnt = 0;
 								while (impCnt < impSarr.length)
 								{

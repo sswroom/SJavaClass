@@ -11,7 +11,7 @@ public class FieldGetter<T>
 
 	public FieldGetter(Class<?> cls, String fieldName) throws NoSuchFieldException
 	{
-		String fieldNames[] = fieldName.split("\\.");
+		String fieldNames[] = StringUtil.split(fieldName, ".");
 		int i = 0;
 		int j = fieldNames.length;
 		this.fields = new Field[j];
