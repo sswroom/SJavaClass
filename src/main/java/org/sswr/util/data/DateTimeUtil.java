@@ -226,6 +226,7 @@ public class DateTimeUtil
 
 	public static Timestamp toTimestamp(ZonedDateTime dt)
 	{
+		if (dt == null) return null;
 		Timestamp ret = new Timestamp(dt.toInstant().toEpochMilli());
 		return ret;
 	}
