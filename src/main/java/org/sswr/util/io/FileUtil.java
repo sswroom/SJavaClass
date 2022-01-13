@@ -129,7 +129,7 @@ public class FileUtil {
 				return false;
 			}
 		}
-		return pattIndex >= pattArr.length;
+		return pattIndex >= pattArr.length || pattArr[pattIndex] == '*';
 	}
 
 	public static boolean fileNameMatch(String fileName, String pattern)
