@@ -528,6 +528,7 @@ public class DateTimeUtil
 
 	public static ZonedDateTime newZonedDateTime(Timestamp ts)
 	{
+		if (ts == null) return null;
 		return newZonedDateTime(ts.getTime());
 	}
 
