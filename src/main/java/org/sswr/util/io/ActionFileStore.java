@@ -124,6 +124,7 @@ public class ActionFileStore implements Runnable, DBUpdateHandler {
 
 	private synchronized void saveEntries()
 	{
+		LocalDateTime t;
 		Object arr[];
 		while (true)
 		{
@@ -131,6 +132,23 @@ public class ActionFileStore implements Runnable, DBUpdateHandler {
 			{
 				if (this.entries.size() <= 0)
 				{
+					if (this.fs != null)
+					{
+						t = LocalDateTime.now();
+						if (t.getYear() != this.lastEntryTime.getYear() || t.getMonth() != this.lastEntryTime.getMonth() || t.getDayOfMonth() != this.lastEntryTime.getDayOfMonth())
+						{
+							try
+							{
+								this.fs.close();
+							}
+							catch (Exception ex)
+							{
+	
+							}
+							this.fs = null;
+							this.lastEntryTime = null;
+						}
+					}
 					return;
 				}
 				int sz = this.entries.size();
@@ -149,14 +167,14 @@ public class ActionFileStore implements Runnable, DBUpdateHandler {
 			DateTimeFormatter monthFmt = DateTimeFormatter.ofPattern("yyyyMM");
 			DateTimeFormatter dayFmt = DateTimeFormatter.ofPattern("yyyyMMdd");
 			LogEntry ent;
-			LocalDateTime t;
+			boolean hasSuccess = false;
 			int i = 0;
 			int j = arr.length;
 			while (i < j)
 			{
 				ent = (LogEntry)arr[i];
 				t = LocalDateTime.ofInstant(Instant.ofEpochMilli(ent.logTime), TimeZone.getDefault().toZoneId());
-				if (this.lastEntryTime == null || t.getYear() != this.lastEntryTime.getYear() || t.getMonth() != this.lastEntryTime.getMonth() || t.getDayOfMonth() != this.lastEntryTime.getDayOfMonth())
+				if (this.fs == null || this.lastEntryTime == null || t.getYear() != this.lastEntryTime.getYear() || t.getMonth() != this.lastEntryTime.getMonth() || t.getDayOfMonth() != this.lastEntryTime.getDayOfMonth())
 				{
 					this.lastEntryTime = t;
 					if (this.fs != null)
@@ -191,6 +209,7 @@ public class ActionFileStore implements Runnable, DBUpdateHandler {
 					try
 					{
 						this.fs.write(ent.logLine+"\r\n");
+						hasSuccess = true;
 					}
 					catch (IOException ex)
 					{
@@ -220,6 +239,10 @@ public class ActionFileStore implements Runnable, DBUpdateHandler {
 			catch (IOException ex)
 			{
 				ex.printStackTrace();
+			}
+			if (!hasSuccess)
+			{
+				return;
 			}
 		}
 	}
