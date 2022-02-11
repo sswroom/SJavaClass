@@ -43,6 +43,13 @@ public class ByteTool {
 			(buff[index + 1] & 0xff);
 	}
 
+	public static int readUInt24(byte buff[], int index)
+	{
+		return ((buff[index + 2] & 0xff) << 16) | 
+			((buff[index + 1] & 0xff) << 8) | 
+			(buff[index + 0] & 0xff);
+	}
+
 	public static int readMUInt24(byte buff[], int index)
 	{
 		return ((buff[index] & 0xff) << 16) | 
