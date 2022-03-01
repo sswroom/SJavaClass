@@ -181,6 +181,10 @@ public class HTTPMyClient extends IOStream
 			}
 			catch (IOException ex)
 			{
+				if (debug)
+				{
+					ex.printStackTrace();
+				}
 			}
 		}
 		if (this.respCode == 0)
@@ -191,7 +195,10 @@ public class HTTPMyClient extends IOStream
 			}
 			catch (IOException ex)
 			{
-
+				if (debug)
+				{
+					ex.printStackTrace();
+				}
 			}
 		}
 	}
@@ -301,6 +308,10 @@ public class HTTPMyClient extends IOStream
 		}
 		catch (IOException ex)
 		{
+			if (debug)
+			{
+				ex.printStackTrace();
+			}
 			return null;
 		}
 	}
@@ -341,6 +352,10 @@ public class HTTPMyClient extends IOStream
 		}
 		catch (IOException ex)
 		{
+			if (debug)
+			{
+				ex.printStackTrace();
+			}
 			return null;
 		}
 	}
@@ -396,6 +411,10 @@ public class HTTPMyClient extends IOStream
 		}
 		catch (IOException ex)
 		{
+			if (debug)
+			{
+				ex.printStackTrace();
+			}
 			return null;
 		}
 	}
