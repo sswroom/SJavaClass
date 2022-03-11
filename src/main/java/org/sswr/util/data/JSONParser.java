@@ -10,7 +10,13 @@ public class JSONParser
 	public static Object parse(String jsonStr)
 	{
 		char carr[] = jsonStr.toCharArray();
-		return parseJSONStr2(carr, 0, carr.length, new SharedInt());
+		int leng = carr.length;
+		int index = 0;
+		if (leng > 0 && carr[0] == 0xFEFF)
+		{
+			index++;
+		}
+		return parseJSONStr2(carr, index, leng, new SharedInt());
 	}
 
 	private static int clearWS(char carr[], int index, int endIndex)
