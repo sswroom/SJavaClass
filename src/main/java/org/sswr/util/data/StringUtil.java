@@ -12,6 +12,7 @@ import java.util.Set;
 public class StringUtil
 {
 	public static final char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
+	public static final char[] hex_array = "0123456789abcdef".toCharArray();
 
 	/**
 	* Check whether the string is numeric
@@ -858,6 +859,93 @@ public class StringUtil
 			i++;
 		}
 		return ofst + j;
+	}
+
+	/**
+	* Concat utf8 array with a string
+	*
+	* @param  buff  utf8 array to concat
+	* @param  ofst  offset of the array to concat
+	* @param  s     string to be concated
+	* @return     end offset of the string in buff
+	*/
+	public static int concat(byte []buff, int ofst, String s)
+	{
+		byte[] carr = s.getBytes(StandardCharsets.UTF_8);
+		int i = 0;
+		int j = carr.length;
+		while (i < j)
+		{
+			buff[ofst + i] = carr[i];
+			i++;
+		}
+		return ofst + j;
+	}
+
+	/**
+	* Concat utf8 array with a string buffer
+	*
+	* @param  buff  utf8 array to concat
+	* @param  ofst  offset of the array to concat
+	* @param  sbuff   string buffer to be concated
+	* @param  sbuffOfst  string buffer offset
+	* @param  sbuffLen   string buffer length
+	* @return     end offset of the string in buff
+	*/
+	public static int concat(byte []buff, int ofst, byte[] sbuff, int sbuffOfst, int sbuffLen)
+	{
+		int i = 0;
+		int j = sbuffLen;
+		while (i < j)
+		{
+			buff[ofst + i] = sbuff[i + sbuffOfst];
+			i++;
+		}
+		return ofst + j;
+	}
+
+	/**
+	* Concat utf8 array with a hex of buffer
+	*
+	* @param  buff  utf8 array to concat
+	* @param  ofst  offset of the array to concat
+	* @param  bytes   string buffer to be concated
+	* @param  bytesOfst  string buffer offset
+	* @param  bytesLen   string buffer length
+	* @param  seperator  seperator between bytes
+	* @return     end offset of the string in buff
+	*/
+	public static int concatHexBytes(byte []buff, int ofst, byte[] bytes, int bytesOfst, int bytesLen, byte seperator)
+	{
+		byte val;
+		if (seperator == 0)
+		{
+			int i = 0;
+			while (i < bytesLen)
+			{
+				val = bytes[bytesOfst + i];
+				buff[ofst] = (byte)HEX_ARRAY[val >> 4];
+				buff[ofst + 1] = (byte)HEX_ARRAY[val & 15];
+				ofst += 2;
+				i++;
+			}
+			buff[ofst] = 0;
+		}
+		else
+		{
+			int i = 0;
+			while (i < bytesLen)
+			{
+				val = bytes[bytesOfst + i];
+				buff[ofst] = (byte)HEX_ARRAY[val >> 4];
+				buff[ofst + 1] = (byte)HEX_ARRAY[val & 15];
+				buff[ofst + 2] = seperator;
+				ofst += 3;
+				i++;
+			}
+			buff[--ofst] = 0;
+		}
+		return ofst;
 	}
 
 	/**
