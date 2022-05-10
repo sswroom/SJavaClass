@@ -1,4 +1,4 @@
-package org.sswr.util.web;
+package org.sswr.util.net.email;
 
 public class NullEmailControl implements EmailControl
 {

@@ -18,8 +18,8 @@ public class TCPClient extends IOStream
 	private Socket s;
 	private long totalRecvSize;
 	private long totalSendSize;
-	long cliId;
-	int flags; //1 = shutdown send, 2 = shutdown recv, 4 = closed, 8 = connect error
+	private long cliId;
+	private int flags; //1 = shutdown send, 2 = shutdown recv, 4 = closed, 8 = connect error
 
 	public TCPClient(String hostName, int port, TCPClientType cliType)
 	{
@@ -55,7 +55,7 @@ public class TCPClient extends IOStream
 		}
 		catch (IOException ex)
 		{
-			//ex.printStackTrace();
+			ex.printStackTrace();
 			this.flags = 12;
 			return;
 		}
@@ -320,5 +320,31 @@ public class TCPClient extends IOStream
 	public long getTotalSendSize()
 	{
 		return this.totalSendSize;
+	}
+
+	public boolean sslHandshake()
+	{
+		if (this.s instanceof SSLSocket)
+		{
+		}
+		else
+		{
+			try
+			{
+				SSLSocketFactory factory = (SSLSocketFactory)SSLSocketFactory.getDefault();
+				SSLSocket soc = (SSLSocket)factory.createSocket(this.s, null, false);;
+				this.s = soc;
+				soc.setSoTimeout(5000);
+				soc.setUseClientMode(true);
+				soc.startHandshake();
+				return true;
+			}
+			catch (IOException ex)
+			{
+				ex.printStackTrace();
+				return false;
+			}
+		}
+		return false;
 	}
 }

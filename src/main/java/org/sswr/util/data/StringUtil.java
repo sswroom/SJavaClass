@@ -38,6 +38,79 @@ public class StringUtil
 	}
 
 	/**
+	* Check whether the string contains non-ASCII characters
+	*
+	* @param  s  the string to check
+	* @return    true if the string is not null/empty and contains non-ASCII characters
+	*/
+	public static boolean isNonASCII(String s)
+	{
+		if (s == null || s.length() == 0)
+		{
+			return false;
+		}
+		char carr[] = s.toCharArray();
+		int i = 0;
+		int j = carr.length;
+		while (i < j)
+		{
+			if (carr[i++] >= 0x80)
+				return true;
+		}
+		return false;
+	}
+
+	/**
+	* Check whether the string is in email address form
+	*
+	* @param  s  the string to check
+	* @return    true if the string is in email address form
+	*/
+	public static boolean isEmailAddress(String s)
+	{
+		int atPos = -1;
+		boolean dotFound = false;
+		char[] carr = s.toCharArray();
+		int startPtr = 0;
+		int endPtr = carr.length;
+		char c;
+		while (startPtr < endPtr)
+		{
+			c = carr[startPtr++];
+			if (Character.isLetterOrDigit(c) || c == '-')
+			{
+	
+			}
+			else if (c == '.')
+			{
+				if (atPos != -1)
+				{
+					dotFound = true;
+				}
+			}
+			else if (c == '@')
+			{
+				if (atPos != -1)
+				{
+					return false;
+				}
+				atPos = startPtr - 1;
+				dotFound = false;
+	
+			}
+			else
+			{
+				return false;
+			}
+		}
+		if (atPos == -1 || atPos == 0 || !dotFound)
+		{
+			return false;
+		}
+		return true;
+	}
+
+	/**
 	* Check whether the string is null or empty
 	*
 	* @param  s  the string to check
@@ -314,6 +387,34 @@ public class StringUtil
 			HEX_ARRAY[v2 >> 4], HEX_ARRAY[v2 & 15],
 			HEX_ARRAY[v3 >> 4], HEX_ARRAY[v3 & 15],
 			HEX_ARRAY[v4 >> 4], HEX_ARRAY[v4 & 15]
+		});
+	}
+
+	/**
+	* Convert Int64 to Hexadecimal String
+	*
+	* @param  v  int64 to convert
+	* @return    Upper case Hexadecimal String, must be 16 char long
+	*/
+	public static String toHex64(long v)
+	{
+		int v1 = (int)(v >> 56) & 0xff;
+		int v2 = (int)(v >> 48) & 0xff;
+		int v3 = (int)(v >> 40) & 0xff;
+		int v4 = (int)(v >> 32) & 0xff;
+		int v5 = (int)(v >> 24) & 0xff;
+		int v6 = (int)(v >> 16) & 0xff;
+		int v7 = (int)(v >> 8) & 0xff;
+		int v8 = (int)(v) & 0xff;
+		return new String(new char[]{
+			HEX_ARRAY[v1 >> 4], HEX_ARRAY[v1 & 15],
+			HEX_ARRAY[v2 >> 4], HEX_ARRAY[v2 & 15],
+			HEX_ARRAY[v3 >> 4], HEX_ARRAY[v3 & 15],
+			HEX_ARRAY[v4 >> 4], HEX_ARRAY[v4 & 15],
+			HEX_ARRAY[v5 >> 4], HEX_ARRAY[v5 & 15],
+			HEX_ARRAY[v6 >> 4], HEX_ARRAY[v6 & 15],
+			HEX_ARRAY[v7 >> 4], HEX_ARRAY[v7 & 15],
+			HEX_ARRAY[v8 >> 4], HEX_ARRAY[v8 & 15]
 		});
 	}
 
@@ -1290,6 +1391,52 @@ public class StringUtil
 			{
 				sarr.add(s.substring(k, i));
 				i += seperator.length();
+				k = i;
+			}
+			else
+			{
+				i++;
+			}
+		}
+		sarr.add(s.substring(k, s.length()));
+		String[] ret = new String[i = sarr.size()];
+		while (i-- > 0)
+		{
+			ret[i] = sarr.get(i);
+		}
+		return ret;
+	}
+
+	/**
+	 * Split string by line into array
+	 * 
+	 * @param s the string to split
+	 * @return  splitted string array
+	 */
+	public static String[] splitLine(String s)
+	{
+		ArrayList<String> sarr = new ArrayList<String>();
+		int k = 0;
+		int i = 0;
+		int j = s.length();
+		char c;
+		while (i < j)
+		{
+			c = s.charAt(i);
+			if (c == '\r')
+			{
+				sarr.add(s.substring(k, i));
+				i++;
+				if (i < j && s.charAt(i) == '\n')
+				{
+					i++;
+				}
+				k = i;
+			}
+			else if (c == '\n')
+			{
+				sarr.add(s.substring(k, i));
+				i++;
 				k = i;
 			}
 			else

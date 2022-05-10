@@ -547,6 +547,24 @@ public class UTF8Reader
 		return ofst;
 	}
 
+	public int getLastLineBreak(byte []buff, int ofst)
+	{
+		if (this.lineBreak == LineBreakType.CR)
+		{
+			buff[ofst++] = 13;
+		}
+		else if (this.lineBreak == LineBreakType.LF)
+		{
+			buff[ofst++] = 10;
+		}
+		else if (this.lineBreak == LineBreakType.CRLF)
+		{
+			buff[ofst++] = 13;
+			buff[ofst++] = 10;
+		}
+		return ofst;
+	}
+
 	public boolean getLastLineBreak(StringBuilder sb)
 	{
 		if (this.lineBreak == LineBreakType.CR)

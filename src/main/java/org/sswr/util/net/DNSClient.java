@@ -82,7 +82,8 @@ public class DNSClient implements UDPPacketListener
 	{
 		Random random = new Random();
 		this.serverAddr = serverAddr;
-		this.lastID = random.nextInt();
+		this.lastID = random.nextInt() & 0xffff;
+		this.reqMap = new HashMap<Integer, RequestStatus>();
 		this.svr = new UDPServer(null, 0, null, this, null, null, 1, false);
 	}
 
@@ -178,8 +179,9 @@ public class DNSClient implements UDPPacketListener
 		while (true)
 		{
 			cptr2 = cptr1;
-			while ((c = cbuff[cptr2]) != 0)
+			while (cptr2 < cbuff.length)
 			{
+				c = cbuff[cptr2];
 				if (c == '.')
 					break;
 				cptr2++;
@@ -189,7 +191,7 @@ public class DNSClient implements UDPPacketListener
 			{
 				buff[ptr1++] = cbuff[cptr1++];
 			}
-			if (cbuff[cptr1] == 0)
+			if (cptr1 >= cbuff.length || cbuff[cptr1] == 0)
 			{
 				buff[ptr1++] = 0;
 				break;
@@ -427,7 +429,7 @@ public class DNSClient implements UDPPacketListener
 		int l;
 		while (i < endOfst)
 		{
-			j = buff[i];
+			j = buff[i] & 0xff;
 			if (j == 0)
 			{
 				i++;

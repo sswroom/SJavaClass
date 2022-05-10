@@ -1,6 +1,6 @@
 package org.sswr.util.data;
 
-public class SharedObject
+public class SharedObject<T>
 {
-	public Object value;
+	public T value;
 }

@@ -1,4 +1,4 @@
-package org.sswr.util.web;
+package org.sswr.util.net.email;
 
 public interface EmailCheckHandler<T extends TemplateEmailStatus>
 {

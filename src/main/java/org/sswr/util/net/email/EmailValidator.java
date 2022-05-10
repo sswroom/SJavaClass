@@ -1,6 +1,13 @@
-package org.sswr.util.net;
+package org.sswr.util.net.email;
 
 import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.sswr.util.net.DNSClient;
+import org.sswr.util.net.DNSRequestAnswer;
+import org.sswr.util.net.SocketFactory;
 
 public class EmailValidator
 {
@@ -37,7 +44,6 @@ public class EmailValidator
 
 	public Status validate(String emailAddr)
 	{
-/*		Net::SocketUtil::AddressInfo addr;
 		SMTPConn conn;
 		String emailDomain;
 		int i = emailAddr.indexOf('@');
@@ -48,65 +54,66 @@ public class EmailValidator
 		}
 		emailDomain = emailAddr.substring(i + 1);
 		i = emailDomain.indexOf('@');
-		if (i != Status.INVALID_INDEX)
+		if (i != -1)
 		{
 			return Status.S_INVALID_FORMAT;
 		}
 	
-		Text::String *emailSvr = 0;
-		Data::ArrayList<Net::DNSClient::RequestAnswer*> ansList;
-		Net::DNSClient::RequestAnswer *ans;
-		this->dnsClient->GetByEmailDomainName(&ansList, emailDomain);
+		String emailSvr = null;
+		List<DNSRequestAnswer> ansList = new ArrayList<DNSRequestAnswer>();
+		DNSRequestAnswer ans;
+		this.dnsClient.getByEmailDomainName(ansList, emailDomain);
 		i = 0;
-		j = ansList.GetCount();
+		j = ansList.size();
 		while (i < j)
 		{
-			ans = ansList.GetItem(i);
-			if (ans->recType == 15)
+			ans = ansList.get(i);
+			if (ans.recType == 15)
 			{
-				emailSvr = ans->rd->Clone();
+				emailSvr = ans.rd;
 				break;
 			}
 			j++;
 		}
-		Net::DNSClient::FreeAnswers(&ansList);
-		if (emailSvr == 0)
+		if (emailSvr == null)
 		{
-			return S_DOMAIN_NOT_RESOLVED;
+			return Status.S_DOMAIN_NOT_RESOLVED;
 		}
 	
-		if (!this->sockf->DNSResolveIP(emailSvr->ToCString(), &addr))
+		try
 		{
-			emailSvr->Release();
-			return S_DOMAIN_NOT_RESOLVED;
+			InetAddress.getByName(emailSvr);
 		}
-		NEW_CLASS(conn, Net::Email::SMTPConn(this->sockf, 0, emailSvr->ToCString(), 25, Net::Email::SMTPConn::CT_PLAIN, 0));
-		emailSvr->Release();
-		if (conn->IsError())
+		catch (UnknownHostException ex)
 		{
-			DEL_CLASS(conn);
-			return S_CONN_ERROR;
+			return Status.S_DOMAIN_NOT_RESOLVED;
 		}
-		if (!conn->SendHelo(CSTR("[127.0.0.1]")))
+		conn = new SMTPConn(emailSvr, 25, SMTPConnType.PLAIN, null);
+		if (conn.isError())
 		{
-			conn->SendQuit();
-			DEL_CLASS(conn);
-			return S_COMM_ERROR;
+			conn.close();
+			return Status.S_CONN_ERROR;
 		}
-		if (!conn->SendMailFrom(CSTR("sswroom@yahoo.com")))
+		if (!conn.sendHelo("[127.0.0.1]"))
 		{
-			conn->SendQuit();
-			DEL_CLASS(conn);
-			return S_FROM_NOT_ACCEPT;
+			conn.sendQuit();
+			conn.close();
+			return Status.S_COMM_ERROR;
 		}
-		if (!conn->SendRcptTo(emailAddr))
+		if (!conn.sendMailFrom("sswroom@yahoo.com"))
 		{
-			conn->SendQuit();
-			DEL_CLASS(conn);
-			return S_NO_SUCH_ADDR;
+			conn.sendQuit();
+			conn.close();
+			return Status.S_FROM_NOT_ACCEPT;
 		}
-		conn->SendQuit();
-		DEL_CLASS(conn);*/
+		if (!conn.sendRcptTo(emailAddr))
+		{
+			conn.sendQuit();
+			conn.close();
+			return Status.S_NO_SUCH_ADDR;
+		}
+		conn.sendQuit();
+		conn.close();
 		return Status.S_VALID;
 	}
 
