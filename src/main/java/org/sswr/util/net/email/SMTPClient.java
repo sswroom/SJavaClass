@@ -89,4 +89,15 @@ public class SMTPClient
 		return succ;
 	}
 
+	public boolean testServerOnline()
+	{
+		SMTPConn conn = new SMTPConn(this.host, this.port, this.connType, this.logWriter);
+		if (conn.isError())
+		{
+			conn.close();
+			return false;
+		}
+		conn.close();
+		return true;
+	}
 }

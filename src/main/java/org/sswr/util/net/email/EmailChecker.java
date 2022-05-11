@@ -101,13 +101,13 @@ public class EmailChecker<T extends TemplateEmailStatus> implements Runnable
 		this.handler.endEmailChecking(t);
 	}
 	
-	public boolean isServerValid()
+	public boolean isServerOnline()
 	{
-		return this.emailCtrl.isServerValid();
+		return this.emailCtrl.isServerOnline();
 	}
 
-	public String testEmail(String toAddress)
+	public String sendTestingEmail(String toAddress)
 	{
-		return this.emailCtrl.testEmail(toAddress);
+		return this.emailCtrl.sendTestingEmail(toAddress);
 	}
 }

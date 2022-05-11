@@ -100,7 +100,7 @@ public class EmailValidator
 			conn.close();
 			return Status.S_COMM_ERROR;
 		}
-		if (!conn.sendMailFrom("sswroom@yahoo.com"))
+		if (!conn.sendMailFrom("validator@myserver.com"))
 		{
 			conn.sendQuit();
 			conn.close();
