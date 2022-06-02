@@ -58,6 +58,20 @@ public class ReceivedEmail
 		this.signVerified = signVerified;
 	}
 
+	public void addAttachment(boolean isInline, String fileName, String contentType, byte[] content)
+	{
+		EmailAttachment attachment = new EmailAttachment();
+		attachment.isInline = isInline;
+		attachment.fileName = fileName;
+		attachment.contentType = contentType;
+		attachment.content = content;
+//		public String contentId;
+//		public ZonedDateTime createTime;
+//		public ZonedDateTime modifyTime;
+		this.attachments.add(attachment);
+		this.attachmentMap.put(attachment.fileName, attachment);
+	}
+
 	public byte[] getContent()
 	{
 		return this.content;
