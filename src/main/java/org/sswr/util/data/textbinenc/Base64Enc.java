@@ -168,6 +168,64 @@ public class Base64Enc extends TextBinEnc
 		}
 	}
 
+	public byte []decodeBin(byte []dataBuff, int dataOfst, int buffSize)
+	{
+		int i = 0;
+		int j = buffSize;
+		int len = j / 4 * 3 + (j & 3);
+		int c;
+		byte code;
+		byte b = 0;
+		byte b2 = 0;
+		byte destBuff[] = new byte[len];
+		int destOfst = 0;
+		while (i < j)
+		{
+			c = dataBuff[dataOfst + (i++)] & 255;
+			if (c < 0x80)
+			{
+				code = decArr[c];
+				if (code != (byte)0xff)
+				{
+					switch (b)
+					{
+					case 0:
+						b2 = (byte)(code << 2);
+						b = 1;
+						break;
+					case 1:
+						destBuff[destOfst] = (byte)(b2 | (code >> 4));
+						b2 = (byte)(code << 4);
+						destOfst++;
+						b = 2;
+						break;
+					case 2:
+						destBuff[destOfst] = (byte)(b2 | (code >> 2));
+						b2 = (byte)(code << 6);
+						destOfst++;
+						b = 3;
+						break;
+					case 3:
+						destBuff[destOfst] = (byte)(b2 | code);
+						destOfst++;
+						b = 0;
+						break;
+					}
+				}
+			}
+		}
+		if (destOfst == len)
+		{
+			return destBuff;
+		}
+		else
+		{
+			byte outBuff[] = new byte[destOfst];
+			ByteTool.copyArray(outBuff, 0, destBuff, 0, destOfst);
+			return outBuff;
+		}
+	}
+
 	public String getName()
 	{
 		return "Base64";

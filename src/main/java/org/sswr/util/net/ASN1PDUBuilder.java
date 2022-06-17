@@ -36,7 +36,7 @@ public class ASN1PDUBuilder
 		}
 	}
 
-	public void sequenceBegin(byte type)
+	public void beginOther(byte type)
 	{
 		this.allocateSize(2);
 		this.buff[this.currOffset] = type;
@@ -45,7 +45,22 @@ public class ASN1PDUBuilder
 		this.currLev++;
 	}
 
-	public void sequenceEnd()
+	public void beginSequence()
+	{
+		this.beginOther((byte)0x30);
+	}
+
+	public void beginSet()
+	{
+		this.beginOther((byte)0x31);
+	}
+
+	public void beginContentSpecific(int n)
+	{
+		this.beginOther((byte)(0xA0 + n));
+	}
+
+	public void endLevel()
 	{
 		if (this.currLev > 0)
 		{
@@ -85,6 +100,14 @@ public class ASN1PDUBuilder
 		}
 	}
 
+	public void endAll()
+	{
+		while (this.currLev > 0)
+		{
+			this.endLevel();
+		}
+	}
+	
 	public void appendBool(boolean v)
 	{
 		this.allocateSize(3);
@@ -268,7 +291,7 @@ public class ASN1PDUBuilder
 		}
 	}
 
-	public void appendBuff(byte type, byte[] buff, int buffOfst, int buffSize)
+	public void appendOther(byte type, byte[] buff, int buffOfst, int buffSize)
 	{
 		if (buffSize == 0)
 		{

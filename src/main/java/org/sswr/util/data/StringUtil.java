@@ -61,6 +61,32 @@ public class StringUtil
 	}
 
 	/**
+	* Check whether the byte array are all ascii text
+	*
+	* @param  buff  the byte array to check
+	* @param  ofst  the offset of byte array
+	* @param  len  the length of byte array
+	* @return    true if the byte array are all ascii characters
+	*/
+	public static boolean isASCIIText(byte[] buff, int ofst, int len)
+	{
+		byte b;
+		while (len-- > 0)
+		{
+			b = buff[ofst++];
+			if ((b >= 0x20 && b < 0x7F) || b == 13 || b == 10)
+			{
+	
+			}
+			else
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/**
 	* Check whether the string is in email address form
 	*
 	* @param  s  the string to check
@@ -1290,6 +1316,35 @@ public class StringUtil
 	{
 		byte[] valueBuff = value.getBytes(StandardCharsets.UTF_8);
 		if (ofst + valueBuff.length > buff.length)
+		{
+			return false;
+		}
+		int i = 0;
+		int j = valueBuff.length;
+		while (i < j)
+		{
+			if (buff[ofst + i] != valueBuff[i])
+			{
+				return false;
+			}
+			i++;
+		}
+		return true;
+	}
+
+	/**
+	 * Check whether the byte buffer is starts with a string
+	 * 
+	 * @param  buff byte buffer to check
+	 * @param  ofst offset of byte buffer start
+	 * @param  len length of byte buffer
+	 * @param  value Value to check
+	 * @return  whether it is starts with a string
+	 */
+	public static boolean startsWithC(byte[] buff, int ofst, int len, String value)
+	{
+		byte[] valueBuff = value.getBytes(StandardCharsets.UTF_8);
+		if (valueBuff.length > len)
 		{
 			return false;
 		}
