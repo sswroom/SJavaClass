@@ -281,6 +281,365 @@ public abstract class MyX509File extends ASN1Data
 		appendSigned(pdu, beginOfst, endOfst, path, sb, varName);
 	}
 
+	protected static boolean isTBSCertList(byte[] pdu, int beginOfst, int endOfst, String path)
+	{
+		int cnt = ASN1Util.pduCountItem(pdu, beginOfst, endOfst, path);
+		if (cnt < 4)
+		{
+			return false;
+		}
+		int i = 1;
+		if (ASN1Util.pduGetItemType(pdu, beginOfst, endOfst, path+"."+i) == ASN1Util.IT_INTEGER)
+		{
+			i++;
+		}
+		if (ASN1Util.pduGetItemType(pdu, beginOfst, endOfst, path+"."+i) != ASN1Util.IT_SEQUENCE)
+		{
+			return false;
+		}
+		i++;
+		if (ASN1Util.pduGetItemType(pdu, beginOfst, endOfst, path+"."+i) != ASN1Util.IT_SEQUENCE)
+		{
+			return false;
+		}
+		i++;
+		if (ASN1Util.pduGetItemType(pdu, beginOfst, endOfst, path+"."+i) != ASN1Util.IT_UTCTIME)
+		{
+			return false;
+		}
+		i++;
+		if (ASN1Util.pduGetItemType(pdu, beginOfst, endOfst, path+"."+i) == ASN1Util.IT_UTCTIME)
+		{
+			i++;
+		}
+		if (ASN1Util.pduGetItemType(pdu, beginOfst, endOfst, path+"."+i) != ASN1Util.IT_SEQUENCE)
+		{
+			return false;
+		}
+		i++;
+		int itemType = ASN1Util.pduGetItemType(pdu, beginOfst, endOfst, path+"."+i);
+		if (itemType != ASN1Util.IT_CONTEXT_SPECIFIC_0 && itemType != ASN1Util.IT_UNKNOWN)
+		{
+			return false;
+		}
+		return true;
+	}
+
+	protected static void appendTBSCertList(byte[] pdu, int beginOfst, int endOfst, String path, StringBuilder sb, String varName)
+	{
+		ZonedDateTime dt;
+		String name;
+		int i = 1;
+		ASN1Item itemPDU;
+		ASN1Item subitemPDU;
+		ASN1Item subsubitemPDU;
+		if ((itemPDU = ASN1Util.pduGetItem(pdu, beginOfst, endOfst, path + "." + i)) != null)
+		{
+			if (itemPDU.itemType == ASN1Util.IT_INTEGER)
+			{
+				if (varName != null)
+				{
+					sb.append(varName);
+					sb.append('.');
+				}
+				sb.append("version = ");
+				appendVersion(pdu, beginOfst, endOfst, path + "." + i, sb);
+				sb.append("\r\n");
+				i++;
+			}
+		}
+		if ((itemPDU = ASN1Util.pduGetItem(pdu, beginOfst, endOfst, path + "." + i)) != null)
+		{
+			if (itemPDU.itemType == ASN1Util.IT_SEQUENCE)
+			{
+				name = "signature";
+				if (varName != null)
+				{
+					name = varName + "." + name;
+				}
+				appendAlgorithmIdentifier(pdu, itemPDU.ofst, itemPDU.ofst + itemPDU.len, sb, name, false);
+			}
+		}
+		i++;
+		if ((itemPDU = ASN1Util.pduGetItem(pdu, beginOfst, endOfst, path + "." + i)) != null)
+		{
+			if (itemPDU.itemType == ASN1Util.IT_SEQUENCE)
+			{
+				name = "issuer";
+				if (varName != null)
+				{
+					name = varName + "." + name;
+				}
+				appendName(pdu, itemPDU.ofst, itemPDU.ofst + itemPDU.len, sb, name);
+			}
+		}
+		i++;
+		if ((itemPDU = ASN1Util.pduGetItem(pdu, beginOfst, endOfst, path + "." + i)) != null)
+		{
+			if (itemPDU.itemType == ASN1Util.IT_UTCTIME && (dt = ASN1Util.pduParseUTCTimeCont(pdu, itemPDU.ofst, itemPDU.len)) != null)
+			{
+				if (varName != null)
+				{
+					sb.append(varName);
+					sb.append('.');
+				}
+				sb.append("thisUpdate = ");
+				sb.append(dt.toString());
+				sb.append("\r\n");
+			}
+		}
+		i++;
+		if ((itemPDU = ASN1Util.pduGetItem(pdu, beginOfst, endOfst, path + "." + i)) != null && itemPDU.itemType == ASN1Util.IT_UTCTIME)
+		{
+			if ((dt = ASN1Util.pduParseUTCTimeCont(pdu, itemPDU.ofst, itemPDU.len)) != null)
+			{
+				if (varName != null)
+				{
+					sb.append(varName);
+					sb.append('.');
+				}
+				sb.append("nextUpdate = ");
+				sb.append(dt.toString());
+				sb.append("\r\n");
+			}
+			i++;
+		}
+		if ((itemPDU = ASN1Util.pduGetItem(pdu, beginOfst, endOfst, path + "." + i)) != null && itemPDU.itemType == ASN1Util.IT_SEQUENCE)
+		{
+			int j = 1;
+			while (true)
+			{
+				if ((subitemPDU = ASN1Util.pduGetItem(pdu, itemPDU.ofst, itemPDU.ofst + itemPDU.len, String.valueOf(j))) == null || subitemPDU.itemType != ASN1Util.IT_SEQUENCE)
+				{
+					break;
+				}
+
+				if ((subsubitemPDU = ASN1Util.pduGetItem(pdu, subitemPDU.ofst, subitemPDU.ofst + subitemPDU.len, "1")) != null && subsubitemPDU.itemType == ASN1Util.IT_INTEGER)
+				{
+					if (varName != null)
+					{
+						sb.append(varName);
+						sb.append('.');
+					}
+					sb.append("revokedCertificates[");
+					sb.append(j);
+					sb.append("].userCertificate = ");
+					StringUtil.appendHex(sb, pdu, subsubitemPDU.ofst, subsubitemPDU.len, ':', LineBreakType.NONE);
+					sb.append("\r\n");
+				}
+				if ((subsubitemPDU = ASN1Util.pduGetItem(pdu, subitemPDU.ofst, subitemPDU.ofst + subitemPDU.len, "2")) != null && subsubitemPDU.itemType == ASN1Util.IT_UTCTIME && (dt = ASN1Util.pduParseUTCTimeCont(pdu, subsubitemPDU.ofst, subsubitemPDU.len)) != null)
+				{
+					if (varName != null)
+					{
+						sb.append(varName);
+						sb.append('.');
+					}
+					sb.append("revokedCertificates[");
+					sb.append(j);
+					sb.append("].revocationDate = ");
+					sb.append(dt.toString());
+					sb.append("\r\n");
+				}
+				if ((subsubitemPDU = ASN1Util.pduGetItem(pdu, subitemPDU.ofst, subitemPDU.ofst + subitemPDU.len, "3")) != null && subsubitemPDU.itemType == ASN1Util.IT_SEQUENCE)
+				{
+					name = "revokedCertificates[" + j + "].crlEntryExtensions";
+					if (varName != null)
+					{
+						name = varName + "." + name;
+					}
+					appendCRLExtensions(pdu, subsubitemPDU.pduBegin, subsubitemPDU.ofst + subsubitemPDU.len, sb, name);
+				}
+				j++;
+			}
+		}
+		i++;
+		if ((itemPDU = ASN1Util.pduGetItem(pdu, beginOfst, endOfst, path + "." + i)) != null)
+		{
+			if (itemPDU.itemType == ASN1Util.IT_CONTEXT_SPECIFIC_0)
+			{
+				name = "crlExtensions";
+				if (varName != null)
+				{
+					name = varName + "." + name;
+				}
+				appendCRLExtensions(pdu, itemPDU.ofst, itemPDU.ofst + itemPDU.len, sb, name);
+			}
+		}
+	}
+
+	protected static boolean isCertificateList(byte[] pdu, int beginOfst, int endOfst, String path)
+	{
+		return isSigned(pdu, beginOfst, endOfst, path) && isTBSCertList(pdu, beginOfst, endOfst, path + ".1");
+	}
+
+	protected static void appendCertificateList(byte[] pdu, int beginOfst, int endOfst, String path, StringBuilder sb, String varName)
+	{
+		appendTBSCertList(pdu, beginOfst, endOfst, path + ".1", sb, varName);
+		appendSigned(pdu, beginOfst, endOfst, path, sb, varName);
+	}
+
+	protected static boolean isPrivateKeyInfo(byte[] pdu, int beginOfst, int endOfst, String path)
+	{
+		int cnt = ASN1Util.pduCountItem(pdu, beginOfst, endOfst, path);
+		if (cnt != 3 && cnt != 4)
+		{
+			return false;
+		}
+		if (ASN1Util.pduGetItemType(pdu, beginOfst, endOfst, path + ".1") != ASN1Util.IT_INTEGER)
+		{
+			return false;
+		}
+		if (ASN1Util.pduGetItemType(pdu, beginOfst, endOfst, path + ".2") != ASN1Util.IT_SEQUENCE)
+		{
+			return false;
+		}
+		if (ASN1Util.pduGetItemType(pdu, beginOfst, endOfst, path + ".3") != ASN1Util.IT_OCTET_STRING)
+		{
+			return false;
+		}
+		if (cnt == 4)
+		{
+			if (ASN1Util.pduGetItemType(pdu, beginOfst, endOfst, path + ".4") != ASN1Util.IT_SET)
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+
+	protected static void appendPrivateKeyInfo(byte[] pdu, int beginOfst, int endOfst, String path, StringBuilder sb)
+	{
+		ASN1Item itemPDU;
+		KeyType keyType = KeyType.Unknown;
+		if ((itemPDU = ASN1Util.pduGetItem(pdu, beginOfst, endOfst, path + ".1")) != null)
+		{
+			if (itemPDU.itemType == ASN1Util.IT_INTEGER)
+			{
+				sb.append("version = ");
+				appendVersion(pdu, beginOfst, endOfst, path + ".1", sb);
+				sb.append("\r\n");
+			}
+		}
+		if ((itemPDU = ASN1Util.pduGetItem(pdu, beginOfst, endOfst, path + ".2")) != null)
+		{
+			if (itemPDU.itemType == ASN1Util.IT_SEQUENCE)
+			{
+				keyType = appendAlgorithmIdentifier(pdu, itemPDU.ofst, itemPDU.ofst + itemPDU.len, sb, "privateKeyAlgorithm", false);
+			}
+		}
+		if ((itemPDU = ASN1Util.pduGetItem(pdu, beginOfst, endOfst, path + ".3")) != null)
+		{
+			if (itemPDU.itemType == ASN1Util.IT_OCTET_STRING)
+			{
+				sb.append("privateKey = ");
+				sb.append("\r\n");
+				if (keyType != KeyType.Unknown)
+				{
+					MyX509Key privkey = new MyX509Key("PrivKey", pdu, itemPDU.ofst, itemPDU.len, keyType);
+					sb.append(privkey.toString());
+				}
+			}
+		}
+	}
+
+	protected static boolean isCertificateRequestInfo(byte[] pdu, int beginOfst, int endOfst, String path)
+	{
+		int cnt = ASN1Util.pduCountItem(pdu, beginOfst, endOfst, path);
+		if (cnt < 4)
+		{
+			return false;
+		}
+		int i = 1;
+		if (ASN1Util.pduGetItemType(pdu, beginOfst, endOfst, path + "." + i) != ASN1Util.IT_INTEGER)
+		{
+			return false;
+		}
+		i++;
+		if (ASN1Util.pduGetItemType(pdu, beginOfst, endOfst, path + "." + i) != ASN1Util.IT_SEQUENCE)
+		{
+			return false;
+		}
+		i++;
+		if (ASN1Util.pduGetItemType(pdu, beginOfst, endOfst, path + "." + i) != ASN1Util.IT_SEQUENCE)
+		{
+			return false;
+		}
+		i++;
+		if (ASN1Util.pduGetItemType(pdu, beginOfst, endOfst, path + "." + i) != ASN1Util.IT_CONTEXT_SPECIFIC_0)
+		{
+			return false;
+		}
+		return true;
+	}
+
+	protected static void appendCertificateRequestInfo(byte[] pdu, int beginOfst, int endOfst, String path, StringBuilder sb)
+	{
+		int i = 1;
+		ASN1Item itemPDU;
+		if ((itemPDU = ASN1Util.pduGetItem(pdu, beginOfst, endOfst, path + "." + i)) != null)
+		{
+			if (itemPDU.itemType == ASN1Util.IT_INTEGER)
+			{
+				sb.append("serialNumber = ");
+				appendVersion(pdu, beginOfst, endOfst, path + "." + i, sb);
+				sb.append("\r\n");
+			}
+		}
+		i++;
+		if ((itemPDU = ASN1Util.pduGetItem(pdu, beginOfst, endOfst, path + "." + i)) != null)
+		{
+			if (itemPDU.itemType == ASN1Util.IT_SEQUENCE)
+			{
+				appendName(pdu, itemPDU.ofst, itemPDU.ofst + itemPDU.len, sb, "subject");
+			}
+		}
+		i++;
+		if ((itemPDU = ASN1Util.pduGetItem(pdu, beginOfst, endOfst, path + "." + i)) != null)
+		{
+			if (itemPDU.itemType == ASN1Util.IT_SEQUENCE)
+			{
+				appendSubjectPublicKeyInfo(pdu, itemPDU.ofst, itemPDU.ofst + itemPDU.len, sb, "subjectPublicKeyInfo");
+				MyX509PubKey pubKey;
+				MyX509Key key;
+				pubKey = new MyX509PubKey("PubKey", pdu, itemPDU.pduBegin, itemPDU.len + itemPDU.ofst - itemPDU.pduBegin);
+				key = pubKey.createKey();
+				if (key != null)
+				{
+					sb.append(key.toString());
+					sb.append("\r\n");
+				}
+			}
+		}
+		i++;
+		if ((itemPDU = ASN1Util.pduGetItem(pdu, beginOfst, endOfst, path + "." + i)) != null && itemPDU.itemType == ASN1Util.IT_CONTEXT_SPECIFIC_0)
+		{
+			if ((itemPDU = ASN1Util.pduGetItem(pdu, itemPDU.ofst, itemPDU.ofst + itemPDU.len, "1")) != null && itemPDU.itemType == ASN1Util.IT_SEQUENCE)
+			{
+				ASN1Item extOID;
+				ASN1Item ext;
+				if ((extOID = ASN1Util.pduGetItem(pdu, itemPDU.ofst, itemPDU.ofst + itemPDU.len, "1")) != null && extOID.itemType == ASN1Util.IT_OID &&
+					(ext = ASN1Util.pduGetItem(pdu, itemPDU.ofst, itemPDU.ofst + itemPDU.len, "2")) != null && ext.itemType == ASN1Util.IT_SET)
+				{
+					if (ASN1Util.oidEqualsText(pdu, extOID.ofst, extOID.len, "1.2.840.113549.1.9.14"))
+					{
+						appendCRLExtensions(pdu, ext.ofst, ext.ofst + ext.len, sb, "extensionRequest");
+					}
+				}
+			}
+		}
+	}
+
+	protected static boolean isCertificateRequest(byte[] pdu, int beginOfst, int endOfst, String path)
+	{
+		return isSigned(pdu, beginOfst, endOfst, path) && isCertificateRequestInfo(pdu, beginOfst, endOfst, path + ".1");
+	}
+
+	protected static void appendCertificateRequest(byte[] pdu, int beginOfst, int endOfst, String path, StringBuilder sb)
+	{
+		appendCertificateRequestInfo(pdu, beginOfst, endOfst, path + ".1", sb);
+		appendSigned(pdu, beginOfst, endOfst, path, sb, null);
+	}
+
 	protected static boolean isPublicKeyInfo(byte[] pdu, int beginOfst, int endOfst, String path)
 	{
 		int cnt = ASN1Util.pduCountItem(pdu, beginOfst, endOfst, path);

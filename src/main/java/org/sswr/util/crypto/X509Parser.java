@@ -1,5 +1,6 @@
 package org.sswr.util.crypto;
 
+import org.sswr.util.crypto.MyX509File.KeyType;
 import org.sswr.util.data.StringUtil;
 import org.sswr.util.data.textbinenc.Base64Enc;
 
@@ -39,7 +40,7 @@ public class X509Parser
 				dataBuff = b64.decodeBin(buff, ofst + 27, buffSize - 52 - lbSize);
 				ret = new MyX509Cert(fileName, dataBuff, 0, dataBuff.length);
 			}
-/*			else if (StringUtil.startsWithC(buff, ofst, buffSize, "-----BEGIN RSA PRIVATE KEY-----") && StringUtil.startsWithC(buff, ofst + buffSize - 29 - lbSize, 29 + lbSize, "-----END RSA PRIVATE KEY-----"))
+			else if (StringUtil.startsWithC(buff, ofst, buffSize, "-----BEGIN RSA PRIVATE KEY-----") && StringUtil.startsWithC(buff, ofst + buffSize - 29 - lbSize, 29 + lbSize, "-----END RSA PRIVATE KEY-----"))
 			{
 				if (StringUtil.startsWithC(buff, ofst + 31 + lbSize, buffSize - 31 - lbSize, "Proc-Type:"))
 				{
@@ -69,14 +70,14 @@ public class X509Parser
 				Base64Enc b64 = new Base64Enc();
 				dataBuff = b64.decodeBin(buff, ofst + 27, buffSize - 52 - lbSize);
 				ret = new MyX509PrivKey(fileName, dataBuff, 0, dataBuff.length);
-			}*/
+			}
 			else if (StringUtil.startsWithC(buff, ofst, buffSize, "-----BEGIN PUBLIC KEY-----") && StringUtil.startsWithC(buff, ofst + buffSize - 24 - lbSize, 24 + lbSize, "-----END PUBLIC KEY-----"))
 			{
 				Base64Enc b64 = new Base64Enc();
 				dataBuff = b64.decodeBin(buff, ofst + 26, buffSize - 50 - lbSize);
 				ret = new MyX509PubKey(fileName, dataBuff, 0, dataBuff.length);
 			}
-/*			else if (StringUtil.startsWithC(buff, ofst, buffSize, "-----BEGIN CERTIFICATE REQUEST-----") && StringUtil.startsWithC(buff, ofst + buffSize - 33 - lbSize, 33 + lbSize, "-----END CERTIFICATE REQUEST-----"))
+			else if (StringUtil.startsWithC(buff, ofst, buffSize, "-----BEGIN CERTIFICATE REQUEST-----") && StringUtil.startsWithC(buff, ofst + buffSize - 33 - lbSize, 33 + lbSize, "-----END CERTIFICATE REQUEST-----"))
 			{
 				Base64Enc b64 = new Base64Enc();
 				dataBuff = b64.decodeBin(buff, ofst + 35, buffSize - 68 - lbSize);
@@ -87,7 +88,7 @@ public class X509Parser
 				Base64Enc b64 = new Base64Enc();
 				dataBuff = b64.decodeBin(buff, ofst + 21, buffSize - 40 - lbSize);
 				ret = new MyX509PKCS7(fileName, dataBuff, 0, dataBuff.length);
-			}*/
+			}
 		}
 		else
 		{
@@ -107,7 +108,7 @@ public class X509Parser
 			{
 				ret = new MyX509Cert(fileName, buff, ofst, buffSize);
 			}
-/* 			else if (fileName.toUpperCase().endsWith(".P7B"))
+			else if (fileName.toUpperCase().endsWith(".P7B"))
 			{
 				ret = new MyX509PKCS7(fileName, buff, ofst, buffSize);
 			}
@@ -118,7 +119,7 @@ public class X509Parser
 			else if (fileName.toUpperCase().endsWith(".CRL"))
 			{
 				ret = new MyX509CRL(fileName, buff, ofst, buffSize);
-			}*/
+			}
 			else
 			{
 				return null;
