@@ -662,7 +662,7 @@ public abstract class MyX509File extends ASN1Data
 		}
 	}
 
-	protected void appendCRLExtensions(byte[] pdu, int beginOfst, int endOfst, StringBuilder sb, String varName)
+	protected static void appendCRLExtensions(byte[] pdu, int beginOfst, int endOfst, StringBuilder sb, String varName)
 	{
 		ASN1Item itemPDU;
 		ASN1Item subItemPDU;
@@ -680,7 +680,7 @@ public abstract class MyX509File extends ASN1Data
 		}
 	}
 	
-	protected void appendCRLExtension(byte[] pdu, int beginOfst, int endOfst, StringBuilder sb, String varName)
+	protected static void appendCRLExtension(byte[] pdu, int beginOfst, int endOfst, StringBuilder sb, String varName)
 	{
 		ASN1Item extension = null;
 		ASN1Item itemPDU;
@@ -1210,337 +1210,277 @@ public abstract class MyX509File extends ASN1Data
 
 	protected static void appendPKCS7SignedData(byte[] pdu, int beginOfst, int endOfst, StringBuilder sb, String varName)
 	{
-		UTF8Char sbuff[16];
-		Net::ASN1Util::ItemType itemType;
-		UOSInt itemOfst;
-		UOSInt itemLen;
-		const UInt8 *itemPDU = ASN1Util.pduGetItem(pdu, pduEnd, "1", &itemLen, &itemType);
-		if (itemPDU != 0 && itemType == ASN1Util.IT_SEQUENCE)
+		ASN1Item itemPDU = ASN1Util.pduGetItem(pdu, beginOfst, endOfst, "1");
+		if (itemPDU != null && itemPDU.itemType == ASN1Util.IT_SEQUENCE)
 		{
-			UOSInt i;
-			UOSInt subItemLen;
-			const UInt8 *subItemPDU;
-			if ((subItemPDU = ASN1Util.pduGetItem(itemPDU, itemPDU + itemLen, "1", &subItemLen, &itemType)) != 0 && itemType == ASN1Util.IT_INTEGER)
+			int i;
+			ASN1Item subItemPDU;
+			if ((subItemPDU = ASN1Util.pduGetItem(pdu, itemPDU.ofst, itemPDU.ofst + itemPDU.len, "1")) != null && subItemPDU.itemType == ASN1Util.IT_INTEGER)
 			{
-				sb.append("signedData.version = "));
-				Net::ASN1Util::IntegerToString(subItemPDU, subItemLen, sb);
-				sb.append("\r\n"));
+				sb.append("signedData.version = ");
+				ASN1Util.integerToString(pdu, subItemPDU.ofst, subItemPDU.len, sb);
+				sb.append("\r\n");
 			}
-			if ((subItemPDU = ASN1Util.pduGetItem(itemPDU, itemPDU + itemLen, "2", &subItemLen, &itemType)) != 0 && itemType == ASN1Util.IT_SET)
+			if ((subItemPDU = ASN1Util.pduGetItem(pdu, itemPDU.ofst, itemPDU.ofst + itemPDU.len, "2")) != null && subItemPDU.itemType == ASN1Util.IT_SET)
 			{
-				AppendPKCS7DigestAlgorithmIdentifiers(subItemPDU, subItemPDU + subItemLen, sb, CSTR("signedData.digestAlgorithms"));
+				appendPKCS7DigestAlgorithmIdentifiers(pdu, subItemPDU.ofst, subItemPDU.ofst + subItemPDU.len, sb, "signedData.digestAlgorithms");
 			}
-			if ((subItemPDU = ASN1Util.pduGetItemRAW(itemPDU, itemPDU + itemLen, "3", &subItemLen, &itemOfst)) != 0 && subItemPDU[0] == ASN1Util.IT_SEQUENCE)
+			if ((subItemPDU = ASN1Util.pduGetItem(pdu, itemPDU.ofst, itemPDU.ofst + itemPDU.len, "3")) != null && subItemPDU.itemType == ASN1Util.IT_SEQUENCE)
 			{
-				AppendContentInfo(subItemPDU, subItemPDU + itemOfst + subItemLen, "1", sb, CSTR("signedData.contentInfo"), ContentDataType::Unknown);
+				appendContentInfo(pdu, subItemPDU.pduBegin, subItemPDU.ofst + subItemPDU.len, "1", sb, "signedData.contentInfo", ContentDataType.Unknown);
 			}
 			i = 4;
-			subItemPDU = ASN1Util.pduGetItem(itemPDU, itemPDU + itemLen, "4", &subItemLen, &itemType);
-			if (subItemPDU != 0 && itemType == ASN1Util.IT_CONTEXT_SPECIFIC_0)
+			subItemPDU = ASN1Util.pduGetItem(pdu, itemPDU.ofst, itemPDU.ofst + itemPDU.len, "4");
+			if (subItemPDU != null && subItemPDU.itemType == ASN1Util.IT_CONTEXT_SPECIFIC_0)
 			{
-				AppendCertificate(subItemPDU, subItemPDU + subItemLen, "1", sb, CSTR("signedData.certificates"));
-				Text::StrUOSInt(sbuff, ++i);
-				subItemPDU = ASN1Util.pduGetItem(itemPDU, itemPDU + itemLen, (const Char*)sbuff, &subItemLen, &itemType);
+				appendCertificate(pdu, subItemPDU.ofst, subItemPDU.ofst + subItemPDU.len, "1", sb, "signedData.certificates");
+				i++;
+				subItemPDU = ASN1Util.pduGetItem(pdu, itemPDU.ofst, itemPDU.ofst + itemPDU.len, String.valueOf(i));
 			}
-			if (subItemPDU != 0 && itemType == ASN1Util.IT_CONTEXT_SPECIFIC_1)
+			if (subItemPDU != null && subItemPDU.itemType == ASN1Util.IT_CONTEXT_SPECIFIC_1)
 			{
 				//AppendCertificate(subItemPDU, subItemPDU + subItemLen, "1", sb, CSTR("signedData.crls"));
-				Text::StrUOSInt(sbuff, ++i);
-				subItemPDU = ASN1Util.pduGetItem(itemPDU, itemPDU + itemLen, (const Char*)sbuff, &subItemLen, &itemType);
+				i++;
+				subItemPDU = ASN1Util.pduGetItem(pdu, itemPDU.ofst, itemPDU.ofst + itemPDU.len, String.valueOf(i));
 			}
-			if (subItemPDU != 0 && itemType == ASN1Util.IT_SET)
+			if (subItemPDU != null && subItemPDU.itemType == ASN1Util.IT_SET)
 			{
-				AppendPKCS7SignerInfos(subItemPDU, subItemPDU + subItemLen, sb, CSTR("signedData.signerInfos"));
+				appendPKCS7SignerInfos(pdu, subItemPDU.ofst, subItemPDU.ofst + subItemPDU.len, sb, "signedData.signerInfos");
 			}
 		}
 	}
 
 	protected static void appendPKCS7DigestAlgorithmIdentifiers(byte[] pdu, int beginOfst, int endOfst, StringBuilder sb, String varName)
 	{
-		UTF8Char sbuff[16];
-		UOSInt i;
-		Net::ASN1Util::ItemType itemType;
-		UOSInt itemLen;
-		const UInt8 *itemPDU;
-		i = 0;
+		int i;
+		ASN1Item itemPDU;
+		i = 1;
 		while (true)
 		{
-			Text::StrUOSInt(sbuff, ++i);
-			if ((itemPDU = ASN1Util.pduGetItem(pdu, pduEnd, (const Char*)sbuff, &itemLen, &itemType)) == 0)
+			if ((itemPDU = ASN1Util.pduGetItem(pdu, beginOfst, endOfst, String.valueOf(i))) == null)
 			{
 				return;
 			}
-			if (itemType == ASN1Util.IT_SEQUENCE)
+			if (itemPDU.itemType == ASN1Util.IT_SEQUENCE)
 			{
-				AppendAlgorithmIdentifier(itemPDU, itemPDU + itemLen, sb, varName, false, 0);
+				appendAlgorithmIdentifier(pdu, itemPDU.ofst, itemPDU.ofst + itemPDU.len, sb, varName, false);
 			}
+			i++;
 		}
 	}
 
 	protected static void appendPKCS7SignerInfos(byte[] pdu, int beginOfst, int endOfst, StringBuilder sb, String varName)
 	{
-		Char cbuff[32];
-		UOSInt i;
-		UOSInt itemOfst;
-		UOSInt itemLen;
-		const UInt8 *itemPDU;
-		i = 0;
+		int i;
+		ASN1Item itemPDU;
+		i = 1;
 		while (true)
 		{
-			Text::StrUOSInt(cbuff, ++i);
-			itemPDU = ASN1Util.pduGetItemRAW(pdu, pduEnd, cbuff, &itemLen, &itemOfst);
-			if (itemPDU == 0)
+			itemPDU = ASN1Util.pduGetItem(pdu, beginOfst, endOfst, String.valueOf(i));
+			if (itemPDU == null)
 			{
 				break;
 			}
-			if (itemPDU[0] == ASN1Util.IT_SEQUENCE)
+			if (itemPDU.itemType == ASN1Util.IT_SEQUENCE)
 			{
-				AppendPKCS7SignerInfo(itemPDU, itemPDU + itemOfst + itemLen, sb, varName);
+				appendPKCS7SignerInfo(pdu, itemPDU.pduBegin, itemPDU.ofst + itemPDU.len, sb, varName);
 			}
+			i++;
 		}
 	}
 
 	protected static void appendPKCS7SignerInfo(byte[] pdu, int beginOfst, int endOfst, StringBuilder sb, String varName)
 	{
-		UTF8Char sbuff[256];
-		UTF8Char *sptr;
-		Char cbuff[32];
-		UOSInt i;
-		Net::ASN1Util::ItemType itemType;
-		UOSInt itemLen;
-		const UInt8 *itemPDU = ASN1Util.pduGetItem(pdu, pduEnd, "1", &itemLen, &itemType);
-		if (itemPDU == 0 || itemType != ASN1Util.IT_SEQUENCE)
+		int i;
+		ASN1Item itemPDU = ASN1Util.pduGetItem(pdu, beginOfst, endOfst, "1");
+		if (itemPDU == null || itemPDU.itemType != ASN1Util.IT_SEQUENCE)
 		{
 			return;
 		}
-		UOSInt subItemLen;
-		const UInt8 *subItemPDU;
-		if ((subItemPDU = ASN1Util.pduGetItem(itemPDU, itemPDU + itemLen, "1", &subItemLen, &itemType)) != 0 && itemType == ASN1Util.IT_INTEGER)
+		ASN1Item subItemPDU;
+		if ((subItemPDU = ASN1Util.pduGetItem(pdu, itemPDU.ofst, itemPDU.ofst + itemPDU.len, "1")) != null && subItemPDU.itemType == ASN1Util.IT_INTEGER)
 		{
 			sb.append(varName);
 			sb.append('.');
-			sb.append("version = "));
-			Net::ASN1Util::IntegerToString(subItemPDU, subItemLen, sb);
-			sb.append("\r\n"));
+			sb.append("version = ");
+			ASN1Util.integerToString(pdu, subItemPDU.ofst, subItemPDU.len, sb);
+			sb.append("\r\n");
 		}
-		if ((subItemPDU = ASN1Util.pduGetItem(itemPDU, itemPDU + itemLen, "2", &subItemLen, &itemType)) != 0 && itemType == ASN1Util.IT_SEQUENCE)
+		if ((subItemPDU = ASN1Util.pduGetItem(pdu, itemPDU.ofst, itemPDU.ofst + itemPDU.len, "2")) != null && subItemPDU.itemType == ASN1Util.IT_SEQUENCE)
 		{
-			sptr = varName.ConcatTo(sbuff);
-			*sptr++ = '.';
-			sptr = Text::StrConcatC(sptr, UTF8STRC("issuerAndSerialNumber"));
-			AppendIssuerAndSerialNumber(subItemPDU, subItemPDU + subItemLen, sb, CSTRP(sbuff, sptr));
+			appendIssuerAndSerialNumber(pdu, subItemPDU.ofst, subItemPDU.ofst + subItemPDU.len, sb, varName + ".issuerAndSerialNumber");
 		}
-		if ((subItemPDU = ASN1Util.pduGetItem(itemPDU, itemPDU + itemLen, "3", &subItemLen, &itemType)) != 0 && itemType == ASN1Util.IT_SEQUENCE)
+		if ((subItemPDU = ASN1Util.pduGetItem(pdu, itemPDU.ofst, itemPDU.ofst + itemPDU.len, "3")) != null && subItemPDU.itemType == ASN1Util.IT_SEQUENCE)
 		{
-			sptr = varName.ConcatTo(sbuff);
-			*sptr++ = '.';
-			sptr = Text::StrConcatC(sptr, UTF8STRC("digestAlgorithm"));
-			AppendAlgorithmIdentifier(subItemPDU, subItemPDU + subItemLen, sb, CSTRP(sbuff, sptr), false, 0);
+			appendAlgorithmIdentifier(pdu, subItemPDU.ofst, subItemPDU.ofst + subItemPDU.len, sb, varName + ".digestAlgorithm", false);
 		}
 		i = 4;
-		if ((subItemPDU = ASN1Util.pduGetItem(itemPDU, itemPDU + itemLen, "4", &subItemLen, &itemType)) != 0 && itemType == ASN1Util.IT_CONTEXT_SPECIFIC_0)
+		if ((subItemPDU = ASN1Util.pduGetItem(pdu, itemPDU.ofst, itemPDU.ofst + itemPDU.len, "4")) != null && subItemPDU.itemType == ASN1Util.IT_CONTEXT_SPECIFIC_0)
 		{
-			sptr = varName.ConcatTo(sbuff);
-			*sptr++ = '.';
-			sptr = Text::StrConcatC(sptr, UTF8STRC("authenticatedAttributes"));
-			AppendPKCS7Attributes(subItemPDU, subItemPDU + subItemLen, sb, CSTRP(sbuff, sptr));
-			Text::StrUOSInt(cbuff, ++i);
-			subItemPDU = ASN1Util.pduGetItem(itemPDU, itemPDU + itemLen, cbuff, &subItemLen, &itemType);
+			appendPKCS7Attributes(pdu, subItemPDU.ofst, subItemPDU.ofst + subItemPDU.len, sb, varName + ".authenticatedAttributes");
+			i++;
+			subItemPDU = ASN1Util.pduGetItem(pdu, itemPDU.ofst, itemPDU.ofst + itemPDU.len, String.valueOf(i));
 		}
-		if (subItemPDU != 0 && itemType == ASN1Util.IT_SEQUENCE)
+		if (subItemPDU != null && subItemPDU.itemType == ASN1Util.IT_SEQUENCE)
 		{
-			sptr = varName.ConcatTo(sbuff);
-			*sptr++ = '.';
-			sptr = Text::StrConcatC(sptr, UTF8STRC("digestEncryptionAlgorithm"));
-			AppendAlgorithmIdentifier(subItemPDU, subItemPDU + subItemLen, sb, CSTRP(sbuff, sptr), false, 0);
+			appendAlgorithmIdentifier(pdu, subItemPDU.ofst, subItemPDU.ofst + subItemPDU.len, sb, varName + ".digestEncryptionAlgorithm", false);
 		}
-		Text::StrUOSInt(cbuff, ++i);
-		if ((subItemPDU = ASN1Util.pduGetItem(itemPDU, itemPDU + itemLen, cbuff, &subItemLen, &itemType)) != 0 && itemType == ASN1Util.IT_OCTET_STRING)
+		i++;
+		if ((subItemPDU = ASN1Util.pduGetItem(pdu, itemPDU.ofst, itemPDU.ofst + itemPDU.len, String.valueOf(i))) != null && subItemPDU.itemType == ASN1Util.IT_OCTET_STRING)
 		{
 			sb.append(varName);
 			sb.append('.');
-			sb.append("encryptedDigest = "));
-			StringUtil.appendHex(sb, subItemPDU, subItemLen, ':', Text::LineBreakType::None);
-			sb.append("\r\n"));
+			sb.append("encryptedDigest = ");
+			StringUtil.appendHex(sb, pdu, subItemPDU.ofst, subItemPDU.len, ':', LineBreakType.NONE);
+			sb.append("\r\n");
 		}
-		Text::StrUOSInt(cbuff, ++i);
-		if ((subItemPDU = ASN1Util.pduGetItem(itemPDU, itemPDU + itemLen, cbuff, &subItemLen, &itemType)) != 0 && itemType == ASN1Util.IT_CONTEXT_SPECIFIC_1)
+		i++;
+		if ((subItemPDU = ASN1Util.pduGetItem(pdu, itemPDU.ofst, itemPDU.ofst + itemPDU.len, String.valueOf(i))) != null && subItemPDU.itemType == ASN1Util.IT_CONTEXT_SPECIFIC_1)
 		{
-			sptr = varName.ConcatTo(sbuff);
-			*sptr++ = '.';
-			sptr = Text::StrConcatC(sptr, UTF8STRC("unauthenticatedAttributes"));
-			AppendPKCS7Attributes(subItemPDU, subItemPDU + subItemLen, sb, CSTRP(sbuff, sptr));
+			appendPKCS7Attributes(pdu, subItemPDU.ofst, subItemPDU.ofst + subItemPDU.len, sb, varName + ".unauthenticatedAttributes");
 		}
 	}
 
 	protected static void appendIssuerAndSerialNumber(byte[] pdu, int beginOfst, int endOfst, StringBuilder sb, String varName)
 	{
-		UTF8Char sbuff[256];
-		UTF8Char *sptr;
-		Net::ASN1Util::ItemType itemType;
-		UOSInt itemLen;
-		const UInt8 *itemPDU;
-		if ((itemPDU = ASN1Util.pduGetItem(pdu, pduEnd, "1", &itemLen, &itemType)) != 0 && itemType == ASN1Util.IT_SEQUENCE)
+		ASN1Item itemPDU;
+		if ((itemPDU = ASN1Util.pduGetItem(pdu, beginOfst, endOfst, "1")) != null && itemPDU.itemType == ASN1Util.IT_SEQUENCE)
 		{
-			sptr = varName.ConcatTo(sbuff);
-			*sptr++ = '.';
-			sptr = Text::StrConcatC(sptr, UTF8STRC("issuer"));
-			AppendName(itemPDU, itemPDU + itemLen, sb, CSTRP(sbuff, sptr));
+			appendName(pdu, itemPDU.ofst, itemPDU.ofst + itemPDU.len, sb, varName + ".issuer");
 		}
-		if ((itemPDU = ASN1Util.pduGetItem(pdu, pduEnd, "2", &itemLen, &itemType)) != 0 && itemType == ASN1Util.IT_INTEGER)
+		if ((itemPDU = ASN1Util.pduGetItem(pdu, beginOfst, endOfst, "2")) != null && itemPDU.itemType == ASN1Util.IT_INTEGER)
 		{
 			sb.append(varName);
 			sb.append('.');
-			sb.append("serialNumber = "));
-			StringUtil.appendHex(sb, itemPDU, itemLen, ':', Text::LineBreakType::None);
-			sb.append("\r\n"));
+			sb.append("serialNumber = ");
+			StringUtil.appendHex(sb, pdu, itemPDU.ofst, itemPDU.len, ':', LineBreakType.NONE);
+			sb.append("\r\n");
 		}
 	}
 
 	protected static void appendPKCS7Attributes(byte[] pdu, int beginOfst, int endOfst, StringBuilder sb, String varName)
 	{
-		UTF8Char sbuff[256];
-		UTF8Char *sptr;
-		Char cbuff[16];
-		Net::ASN1Util::ItemType itemType;
-		UOSInt itemLen;
-		const UInt8 *itemPDU;
-		UOSInt oidLen;
-		const UInt8 *oidPDU;
-		Net::ASN1Util::ItemType oidType;
-		UOSInt valueLen;
-		const UInt8 *valuePDU;
-		UOSInt i = 0;
+		ASN1Item itemPDU;
+		ASN1Item oidPDU;
+		ASN1Item valuePDU;
+		int i = 1;
 		while (true)
 		{
-			Text::StrUOSInt(cbuff, ++i);
-			if ((itemPDU = ASN1Util.pduGetItem(pdu, pduEnd, cbuff, &itemLen, &itemType)) == 0)
+			if ((itemPDU = ASN1Util.pduGetItem(pdu, beginOfst, endOfst, String.valueOf(i))) == null)
 			{
 				return;
 			}
-			if (itemType == ASN1Util.IT_SEQUENCE)
+			if (itemPDU.itemType == ASN1Util.IT_SEQUENCE)
 			{
-				oidPDU = ASN1Util.pduGetItem(itemPDU, itemPDU + itemLen, "1", &oidLen, &oidType);
-				valuePDU = ASN1Util.pduGetItem(itemPDU, itemPDU + itemLen, "2", &valueLen, &itemType);
-				if (oidPDU != 0 && oidType == ASN1Util.IT_OID)
+				oidPDU = ASN1Util.pduGetItem(pdu, itemPDU.ofst, itemPDU.ofst + itemPDU.len, "1");
+				valuePDU = ASN1Util.pduGetItem(pdu, itemPDU.ofst, itemPDU.ofst + itemPDU.len, "2");
+				if (oidPDU != null && oidPDU.itemType == ASN1Util.IT_OID)
 				{
 					sb.append(varName);
 					sb.append('.');
-					sb.append("attributeType = "));
-					ASN1Util.oidToString(oidPDU, oidLen, sb);
-					OIDInfo oid = ASN1OIDDB.oidGetEntry(oidPDU, oidLen);
-					if (oid)
+					sb.append("attributeType = ");
+					ASN1Util.oidToString(pdu, oidPDU.ofst, oidPDU.len, sb);
+					OIDInfo oid = ASN1OIDDB.oidGetEntry(pdu, oidPDU.ofst, oidPDU.len);
+					if (oid != null)
 					{
-						sb.append(" ("));
+						sb.append(" (");
 						sb.append(oid.name);
 						sb.append(')');
 					}
-					sb.append("\r\n"));
+					sb.append("\r\n");
 				}
-				if (valuePDU && itemType == ASN1Util.IT_SET)
+				if (valuePDU != null && valuePDU.itemType == ASN1Util.IT_SET)
 				{
-					if (ASN1Util.oidEqualsText(oidPDU, oidLen, UTF8STRC("1.2.840.113549.1.9.3"))) //contentType
+					if (ASN1Util.oidEqualsText(pdu, oidPDU.ofst, oidPDU.len, "1.2.840.113549.1.9.3")) //contentType
 					{
-						if ((itemPDU = ASN1Util.pduGetItem(valuePDU, valuePDU + valueLen, "1", &itemLen, &itemType)) != 0 && itemType == ASN1Util.IT_OID)
+						if ((itemPDU = ASN1Util.pduGetItem(pdu, valuePDU.ofst, valuePDU.ofst + valuePDU.len, "1")) != null && itemPDU.itemType == ASN1Util.IT_OID)
 						{
 							sb.append(varName);
 							sb.append('.');
-							sb.append("contentType = "));
-							ASN1Util.oidToString(itemPDU, itemLen, sb);
-							OIDInfo oid = ASN1OIDDB.oidGetEntry(itemPDU, itemLen);
-							if (oid)
+							sb.append("contentType = ");
+							ASN1Util.oidToString(pdu, itemPDU.ofst, itemPDU.len, sb);
+							OIDInfo oid = ASN1OIDDB.oidGetEntry(pdu, itemPDU.ofst, itemPDU.len);
+							if (oid != null)
 							{
-								sb.append(" ("));
+								sb.append(" (");
 								sb.append(oid.name);
 								sb.append(')');
 							}
-							sb.append("\r\n"));
+							sb.append("\r\n");
 						}
 					}
-					else if (ASN1Util.oidEqualsText(oidPDU, oidLen, UTF8STRC("1.2.840.113549.1.9.4"))) //messageDigest
+					else if (ASN1Util.oidEqualsText(pdu, oidPDU.ofst, oidPDU.len, "1.2.840.113549.1.9.4")) //messageDigest
 					{
-						if ((itemPDU = ASN1Util.pduGetItem(valuePDU, valuePDU + valueLen, "1", &itemLen, &itemType)) != 0 && itemType == ASN1Util.IT_OCTET_STRING)
+						if ((itemPDU = ASN1Util.pduGetItem(pdu, valuePDU.ofst, valuePDU.ofst + valuePDU.len, "1")) != null && itemPDU.itemType == ASN1Util.IT_OCTET_STRING)
 						{
 							sb.append(varName);
 							sb.append('.');
-							sb.append("messageDigest = "));
-							StringUtil.appendHex(sb, itemPDU, itemLen, ':', Text::LineBreakType::None);
-							sb.append("\r\n"));
+							sb.append("messageDigest = ");
+							StringUtil.appendHex(sb, pdu, itemPDU.ofst, itemPDU.len, ':', LineBreakType.NONE);
+							sb.append("\r\n");
 						}
 					}
-					else if (ASN1Util.oidEqualsText(oidPDU, oidLen, UTF8STRC("1.2.840.113549.1.9.5"))) //signing-time
+					else if (ASN1Util.oidEqualsText(pdu, oidPDU.ofst, oidPDU.len, "1.2.840.113549.1.9.5")) //signing-time
 					{
-						if ((itemPDU = ASN1Util.pduGetItem(valuePDU, valuePDU + valueLen, "1", &itemLen, &itemType)) != 0 && itemType == ASN1Util.IT_UTCTIME)
+						if ((itemPDU = ASN1Util.pduGetItem(pdu, valuePDU.ofst, valuePDU.ofst + valuePDU.len, "1")) != null && itemPDU.itemType == ASN1Util.IT_UTCTIME)
 						{
 							sb.append(varName);
 							sb.append('.');
-							sb.append("signing-time = "));
-							Net::ASN1Util::UTCTimeToString(itemPDU, itemLen, sb);
-							sb.append("\r\n"));
+							sb.append("signing-time = ");
+							ASN1Util.utcTimeToString(pdu, itemPDU.ofst, itemPDU.len, sb);
+							sb.append("\r\n");
 						}
 					}
-					else if (ASN1Util.oidEqualsText(oidPDU, oidLen, UTF8STRC("1.2.840.113549.1.9.15"))) //smimeCapabilities
+					else if (ASN1Util.oidEqualsText(pdu, oidPDU.ofst, oidPDU.len, "1.2.840.113549.1.9.15")) //smimeCapabilities
 					{
 						/////////////////////////////////////
 					}
-					else if (ASN1Util.oidEqualsText(oidPDU, oidLen, UTF8STRC("1.2.840.113549.1.9.16.2.11"))) //id-aa-encrypKeyPref
+					else if (ASN1Util.oidEqualsText(pdu, oidPDU.ofst, oidPDU.len, "1.2.840.113549.1.9.16.2.11")) //id-aa-encrypKeyPref
 					{
-						if ((itemPDU = ASN1Util.pduGetItem(valuePDU, valuePDU + valueLen, "1", &itemLen, &itemType)) != 0 && itemType == ASN1Util.IT_CONTEXT_SPECIFIC_0)
+						if ((itemPDU = ASN1Util.pduGetItem(pdu, valuePDU.ofst, valuePDU.ofst + valuePDU.len, "1")) != null && itemPDU.itemType == ASN1Util.IT_CONTEXT_SPECIFIC_0)
 						{
-							sptr = varName.ConcatTo(sbuff);
-							*sptr++ = '.';
-							sptr = Text::StrConcatC(sptr, UTF8STRC("encrypKeyPref"));
-							AppendIssuerAndSerialNumber(itemPDU, itemPDU + itemLen, sb, CSTRP(sbuff, sptr));
+							appendIssuerAndSerialNumber(pdu, itemPDU.ofst, itemPDU.ofst + itemPDU.len, sb, varName + ".encrypKeyPref");
 						}
 					}
-					else if (ASN1Util.oidEqualsText(oidPDU, oidLen, UTF8STRC("1.3.6.1.4.1.311.16.4"))) //outlookExpress
+					else if (ASN1Util.oidEqualsText(pdu, oidPDU.ofst, oidPDU.len, "1.3.6.1.4.1.311.16.4")) //outlookExpress
 					{
-						if ((itemPDU = ASN1Util.pduGetItem(valuePDU, valuePDU + valueLen, "1", &itemLen, &itemType)) != 0 && itemType == ASN1Util.IT_SEQUENCE)
+						if ((itemPDU = ASN1Util.pduGetItem(pdu, valuePDU.ofst, valuePDU.ofst + valuePDU.len, "1")) != null && itemPDU.itemType == ASN1Util.IT_SEQUENCE)
 						{
-							sptr = varName.ConcatTo(sbuff);
-							*sptr++ = '.';
-							sptr = Text::StrConcatC(sptr, UTF8STRC("outlookExpress"));
-							AppendIssuerAndSerialNumber(itemPDU, itemPDU + itemLen, sb, CSTRP(sbuff, sptr));
+							appendIssuerAndSerialNumber(pdu, itemPDU.ofst, itemPDU.ofst + itemPDU.len, sb, varName + ".outlookExpress");
 						}
 					}
 					
 				}
 			}
+			i++;
 		}
 	}
 
 	protected static boolean appendMacData(byte[] pdu, int beginOfst, int endOfst, String path, StringBuilder sb, String varName)
 	{
-		UTF8Char sbuff[64];
-		UTF8Char *sptr;
-		const UInt8 *itemPDU;
-		UOSInt itemLen;
-		const UInt8 *subItemPDU;
-		UOSInt subItemLen;
-		Net::ASN1Util::ItemType itemType;
-		if ((itemPDU = ASN1Util.pduGetItem(pdu, pduEnd, path, &itemLen, &itemType)) != 0 && itemType == ASN1Util.IT_SEQUENCE)
+		ASN1Item itemPDU;
+		ASN1Item subItemPDU;
+		if ((itemPDU = ASN1Util.pduGetItem(pdu, beginOfst, endOfst, path)) != null && itemPDU.itemType == ASN1Util.IT_SEQUENCE)
 		{
-			if ((subItemPDU = ASN1Util.pduGetItem(itemPDU, itemPDU + itemLen, "1", &subItemLen, &itemType)) != 0 && itemType == ASN1Util.IT_SEQUENCE)
+			if ((subItemPDU = ASN1Util.pduGetItem(pdu, itemPDU.ofst, itemPDU.ofst + itemPDU.len, "1")) != null && subItemPDU.itemType == ASN1Util.IT_SEQUENCE)
 			{
-				sptr = varName.ConcatTo(sbuff);
-				sptr = Text::StrConcatC(sptr, UTF8STRC(".mac"));
-				AppendDigestInfo(subItemPDU, subItemPDU + subItemLen, sb, CSTRP(sbuff, sptr));
+				appendDigestInfo(pdu, subItemPDU.ofst, subItemPDU.ofst + subItemPDU.len, sb, varName + ".mac");
 			}
-			if ((subItemPDU = ASN1Util.pduGetItem(itemPDU, itemPDU + itemLen, "2", &subItemLen, &itemType)) != 0 && itemType == ASN1Util.IT_OCTET_STRING)
+			if ((subItemPDU = ASN1Util.pduGetItem(pdu, itemPDU.ofst, itemPDU.ofst + itemPDU.len, "2")) != null && subItemPDU.itemType == ASN1Util.IT_OCTET_STRING)
 			{
 				sb.append(varName);
 				sb.append('.');
-				sb.append("macSalt = "));
-				StringUtil.appendHex(sb, subItemPDU, subItemLen, ' ', Text::LineBreakType::None);
-				sb.append("\r\n"));
+				sb.append("macSalt = ");
+				StringUtil.appendHex(sb, pdu, subItemPDU.ofst, subItemPDU.len, ' ', LineBreakType.NONE);
+				sb.append("\r\n");
 			}
-			if ((subItemPDU = ASN1Util.pduGetItem(itemPDU, itemPDU + itemLen, "3", &subItemLen, &itemType)) != 0 && itemType == ASN1Util.IT_INTEGER)
+			if ((subItemPDU = ASN1Util.pduGetItem(pdu, itemPDU.ofst, itemPDU.ofst + itemPDU.len, "3")) != null && subItemPDU.itemType == ASN1Util.IT_INTEGER)
 			{
 				sb.append(varName);
 				sb.append('.');
-				sb.append("iterations = "));
-				Net::ASN1Util::IntegerToString(subItemPDU, subItemLen, sb);
-				sb.append("\r\n"));
+				sb.append("iterations = ");
+				ASN1Util.integerToString(pdu, subItemPDU.ofst, subItemPDU.len, sb);
+				sb.append("\r\n");
 			}
 			return true;
 		}
@@ -1549,23 +1489,17 @@ public abstract class MyX509File extends ASN1Data
 
 	protected static void appendDigestInfo(byte[] pdu, int beginOfst, int endOfst, StringBuilder sb, String varName)
 	{
-		UTF8Char sbuff[64];
-		UTF8Char *sptr;
-		const UInt8 *itemPDU;
-		UOSInt itemLen;
-		Net::ASN1Util::ItemType itemType;
-		if ((itemPDU = ASN1Util.pduGetItem(pdu, pduEnd, "1", &itemLen, &itemType)) != 0 && itemType == ASN1Util.IT_SEQUENCE)
+		ASN1Item itemPDU;
+		if ((itemPDU = ASN1Util.pduGetItem(pdu, beginOfst, endOfst, "1")) != null && itemPDU.itemType == ASN1Util.IT_SEQUENCE)
 		{
-			sptr = varName.ConcatTo(sbuff);
-			sptr = Text::StrConcatC(sptr, UTF8STRC(".digestAlgorithm"));
-			AppendAlgorithmIdentifier(itemPDU, itemPDU + itemLen, sb, CSTRP(sbuff, sptr), false, 0);
+			appendAlgorithmIdentifier(pdu, itemPDU.ofst, itemPDU.ofst + itemPDU.len, sb, varName + ".digestAlgorithm", false);
 		}
-		if ((itemPDU = ASN1Util.pduGetItem(pdu, pduEnd, "2", &itemLen, &itemType)) != 0 && itemType == ASN1Util.IT_OCTET_STRING)
+		if ((itemPDU = ASN1Util.pduGetItem(pdu, beginOfst, endOfst, "2")) != null && itemPDU.itemType == ASN1Util.IT_OCTET_STRING)
 		{
 			sb.append(varName);
-			sb.append(".digest = "));
-			StringUtil.appendHex(sb, itemPDU, itemLen, ' ', Text::LineBreakType::None);
-			sb.append("\r\n"));
+			sb.append(".digest = ");
+			StringUtil.appendHex(sb, pdu, itemPDU.ofst, itemPDU.len, ' ', LineBreakType.NONE);
+			sb.append("\r\n");
 		}
 	}
 
@@ -1573,10 +1507,10 @@ public abstract class MyX509File extends ASN1Data
 	{
 		switch (dataType)
 		{
-		case ContentDataType::AuthenticatedSafe:
-			AppendAuthenticatedSafe(pdu, pduEnd, sb, varName);
+		case AuthenticatedSafe:
+			appendAuthenticatedSafe(pdu, beginOfst, endOfst, sb, varName);
 			break;
-		case ContentDataType::Unknown:
+		case Unknown:
 		default:
 			break;
 		}
@@ -1584,117 +1518,129 @@ public abstract class MyX509File extends ASN1Data
 
 	protected static void appendEncryptedData(byte[] pdu, int beginOfst, int endOfst, StringBuilder sb, String varName, ContentDataType dataType)
 	{
-		UTF8Char sbuff[128];
-		UTF8Char *sptr;
-		const UInt8 *itemPDU;
-		UOSInt itemLen;
-		const UInt8 *subitemPDU;
-		UOSInt subitemLen;
-		Net::ASN1Util::ItemType itemType;
-		if ((itemPDU = ASN1Util.pduGetItem(pdu, pduEnd, "1", &itemLen, &itemType)) != 0 && itemType == ASN1Util.IT_SEQUENCE)
+		ASN1Item itemPDU;
+		ASN1Item subitemPDU;
+		String name;
+		if ((itemPDU = ASN1Util.pduGetItem(pdu, beginOfst, endOfst, "1")) != null && itemPDU.itemType == ASN1Util.IT_SEQUENCE)
 		{
-			if (varName.v)
+			if (varName != null)
 			{
 				sb.append(varName);
 				sb.append('.');
 			}
-			sb.append("version = "));
-			AppendVersion(itemPDU, itemPDU + itemLen, "1", sb);
-			sb.append("\r\n"));
+			sb.append("version = ");
+			appendVersion(pdu, itemPDU.ofst, itemPDU.ofst + itemPDU.len, "1", sb);
+			sb.append("\r\n");
 
-			if ((subitemPDU = ASN1Util.pduGetItem(itemPDU, itemPDU + itemLen, "2", &subitemLen, &itemType)) != 0 && itemType == ASN1Util.IT_SEQUENCE)
+			if ((subitemPDU = ASN1Util.pduGetItem(pdu, itemPDU.ofst, itemPDU.ofst + itemPDU.len, "2")) != null && subitemPDU.itemType == ASN1Util.IT_SEQUENCE)
 			{
-				sptr = sbuff;
-				if (varName.v)
+				name = "encryptedContentInfo";
+				if (varName != null)
 				{
-					sptr = varName.ConcatTo(sptr);
-					*sptr++ = '.';
+					name = varName + "." + name;
 				}
-				sptr = Text::StrConcatC(sptr, UTF8STRC("encryptedContentInfo"));
-				AppendEncryptedContentInfo(subitemPDU, subitemPDU + subitemLen, sb, CSTRP(sbuff, sptr), dataType);
+				appendEncryptedContentInfo(pdu, subitemPDU.ofst, subitemPDU.ofst + subitemPDU.len, sb, name, dataType);
 			}
-			if ((subitemPDU = ASN1Util.pduGetItem(itemPDU, itemPDU + itemLen, "3", &subitemLen, &itemType)) != 0 && itemType == ASN1Util.IT_CONTEXT_SPECIFIC_0)
+			if ((subitemPDU = ASN1Util.pduGetItem(pdu, itemPDU.ofst, itemPDU.ofst + itemPDU.len, "3")) != null && subitemPDU.itemType == ASN1Util.IT_CONTEXT_SPECIFIC_0)
 			{
-				sptr = sbuff;
-				if (varName.v)
+				name = "unprotectedAttributes";
+				if (varName != null)
 				{
-					sptr = varName.ConcatTo(sptr);
-					*sptr++ = '.';
+					name = varName + "." + name;
 				}
-				sptr = Text::StrConcatC(sptr, UTF8STRC("unprotectedAttributes"));
-				AppendPKCS7Attributes(subitemPDU, subitemPDU + subitemLen, sb, CSTRP(sbuff, sptr));
+				appendPKCS7Attributes(pdu, subitemPDU.ofst, subitemPDU.ofst + subitemPDU.len, sb, name);
 			}
 		}
 	}
 
 	protected static void appendAuthenticatedSafe(byte[] pdu, int beginOfst, int endOfst, StringBuilder sb, String varName)
 	{
-		UTF8Char sbuff[128];
-		UTF8Char *sptr;
-		Char cbuff[16];
-		const UInt8 *itemPDU;
-		UOSInt itemLen;
-		Net::ASN1Util::ItemType itemType;
-		UOSInt i;
-		UOSInt j;
-		if ((itemPDU = ASN1Util.pduGetItem(pdu, pduEnd, "1", &itemLen, &itemType)) != 0 && itemType == ASN1Util.IT_SEQUENCE)
+		ASN1Item itemPDU;
+		int i;
+		int j;
+		if ((itemPDU = ASN1Util.pduGetItem(pdu, beginOfst, endOfst, "1")) != null && itemPDU.itemType == ASN1Util.IT_SEQUENCE)
 		{
 			i = 0;
-			j = ASN1Util.pduCountItem(itemPDU, itemPDU + itemLen, 0);
+			j = ASN1Util.pduCountItem(pdu, itemPDU.ofst, itemPDU.ofst + itemPDU.len, null);
 			while (i < j)
 			{
-				sptr = varName.ConcatTo(sbuff);
-				*sptr++ = '[';
-				sptr = Text::StrUOSInt(sptr, i);
-				*sptr++ = ']';
-				*sptr = 0;
-				Text::StrUOSInt(cbuff, ++i);
-				AppendContentInfo(itemPDU, itemPDU + itemLen, cbuff, sb, CSTRP(sbuff, sptr), ContentDataType::Unknown);
+				i++;
+				appendContentInfo(pdu, itemPDU.ofst, itemPDU.ofst + itemPDU.len, String.valueOf(i), sb, varName + "[" + i + "]", ContentDataType.Unknown);
 			}
 		}
 	}
 
 	protected static void appendEncryptedContentInfo(byte[] pdu, int beginOfst, int endOfst, StringBuilder sb, String varName, ContentDataType dataType)
 	{
-		UTF8Char sbuff[128];
-		UTF8Char *sptr;
-		Net::ASN1Util::ItemType itemType;
-		UOSInt itemLen;
-		const UInt8 *itemPDU;
-		if ((itemPDU = ASN1Util.pduGetItem(pdu, pduEnd, "1", &itemLen, &itemType)) != 0 && itemType == ASN1Util.IT_OID)
+		String name;
+		ASN1Item itemPDU;
+		if ((itemPDU = ASN1Util.pduGetItem(pdu, beginOfst, endOfst, "1")) != null && itemPDU.itemType == ASN1Util.IT_OID)
 		{
 			sb.append(varName);
-			sb.append(".contentType = "));
-			ASN1Util.oidToString(itemPDU, itemLen, sb);
-			OIDInfo oid = ASN1OIDDB.oidGetEntry(itemPDU, itemLen);
-			if (oid)
+			sb.append(".contentType = ");
+			ASN1Util.oidToString(pdu, itemPDU.ofst, itemPDU.len, sb);
+			OIDInfo oid = ASN1OIDDB.oidGetEntry(pdu, itemPDU.ofst, itemPDU.len);
+			if (oid != null)
 			{
-				sb.append(" ("));
+				sb.append(" (");
 				sb.append(oid.name);
 				sb.append(')');
 			}
-			sb.append("\r\n"));
+			sb.append("\r\n");
 		}
-		if ((itemPDU = ASN1Util.pduGetItem(pdu, pduEnd, "2", &itemLen, &itemType)) != 0 && itemType == ASN1Util.IT_SEQUENCE)
+		if ((itemPDU = ASN1Util.pduGetItem(pdu, beginOfst, endOfst, "2")) != null && itemPDU.itemType == ASN1Util.IT_SEQUENCE)
 		{
-			sptr = sbuff;
-			if (varName.v)
+			name = "contentEncryptionAlgorithm";
+			if (varName != null)
 			{
-				sptr = varName.ConcatTo(sptr);
-				*sptr++ = '.';
+				name = varName + "." + name;
 			}
-			sptr = Text::StrConcatC(sptr, UTF8STRC("contentEncryptionAlgorithm"));
-			AppendAlgorithmIdentifier(itemPDU, itemPDU + itemLen, sb, CSTRP(sbuff, sptr), false, 0);
+			appendAlgorithmIdentifier(pdu, itemPDU.ofst, itemPDU.ofst + itemPDU.len, sb, name, false);
 		}
-		if ((itemPDU = ASN1Util.pduGetItem(pdu, pduEnd, "3", &itemLen, &itemType)) != 0 && (itemType & 0x8F) == 0x80)
+		if ((itemPDU = ASN1Util.pduGetItem(pdu, beginOfst, endOfst, "3")) != null && (itemPDU.itemType & 0x8F) == 0x80)
 		{
 			sb.append(varName);
-			sb.append(".encryptedContent = "));
-			StringUtil.appendHex(sb, itemPDU, itemLen, ' ', Text::LineBreakType::None);
-			sb.append("\r\n"));
+			sb.append(".encryptedContent = ");
+			StringUtil.appendHex(sb, pdu, itemPDU.ofst, itemPDU.len, ' ', LineBreakType.NONE);
+			sb.append("\r\n");
 		}
 	}
 
+	protected String nameGetByOID(byte[] pdu, int beginOfst, int endOfst, String oidText)
+	{
+		ASN1Item itemPDU;
+		ASN1Item oidPDU;
+		ASN1Item strPDU;
+		int cnt = ASN1Util.pduCountItem(pdu, beginOfst, endOfst, null);
+		int i = 0;
+		while (i < cnt)
+		{
+			i++;
+	
+			if ((itemPDU = ASN1Util.pduGetItem(pdu, beginOfst, endOfst, i + ".1")) != null)
+			{
+				if (itemPDU.itemType == ASN1Util.IT_SEQUENCE)
+				{
+					oidPDU = ASN1Util.pduGetItem(pdu, itemPDU.ofst, itemPDU.ofst + itemPDU.len, "1");
+					if (oidPDU != null && oidPDU.itemType == ASN1Util.IT_OID && ASN1Util.oidEqualsText(pdu, oidPDU.ofst, oidPDU.len, oidText))
+					{
+						strPDU = ASN1Util.pduGetItem(pdu, itemPDU.ofst, itemPDU.ofst + itemPDU.len, "2");
+						if (strPDU != null)
+						{
+							return new String(pdu, strPDU.ofst, strPDU.len, StandardCharsets.UTF_8);
+						}
+					}
+				}
+			}
+		}
+		return null;
+	}
+	
+	protected String nameGetCN(byte[] pdu, int beginOfst, int endOfst)
+	{
+		return nameGetByOID(pdu, beginOfst, endOfst, "2.5.4.3");
+	}
+	
 	protected static KeyType keyTypeFromOID(byte[] oid, int ofst, int oidLen, boolean pubKey)
 	{
 		if (ASN1Util.oidEqualsText(oid, ofst, oidLen, "1.2.840.113549.1.1.1"))

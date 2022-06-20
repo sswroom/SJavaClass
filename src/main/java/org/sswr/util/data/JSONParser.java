@@ -210,7 +210,7 @@ public class JSONParser
 		return endIndex + 1;
 	}
 
-	private static int parseJSNumber(char carr[], int index, int endIndex, SharedObject val)
+	private static int parseJSNumber(char carr[], int index, int endIndex, SharedObject<Object> val)
 	{
 		char sbuff[] = new char[256];
 		int dindex = 0;
@@ -449,7 +449,7 @@ public class JSONParser
 		}
 		else if (c == '-' || (c >= '0' && c <= '9'))
 		{
-			SharedObject val = new SharedObject();
+			SharedObject<Object> val = new SharedObject<Object>();
 			index = parseJSNumber(carr, index, endIndex, val);
 			if (index > endIndex)
 			{

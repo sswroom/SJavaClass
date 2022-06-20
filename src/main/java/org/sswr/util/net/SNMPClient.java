@@ -93,21 +93,21 @@ public class SNMPClient implements UDPPacketListener
 		synchronized(this)
 		{
 			ASN1PDUBuilder pdu = new ASN1PDUBuilder();
-			pdu.sequenceBegin((byte)0x30);
+			pdu.beginSequence();
 			pdu.appendInt32(0);
 			pdu.appendString(community);
-			pdu.sequenceBegin((byte)0xA0);
+			pdu.beginOther((byte)0xA0);
 			pdu.appendInt32(this.reqId);
 			pdu.appendInt32(0);
 			pdu.appendInt32(0);
-			pdu.sequenceBegin((byte)0x30);
-			pdu.sequenceBegin((byte)0x30);
+			pdu.beginSequence();
+			pdu.beginSequence();
 			pdu.appendOID(oid, oidLen);
 			pdu.appendNull();
-			pdu.sequenceEnd();
-			pdu.sequenceEnd();
-			pdu.sequenceEnd();
-			pdu.sequenceEnd();
+			pdu.endLevel();
+			pdu.endLevel();
+			pdu.endLevel();
+			pdu.endLevel();
 			buff = pdu.getBuff(buffSize);
 			this.respList = itemList;
 			this.respStatus = SNMPErrorStatus.NORESP;
@@ -140,21 +140,21 @@ public class SNMPClient implements UDPPacketListener
 		synchronized(this)
 		{
 			ASN1PDUBuilder pdu = new ASN1PDUBuilder();
-			pdu.sequenceBegin((byte)0x30);
+			pdu.beginSequence();
 			pdu.appendInt32(0);
 			pdu.appendString(community);
-			pdu.sequenceBegin((byte)0xA1);
+			pdu.beginOther((byte)0xA1);
 			pdu.appendInt32(this.reqId);
 			pdu.appendInt32(0);
 			pdu.appendInt32(0);
-			pdu.sequenceBegin((byte)0x30);
-			pdu.sequenceBegin((byte)0x30);
+			pdu.beginSequence();
+			pdu.beginSequence();
 			pdu.appendOID(oid, oidLen);
 			pdu.appendNull();
-			pdu.sequenceEnd();
-			pdu.sequenceEnd();
-			pdu.sequenceEnd();
-			pdu.sequenceEnd();
+			pdu.endLevel();
+			pdu.endLevel();
+			pdu.endLevel();
+			pdu.endLevel();
 			buff = pdu.getBuff(buffSize);
 			this.respList = itemList;
 			this.respStatus = SNMPErrorStatus.NORESP;
@@ -223,22 +223,22 @@ public class SNMPClient implements UDPPacketListener
 		synchronized(this)
 		{
 			ASN1PDUBuilder pdu = new ASN1PDUBuilder();
-			pdu.sequenceBegin((byte)0x30);
+			pdu.beginSequence();
 			pdu.appendInt32(0);
 			pdu.appendString(community);
-			pdu.sequenceBegin((byte)0xA0);
+			pdu.beginOther((byte)0xA0);
 			pdu.appendInt32(this.reqId);
 			pdu.appendInt32(0);
 			pdu.appendInt32(0);
-			pdu.sequenceBegin((byte)0x30);
-			pdu.sequenceBegin((byte)0x30);
+			pdu.beginSequence();
+			pdu.beginSequence();
 			oidLen = SNMPUtil.oidText2PDU(oid, pduBuff, 0);
 			pdu.appendOID(pduBuff, oidLen);
 			pdu.appendNull();
-			pdu.sequenceEnd();
-			pdu.sequenceEnd();
-			pdu.sequenceEnd();
-			pdu.sequenceEnd();
+			pdu.endLevel();
+			pdu.endLevel();
+			pdu.endLevel();
+			pdu.endLevel();
 			buff = pdu.getBuff(buffSize);
 			synchronized(this.scanMut)
 			{

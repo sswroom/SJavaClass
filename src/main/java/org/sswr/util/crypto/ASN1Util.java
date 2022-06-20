@@ -157,19 +157,17 @@ public class ASN1Util
 	{
 		while (beginOfst < endOfst)
 		{
-			byte type = pdu[0];
+			byte type = pdu[beginOfst];
 			SharedInt len = new SharedInt();
 			SharedInt iVal = new SharedInt();
 			int ofst;
-			int size;
 	
-			size = (endOfst - beginOfst);
 			ofst = pduParseLen(pdu, beginOfst + 1, endOfst, len);
-			if (ofst > size)
+			if (ofst > endOfst)
 			{
 				return false;
 			}
-			else if (ofst + len.value > size)
+			else if (ofst + len.value > endOfst)
 			{
 				return false;
 			}
@@ -656,7 +654,7 @@ public class ASN1Util
 					{
 						item.pduBegin = beginOfst;
 						item.ofst = ofst;
-						item.itemType = pdu[beginOfst];
+						item.itemType = pdu[beginOfst] & 255;
 						if (!pduDSizeEnd(pdu, ofst, endOfst, itemLen))
 						{
 							return null;
@@ -669,7 +667,7 @@ public class ASN1Util
 					{
 						item.pduBegin = beginOfst;
 						item.ofst = ofst;
-						item.itemType = pdu[beginOfst];
+						item.itemType = pdu[beginOfst] & 255;
 						item.len = itemLen.value;
 						return item;
 					}
