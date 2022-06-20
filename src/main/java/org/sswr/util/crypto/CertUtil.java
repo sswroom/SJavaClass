@@ -251,7 +251,7 @@ public class CertUtil
 
 	public static String getIssuerCN(X509CRL crl)
 	{
-		return nameGetCN(crl.getIssuerDN());
+		return nameGetCN(crl.getIssuerX500Principal());
 	}
 
 	public static CertValidStatus isValid(X509CRL crl)

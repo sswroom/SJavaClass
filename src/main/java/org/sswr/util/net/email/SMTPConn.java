@@ -26,7 +26,6 @@ public class SMTPConn implements Runnable
 	private boolean threadToStop;
 	private boolean threadRunning;
 	private boolean threadStarted;
-	private boolean logged;
 	private boolean statusChg;
 	private int lastStatus;
 	private byte[] msgRet;
@@ -81,7 +80,7 @@ public class SMTPConn implements Runnable
 				msgCode = StringUtil.toIntegerS(sb.substring(0, 3), 0);
 				if (msgCode == 235)
 				{
-					this.logged = true;
+//					this.logged = true;
 				}
 				if (sb.charAt(3) == ' ')
 				{
@@ -142,7 +141,6 @@ public class SMTPConn implements Runnable
 		this.threadStarted = false;
 		this.threadRunning = false;
 		this.threadToStop = false;
-		this.logged = false;
 		this.msgRet = null;
 		this.msgRetOfst = 0;
 		this.statusChg = false;
@@ -269,6 +267,11 @@ public class SMTPConn implements Runnable
 	public boolean isError()
 	{
 		return this.initCode != 220 || this.cli.isConnectError();
+	}
+
+	public int getMaxSize()
+	{
+		return this.maxSize;
 	}
 
 	public boolean sendHelo(String cliName)

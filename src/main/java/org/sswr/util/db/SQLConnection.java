@@ -51,9 +51,13 @@ public class SQLConnection extends ReadingConnection
 
 	public int getTableNames(List<String> names)
 	{
-//		names.addAll(this.tables.keySet());
-//		return this.tables.size();
-		return 0;
+		if (this.tableNames == null)
+		{
+			this.tableNames = new ArrayList<String>();
+			///////////////////////////////////
+		}
+		names.addAll(this.tableNames);
+		return this.tableNames.size();
 	}
 
 	public DBReader getTableData(String name, int maxCnt, String sortString, QueryConditions<?> condition)

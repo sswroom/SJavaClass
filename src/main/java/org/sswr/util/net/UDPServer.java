@@ -369,7 +369,8 @@ public class UDPServer
 	{
 		try
 		{
-			this.socV4.joinGroup(ip);
+			InetSocketAddress addr = new InetSocketAddress(ip, this.port);
+			this.socV4.joinGroup(addr, null);
 		}
 		catch (IOException ex)
 		{
