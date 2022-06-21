@@ -117,6 +117,7 @@ public class JWTHandler
 		int i3 = token.indexOf(".", i2 + 1);
 		if (i2 < 0 || i3 >= 0)
 		{
+			System.out.println("token format invalid");
 			return null;
 		}
 		Decoder b64urldec = Base64.getUrlDecoder();
@@ -140,6 +141,7 @@ public class JWTHandler
 //		System.out.println("payload: "+payload);
 		if (this.alg != tokenAlg)
 		{
+			System.out.println("Token algorithm mismatch");
 			return null;
 		}
 		Hash hash;
@@ -155,6 +157,7 @@ public class JWTHandler
 			hash = new HMAC(new SHA512(), this.privateKey, 0, this.privateKey.length);
 			break;
 		default:
+			System.out.println("Token algorithm not supported");
 			return null;
 		}
 		Encoder b64url = Base64.getUrlEncoder().withoutPadding();
@@ -162,6 +165,7 @@ public class JWTHandler
 		hash.calc(buff, 0, buff.length);
 		if (!b64url.encodeToString(hash.getValue()).equals(token.substring(i2 + 1)))
 		{
+			System.out.println("Token hash mismatch");
 			return null;
 		}
 
@@ -169,6 +173,7 @@ public class JWTHandler
 		Object payloadJson = JSONParser.parse(payload);
 		if (payloadJson == null || !(payloadJson instanceof Map))
 		{
+			System.out.println("Token payload missing");
 			return null;
 		}
 		@SuppressWarnings("unchecked")

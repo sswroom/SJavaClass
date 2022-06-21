@@ -128,6 +128,10 @@ public class JWTMSvrSessionManager extends JWTSessionManager implements MQTTEven
 	{
 		JWTParam param = new JWTParam();
 		Map<String, String> payload = jwt.parse(token, param);
+		if (payload == null)
+		{
+			return null;
+		}
 		Integer serverId = StringUtil.toInteger(payload.get("svrId"));
 		Long sessId = StringUtil.toLong(param.getJWTId());
 		if (sessId != null && serverId != null)
