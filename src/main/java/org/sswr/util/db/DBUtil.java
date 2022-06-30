@@ -1754,7 +1754,7 @@ public class DBUtil {
 		}
 	}
 
-	public static <T> boolean update(Connection conn, TableInfo table, T oriObj, T newObj, DBOptions options)
+	private static <T> boolean update(Connection conn, TableInfo table, T oriObj, T newObj, DBOptions options)
 	{
 		DBType dbType = connGetDBType(conn);
 		StringBuilder sb;
@@ -1970,14 +1970,10 @@ public class DBUtil {
 		}
 	}
 
-	public static <T> boolean update(Connection conn, T oriObj, T newObj)
+	public static <T> boolean objInsert(Connection conn, T newObj, DBOptions options)
 	{
 		TableInfo table = null;
-		if (oriObj != null)
-		{
-			table = parseTableInfo(oriObj.getClass());
-		}
-		else if (newObj != null)
+		if (newObj != null)
 		{
 			table = parseTableInfo(newObj.getClass());
 		}
@@ -1985,24 +1981,31 @@ public class DBUtil {
 		{
 			return false;
 		}
-		return update(conn, table, oriObj, newObj, null);
+		return update(conn, table, null, newObj, options);
 	}
 
-	public static <T> boolean update(Connection conn, T oriObj, T newObj, DBOptions options)
+	public static <T> boolean objDelete(Connection conn, T oriObj, DBOptions options)
 	{
 		TableInfo table = null;
 		if (oriObj != null)
 		{
 			table = parseTableInfo(oriObj.getClass());
 		}
-		else if (newObj != null)
-		{
-			table = parseTableInfo(newObj.getClass());
-		}
 		else
 		{
 			return false;
 		}
+		return update(conn, table, oriObj, null, options);
+	}
+
+	public static <T> boolean objUpdate(Connection conn, T oriObj, T newObj, DBOptions options)
+	{
+		TableInfo table = null;
+		if (oriObj == null || newObj == null)
+		{
+			return false;
+		}
+		table = parseTableInfo(oriObj.getClass());
 		return update(conn, table, oriObj, newObj, options);
 	}
 
