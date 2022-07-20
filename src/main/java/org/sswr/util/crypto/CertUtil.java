@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.InvalidKeyException;
+import java.security.Key;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -15,6 +16,7 @@ import java.security.NoSuchProviderException;
 import java.security.Principal;
 import java.security.Security;
 import java.security.SignatureException;
+import java.security.UnrecoverableKeyException;
 import java.security.cert.CRLException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
@@ -27,6 +29,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.sswr.util.crypto.MyX509File.FileType;
+import org.sswr.util.data.ByteTool;
 
 public class CertUtil
 {
@@ -104,6 +107,111 @@ public class CertUtil
         }
         return trustStore;
     }
+
+	public static KeyStore loadKeyStore(String fileName, String password)
+	{
+		FileInputStream fis = null;
+		KeyStoreType type;
+		try
+		{
+			fis = new FileInputStream(fileName);
+			type = parseKeyStoreType(fis);
+		}
+		catch (IOException ex)
+		{
+			ex.printStackTrace();
+			if (fis != null)
+			{
+				try
+				{
+					fis.close();
+				}
+				catch (IOException ex2)
+				{
+					
+				}
+			}
+			return null;
+		}
+        KeyStore trustStore = null;
+        try
+		{
+            trustStore = KeyStore.getInstance(getKeyStoreTypeName(type), Security.getProvider("SUN"));
+        }
+		catch (KeyStoreException e)
+		{
+			e.printStackTrace();
+			try
+			{
+				fis.close();
+			}
+			catch (IOException ex2)
+			{
+				
+			}
+			return null;
+        }
+
+        try
+		{
+            trustStore.load(fis, password.toCharArray());
+        }
+		catch (IOException | CertificateException | NoSuchAlgorithmException e)
+		{
+			e.printStackTrace();
+			return null;
+        }
+        return trustStore;
+	}
+
+	public static boolean isKeyStoreSingleCertWithKey(KeyStore ks, String password)
+	{
+		try
+		{
+			if (ks.size() != 1)
+				return false;
+			String alias = ks.aliases().nextElement();
+			Certificate cert = ks.getCertificate(alias);
+			Key key = ks.getKey(alias, password.toCharArray());
+			return cert != null && key != null;
+		}
+		catch (KeyStoreException ex)
+		{
+			ex.printStackTrace();
+			return false;
+		}
+		catch (NoSuchAlgorithmException ex)
+		{
+			ex.printStackTrace();
+			return false;
+		}
+		catch (UnrecoverableKeyException ex)
+		{
+			ex.printStackTrace();
+			return false;
+		}
+	}
+
+	public static KeyStoreType parseKeyStoreType(FileInputStream is) throws IOException
+	{
+		byte[] buff = new byte[12];
+		long pos = is.getChannel().position();
+		if (is.read(buff, 0, 12) != 12)
+		{
+			is.getChannel().position(pos);
+			return KeyStoreType.Unknown;
+		}
+		is.getChannel().position(pos);
+		if (ByteTool.readMInt32(buff, 0) == 0xFEEDFEED && ByteTool.readMInt32(buff, 4) <= 2)
+		{
+			return KeyStoreType.JKS;
+		}
+		if (buff[0] == 0x30)
+		{
+			return KeyStoreType.PKCS12;
+		}
+		return KeyStoreType.Unknown;
+	}
 
 	public static boolean loadMyTrusts(Map<String, Certificate> certMap)
 	{
@@ -340,6 +448,20 @@ public class CertUtil
 				ex.printStackTrace();
 			}
 			return CertValidStatus.UnsupportedAlgorithm;
+		}
+	}
+
+
+	public static String getKeyStoreTypeName(KeyStoreType type)
+	{
+		switch (type)
+		{
+		case Unknown:
+		case PKCS12:
+		default:
+			return "pkcs12";
+		case JKS:
+			return "jks";
 		}
 	}
 }
