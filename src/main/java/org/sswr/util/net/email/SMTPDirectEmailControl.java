@@ -25,11 +25,11 @@ public class SMTPDirectEmailControl implements EmailControl
 		this.validator = new EmailValidator(SocketFactory.create());
 	}
 
-	public boolean sendMail(EmailTemplate template, String toList, String ccList)
+	public boolean sendMail(EmailMessage msg, String toList, String ccList)
 	{
-		EmailMessage message = new EmailMessage();
-		message.setSubject(template.getSubject());
-		message.setContent(template.getContent(), "text/html; charset=utf-8");
+		SMTPMessage message = new SMTPMessage();
+		message.setSubject(msg.getSubject());
+		message.setContent(msg.getContent(), "text/html; charset=utf-8");
 		message.setSentDate(ZonedDateTime.now());
 		message.setFrom(null, this.smtpFrom);
 		message.addToList(toList);
@@ -52,7 +52,7 @@ public class SMTPDirectEmailControl implements EmailControl
 
 	public String sendTestingEmail(String toAddress)
 	{
-		EmailMessage message = new EmailMessage();
+		SMTPMessage message = new SMTPMessage();
 		message.setSubject("Email Testing");
 		message.setContent("This is a test email", "text/html; charset=utf-8");
 		message.setSentDate(ZonedDateTime.now());

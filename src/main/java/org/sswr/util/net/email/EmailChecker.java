@@ -6,20 +6,20 @@ import org.sswr.util.data.DataTools;
 
 public class EmailChecker<T extends TemplateEmailStatus> implements Runnable
 {
-	private EmailTemplateCreator tplCreator;
+	private EmailMessageCreator msgCreator;
 	private EmailCheckHandler<T> handler;
 	private EmailControl emailCtrl;
 	private boolean splitDestAddr;
 
-	public EmailChecker(EmailTemplateCreator tplCreator, EmailCheckHandler<T> handler, EmailControl emailCtrl, boolean splitDestAddr)
+	public EmailChecker(EmailMessageCreator msgCreator, EmailCheckHandler<T> handler, EmailControl emailCtrl, boolean splitDestAddr)
 	{
-		this.tplCreator = tplCreator;
+		this.msgCreator = msgCreator;
 		this.handler = handler;
 		this.emailCtrl = emailCtrl;
 		this.splitDestAddr = splitDestAddr;
 	}
 
-	private void sendEmails(EmailTemplate template, String toAddrs, String ccAddrs, StringBuilder sbSucc, StringBuilder sbFail)
+	private void sendEmails(EmailMessage message, String toAddrs, String ccAddrs, StringBuilder sbSucc, StringBuilder sbFail)
 	{
 		if (this.splitDestAddr)
 		{
@@ -30,7 +30,7 @@ public class EmailChecker<T extends TemplateEmailStatus> implements Runnable
 			while (i < j)
 			{
 				emailAddr = emailAddrs[i].trim();
-				if (emailCtrl.sendMail(template, emailAddr, null))
+				if (emailCtrl.sendMail(message, emailAddr, null))
 				{
 					if (sbSucc.length() > 0)
 					{
@@ -50,12 +50,12 @@ public class EmailChecker<T extends TemplateEmailStatus> implements Runnable
 			}
 			if (ccAddrs != null && ccAddrs.length() > 0)
 			{
-				sendEmails(template, ccAddrs, null, sbSucc, sbFail);
+				sendEmails(message, ccAddrs, null, sbSucc, sbFail);
 			}
 		}
 		else
 		{
-			if (emailCtrl.sendMail(template, toAddrs, ccAddrs))
+			if (emailCtrl.sendMail(message, toAddrs, ccAddrs))
 			{
 				if (sbSucc.length() > 0)
 				{
@@ -88,11 +88,7 @@ public class EmailChecker<T extends TemplateEmailStatus> implements Runnable
 	{
 		try
 		{
-			EmailTemplate template = this.tplCreator.createTemplate(email.getTplname(), email.getParamObj());
-			if (email.getItemParams() != null)
-			{
-				template.addItems(email.getItemParamsObj());
-			}
+			EmailMessage message = this.msgCreator.createMessage(email.getTplname(), email.getParamObj(), email.getItemParamsObj());
 			if (email.getToEmails() == null || email.getToEmails().length() == 0)
 			{
 				email.setStatus(EmailStatus.NO_ADDRESS);
@@ -101,7 +97,7 @@ public class EmailChecker<T extends TemplateEmailStatus> implements Runnable
 			{
 				StringBuilder sbSucc = new StringBuilder();
 				StringBuilder sbFail = new StringBuilder();
-				sendEmails(template, email.getToEmails(), email.getCcEmails(), sbSucc, sbFail);
+				sendEmails(message, email.getToEmails(), email.getCcEmails(), sbSucc, sbFail);
 				if (sbFail.length() == 0)
 				{
 					email.setStatus(EmailStatus.SENT);

@@ -5,7 +5,7 @@ import org.sswr.util.data.StringUtil;
 public class NullEmailControl implements EmailControl
 {
 	@Override
-	public boolean sendMail(EmailTemplate template, String toList, String ccList)
+	public boolean sendMail(EmailMessage message, String toList, String ccList)
 	{
 		return false;
 	}

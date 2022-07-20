@@ -17,7 +17,8 @@ import org.sswr.util.data.XmlUtil;
  * [xxxx]  Subject Text
  * [[ output [ character
  */
-public class EmailTemplate {
+public class EmailTemplate implements EmailMessage
+{
 	public class TemplateFormatException extends Exception
 	{
 		private static final long serialVersionUID = 1L;

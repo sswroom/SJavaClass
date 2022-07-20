@@ -31,7 +31,7 @@ public class SMTPClient
 		this.authPassword = password;
 	}
 
-	public boolean send(EmailMessage message)
+	public boolean send(SMTPMessage message)
 	{
 		if (!message.completedMessage())
 		{
