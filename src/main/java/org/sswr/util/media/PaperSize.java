@@ -1,6 +1,10 @@
 package org.sswr.util.media;
 
+import java.awt.print.PageFormat;
+import java.awt.print.Paper;
+
 import org.sswr.util.math.unit.Distance;
+import org.sswr.util.math.unit.Distance.DistanceUnit;
 
 public class PaperSize
 {
@@ -317,5 +321,25 @@ public class PaperSize
 	public double getHeightMM()
 	{
 		return this.heightMM;
+	}
+
+	public PageFormat toPageForamt(PageOrientation po)
+	{
+		PageFormat pf = new PageFormat();
+		Paper paper = new Paper();
+		if (po == PageOrientation.Portrait)
+		{
+			paper.setSize(Distance.convert(DistanceUnit.Millimeter, DistanceUnit.Point, this.widthMM), Distance.convert(DistanceUnit.Millimeter, DistanceUnit.Point, this.heightMM));
+			pf.setPaper(paper);
+			pf.setOrientation(PageFormat.PORTRAIT);
+		}
+		else
+		{
+			paper.setSize(Distance.convert(DistanceUnit.Millimeter, DistanceUnit.Point, this.heightMM), Distance.convert(DistanceUnit.Millimeter, DistanceUnit.Point, this.widthMM));
+			pf.setPaper(paper);
+			pf.setOrientation(PageFormat.LANDSCAPE);
+		}
+		return pf;
+
 	}
 }

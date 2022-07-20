@@ -26,6 +26,7 @@ public class Distance
 		Emu,
 		Point,
 		Pixel,
+		Twip
 	}
 
 	public static double getUnitRatio(DistanceUnit unit)
@@ -76,6 +77,8 @@ public class Distance
 			return 0.0254 / 72.0;
 		case Pixel:
 			return 0.0254 / 96.0;
+		case Twip:
+			return 0.0254 / 1440.0;
 		}
 		return 1;
 	}
@@ -128,6 +131,8 @@ public class Distance
 			return "pt";
 		case Pixel:
 			return "px";
+		case Twip:
+			return "twip";
 		}
 		return "";
 	}
@@ -180,6 +185,8 @@ public class Distance
 			return "Point";
 		case Pixel:
 			return "Pixel";
+		case Twip:
+			return "Twentieth of an inch point";
 		}
 		return "";
 	}

@@ -4,6 +4,7 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.net.Inet4Address;
 import java.sql.Timestamp;
 import java.time.ZonedDateTime;
@@ -1033,46 +1034,49 @@ public class DataTools {
 			int j = fields.length;
 			while (i < j)
 			{
-				try
+				if ((fields[i].getModifiers() & Modifier.STATIC) == 0)
 				{
-					Method getter = ReflectTools.findGetter(fields[i]);
-					Object innerObj;
-					if (getter != null)
+					try
 					{
-						innerObj = getter.invoke(o);
+						Method getter = ReflectTools.findGetter(fields[i]);
+						Object innerObj;
+						if (getter != null)
+						{
+							innerObj = getter.invoke(o);
+						}
+						else
+						{
+							innerObj = fields[i].get(o);
+						}
+						if (found)
+						{
+							sb.append(',');
+							sb.append(' ');
+						}
+						sb.append(fields[i].getName());
+						sb.append('=');
+						if (innerObj == o)
+						{
+							sb.append("self");
+						}
+						else
+						{
+							sb.append(toObjectStringInner(innerObj, maxLevel - 1));
+						}
+						found = true;
 					}
-					else
+					catch (IllegalAccessException ex)
 					{
-						innerObj = fields[i].get(o);
-					}
-					if (found)
-					{
-						sb.append(',');
-						sb.append(' ');
-					}
-					sb.append(fields[i].getName());
-					sb.append('=');
-					if (innerObj == o)
-					{
-						sb.append("self");
-					}
-					else
-					{
-						sb.append(toObjectStringInner(innerObj, maxLevel - 1));
-					}
-					found = true;
-				}
-				catch (IllegalAccessException ex)
-				{
 
-				}
-				catch (IllegalArgumentException ex)
-				{
+					}
+					catch (IllegalArgumentException ex)
+					{
 
-				}
-				catch (InvocationTargetException ex)
-				{
+					}
+					catch (InvocationTargetException ex)
+					{
 
+					}
 				}
 				i++;
 			}
