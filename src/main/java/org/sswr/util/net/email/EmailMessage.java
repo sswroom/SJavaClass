@@ -217,6 +217,29 @@ public class EmailMessage
 		return succ;
 	}
 
+	public boolean addCcList(String addrs)
+	{
+		boolean succ;
+		String[] ccAddrs = StringUtil.split(addrs, ",");
+		succ = true;
+		int i = 0;
+		int j = ccAddrs.length;
+		while (i < j)
+		{
+			ccAddrs[i] = ccAddrs[i].trim();
+			if (!StringUtil.isEmailAddress(ccAddrs[i]))
+			{
+				succ = false;
+			}
+			else
+			{
+				succ = succ && this.addCc(null, ccAddrs[i]);
+			}
+			i++;
+		}
+		return succ;
+	}
+
 	public boolean addCc(String name, String addr)
 	{
 		int i = this.getHeaderIndex("Cc");

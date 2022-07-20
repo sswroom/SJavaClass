@@ -25,7 +25,7 @@ public class SMTPDirectEmailControl implements EmailControl
 		this.validator = new EmailValidator(SocketFactory.create());
 	}
 
-	public boolean sendMail(EmailTemplate template, String toList)
+	public boolean sendMail(EmailTemplate template, String toList, String ccList)
 	{
 		EmailMessage message = new EmailMessage();
 		message.setSubject(template.getSubject());
@@ -33,6 +33,10 @@ public class SMTPDirectEmailControl implements EmailControl
 		message.setSentDate(ZonedDateTime.now());
 		message.setFrom(null, this.smtpFrom);
 		message.addToList(toList);
+		if (ccList != null && ccList.length() > 0)
+		{
+			message.addCcList(ccList);
+		}
 		return this.smtp.send(message);
 	}
 

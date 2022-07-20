@@ -90,6 +90,37 @@ public class EmailTemplate {
 		}
 	}
 
+	public EmailTemplate(String subject, String content, Map<String, String> vars) throws IOException, TemplateFormatException, TemplateItemException
+	{
+		this.itemTemplate = null;
+		this.itemOfst = 0;
+		this.sbSubj = new StringBuilder();
+		this.subjTemplate = subject;
+		this.parseTemplate(this.subjTemplate, this.sbSubj, vars);
+		this.contTemplate = content;
+		this.itemOfst = this.contTemplate.indexOf("[item]");
+		if (this.itemOfst >= 0)
+		{
+			int j = this.contTemplate.indexOf("[/item]");
+			if (j < this.itemOfst)
+			{
+				throw new IOException("Template format invalid");
+			}
+			this.itemTemplate = this.contTemplate.substring(this.itemOfst + 6, j);
+			this.sbPre = new StringBuilder();
+			this.sbPost = new StringBuilder();
+			this.contTemplate = this.contTemplate.substring(0, this.itemOfst) + this.contTemplate.substring(j + 7);
+			this.sbItem = new StringBuilder();
+			this.parseTemplate(this.contTemplate.substring(0, this.itemOfst), this.sbPre, vars);
+			this.parseTemplate(this.contTemplate.substring(this.itemOfst), this.sbPost, vars);
+		}
+		else
+		{
+			this.sbPre = new StringBuilder();
+			this.parseTemplate(this.contTemplate, this.sbPre, vars);
+		}
+	}
+
 	public void addItem(Map<String, String> itemVars) throws IllegalArgumentException, TemplateFormatException, TemplateItemException
 	{
 		if (this.itemTemplate == null)

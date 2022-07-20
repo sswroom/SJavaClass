@@ -6,7 +6,8 @@ import java.util.Map;
 public interface TemplateEmailStatus
 {
 	public String getTplname();
-	public String getEmails();
+	public String getToEmails();
+	public String getCcEmails();
 	public Map<String, String> getParamObj();
 	public String getItemParams();
 	public List<Map<String, String>> getItemParamsObj();

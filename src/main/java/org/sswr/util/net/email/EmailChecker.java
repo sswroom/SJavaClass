@@ -3,64 +3,105 @@ package org.sswr.util.net.email;
 import java.util.Iterator;
 
 import org.sswr.util.data.DataTools;
-import org.sswr.util.data.StringUtil;
-import org.sswr.util.io.ResourceLoader;
 
 public class EmailChecker<T extends TemplateEmailStatus> implements Runnable
 {
-	private Class<T> cls;
+	private EmailTemplateCreator tplCreator;
 	private EmailCheckHandler<T> handler;
 	private EmailControl emailCtrl;
+	private boolean splitDestAddr;
 
-	public EmailChecker(Class<T> cls, EmailCheckHandler<T> handler, EmailControl emailCtrl)
+	public EmailChecker(EmailTemplateCreator tplCreator, EmailCheckHandler<T> handler, EmailControl emailCtrl, boolean splitDestAddr)
 	{
-		this.cls = cls;
+		this.tplCreator = tplCreator;
 		this.handler = handler;
 		this.emailCtrl = emailCtrl;
+		this.splitDestAddr = splitDestAddr;
+	}
+
+	private void sendEmails(EmailTemplate template, String toAddrs, String ccAddrs, StringBuilder sbSucc, StringBuilder sbFail)
+	{
+		if (this.splitDestAddr)
+		{
+			String emailAddrs[] = toAddrs.split(",");
+			String emailAddr;
+			int i = 0;
+			int j = emailAddrs.length;
+			while (i < j)
+			{
+				emailAddr = emailAddrs[i].trim();
+				if (emailCtrl.sendMail(template, emailAddr, null))
+				{
+					if (sbSucc.length() > 0)
+					{
+						sbSucc.append(",");
+					}
+					sbSucc.append(emailAddr);
+				}
+				else
+				{
+					if (sbFail.length() > 0)
+					{
+						sbFail.append(",");
+					}
+					sbFail.append(emailAddr);
+				}
+				i++;
+			}
+			if (ccAddrs != null && ccAddrs.length() > 0)
+			{
+				sendEmails(template, ccAddrs, null, sbSucc, sbFail);
+			}
+		}
+		else
+		{
+			if (emailCtrl.sendMail(template, toAddrs, ccAddrs))
+			{
+				if (sbSucc.length() > 0)
+				{
+					sbSucc.append(",");
+				}
+				sbSucc.append(toAddrs);
+				if (ccAddrs != null && ccAddrs.length() > 0)
+				{
+					sbSucc.append(",");
+					sbSucc.append(ccAddrs);
+				}
+			}
+			else
+			{
+				if (sbFail.length() > 0)
+				{
+					sbFail.append(",");
+				}
+				sbFail.append(toAddrs);
+				if (ccAddrs != null && ccAddrs.length() > 0)
+				{
+					sbFail.append(",");
+					sbFail.append(ccAddrs);
+				}
+			}
+		}
 	}
 
 	private void doQueueEmail(EmailControl emailCtrl, TemplateEmailStatus email)
 	{
 		try
 		{
-			EmailTemplate template = new EmailTemplate(ResourceLoader.load(this.cls, "email/"+email.getTplname()+".txt", null), email.getParamObj());
+			EmailTemplate template = this.tplCreator.createTemplate(email.getTplname(), email.getParamObj());
 			if (email.getItemParams() != null)
 			{
 				template.addItems(email.getItemParamsObj());
 			}
-			if (email.getEmails() == null || email.getEmails().length() == 0)
+			if (email.getToEmails() == null || email.getToEmails().length() == 0)
 			{
 				email.setStatus(EmailStatus.NO_ADDRESS);
 			}
 			else
 			{
-				String emailAddrs[] = StringUtil.split(email.getEmails(), ",");
-				String emailAddr;
 				StringBuilder sbSucc = new StringBuilder();
 				StringBuilder sbFail = new StringBuilder();
-				int i = 0;
-				int j = emailAddrs.length;
-				while (i < j)
-				{
-					emailAddr = emailAddrs[i].trim();
-					if (emailCtrl.sendMail(template, emailAddr))
-					{
-						if (sbSucc.length() > 0)
-						{
-							sbSucc.append(",");
-						}
-						sbSucc.append(emailAddr);
-					}
-					else
-					{
-						if (sbFail.length() > 0)
-						{
-							sbFail.append(",");
-						}
-						sbFail.append(emailAddr);
-					}
-					i++;
-				}
+				sendEmails(template, email.getToEmails(), email.getCcEmails(), sbSucc, sbFail);
 				if (sbFail.length() == 0)
 				{
 					email.setStatus(EmailStatus.SENT);
