@@ -46,6 +46,13 @@ public class ED538 extends MODBUSDevice
 		return val.value;
 	}
 
+	public boolean getDICountByReg(int diNum, SharedInt val)
+	{
+		if (diNum >= 8 || diNum < 0)
+			return false;
+		return this.readInputI16(diNum, val);
+	}
+
 	public int getDICountByHolding(int diNum)
 	{
 		if (diNum >= 8 || diNum < 0)

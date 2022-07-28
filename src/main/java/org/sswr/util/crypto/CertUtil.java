@@ -462,6 +462,8 @@ public class CertUtil
 			return "pkcs12";
 		case JKS:
 			return "jks";
+		case JCEKS:
+			return "jceks";
 		}
 	}
 }

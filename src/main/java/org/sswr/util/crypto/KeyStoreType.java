@@ -4,5 +4,6 @@ public enum KeyStoreType
 {
 	Unknown,
 	PKCS12,
-	JKS
+	JKS,
+	JCEKS
 }
