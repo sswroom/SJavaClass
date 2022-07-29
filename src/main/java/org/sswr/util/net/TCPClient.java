@@ -15,6 +15,7 @@ import org.sswr.util.io.IOStream;
 
 public class TCPClient extends IOStream
 {
+	private static boolean debug = false;
 	private Socket s;
 	private long totalRecvSize;
 	private long totalSendSize;
@@ -55,7 +56,10 @@ public class TCPClient extends IOStream
 		}
 		catch (IOException ex)
 		{
-			ex.printStackTrace();
+			if (debug)
+			{
+				ex.printStackTrace();
+			}
 			this.flags = 12;
 			return;
 		}

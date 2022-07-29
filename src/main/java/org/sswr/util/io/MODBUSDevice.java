@@ -91,7 +91,7 @@ public class MODBUSDevice implements MODBUSListener
 			{
 				if (resultSize == 1)
 				{
-					this.reqIResult.value = result[0];
+					this.reqIResult.value = result[resultOfst];
 					this.reqHasResult = true;
 					this.cbEvt.set();
 				}
@@ -121,7 +121,7 @@ public class MODBUSDevice implements MODBUSListener
 			{
 				if (resultSize == 1)
 				{
-					this.reqIResult.value = result[0];
+					this.reqIResult.value = result[resultOfst];
 					this.reqHasResult = true;
 					this.cbEvt.set();
 				}
@@ -404,5 +404,6 @@ public class MODBUSDevice implements MODBUSListener
 	public void close()
 	{
 		this.modbus.handleReadResult(this.addr, null);
+		this.modbus.close();
 	}
 }

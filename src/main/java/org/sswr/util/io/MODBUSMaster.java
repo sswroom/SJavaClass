@@ -2,6 +2,8 @@ package org.sswr.util.io;
 
 public interface MODBUSMaster
 {
+	public void close();
+	
 	public boolean readCoils(byte devAddr, int coilAddr, int coilCnt); //Output
 	public boolean readInputs(byte devAddr, int inputAddr, int inputCnt);
 	public boolean readHoldingRegisters(byte devAddr, int regAddr, int regCnt); //Output
