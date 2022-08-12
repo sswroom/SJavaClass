@@ -4,7 +4,7 @@ import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.sswr.util.math.Vector2D;
+import org.sswr.util.math.geometry.Vector2D;
 
 public abstract class DBReader
 {

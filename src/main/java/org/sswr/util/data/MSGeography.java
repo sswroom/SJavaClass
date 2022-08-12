@@ -5,9 +5,10 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.PrecisionModel;
-import org.sswr.util.math.Point2D;
-import org.sswr.util.math.Polygon;
-import org.sswr.util.math.Vector2D;
+import org.sswr.util.math.Coord2DDbl;
+import org.sswr.util.math.geometry.Point2D;
+import org.sswr.util.math.geometry.Polygon;
+import org.sswr.util.math.geometry.Vector2D;
 
 public class MSGeography
 {
@@ -106,6 +107,7 @@ public class MSGeography
 				int nFigures;
 				int nShapes;
 				int pointInd;
+				int figureInd;
 				int shapeInd;
 				int ind;
 				if (buff.length < 10)
@@ -120,6 +122,7 @@ public class MSGeography
 					return null;
 				}
 				nFigures = ByteTool.readInt32(buff, ind);
+				figureInd = ind + 4;
 				ind += 4 + nFigures * 5;
 				if (buff.length < ind + 4)
 				{
@@ -137,14 +140,25 @@ public class MSGeography
 				}
 				if (buff[shapeInd + 8] == 3)
 				{
-					Polygon pg = new Polygon(srid, 1, nPoints);
-					double []points = pg.getPointList();
+					Polygon pg = new Polygon(srid, nFigures, nPoints, false, false);
+					Coord2DDbl []points = pg.getPointList();
 					int i = 0;
 					while (i < nPoints)
 					{
-						points[i << 1] = ByteTool.readDouble(buff, pointInd + i * 16);
-						points[(i << 1) + 1] = ByteTool.readDouble(buff, pointInd + i * 16 + 8);
+						points[i].x = ByteTool.readDouble(buff, pointInd + i * 16);
+						points[i].y = ByteTool.readDouble(buff, pointInd + i * 16 + 8);
 						i++;
+					}
+					if (nFigures > 1)
+					{
+						int []ofstList = pg.getPtOfstList();
+						int j = ofstList.length;
+						i = 0;
+						while (i < j)
+						{
+							ofstList[i] = ByteTool.readInt32(buff, figureInd + i * 5 + 1);
+							i++;
+						}
 					}
 					return pg;
 				}

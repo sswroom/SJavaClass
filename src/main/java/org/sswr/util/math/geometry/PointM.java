@@ -1,0 +1,46 @@
+package org.sswr.util.math.geometry;
+
+import java.util.Objects;
+
+public class PointM extends Point2D
+{
+	protected double m;
+	public PointM(int srid, double x, double y, double m)
+	{
+		super(srid, x, y);
+		this.m = m;
+	}
+
+	public Vector2D clone()
+	{
+		PointM pt;
+		pt = new PointM(this.srid, this.pos.x, this.pos.y, this.m);
+		return pt;
+	}
+	
+	public double getM()
+	{
+		return this.m;
+	}
+	
+	public boolean hasM()
+	{
+		return true;
+	}
+	
+	@Override
+	public boolean equals(Object o) {
+		if (o == this)
+			return true;
+		if (!(o instanceof PointM)) {
+			return false;
+		}
+		PointM pointM = (PointM) o;
+		return this.srid == pointM.srid && this.pos.equals(pointM.pos) && m == pointM.m;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(this.srid, this.pos, this.m);
+	}
+}

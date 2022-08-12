@@ -1,6 +1,7 @@
 package org.sswr.util.math;
 
 import org.sswr.util.data.SharedDouble;
+import org.sswr.util.math.geometry.Polyline;
 import org.sswr.util.math.unit.Distance;
 
 public abstract class ProjectedCoordinateSystem extends CoordinateSystem
@@ -8,19 +9,19 @@ public abstract class ProjectedCoordinateSystem extends CoordinateSystem
 	protected GeographicCoordinateSystem gcs;
 	protected double falseEasting;
 	protected double falseNorthing;
-	protected double centralMeridian;
-	protected double latitudeOfOrigin;
+	protected double rcentralMeridian;
+	protected double rlatitudeOfOrigin;
 	protected double scaleFactor;
 	protected UnitType unit;
 
-	public ProjectedCoordinateSystem(String sourceName, int srid, String projName, double falseEasting, double falseNorthing, double centralMeridian, double latitudeOfOrigin, double scaleFactor, GeographicCoordinateSystem gcs, UnitType unit)
+	public ProjectedCoordinateSystem(String sourceName, int srid, String projName, double falseEasting, double falseNorthing, double dcentralMeridian, double dlatitudeOfOrigin, double scaleFactor, GeographicCoordinateSystem gcs, UnitType unit)
 	{
 		super(sourceName, srid, projName);
 
 		this.falseEasting = falseEasting;
 		this.falseNorthing = falseNorthing;
-		this.centralMeridian = centralMeridian;
-		this.latitudeOfOrigin = latitudeOfOrigin;
+		this.rcentralMeridian = dcentralMeridian * Math.PI / 180;
+		this.rlatitudeOfOrigin = dlatitudeOfOrigin * Math.PI / 180;
 		this.scaleFactor = scaleFactor;
 		this.gcs = gcs;
 		this.unit = unit;
@@ -41,11 +42,11 @@ public abstract class ProjectedCoordinateSystem extends CoordinateSystem
 	public double calPLDistance(Polyline pl, Distance.DistanceUnit unit)
 	{
 		int []ptOfsts;
-		double []points;
+		Coord2DDbl []points;
 		ptOfsts = pl.getPtOfstList();
 		points = pl.getPointList();
 		int i = ptOfsts.length;
-		int j = points.length >> 1;
+		int j = points.length;
 		int k;
 		double totalDist = 0;
 		boolean hasLast;
@@ -59,27 +60,27 @@ public abstract class ProjectedCoordinateSystem extends CoordinateSystem
 			{
 				if (hasLast)
 				{
-					totalDist += calSurfaceDistanceXY(lastX, lastY, points[(j << 1)], points[(j << 1) + 1], unit);
+					totalDist += calSurfaceDistanceXY(lastX, lastY, points[j].x, points[j].y, unit);
 				}
 				hasLast = true;
-				lastX = points[(j << 1)];
-				lastY = points[(j << 1) + 1];
+				lastX = points[j].x;
+				lastY = points[j].y;
 			}
 			j++;
 		}
 		return totalDist;
 	}
 
-	public double calPLDistance3D(Polyline3D pl, Distance.DistanceUnit unit)
+	public double calPLDistance3D(Polyline pl, Distance.DistanceUnit unit)
 	{
 		int []ptOfsts;
-		double []points;
+		Coord2DDbl []points;
 		double []alts;
 		ptOfsts = pl.getPtOfstList();
 		points = pl.getPointList();
-		alts = pl.getAltitudeList();
+		alts = pl.getZList();
 		int i = ptOfsts.length;
-		int j = points.length >> 1;
+		int j = points.length;
 		int k;
 		double dist;
 		double totalDist = 0;
@@ -95,13 +96,13 @@ public abstract class ProjectedCoordinateSystem extends CoordinateSystem
 			{
 				if (hasLast)
 				{
-					dist = calSurfaceDistanceXY(lastX, lastY, points[(j << 1)], points[(j << 1) + 1], unit);
+					dist = calSurfaceDistanceXY(lastX, lastY, points[j].x, points[j].y, unit);
 					dist = Math.sqrt(dist * dist + (alts[j] - lastH) * (alts[j] - lastH));
 					totalDist += dist;
 				}
 				hasLast = true;
-				lastX = points[(j << 1)];
-				lastY = points[(j << 1) + 1];
+				lastX = points[j].x;
+				lastY = points[j].y;
 				lastH = alts[j];
 			}
 			j++;
@@ -128,9 +129,9 @@ public abstract class ProjectedCoordinateSystem extends CoordinateSystem
 		sb.append("\r\nFalse Northing: ");
 		sb.append(this.falseNorthing);
 		sb.append("\r\nCentral Meridian: ");
-		sb.append(this.centralMeridian);
+		sb.append(this.getCentralMeridianDegree());
 		sb.append("\r\nLatitude Of Origin: ");
-		sb.append(this.latitudeOfOrigin);
+		sb.append(this.getLatitudeOfOriginDegree());
 		sb.append("\r\nScale Factor: ");
 		sb.append(this.scaleFactor);
 		sb.append("\r\n");
@@ -142,32 +143,53 @@ public abstract class ProjectedCoordinateSystem extends CoordinateSystem
 		return this.gcs;
 	}
 
-	public abstract void toGeographicCoordinate(double projX, double projY, SharedDouble geoX, SharedDouble geoY);
-	public abstract void fromGeographicCoordinate(double geoX, double geoY, SharedDouble projX, SharedDouble projY);
-	
+	public abstract void toGeographicCoordinateRad(double projX, double projY, SharedDouble geoX, SharedDouble geoY);
+	public abstract void fromGeographicCoordinateRad(double geoX, double geoY, SharedDouble projX, SharedDouble projY);
+	public void toGeographicCoordinateDeg(double projX, double projY, SharedDouble geoX, SharedDouble geoY)
+	{
+		this.toGeographicCoordinateRad(projX, projY, geoX, geoY);
+		geoX.value = geoX.value * 180 / Math.PI;
+		geoY.value = geoY.value * 180 / Math.PI;
+	}
+
+	public void fromGeographicCoordinateDeg(double geoX, double geoY, SharedDouble projX, SharedDouble projY)
+	{
+		this.fromGeographicCoordinateRad(geoX * Math.PI / 180.0, geoY * Math.PI / 180.0, projX, projY);
+	}
+
 	public boolean sameProjection(ProjectedCoordinateSystem csys)
 	{
 		if (this.falseEasting != csys.falseEasting)
 			return false;
 		if (this.falseNorthing != csys.falseNorthing)
 			return false;
-		if (this.centralMeridian != csys.centralMeridian)
+		if (this.rcentralMeridian != csys.rcentralMeridian)
 			return false;
-		if (this.latitudeOfOrigin != csys.latitudeOfOrigin)
+		if (this.rlatitudeOfOrigin != csys.rlatitudeOfOrigin)
 			return false;
 		if (this.scaleFactor != csys.scaleFactor)
 			return false;
 		return this.gcs.equals(csys.gcs);
 	}
 
-	public double getLatitudeOfOrigin()
+	public double getLatitudeOfOriginDegree()
 	{
-		return this.latitudeOfOrigin;
+		return this.rlatitudeOfOrigin * 180 / Math.PI;
 	}
 
-	public double getCentralMeridian()
+	public double getCentralMeridianDegree()
 	{
-		return this.centralMeridian;
+		return this.rcentralMeridian * 180 / Math.PI;
+	}
+
+	public double getLatitudeOfOriginRadian()
+	{
+		return this.rlatitudeOfOrigin;
+	}
+
+	public double getCentralMeridianRadian()
+	{
+		return this.rcentralMeridian;
 	}
 
 	public double getScaleFactor()

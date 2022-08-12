@@ -1,6 +1,7 @@
 package org.sswr.util.math;
 
 import org.sswr.util.data.SharedDouble;
+import org.sswr.util.math.geometry.Polyline;
 import org.sswr.util.math.unit.Angle;
 import org.sswr.util.math.unit.Distance;
 
@@ -45,7 +46,7 @@ public class GeographicCoordinateSystem extends CoordinateSystem
 		return this.datum.getSpheroid().getEllipsoid().calPLDistance(pl, unit);
 	}
 
-	public double calPLDistance3D(Polyline3D pl, Distance.DistanceUnit unit)
+	public double calPLDistance3D(Polyline pl, Distance.DistanceUnit unit)
 	{
 		return this.datum.getSpheroid().getEllipsoid().calPLDistance3D(pl, unit);
 	}
@@ -126,12 +127,12 @@ public class GeographicCoordinateSystem extends CoordinateSystem
 		return this.unit;
 	}
 
-	public void toCartesianCoord(double lat, double lon, double h, SharedDouble x, SharedDouble y, SharedDouble z)
+	public void toCartesianCoordRad(double lat, double lon, double h, SharedDouble x, SharedDouble y, SharedDouble z)
 	{
 		SharedDouble tmpX = new SharedDouble();
 		SharedDouble tmpY = new SharedDouble();
 		SharedDouble tmpZ = new SharedDouble();
-		this.datum.getSpheroid().getEllipsoid().toCartesianCoord(lat, lon, h, tmpX, tmpY, tmpZ);
+		this.datum.getSpheroid().getEllipsoid().toCartesianCoordRad(lat, lon, h, tmpX, tmpY, tmpZ);
 		if (this.datum.getScale() == 0 && this.datum.getXAngle() == 0 && this.datum.getYAngle() == 0 && this.datum.getZAngle() == 0)
 		{
 			x.value = tmpX.value + datum.getCX();
@@ -150,7 +151,7 @@ public class GeographicCoordinateSystem extends CoordinateSystem
 		}
 	}
 
-	public void fromCartesianCoord(double x, double y, double z, SharedDouble lat, SharedDouble lon, SharedDouble h)
+	public void fromCartesianCoordRad(double x, double y, double z, SharedDouble lat, SharedDouble lon, SharedDouble h)
 	{
 		double tmpX;
 		double tmpY;
@@ -171,6 +172,18 @@ public class GeographicCoordinateSystem extends CoordinateSystem
 			tmpY = s * (-this.datum.getZAngle() * x +                          y + this.datum.getXAngle() * z) + this.datum.getY0();
 			tmpZ = s * ( this.datum.getYAngle() * x - this.datum.getXAngle() * y +                          z) + this.datum.getZ0();
 		}
-		this.datum.getSpheroid().getEllipsoid().fromCartesianCoord(tmpX, tmpY, tmpZ, lat, lon, h);
+		this.datum.getSpheroid().getEllipsoid().fromCartesianCoordRad(tmpX, tmpY, tmpZ, lat, lon, h);
+	}
+
+	public void toCartesianCoordDeg(double dlat, double dlon, double h, SharedDouble x, SharedDouble y, SharedDouble z)
+	{
+		this.toCartesianCoordRad(dlat * Math.PI / 180.0, dlon * Math.PI / 180.0, h, x, y, z);
+	}
+
+	public void fromCartesianCoordDeg(double x, double y, double z, SharedDouble dlat, SharedDouble dlon, SharedDouble h)
+	{
+		this.fromCartesianCoordRad(x, y, z, dlat, dlon, h);
+		dlat.value = dlat.value * 180.0 / Math.PI;
+		dlon.value = dlon.value * 180.0 / Math.PI;
 	}
 }

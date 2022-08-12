@@ -3,24 +3,27 @@ package org.sswr.util.db;
 public enum ColumnType
 {
 	Unknown,
-	UInt32,
-	Int32,
-	VarChar,
-	Char,
-	DateTime, //acc = 1/333s
+	UTF8Char,
+	UTF16Char,
+	UTF32Char,
+	VarUTF8Char,
+	VarUTF16Char,
+	VarUTF32Char,
+	Date,
+	DateTime,
+	DateTimeTZ,
 	Double,
 	Float,
 	Bool,
 	Byte,
 	Int16,
+	Int32,
 	Int64,
 	UInt16,
+	UInt32,
 	UInt64,
 	Binary,
 	Vector,
-	NVarChar,
-	NChar,
-	DateTime2, //acc = 0.1ms
 	UUID
 	;
 
@@ -32,18 +35,24 @@ public enum ColumnType
 			return "UNSIGNED INTEGER";
 		case Int32:
 			return "INTEGER";
-		case VarChar:
-			return "VARCHAR(" + colSize + ")";
-		case Char:
+		case UTF8Char:
 			return "CHAR(" + colSize + ")";
-		case NVarChar:
-			return "NVARCHAR(" + colSize + ")";
-		case NChar:
-			return "NCHAR(" + colSize + ")";
+		case UTF16Char:
+			return "UTF16CHAR(" + colSize + ")";
+		case UTF32Char:
+			return "UTF32CHAR(" + colSize + ")";
+		case VarUTF8Char:
+			return "VARCHAR(" + colSize + ")";
+		case VarUTF16Char:
+			return "VARUTF16CHAR(" + colSize + ")";
+		case VarUTF32Char:
+			return "VARUTF32CHAR(" + colSize + ")";
+		case Date:
+			return "DATE";
 		case DateTime:
-			return "DATETIME";
-		case DateTime2:
-			return "DATETIME2";
+			return "DATETIME(" + colSize + ")";
+		case DateTimeTZ:
+			return "DATETIMETZ(" + colSize + ")";
 		case Double:
 			return "DOUBLE";
 		case Float:

@@ -2,6 +2,8 @@ package org.sswr.util.data;
 
 import java.nio.charset.StandardCharsets;
 
+import org.sswr.util.math.Coord2DDbl;
+
 public class ByteTool {
 	public static int readInt32(byte buff[], int index)
 	{
@@ -478,6 +480,26 @@ public class ByteTool {
 			while (i < size)
 			{
 				destArr[destOfst + i] = srcArr[srcOfst + i];
+				i++;
+			}
+		}
+	}
+
+	public static void copyArray(Coord2DDbl destArr[], int destOfst, Coord2DDbl srcArr[], int srcOfst, int size)
+	{
+		if (destArr == srcArr && destOfst > srcOfst)
+		{
+			while (size-- > 0)
+			{
+				destArr[destOfst + size] = srcArr[srcOfst + size].clone();
+			}
+		}
+		else
+		{
+			int i = 0;
+			while (i < size)
+			{
+				destArr[destOfst + i] = srcArr[srcOfst + i].clone();
 				i++;
 			}
 		}

@@ -1,6 +1,7 @@
 package org.sswr.util.math;
 
 import org.sswr.util.data.SharedDouble;
+import org.sswr.util.math.geometry.Polyline;
 import org.sswr.util.math.unit.Distance;
 
 public class EarthEllipsoid
@@ -86,11 +87,11 @@ public class EarthEllipsoid
 	public double calPLDistance(Polyline pl, Distance.DistanceUnit unit)
 	{
 		int []ptOfsts;
-		double []points;
+		Coord2DDbl []points;
 		ptOfsts = pl.getPtOfstList();
 		points = pl.getPointList();
 		int i = ptOfsts.length;
-		int j = points.length >> 1;
+		int j = points.length;
 		int k;
 		double totalDist = 0;
 		boolean hasLast;
@@ -104,27 +105,27 @@ public class EarthEllipsoid
 			{
 				if (hasLast)
 				{
-					totalDist += calSurfaceDistance(lastY, lastX, points[(j << 1) + 1], points[(j << 1)], unit);
+					totalDist += calSurfaceDistance(lastY, lastX, points[j].y, points[j].x, unit);
 				}
 				hasLast = true;
-				lastX = points[(j << 1)];
-				lastY = points[(j << 1) + 1];
+				lastX = points[j].x;
+				lastY = points[j].y;
 			}
 			j++;
 		}
 		return totalDist;
 	}
 
-	public double calPLDistance3D(Polyline3D pl, Distance.DistanceUnit unit)
+	public double calPLDistance3D(Polyline pl, Distance.DistanceUnit unit)
 	{
 		int []ptOfsts;
-		double []points;
+		Coord2DDbl []points;
 		double []alts;
 		ptOfsts = pl.getPtOfstList();
 		points = pl.getPointList();
-		alts = pl.getAltitudeList();
+		alts = pl.getZList();
 		int i = ptOfsts.length;
-		int j = points.length >> 1;
+		int j = points.length;
 		int k;
 		double dist;
 		double totalDist = 0;
@@ -140,13 +141,13 @@ public class EarthEllipsoid
 			{
 				if (hasLast)
 				{
-					dist = calSurfaceDistance(lastY, lastX, points[(j << 1) + 1], points[(j << 1)], unit);
+					dist = calSurfaceDistance(lastY, lastX, points[j].y, points[j].x, unit);
 					dist = Math.sqrt(dist * dist + (alts[j] - lastH) * (alts[j] - lastH));
 					totalDist += dist;
 				}
 				hasLast = true;
-				lastX = points[(j << 1)];
-				lastY = points[(j << 1) + 1];
+				lastX = points[j].x;
+				lastY = points[j].y;
 				lastH = alts[j];
 			}
 			j++;
@@ -220,10 +221,8 @@ public class EarthEllipsoid
 		return new EarthEllipsoid(this.semiMajorAxis, this.inverseFlattening, this.eet);
 	}
 
-	public void toCartesianCoord(double dLat, double dLon, double h, SharedDouble x, SharedDouble y, SharedDouble z)
+	public void toCartesianCoordRad(double rLat, double rLon, double h, SharedDouble x, SharedDouble y, SharedDouble z)
 	{
-		double rLat = dLat * Math.PI / 180.0;
-		double rLon = dLon * Math.PI / 180.0;
 		double cLat = Math.cos(rLat);
 		double sLat = Math.sin(rLat);
 		double cLon = Math.cos(rLon);
@@ -235,7 +234,7 @@ public class EarthEllipsoid
 		z.value = ((1 - e2) * v + h) * sLat;
 	}
 
-	public void fromCartesianCoord(double x, double y, double z, SharedDouble dLat, SharedDouble dLon, SharedDouble h)
+	public void fromCartesianCoordRad(double x, double y, double z, SharedDouble outLat, SharedDouble outLon, SharedDouble h)
 	{
 		double e2 = this.eccentricity * this.eccentricity;
 		double rLon = Math.atan2(y, x);
@@ -254,8 +253,20 @@ public class EarthEllipsoid
 				break;
 			rLat = thisLat;
 		}
-		dLat.value = rLat * 180 / Math.PI;
-		dLon.value = rLon * 180 / Math.PI;
+		outLat.value = rLat;
+		outLon.value = rLon;
 		h.value = p / Math.cos(rLat) - v;
+	}
+
+	public void toCartesianCoordDeg(double dLat, double dLon, double h, SharedDouble x, SharedDouble y, SharedDouble z)
+	{
+		this.toCartesianCoordRad(dLat * Math.PI / 180.0, dLon * Math.PI / 180.0, h, x, y, z);
+	}
+
+	public void tromCartesianCoordDeg(double x, double y, double z, SharedDouble dLat, SharedDouble dLon, SharedDouble h)
+	{
+		this.fromCartesianCoordRad(x, y, z, dLat, dLon, h);
+		dLat.value = dLat.value * 180.0 / Math.PI;
+		dLon.value = dLon.value * 180.0 / Math.PI;
 	}
 }

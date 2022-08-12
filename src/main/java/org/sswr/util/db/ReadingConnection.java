@@ -20,7 +20,7 @@ import org.sswr.util.data.DateTimeUtil;
 import org.sswr.util.data.ReflectTools;
 import org.sswr.util.io.LogLevel;
 import org.sswr.util.io.LogTool;
-import org.sswr.util.math.Vector2D;
+import org.sswr.util.math.geometry.Vector2D;
 
 public abstract class ReadingConnection
 {

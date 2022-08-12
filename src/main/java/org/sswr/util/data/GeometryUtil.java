@@ -1,13 +1,15 @@
 package org.sswr.util.data;
 
-import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.io.WKTWriter;
 
 public class GeometryUtil
 {
 	public static String toWKT(Geometry geometry)
 	{
-		String type = geometry.getGeometryType();
+		WKTWriter writer = new WKTWriter();
+		return writer.write(geometry);
+/*		String type = geometry.getGeometryType();
 		if (type.equals("LinearRing"))
 		{
 			StringBuilder sb = new StringBuilder();
@@ -36,6 +38,6 @@ public class GeometryUtil
 			sb.append(")");
 			return sb.toString();
 		}
-		return "Unknwon Geometry Type: "+type;
+		return "Unknwon Geometry Type: "+type;*/
 	}
 }

@@ -52,6 +52,7 @@ import org.sswr.util.data.FieldSetter;
 import org.sswr.util.data.GeometryUtil;
 import org.sswr.util.data.MSGeography;
 import org.sswr.util.data.ReflectTools;
+import org.sswr.util.data.SharedInt;
 import org.sswr.util.data.StringUtil;
 import org.sswr.util.io.LogLevel;
 import org.sswr.util.io.LogTool;
@@ -64,7 +65,8 @@ public class DBUtil {
 		MySQL,
 		SQLite,
 		Access,
-		Oracle
+		Oracle,
+		PostgreSQL
 	}
 
 	public static final int MAX_SQL_ITEMS = 100;
@@ -1543,6 +1545,11 @@ public class DBUtil {
 			val = val.replace("\'", "\'\'");
 			return "'"+val+"'";
 		}
+		else if (dbType == DBType.PostgreSQL)
+		{
+			val = val.replace("\'", "\'\'");
+			return "'"+val+"'";
+		}
 		else
 		{
 			val = val.replace("\\", "\\\\");
@@ -1561,13 +1568,25 @@ public class DBUtil {
 		{
 			return "#"+val.toString()+"#";
 		}
-		else if (dbType == DBType.MSSQL || dbType == DBType.SQLite)
+		else if (dbType == DBType.MSSQL)
+		{
+			return "'"+new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSSSSS").format(val)+"'";
+		}
+		else if (dbType == DBType.SQLite)
 		{
 			return "'"+new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(val)+"'";
 		}
 		else if (dbType == DBType.Oracle)
 		{
-			return "TIMESTAMP '"+new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(val)+"'";
+			return "TIMESTAMP '"+new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSSSSSSS").format(val)+"'";
+		}
+		else if (dbType == DBType.MySQL)
+		{
+			return "'"+new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSSSS").format(val)+"'";
+		}
+		else if (dbType == DBType.PostgreSQL)
+		{
+			return "'"+new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSSSS").format(val)+"'";
 		}
 		else
 		{
@@ -1597,13 +1616,21 @@ public class DBUtil {
 
 	public static String dbGeometry(DBType dbType, Geometry geometry)
 	{
+		if (geometry == null)
+		{
+			return "NULL";
+		}
 		if (dbType == DBType.MySQL)
 		{
-			return "ST_GeomFromText('"+GeometryUtil.toWKT(geometry)+"', "+geometry.getSRID()+")";
+			return "GeomFromText('"+GeometryUtil.toWKT(geometry)+"', "+geometry.getSRID()+")";
 		}
 		else if (dbType == DBType.MSSQL)
 		{
 			return "geometry::STGeomFromText('"+GeometryUtil.toWKT(geometry)+"', "+geometry.getSRID()+")";
+		}
+		else if (dbType == DBType.PostgreSQL)
+		{
+			return "ST_GeomFromText('"+GeometryUtil.toWKT(geometry)+"', "+geometry.getSRID()+")";
 		}
 		else
 		{
@@ -1697,6 +1724,10 @@ public class DBUtil {
 		{
 			return "["+val+"]";
 		}
+		else if (dbType == DBType.PostgreSQL)
+		{
+			return "\""+val+"\"";
+		}
 		else
 		{
 			return val;
@@ -1716,6 +1747,12 @@ public class DBUtil {
 			sb.append('[');
 			sb.append(val);
 			sb.append(']');
+		}
+		else if (dbType == DBType.PostgreSQL)
+		{
+			sb.append('\"');
+			sb.append(val);
+			sb.append('\"');
 		}
 		else
 		{
@@ -2112,6 +2149,206 @@ public class DBUtil {
 		{
 			sqlLogger.logException(ex);
 			return null;
+		}
+	}
+
+	public static ColumnType parseColType(DBType svrType, String typeName, SharedInt colSize)
+	{
+		typeName = typeName.toUpperCase();
+		if (colSize == null)
+		{
+			colSize = new SharedInt(-1);
+		}
+		if (svrType == DBType.MySQL)
+		{
+			switch (typeName)
+			{
+			case "VARCHAR":
+				return ColumnType.VarUTF32Char;
+			case "CHAR":
+				return ColumnType.UTF32Char;
+			case "BIGINT":
+				return ColumnType.Int64;
+			case "BIGINT UNSIGNED":
+				return ColumnType.UInt64;
+			case "INT":
+				return ColumnType.Int32;
+			case "INT UNSIGNED":
+				return ColumnType.UInt32;
+			case "SMALLINT":
+				return ColumnType.Int16;
+			case "SMALLINT UNSIGNED":
+				return ColumnType.UInt16;
+			case "DATE":
+				return ColumnType.Date;
+			case "DATETIME":
+				if (colSize.value < 0)
+					colSize.value = 0;
+				return ColumnType.DateTime;
+			case "DATETIMEOFFSET":
+				if (colSize.value < 0)
+					colSize.value = 0;
+				return ColumnType.DateTimeTZ;
+			case "TIMESTAMP":
+				if (colSize.value < 0)
+					colSize.value = 0;
+				return ColumnType.DateTime;
+			case "DOUBLE":
+				colSize.value = 8;
+				return ColumnType.Double;
+			case "FLOAT":
+				colSize.value = 4;
+				return ColumnType.Float;
+			case "LONGTEXT":
+				colSize.value = Integer.MAX_VALUE;
+				return ColumnType.VarUTF32Char;
+			case "TEXT":
+				colSize.value = 65535;
+				return ColumnType.VarUTF32Char;
+			case "TINYINT":
+			case "TINYINT UNSIGNED":
+				if (colSize.value == 1)
+				{
+					colSize.value = 1;
+					return ColumnType.Bool;
+				}
+				else
+				{
+					colSize.value = 1;
+					return ColumnType.Byte;
+				}
+			case "BIT":
+				colSize.value = 1;
+				return ColumnType.Bool;
+			case "GEOMETRY":
+				return ColumnType.Vector;
+			case "BLOB":
+				colSize.value = Integer.MAX_VALUE;
+				return ColumnType.Binary;
+			default:
+				colSize.value = 0;
+				return ColumnType.Unknown;
+			}
+		}
+		else if (svrType == DBType.MSSQL)
+		{
+			switch (typeName)
+			{
+			case "VARCHAR":
+				return ColumnType.VarUTF8Char;
+			case "TEXT":
+				colSize.value = 0x7FFFFFFF;
+				return ColumnType.VarUTF8Char;
+			case "CHAR":
+				return ColumnType.UTF8Char;
+			case "INT":
+				return ColumnType.Int32;
+			case "DATETIME":
+				colSize.value = 3;
+				return ColumnType.DateTime;
+			case "DATETIME2":
+				if (colSize.value == -1)
+				{
+					colSize.value = 7;
+				}
+				return ColumnType.DateTime;
+			case "DATETIMEOFFSET":
+				if (colSize.value == -1)
+				{
+					colSize.value = 7;
+				}
+				return ColumnType.DateTimeTZ;
+			case "FLOAT":
+				return ColumnType.Double;
+			case "BIT":
+				return ColumnType.Bool;
+			case "BIGINT":
+				return ColumnType.Int64;
+			case "SMALLINT":
+				return ColumnType.Int16;
+			case "NVARCHAR":
+				return ColumnType.VarUTF16Char;
+			case "NTEXT":
+				colSize.value = 0x3FFFFFFF;
+				return ColumnType.VarUTF16Char;
+			case "NCHAR":
+				return ColumnType.UTF16Char;
+			case "NUMERIC":
+				return ColumnType.Double;
+			case "GEOMETRY":
+				return ColumnType.Vector;
+			case "DATE":
+				return ColumnType.Date;
+			case "SYSNAME":
+				colSize.value = 128;
+				return ColumnType.VarUTF16Char;
+			case "BINARY":
+				return ColumnType.Binary;
+			case "VARBINARY":
+				return ColumnType.Binary;
+			case "IMAGE":
+				colSize.value = 0x7FFFFFFF;
+				return ColumnType.Binary;
+			case "UNIQUEIDENTIFIER":
+				return ColumnType.UUID;
+			case "XML":
+				colSize.value = 1073741823;
+				return ColumnType.VarUTF16Char;
+			default:
+				return ColumnType.Unknown;
+			}
+		}
+		else if (svrType == DBType.SQLite)
+		{
+			switch (typeName)
+			{
+			case "INTEGER":
+				colSize.value = 4;
+				return ColumnType.Int32;
+			case "INT":
+				colSize.value = 4;
+				return ColumnType.Int32;
+			case "MEDIUMINT":
+				colSize.value = 2;
+				return ColumnType.Int16;
+			case "TINYINT":
+				colSize.value = 1;
+				return ColumnType.Byte;
+			case "REAL":
+				colSize.value = 8;
+				return ColumnType.Double;
+			case "DOUBLE":
+				colSize.value = 8;
+				return ColumnType.Double;
+			case "DATETIME":
+				colSize.value = 3;
+				return ColumnType.DateTime;
+			case "BLOB":
+				colSize.value = 2147483647;
+				return ColumnType.Binary;
+			case "TEXT":
+				colSize.value = 2147483647;
+				return ColumnType.VarUTF8Char;
+			case "POINT":
+				colSize.value = 2147483647;
+				return ColumnType.Vector;
+			case "LINESTRING":
+				colSize.value = 2147483647;
+				return ColumnType.Vector;
+			case "POLYGON":
+				colSize.value = 2147483647;
+				return ColumnType.Vector;
+			case "BOOLEAN":
+				colSize.value = 1;
+				return ColumnType.Byte;
+			default:
+				colSize.value = 0;
+				return ColumnType.Unknown;
+			}
+		}
+		else
+		{
+			return ColumnType.Unknown;
 		}
 	}
 }

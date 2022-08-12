@@ -1,10 +1,12 @@
-package org.sswr.util.math;
+package org.sswr.util.math.geometry;
 
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.PrecisionModel;
-import org.sswr.util.data.SharedDouble;
+import org.sswr.util.math.Coord2DDbl;
+import org.sswr.util.math.CoordinateSystem;
+import org.sswr.util.math.RectAreaDbl;
 
 public abstract class Vector2D
 {
@@ -12,9 +14,23 @@ public abstract class Vector2D
 	{
 		Unknown,
 		Point,
-		Multipoint,
-		Polyline,
+		LineString,
 		Polygon,
+		MultiPoint,
+		Polyline, //MultiLineString
+		MultiPolygon,
+		GeometryCollection,
+		CircularString,
+		CompoundCurve,
+		CurvePolygon,
+		MultiCurve,
+		MultiSurface,
+		Curve,
+		Surface,
+		PolyhedralSurface,
+		Tin,
+		Triangle,
+
 		Image,
 		String,
 		Ellipse,
@@ -29,16 +45,24 @@ public abstract class Vector2D
 	}
 
 	public abstract VectorType getVectorType();
-	public abstract void getCenter(SharedDouble x, SharedDouble y);
+	public abstract Coord2DDbl getCenter();
 	public abstract Vector2D clone();
-	public abstract void getBounds(SharedDouble minX, SharedDouble minY, SharedDouble maxX, SharedDouble maxY);
-	public abstract double calSqrDistance(double x, double y, SharedDouble nearPtX, SharedDouble nearPtY);
+	public abstract void getBounds(RectAreaDbl bounds);
+	public abstract double calSqrDistance(Coord2DDbl pt, Coord2DDbl nearPt);
 	public abstract boolean joinVector(Vector2D vec);
-	public boolean support3D()
+
+	public boolean hasZ()
 	{
 		return false;
 	}
+
+	public boolean hasM()
+	{
+		return false;
+	}
+
 	public abstract void convCSys(CoordinateSystem srcCSys, CoordinateSystem destCSys);
+	public abstract boolean equals(Object vec);
 
 	public int getSRID()
 	{
@@ -56,7 +80,8 @@ public abstract class Vector2D
 		if (this.getVectorType() == VectorType.Point)
 		{
 			Point2D pt = (Point2D)this;
-			return factory.createPoint(new Coordinate(pt.x, pt.y));
+			Coord2DDbl center = pt.getCenter();
+			return factory.createPoint(new Coordinate(center.x, center.y));
 		}
 		else if (this.getVectorType() == VectorType.Polyline)
 		{
@@ -65,26 +90,25 @@ public abstract class Vector2D
 			{
 				return null;
 			}
-			Coordinate[] coordinates = new Coordinate[pl.pointArr.length >> 1];
-			if (pl.support3D())
+			Coordinate[] coordinates = new Coordinate[pl.pointArr.length];
+			if (pl.hasZ())
 			{
-				Polyline3D pl2 = (Polyline3D)pl;
-				double[] attList = pl2.getAltitudeList();
+				double[] attList = pl.getZList();
 				int i = 0;
-				int j = pl2.pointArr.length >> 1;
+				int j = pl.pointArr.length;
 				while (i < j)
 				{
-					coordinates[i] = new Coordinate(pl2.pointArr[i << 1], pl2.pointArr[(i << 1) + 1], attList[i]);
+					coordinates[i] = new Coordinate(pl.pointArr[i].x, pl.pointArr[i].y, attList[i]);
 					i++;
 				}
 			}
 			else
 			{
 				int i = 0;
-				int j = pl.pointArr.length >> 1;
+				int j = pl.pointArr.length;
 				while (i < j)
 				{
-					coordinates[i] = new Coordinate(pl.pointArr[i << 1], pl.pointArr[(i << 1) + 1]);
+					coordinates[i] = new Coordinate(pl.pointArr[i].x, pl.pointArr[i].y);
 					i++;
 				}
 			}
@@ -97,12 +121,12 @@ public abstract class Vector2D
 			{
 				return null;
 			}
-			Coordinate[] coordinates = new Coordinate[pg.pointArr.length >> 1];
+			Coordinate[] coordinates = new Coordinate[pg.pointArr.length];
 			int i = 0;
-			int j = pg.pointArr.length >> 1;
+			int j = pg.pointArr.length;
 			while (i < j)
 			{
-				coordinates[i] = new Coordinate(pg.pointArr[i << 1], pg.pointArr[(i << 1) + 1]);
+				coordinates[i] = new Coordinate(pg.pointArr[i].x, pg.pointArr[i].y);
 				i++;
 			}
 			return factory.createLinearRing(coordinates);

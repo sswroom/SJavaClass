@@ -7,7 +7,7 @@ import java.time.ZonedDateTime;
 import org.sswr.util.data.DateTimeUtil;
 import org.sswr.util.data.MSGeography;
 import org.sswr.util.db.DBUtil.DBType;
-import org.sswr.util.math.Vector2D;
+import org.sswr.util.math.geometry.Vector2D;
 
 public class SQLReader extends DBReader
 {
@@ -234,22 +234,7 @@ public class SQLReader extends DBReader
 		if (this.rs == null) return ColumnType.Unknown;
 		try
 		{
-			String typeName = this.rs.getMetaData().getColumnTypeName(colIndex);
-			switch (typeName.toUpperCase())
-			{
-			case "CHAR":
-				return ColumnType.Char;
-			case "VARCHAR":
-				return ColumnType.VarChar;
-			case "NCHAR":
-				return ColumnType.NChar;
-			case "NVARCHAR":
-				return ColumnType.NVarChar;
-			case "GEOMETRY":
-				return ColumnType.Vector;
-			default:
-				return ColumnType.Unknown;
-			}
+			return DBUtil.parseColType(this.dbType, this.rs.getMetaData().getColumnTypeName(colIndex), null);
 		}
 		catch (SQLException ex)
 		{

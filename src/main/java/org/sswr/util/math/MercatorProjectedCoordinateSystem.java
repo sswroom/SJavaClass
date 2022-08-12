@@ -11,7 +11,7 @@ public class MercatorProjectedCoordinateSystem extends ProjectedCoordinateSystem
 
 	public CoordinateSystem clone()
 	{
-		return new MercatorProjectedCoordinateSystem(this.sourceName, this.srid, this.csysName, this.falseEasting, this.falseNorthing, this.centralMeridian, this.latitudeOfOrigin, this.scaleFactor, (GeographicCoordinateSystem)this.gcs.clone(), this.unit);
+		return new MercatorProjectedCoordinateSystem(this.sourceName, this.srid, this.csysName, this.falseEasting, this.falseNorthing, this.getCentralMeridianDegree(), this.getLatitudeOfOriginDegree(), this.scaleFactor, (GeographicCoordinateSystem)this.gcs.clone(), this.unit);
 	}
 
 	public CoordinateSystemType getCoordSysType()
@@ -19,11 +19,11 @@ public class MercatorProjectedCoordinateSystem extends ProjectedCoordinateSystem
 		return CoordinateSystemType.MercatorProjected;
 	}
 
-	public void toGeographicCoordinate(double projX, double projY, SharedDouble geoX, SharedDouble geoY)
+	public void toGeographicCoordinateRad(double projX, double projY, SharedDouble geoX, SharedDouble geoY)
 	{
 		EarthEllipsoid ellipsoid = this.gcs.getEllipsoid();
 		double aF = ellipsoid.getSemiMajorAxis() * this.scaleFactor;
-		double rLatL = (projY - this.falseNorthing) / aF + (this.latitudeOfOrigin * Math.PI / 180.0);
+		double rLatL = (projY - this.falseNorthing) / aF + this.rlatitudeOfOrigin;
 		double rLastLat;
 		double e = ellipsoid.getEccentricity();
 		double e2 = e * e;
@@ -59,19 +59,16 @@ public class MercatorProjectedCoordinateSystem extends ProjectedCoordinateSystem
 		double ser12a = secLat / (5040 * v7) * (61 + 662 * tLat2 + 1320 * tLat4 + 720 * tLat4 * tLat2);
 	
 		double eDiff = projX - this.falseEasting;
-		double outX = (this.centralMeridian * Math.PI / 180.0) + ser10 * eDiff - ser11 * Math.pow(eDiff, 3) + ser12 * Math.pow(eDiff, 5) - ser12a * Math.pow(eDiff, 7);
-		double outY = rLatL - ser7 * Math.pow(eDiff, 2) + ser8 * Math.pow(eDiff, 4) - ser9 * Math.pow(eDiff, 6);
-	
-		geoX.value = (outX * 180.0 / Math.PI);
-		geoY.value = (outY * 180.0 / Math.PI);
+		geoX.value = this.rcentralMeridian + ser10 * eDiff - ser11 * Math.pow(eDiff, 3) + ser12 * Math.pow(eDiff, 5) - ser12a * Math.pow(eDiff, 7);
+		geoY.value = rLatL - ser7 * Math.pow(eDiff, 2) + ser8 * Math.pow(eDiff, 4) - ser9 * Math.pow(eDiff, 6);
 	}
 
-	public void fromGeographicCoordinate(double geoX, double geoY, SharedDouble projX, SharedDouble projY)
+	public void fromGeographicCoordinateRad(double geoX, double geoY, SharedDouble projX, SharedDouble projY)
 	{
 		EarthEllipsoid ellipsoid = this.gcs.getEllipsoid();
-		double rLat = geoY * Math.PI / 180.0;
-		double rLon = geoX * Math.PI / 180.0;
-		double rLon0 = this.centralMeridian * Math.PI / 180;
+		double rLat = geoY;
+		double rLon = geoX;
+		double rLon0 = this.rcentralMeridian;
 		double sLat = Math.sin(rLat);
 		double a = ellipsoid.getSemiMajorAxis();
 		double e = ellipsoid.getEccentricity();
@@ -111,7 +108,7 @@ public class MercatorProjectedCoordinateSystem extends ProjectedCoordinateSystem
 		double n = (a - b) / (a + b);
 		double n2 = n * n;
 		double n3 = n2 * n;
-		double rLat0 = this.latitudeOfOrigin * Math.PI / 180;
+		double rLat0 = this.rlatitudeOfOrigin;
 		double m;
 		m = (1 + n + 1.25 * n2 + 1.25 * n3) * (rLat - rLat0);
 		m = m - (3 * n + 3 * n2  + 2.625 * n3) * Math.sin(rLat - rLat0) * Math.cos(rLat + rLat0);

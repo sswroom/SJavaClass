@@ -4,6 +4,9 @@ import java.nio.charset.StandardCharsets;
 
 import org.sswr.util.data.SharedDouble;
 import org.sswr.util.data.StringUtil;
+import org.sswr.util.math.geometry.Point2D;
+import org.sswr.util.math.geometry.PointZ;
+import org.sswr.util.math.geometry.Vector2D;
 
 public class WKTReader
 {
@@ -101,7 +104,7 @@ public class WKTReader
 			}
 			if (wkt[ofst] == ')' && ofst + 1 >= wkt.length)
 			{
-				return new Point3D(this.srid, x.value, y.value, z.value);
+				return new PointZ(this.srid, x.value, y.value, z.value);
 			}
 			return null;
 		}

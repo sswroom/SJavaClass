@@ -1,22 +1,17 @@
-package org.sswr.util.math;
+package org.sswr.util.math.geometry;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import org.sswr.util.data.ByteTool;
-import org.sswr.util.data.SharedDouble;
+import org.sswr.util.math.Coord2DDbl;
 
-public class Polygon extends PointCollection
+public class Polygon extends PointOfstCollection
 {
-	protected double []pointArr;
-	protected int []ptOfstArr;
-
-	public Polygon(int srid, int nPtOfst, int nPoint)
+	public Polygon(int srid, int nPtOfst, int nPoint, boolean hasZ, boolean hasM)
 	{
-		super(srid);
-		this.pointArr = new double[nPoint << 1];
-		this.ptOfstArr = new int[nPtOfst];
+		super(srid, nPtOfst, nPoint, null, hasZ, hasM);
 	}
 
 	public VectorType getVectorType()
@@ -24,68 +19,30 @@ public class Polygon extends PointCollection
 		return VectorType.Polygon;
 	}
 
-	public int []getPtOfstList()
-	{
-		return this.ptOfstArr;
-	}
-
-	public double []getPointList()
-	{
-		return this.pointArr;
-	}
-
 	public Vector2D clone()
 	{
-		Polygon pg = new Polygon(this.srid, this.ptOfstArr.length, this.pointArr.length >> 1);
+		Polygon pg = new Polygon(this.srid, this.ptOfstArr.length, this.pointArr.length, this.hasZ(), this.hasM());
 		ByteTool.copyArray(pg.pointArr, 0, this.pointArr, 0, this.pointArr.length);
 		ByteTool.copyArray(pg.ptOfstArr, 0, this.ptOfstArr, 0, this.ptOfstArr.length);
+		if (this.zArr != null)
+		{
+			ByteTool.copyArray(pg.zArr, 0, this.zArr, 0, this.zArr.length);
+		}
+		if (this.mArr != null)
+		{
+			ByteTool.copyArray(pg.mArr, 0, this.mArr, 0, this.mArr.length);
+		}
 		return pg;
 	}
 
-	public void getBounds(SharedDouble minX, SharedDouble minY, SharedDouble maxX, SharedDouble maxY)
+	public double calSqrDistance(Coord2DDbl pt, Coord2DDbl nearPt)
 	{
-		int i = this.pointArr.length;
-		double x1;
-		double y1;
-		double x2;
-		double y2;
-		x1 = x2 = this.pointArr[0];
-		y1 = y2 = this.pointArr[1];
-		while (i > 2)
+		if (this.insideVector(pt))
 		{
-			i -= 2;
-			if (x1 > this.pointArr[i])
+			if (nearPt != null)
 			{
-				x1 = this.pointArr[i];
-			}
-			if (x2 < this.pointArr[i])
-			{
-				x2 = this.pointArr[i];
-			}
-			if (y1 > this.pointArr[i + 1])
-			{
-				y1 = this.pointArr[i + 1];
-			}
-			if (y2 < this.pointArr[i + 1])
-			{
-				y2 = this.pointArr[i + 1];
-			}
-			i -= 2;
-		}
-		minX.value = x1;
-		minY.value = y1;
-		maxX.value = x2;
-		maxY.value = y2;
-	}
-
-	public double calSqrDistance(double x, double y, SharedDouble nearPtX, SharedDouble nearPtY)
-	{
-		if (this.insideVector(x, y))
-		{
-			if (nearPtX != null && nearPtY != null)
-			{
-				nearPtX.value = x;
-				nearPtY.value = y;
+				nearPt.x = pt.x;
+				nearPt.y = pt.y;
 			}
 			return 0;
 		}
@@ -94,13 +51,13 @@ public class Polygon extends PointCollection
 		int l;
 		int m;
 		int []ptOfsts;
-		double []points;
+		Coord2DDbl []points;
 	
 		ptOfsts = this.ptOfstArr;
 		points = this.pointArr;
 	
 		k = this.ptOfstArr.length;
-		l = this.pointArr.length >> 1;
+		l = this.pointArr.length;
 	
 		double calBase;
 		double calH;
@@ -118,63 +75,63 @@ public class Polygon extends PointCollection
 			l--;
 			while (l-- > m)
 			{
-				calH = points[(l << 1) + 1] - points[(l << 1) + 3];
-				calW = points[(l << 1) + 0] - points[(l << 1) + 2];
+				calH = points[l].y - points[l + 1].y;
+				calW = points[l].x - points[l + 1].x;
 	
 				if (calH == 0)
 				{
-					calX = x;
+					calX = pt.x;
 				}
 				else
 				{
-					calX = (calBase = (calW * calW)) * x;
+					calX = (calBase = (calW * calW)) * pt.x;
 					calBase += calH * calH;
-					calX += calH * calH * (points[(l << 1) + 0]);
-					calX += (y - points[(l << 1) + 1]) * calH * calW;
+					calX += calH * calH * (points[l].x);
+					calX += (pt.y - points[l].y) * calH * calW;
 					calX /= calBase;
 				}
 	
 				if (calW == 0)
 				{
-					calY = y;
+					calY = pt.y;
 				}
 				else
 				{
-					calY = ((calX - (points[(l << 1) + 0])) * calH / calW) + points[(l << 1) + 1];
+					calY = ((calX - (points[l].x)) * calH / calW) + points[l].y;
 				}
 	
 				if (calW < 0)
 				{
-					if (points[(l << 1) + 0] > calX)
+					if (points[l + 0].x > calX)
 						continue;
-					if (points[(l << 1) + 2] < calX)
+					if (points[l + 1].x < calX)
 						continue;
 				}
 				else
 				{
-					if (points[(l << 1) + 0] < calX)
+					if (points[l + 0].x < calX)
 						continue;
-					if (points[(l << 1) + 2] > calX)
+					if (points[l + 1].x > calX)
 						continue;
 				}
 	
 				if (calH < 0)
 				{
-					if (points[(l << 1) + 1] > calY)
+					if (points[l + 0].y > calY)
 						continue;
-					if (points[(l << 1) + 3] < calY)
+					if (points[l + 1].y < calY)
 						continue;
 				}
 				else
 				{
-					if (points[(l << 1) + 1] < calY)
+					if (points[l + 0].y < calY)
 						continue;
-					if (points[(l << 1) + 3] > calY)
+					if (points[l + 1].y > calY)
 						continue;
 				}
 	
-				calH = y - calY;
-				calW = x - calX;
+				calH = pt.y - calY;
+				calW = pt.x - calX;
 				calD = calW * calW + calH * calH;
 				if (calD < dist)
 				{
@@ -187,20 +144,20 @@ public class Polygon extends PointCollection
 		k = this.pointArr.length >> 1;
 		while (k-- > 0)
 		{
-			calH = y - points[(k << 1) + 1];
-			calW = x - points[(k << 1) + 0];
+			calH = pt.y - points[k].y;
+			calW = pt.x - points[k].x;
 			calD = calW * calW + calH * calH;
 			if (calD < dist)
 			{
 				dist = calD;
-				calPtX = points[(k << 1) + 0];
-				calPtY = points[(k << 1) + 1];
+				calPtX = points[k].x;
+				calPtY = points[k].y;
 			}
 		}
-		if (nearPtX != null && nearPtY != null)
+		if (nearPt != null)
 		{
-			nearPtX.value = calPtX;
-			nearPtY.value = calPtY;
+			nearPt.x = calPtX;
+			nearPt.y = calPtY;
 		}
 		return dist;
 	}
@@ -210,19 +167,19 @@ public class Polygon extends PointCollection
 		if (vec.getVectorType() != VectorType.Polygon)
 			return false;
 		Polygon pg = (Polygon)vec;
-		double []newPoints;
-		int nPoint = (this.pointArr.length + pg.pointArr.length) >> 1;
+		Coord2DDbl []newPoints;
+		int nPoint = (this.pointArr.length + pg.pointArr.length);
 		int []newPtOfsts;
 		int nPtOfst = this.ptOfstArr.length + pg.ptOfstArr.length;
 		
-		newPoints = new double[nPoint * 2];
+		newPoints = new Coord2DDbl[nPoint];
 		newPtOfsts = new int[nPtOfst];
 		ByteTool.copyArray(newPoints, 0, this.pointArr, 0, this.pointArr.length);
 		ByteTool.copyArray(newPoints, this.pointArr.length, pg.pointArr, 0, pg.pointArr.length);
 		ByteTool.copyArray(newPtOfsts, 0, this.ptOfstArr, 0, this.ptOfstArr.length);
 		int i = pg.ptOfstArr.length;
 		int j = i + this.ptOfstArr.length;
-		int k = this.pointArr.length >> 1;
+		int k = this.pointArr.length;
 		while (i-- > 0)
 		{
 			j--;
@@ -232,21 +189,8 @@ public class Polygon extends PointCollection
 		this.pointArr = newPoints;
 		return true;
 	}
-	
-	public void convCSys(CoordinateSystem srcCSys, CoordinateSystem destCSys)
-	{
-		SharedDouble x = new SharedDouble();
-		SharedDouble y = new SharedDouble();
-		int i = this.pointArr.length >> 1;
-		while (i-- > 0)
-		{
-			CoordinateSystem.convertXYZ(srcCSys, destCSys, this.pointArr[(i << 1)], this.pointArr[(i << 1) + 1], 0, x, y, null);
-			this.pointArr[(i << 1)] = x.value;
-			this.pointArr[(i << 1) + 1] = y.value;
-		}
-	}
 
-	public boolean insideVector(double x, double y)
+	public boolean insideVector(Coord2DDbl coord)
 	{
 		double thisX;
 		double thisY;
@@ -260,42 +204,42 @@ public class Polygon extends PointCollection
 		double tmpX;
 	
 		k = this.ptOfstArr.length;
-		l = this.pointArr.length >> 1;
+		l = this.pointArr.length;
 	
 		while (k-- > 0)
 		{
 			m = this.ptOfstArr[k];
 	
-			lastX = this.pointArr[(m << 1) + 0];
-			lastY = this.pointArr[(m << 1) + 1];
+			lastX = this.pointArr[m].x;
+			lastY = this.pointArr[m].y;
 			while (l-- > m)
 			{
-				thisX = this.pointArr[(l << 1) + 0];
-				thisY = this.pointArr[(l << 1) + 1];
+				thisX = this.pointArr[l].x;
+				thisY = this.pointArr[l].y;
 				j = 0;
-				if (lastY > y)
+				if (lastY > coord.y)
 					j += 1;
-				if (thisY > y)
+				if (thisY > coord.y)
 					j += 1;
 	
 				if (j == 1)
 				{
-					tmpX = lastX - (lastX - thisX) * (lastY - y) / (lastY - thisY);
-					if (tmpX == x)
+					tmpX = lastX - (lastX - thisX) * (lastY - coord.y) / (lastY - thisY);
+					if (tmpX == coord.x)
 					{
 						return true;
 					}
-					else if (tmpX < x)
+					else if (tmpX < coord.x)
 						leftCnt++;
 				}
-				else if (thisY == y && lastY == y)
+				else if (thisY == coord.y && lastY == coord.y)
 				{
-					if ((thisX >= x && lastX <= x) || (lastX >= x && thisX <= x))
+					if ((thisX >= coord.x && lastX <= coord.x) || (lastX >= coord.x && thisX <= coord.x))
 					{
 						return true;
 					}
 				}
-				else if (thisY == y && thisX == x)
+				else if (thisY == coord.y && thisX == coord.x)
 				{
 					return true;
 				}
@@ -334,18 +278,18 @@ public class Polygon extends PointCollection
 		double intY;
 	
 	
-		i = this.pointArr.length >> 1;
+		i = this.pointArr.length;
 		j = this.ptOfstArr.length;
 		while (j-- > 0)
 		{
 			nextPart = this.ptOfstArr[j];
-			lastPtX = this.pointArr[(nextPart << 1) + 0];
-			lastPtY = this.pointArr[(nextPart << 1) + 1];
+			lastPtX = this.pointArr[nextPart].x;
+			lastPtY = this.pointArr[nextPart].y;
 			lastIndex = nextPart;
 			while (i-- > nextPart)
 			{
-				thisPtX = this.pointArr[(i << 1) + 0];
-				thisPtY = this.pointArr[(i << 1) + 1];
+				thisPtX = this.pointArr[i].x;
+				thisPtY = this.pointArr[i].y;
 	
 				if (thisPtX != lastPtX || thisPtY != lastPtY)
 				{
@@ -363,14 +307,14 @@ public class Polygon extends PointCollection
 						nextChkPart = this.ptOfstArr[l];
 						if (l != j)
 						{
-							lastChkPtX = this.pointArr[(nextChkPart << 1) + 0];
-							lastChkPtY = this.pointArr[(nextChkPart << 1) + 1];
+							lastChkPtX = this.pointArr[nextChkPart].x;
+							lastChkPtY = this.pointArr[nextChkPart].y;
 						}
 	
 						while (k-- > nextChkPart)
 						{
-							thisChkPtX = this.pointArr[(k << 1) + 0];
-							thisChkPtY = this.pointArr[(k << 1) + 1];
+							thisChkPtX = this.pointArr[k].x;
+							thisChkPtY = this.pointArr[k].y;
 	
 							if (k == i || k == lastIndex || lastChkIndex == i || lastChkIndex == lastIndex)
 							{
@@ -427,7 +371,9 @@ public class Polygon extends PointCollection
 		int i;
 		int j;
 		Polygon tmpPG;
-		double []points;
+		Coord2DDbl []points;
+		double []zArr;
+		double []mArr;
 		ArrayList<Double> junctionX;
 		ArrayList<Double> junctionY;
 		ArrayList<Integer> junctionPtNum;
@@ -446,17 +392,31 @@ public class Polygon extends PointCollection
 		double intX;
 		double intY;
 	
-		i = this.pointArr.length >> 1;
+		i = this.pointArr.length;
 		while (this.ptOfstArr.length > 1)
 		{
 			j = this.ptOfstArr[this.ptOfstArr.length - 1];
-			tmpPG = new Polygon(this.srid, 1, i - j);
+			tmpPG = new Polygon(this.srid, 1, i - j, this.zArr != null, this.mArr != null);
 			points = tmpPG.getPointList();
-			ByteTool.copyArray(points, 0, this.pointArr, j << 1, (i - j) << 1);
+			ByteTool.copyArray(points, 0, this.pointArr, j, (i - j));
+			if (this.zArr != null)
+			{
+				zArr = tmpPG.getZList();
+				ByteTool.copyArray(zArr, 0, this.zArr, j, (i - j));
+			}
+			if (this.mArr != null)
+			{
+				mArr = tmpPG.getZList();
+				ByteTool.copyArray(mArr, 0, this.mArr, j, (i - j));
+			}
 			tmpPG.splitByJunction(results);
 			
-			this.pointArr = Arrays.copyOf(this.pointArr, j << 1);
+			this.pointArr = Arrays.copyOf(this.pointArr, j);
 			this.ptOfstArr = Arrays.copyOf(this.ptOfstArr, this.ptOfstArr.length - 1);
+			if (this.zArr != null)
+				this.zArr = Arrays.copyOf(this.zArr, j);
+			if (this.mArr != null)
+				this.mArr = Arrays.copyOf(this.mArr, j);
 			i = j;
 		}
 	
@@ -464,14 +424,14 @@ public class Polygon extends PointCollection
 		junctionY = new ArrayList<Double>();
 		junctionPtNum = new ArrayList<Integer>();
 	
-		i = this.pointArr.length >> 1;
-		lastPtX = this.pointArr[0];
-		lastPtY = this.pointArr[1];
+		i = this.pointArr.length;
+		lastPtX = this.pointArr[0].x;
+		lastPtY = this.pointArr[0].y;
 		lastIndex = 0;
 		while (i-- > 0)
 		{
-			thisPtX = this.pointArr[(i << 1) + 0];
-			thisPtY = this.pointArr[(i << 1) + 1];
+			thisPtX = this.pointArr[i].x;
+			thisPtY = this.pointArr[i].y;
 	
 			if (thisPtX != lastPtX || thisPtY != lastPtY)
 			{
@@ -483,8 +443,8 @@ public class Polygon extends PointCollection
 				j = i;
 				while (j-- > 0)
 				{
-					thisChkPtX = this.pointArr[(j << 1) + 0];
-					thisChkPtY = this.pointArr[(j << 1) + 1];
+					thisChkPtX = this.pointArr[j].x;
+					thisChkPtY = this.pointArr[j].y;
 	
 					if (j == i || j == lastIndex || lastChkIndex == i || lastChkIndex == lastIndex)
 					{

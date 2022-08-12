@@ -17,13 +17,15 @@ import org.sswr.util.db.ColumnDef;
 import org.sswr.util.db.ColumnType;
 import org.sswr.util.db.DBReader;
 import org.sswr.util.io.StreamData;
-import org.sswr.util.math.Point2D;
-import org.sswr.util.math.Point3D;
-import org.sswr.util.math.Polygon;
-import org.sswr.util.math.Polyline;
-import org.sswr.util.math.Polyline3D;
-import org.sswr.util.math.Vector2D;
+import org.sswr.util.math.Coord2DDbl;
 import org.sswr.util.math.WKTWriter;
+import org.sswr.util.math.geometry.Point2D;
+import org.sswr.util.math.geometry.PointM;
+import org.sswr.util.math.geometry.PointZ;
+import org.sswr.util.math.geometry.PointZM;
+import org.sswr.util.math.geometry.Polygon;
+import org.sswr.util.math.geometry.Polyline;
+import org.sswr.util.math.geometry.Vector2D;
 
 public class FileGDBReader extends DBReader
 {
@@ -475,6 +477,7 @@ public class FileGDBReader extends DBReader
 		double x;
 		double y;
 		double z = 0;
+		double m = 0;
 		SharedLong v = new SharedLong();
 		int srid;
 	/*
@@ -510,7 +513,7 @@ public class FileGDBReader extends DBReader
 			if ((this.tableInfo.getGeometryFlags() & 0x40) != 0)
 			{
 				ofst = FileGDBUtil.readVarUInt(this.rowData, ofst, v);
-				//m = (double)(v - 1) / this.tableInfo.mScale + this.tableInfo.mOrigin;
+				m = (double)(v.value - 1) / this.tableInfo.getMScale() + this.tableInfo.getMOrigin();
 			}
 			srid = 0;
 			if (this.tableInfo.getCsys() != null)
@@ -519,13 +522,25 @@ public class FileGDBReader extends DBReader
 			}
 			if ((this.tableInfo.getGeometryType() & 0x80) != 0)
 			{
-				Point3D pt = new Point3D(srid, x, y, z);
-				return pt;
+				if ((this.tableInfo.getGeometryType() & 0x40) != 0)
+				{
+					return new PointZM(srid, x, y, z, m);
+				}
+				else
+				{
+					return new PointZ(srid, x, y, z);
+				}
 			}
 			else
 			{
-				Point2D pt = new Point2D(srid, x, y);
-				return pt;
+				if ((this.tableInfo.getGeometryType() & 0x40) != 0)
+				{
+					return new PointM(srid, x, y, m);
+				}
+				else
+				{
+					return new Point2D(srid, x, y);
+				}
 			}
 		case 3: //SHPT_ARC
 		case 10: //SHPT_ARCZ
@@ -553,20 +568,14 @@ public class FileGDBReader extends DBReader
 				}
 				int i;
 				int []parts;
-				double []points;
-				double []altitiudes = null;
-				if ((this.tableInfo.getGeometryFlags() & 0x80) != 0)
-				{
-					pl = new Polyline3D(srid, (int)nParts.value, (int)nPoints.value);
-					altitiudes = ((Polyline3D)pl).getAltitudeList();
-				}
-				else
-				{
-					pl = new Polyline(srid, (int)nParts.value, (int)nPoints.value);
-	
-				}
+				Coord2DDbl []points;
+				double []zArr;
+				double []mArr;
+				pl = new Polyline(srid, (int)nParts.value, (int)nPoints.value, (this.tableInfo.getGeometryFlags() & 0x80) != 0, (this.tableInfo.getGeometryFlags() & 0x40) != 0);
 				parts = pl.getPtOfstList();
 				points = pl.getPointList();
+				zArr = pl.getZList();
+				mArr = pl.getMList();
 				parts[0] = 0;
 				int ptOfst = 0;
 				i = 1;
@@ -589,8 +598,8 @@ public class FileGDBReader extends DBReader
 					ofst = FileGDBUtil.readVarInt(this.rowData, ofst, iv);
 					dy -= (int)iv.value;
 					y = (double)(dy) / this.tableInfo.getXyScale() + this.tableInfo.getYOrigin();
-					points[i * 2] = x;
-					points[i * 2 + 1] = y;
+					points[i].x = x;
+					points[i].y = y;
 					i++;
 				}
 				if ((this.tableInfo.getGeometryFlags() & 0x80) != 0)
@@ -601,8 +610,7 @@ public class FileGDBReader extends DBReader
 					{
 						ofst = FileGDBUtil.readVarInt(this.rowData, ofst, iv);
 						dx -= iv.value;
-						z = (double)(dx) / this.tableInfo.getZScale() + this.tableInfo.getZOrigin();
-						altitiudes[i] = z;
+						zArr[i] = (double)(dx) / this.tableInfo.getZScale() + this.tableInfo.getZOrigin();
 						i++;
 					}
 				}
@@ -614,7 +622,7 @@ public class FileGDBReader extends DBReader
 					{
 						ofst = FileGDBUtil.readVarInt(this.rowData, ofst, iv);
 						dx -= iv.value;
-						//m = Math::Int64_Double(dx) / this.tableInfo.mScale + this.tableInfo.mOrigin;
+						mArr[i] = (double)(dx) / this.tableInfo.getMScale() + this.tableInfo.getMOrigin();
 						i++;
 					}
 				}
@@ -644,10 +652,12 @@ public class FileGDBReader extends DBReader
 				{
 					srid = this.tableInfo.getCsys().getSRID();
 				}
-				pg = new Polygon(srid, (int)nParts.value, (int)nPoints.value);
+				pg = new Polygon(srid, (int)nParts.value, (int)nPoints.value, (this.tableInfo.getGeometryFlags() & 0x80) != 0, (this.tableInfo.getGeometryFlags() & 0x40) != 0);
 				int i;
 				int []parts = pg.getPtOfstList();
-				double []points = pg.getPointList();
+				Coord2DDbl []points = pg.getPointList();
+				double []zArr = pg.getZList();
+				double []mArr = pg.getMList();
 				parts[0] = 0;
 				int ptOfst = 0;
 				i = 1;
@@ -670,8 +680,8 @@ public class FileGDBReader extends DBReader
 					ofst = FileGDBUtil.readVarInt(this.rowData, ofst, iv);
 					dy += (int)iv.value;
 					y = (double)(dy) / this.tableInfo.getXyScale() + this.tableInfo.getYOrigin();
-					points[i * 2] = x;
-					points[i * 2 + 1] = y;
+					points[i].x = x;
+					points[i].y = y;
 					i++;
 				}
 				if ((this.tableInfo.getGeometryFlags() & 0x80) != 0)
@@ -682,7 +692,7 @@ public class FileGDBReader extends DBReader
 					{
 						ofst = FileGDBUtil.readVarInt(this.rowData, ofst, iv);
 						dx += iv.value;
-						z = (double)(dx) / this.tableInfo.getZScale() + this.tableInfo.getZOrigin();
+						zArr[i] = (double)(dx) / this.tableInfo.getZScale() + this.tableInfo.getZOrigin();
 						i++;
 					}
 				}
@@ -694,7 +704,7 @@ public class FileGDBReader extends DBReader
 					{
 						ofst = FileGDBUtil.readVarInt(this.rowData, ofst, iv);
 						dx += iv.value;
-						//m = Math::Int64_Double(dx) / this.tableInfo.mScale + this.tableInfo.mOrigin;
+						mArr[i] = (double)(dx) / this.tableInfo.getMScale() + this.tableInfo.getMOrigin();
 						i++;
 					}
 				}
@@ -728,16 +738,16 @@ public class FileGDBReader extends DBReader
 					srid = this.tableInfo.getCsys().getSRID();
 				}
 				int []parts;
-				double []points;
+				Coord2DDbl []points;
 				double []altitiudes = null;
 				if ((geometryType.value & 0x80000000) != 0)
 				{
-					pl = new Polyline3D(srid, (int)nParts.value, (int)nPoints.value);
-					altitiudes = ((Polyline3D)pl).getAltitudeList();
+					pl = new Polyline(srid, (int)nParts.value, (int)nPoints.value, true, false);
+					altitiudes = pl.getZList();
 				}
 				else
 				{
-					pl = new Polyline(srid, (int)nParts.value, (int)nPoints.value);
+					pl = new Polyline(srid, (int)nParts.value, (int)nPoints.value, false, false);
 				}
 				parts = pl.getPtOfstList();
 				points = pl.getPointList();
@@ -776,8 +786,8 @@ public class FileGDBReader extends DBReader
 						ofst = FileGDBUtil.readVarInt(this.rowData, ofst, iv);
 						dy -= iv.value;
 						y = (double)(dy) / this.tableInfo.getXyScale() + this.tableInfo.getYOrigin();
-						points[j * 2] = x;
-						points[j * 2 + 1] = y;
+						points[j].x = x;
+						points[j].y = y;
 						j++;
 					}
 					if ((geometryType.value & 0x80000000) != 0)
@@ -893,7 +903,7 @@ public class FileGDBReader extends DBReader
 			case 3:
 				return ColumnType.Double;
 			case 4:
-				return ColumnType.VarChar;
+				return ColumnType.VarUTF8Char;
 			case 5:
 				return ColumnType.DateTime;
 			case 6:
@@ -909,7 +919,7 @@ public class FileGDBReader extends DBReader
 			case 11:
 				return ColumnType.UUID;
 			case 12:
-				return ColumnType.VarChar;
+				return ColumnType.VarUTF8Char;
 			default:
 				return ColumnType.Unknown;
 			}

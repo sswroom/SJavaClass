@@ -227,8 +227,7 @@ public class DateTimeUtil
 	public static Timestamp toTimestamp(ZonedDateTime dt)
 	{
 		if (dt == null) return null;
-		Timestamp ret = new Timestamp(dt.toInstant().toEpochMilli());
-		return ret;
+		return Timestamp.from(dt.toInstant());
 	}
 
 	public static boolean isDayStart(Timestamp ts)
@@ -575,5 +574,15 @@ public class DateTimeUtil
 	public static String toString(ZonedDateTime t, String format)
 	{
 		return DateTimeFormatter.ofPattern(format.replace('f', 'n')).format(t);
+	}
+
+	public static String toString(Timestamp ts, String format)
+	{
+		return DateTimeFormatter.ofPattern(format.replace('f', 'n')).format(LocalDateTime.ofInstant(ts.toInstant(), ZoneId.systemDefault()));
+	}
+
+	public static Timestamp timestampNow()
+	{
+		return Timestamp.from(Instant.now());
 	}
 }
