@@ -105,8 +105,13 @@ public class DBUtil {
 		{
 			return DBType.Access;
 		}
+		else if (clsName.equals("org.postgresql.jdbc.PgConnection"))
+		{
+			return DBType.PostgreSQL;
+		}
 		else
 		{
+//			System.out.println(clsName);
 			sqlLogger.logMessage("DB class = "+clsName, LogLevel.ERROR);
 			return DBType.Unknown;
 		}
