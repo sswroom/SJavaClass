@@ -318,7 +318,16 @@ public class CertUtil
 		{
 			fis = new FileInputStream(filePath);
 			CertificateFactory cf = CertificateFactory.getInstance("X.509");
-			return (X509CRL)cf.generateCRL(fis);
+			X509CRL crl = (X509CRL)cf.generateCRL(fis);
+			try
+			{
+				fis.close();
+			}
+			catch (IOException ex2)
+			{
+
+			}
+			return crl;
 		}
 		catch (IOException ex)
 		{
@@ -366,7 +375,15 @@ public class CertUtil
 		{
 			fis = new FileInputStream(file);
 			CertificateFactory cf = CertificateFactory.getInstance("X.509");
-			return (X509Certificate)cf.generateCertificate(fis);
+			X509Certificate cert = (X509Certificate)cf.generateCertificate(fis);
+			try
+			{
+				fis.close();
+			}
+			catch (IOException ex2)
+			{
+			}
+			return cert;
 		}
 		catch (IOException ex)
 		{
