@@ -159,9 +159,25 @@ public class CertUtil
 		catch (IOException | CertificateException | NoSuchAlgorithmException e)
 		{
 			e.printStackTrace();
+			try
+			{
+				fis.close();
+			}
+			catch (IOException ex2)
+			{
+				
+			}
 			return null;
         }
-        return trustStore;
+		try
+		{
+			fis.close();
+		}
+		catch (IOException ex2)
+		{
+			
+		}
+		return trustStore;
 	}
 
 	public static boolean isKeyStoreSingleCertWithKey(KeyStore ks, String password)
