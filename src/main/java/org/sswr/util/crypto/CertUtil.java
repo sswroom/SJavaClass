@@ -313,9 +313,10 @@ public class CertUtil
 
 	public static X509CRL loadCRL(String filePath)
 	{
+		FileInputStream fis = null;
 		try
 		{
-			FileInputStream fis = new FileInputStream(filePath);
+			fis = new FileInputStream(filePath);
 			CertificateFactory cf = CertificateFactory.getInstance("X.509");
 			return (X509CRL)cf.generateCRL(fis);
 		}
@@ -327,20 +328,43 @@ public class CertUtil
 		catch (CRLException ex)
 		{
 			ex.printStackTrace();
+			if (fis != null)
+			{
+				try
+				{
+					fis.close();
+				}
+				catch (IOException ex2)
+				{
+					
+				}
+			}
 			return null;
 		}
 		catch (CertificateException ex)
 		{
 			ex.printStackTrace();
+			if (fis != null)
+			{
+				try
+				{
+					fis.close();
+				}
+				catch (IOException ex2)
+				{
+					
+				}
+			}
 			return null;
 		}
 	}
 
 	public static X509Certificate loadCertificate(File file)
 	{
+		FileInputStream fis = null;
 		try
 		{
-			FileInputStream fis = new FileInputStream(file);
+			fis = new FileInputStream(file);
 			CertificateFactory cf = CertificateFactory.getInstance("X.509");
 			return (X509Certificate)cf.generateCertificate(fis);
 		}
@@ -352,6 +376,17 @@ public class CertUtil
 		catch (CertificateException ex)
 		{
 			ex.printStackTrace();
+			if (fis != null)
+			{
+				try
+				{
+					fis.close();
+				}
+				catch (IOException ex2)
+				{
+
+				}
+			}
 			return null;
 		}
 	}
