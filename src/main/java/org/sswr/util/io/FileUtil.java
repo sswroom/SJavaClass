@@ -220,4 +220,44 @@ public class FileUtil {
 		}
 		return list;
 	}
+
+	public static boolean deleteFile(String file)
+	{
+		return deleteFile(new File(file));
+	}
+
+	public static boolean deleteFile(File file)
+	{
+		return file.delete();
+	}
+
+	public static boolean deleteFileOrDir(String path)
+	{
+		return deleteFileOrDir(new File(path));
+	}
+
+	public static boolean deleteFileOrDir(File file)
+	{
+		if (file.isDirectory())
+		{
+			File[] files = file.listFiles();
+			int i = 0;
+			int j = files.length;
+			while (i < j)
+			{
+				if (!deleteFileOrDir(files[i]))
+					return false;
+				i++;
+			}
+			return file.delete();
+		}
+		else if (file.isFile())
+		{
+			return file.delete();
+		}
+		else
+		{
+			return false;
+		}
+	}
 }
