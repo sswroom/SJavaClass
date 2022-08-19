@@ -21,6 +21,7 @@ public class TCPClient extends IOStream
 	private long totalSendSize;
 	private long cliId;
 	private int flags; //1 = shutdown send, 2 = shutdown recv, 4 = closed, 8 = connect error
+	private int timeoutMS;
 
 	public TCPClient(String hostName, int port, TCPClientType cliType)
 	{
@@ -29,6 +30,7 @@ public class TCPClient extends IOStream
 		this.totalSendSize = 0;
 		this.flags = 0;
 		this.s = null;
+		this.timeoutMS = 0;
 	
 		InetAddress addr;
 		try
@@ -74,6 +76,7 @@ public class TCPClient extends IOStream
 		this.totalSendSize = 0;
 		this.s = null;
 		this.flags = 0;
+		this.timeoutMS = 0;
 		try
 		{
 			if (cliType == TCPClientType.SSL)
@@ -104,6 +107,7 @@ public class TCPClient extends IOStream
 		this.flags = 0;
 		this.totalRecvSize = 0;
 		this.totalSendSize = 0;
+		this.timeoutMS = 0;
 		if (s != null)
 		{
 			this.cliId = SocketUtil.genSocketId(s);
@@ -309,6 +313,12 @@ public class TCPClient extends IOStream
 		{
 			ex.printStackTrace();
 		}
+		this.timeoutMS = ms;
+	}
+	
+	public int getTimeoutMS()
+	{
+		return this.timeoutMS;
 	}
 
 	public Socket getSocket()
