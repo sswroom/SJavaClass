@@ -19,5 +19,24 @@ public enum RequestMethod
 	RTSP_REDIRECT,
 	RTSP_SETUP,
 	RTSP_SET_PARAMETER,
-	RTSP_TEARDOWN
+	RTSP_TEARDOWN;
+
+	public RequestMethod fromString(String meth)
+	{
+		switch (meth.toUpperCase())
+		{
+		case "POST":
+			return HTTP_POST;
+		case "PUT":
+			return HTTP_PUT;
+		case "PATCH":
+			return HTTP_PATCH;
+		case "DELETE":
+			return HTTP_DELETE;
+		case "CONNECT":
+			return HTTP_CONNECT;
+		default:
+			return HTTP_GET;
+		}
+	}
 }
