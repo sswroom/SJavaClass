@@ -374,8 +374,7 @@ public class CertUtil
 		try
 		{
 			fis = new FileInputStream(file);
-			CertificateFactory cf = CertificateFactory.getInstance("X.509");
-			X509Certificate cert = (X509Certificate)cf.generateCertificate(fis);
+			X509Certificate cert = loadCertificate(fis);
 			try
 			{
 				fis.close();
@@ -390,20 +389,18 @@ public class CertUtil
 			ex.printStackTrace();
 			return null;
 		}
+	}
+
+	public static X509Certificate loadCertificate(InputStream stm)
+	{
+		try
+		{
+			CertificateFactory cf = CertificateFactory.getInstance("X.509");
+			return (X509Certificate)cf.generateCertificate(stm);
+		}
 		catch (CertificateException ex)
 		{
 			ex.printStackTrace();
-			if (fis != null)
-			{
-				try
-				{
-					fis.close();
-				}
-				catch (IOException ex2)
-				{
-
-				}
-			}
 			return null;
 		}
 	}

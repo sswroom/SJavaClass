@@ -549,14 +549,14 @@ public class StringUtil
 	*/
 	public static void appendHex(StringBuilder sb, byte buff[], int ofst, int count, char ch, LineBreakType lbt)
 	{
-		int i = ofst;
-		int j = ofst + count;
+		int i = 0;
+		int j = count;
 		int v;
 		if (ch != 0)
 		{
 			while (i < j)
 			{
-				v = buff[i] & 0xff;
+				v = buff[i + ofst] & 0xff;
 				sb.append(HEX_ARRAY[v >> 4]);
 				sb.append(HEX_ARRAY[v & 15]);
 				sb.append(ch);
@@ -584,7 +584,7 @@ public class StringUtil
 		{
 			while (i < j)
 			{
-				v = buff[i] & 0xff;
+				v = buff[i + ofst] & 0xff;
 				sb.append(HEX_ARRAY[v >> 4]);
 				sb.append(HEX_ARRAY[v & 15]);
 				i++;

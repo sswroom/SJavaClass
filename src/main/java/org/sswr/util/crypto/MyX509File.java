@@ -1,7 +1,14 @@
 package org.sswr.util.crypto;
 
 import java.nio.charset.StandardCharsets;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.PublicKey;
+import java.security.Signature;
+import java.security.SignatureException;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.sswr.util.data.LineBreakType;
 import org.sswr.util.data.StringUtil;
@@ -30,6 +37,33 @@ public abstract class MyX509File extends ASN1Data
 		ECDSA,
 		ED25519,
 		RSAPublic
+	}
+	
+	public enum ValidStatus
+	{
+		Valid,
+		SelfSigned,
+		SignatureInvalid,
+		Revoked,
+		FileFormatInvalid,
+		UnknownIssuer,
+		Expired,
+		UnsupportedAlgorithm,
+		CRLNotFound
+	}
+
+	public enum AlgType
+	{
+		Unknown,
+		MD2WithRSAEncryption,
+		MD5WithRSAEncryption,
+		SHA1WithRSAEncryption,
+		SHA256WithRSAEncryption,
+		SHA384WithRSAEncryption,
+		SHA512WithRSAEncryption,
+		SHA224WithRSAEncryption,
+		ECDSAWithSHA256,
+		ECDSAWithSHA384
 	}
 
 	public enum ContentDataType
@@ -1405,9 +1439,9 @@ public abstract class MyX509File extends ASN1Data
 				else if (subItemPDU.len == 16)
 				{
 					///////////////////////////////////////
-/*					Net::SocketUtil::AddressInfo addr;
-					Net::SocketUtil::SetAddrInfoV6(&addr, subItemPDU, 0);
-					sptr = Net::SocketUtil::GetAddrName(sbuff, &addr);
+/*					Net.SocketUtil.AddressInfo addr;
+					Net.SocketUtil.SetAddrInfoV6(&addr, subItemPDU, 0);
+					sptr = Net.SocketUtil.GetAddrName(sbuff, &addr);
 					sb.appendP(sbuff, sptr);*/
 				}
 				sb.append("\r\n");
@@ -1965,7 +1999,7 @@ public abstract class MyX509File extends ASN1Data
 		}
 	}
 
-	protected String nameGetByOID(byte[] pdu, int beginOfst, int endOfst, String oidText)
+	protected static String nameGetByOID(byte[] pdu, int beginOfst, int endOfst, String oidText)
 	{
 		ASN1Item itemPDU;
 		ASN1Item oidPDU;
@@ -1995,11 +2029,147 @@ public abstract class MyX509File extends ASN1Data
 		return null;
 	}
 	
-	protected String nameGetCN(byte[] pdu, int beginOfst, int endOfst)
+	protected static String nameGetCN(byte[] pdu, int beginOfst, int endOfst)
 	{
 		return nameGetByOID(pdu, beginOfst, endOfst, "2.5.4.3");
 	}
 	
+	protected static CertNames namesGet(byte[] pdu, int beginOfst, int endOfst)
+	{
+		String path;
+		ASN1Item itemPDU;
+		ASN1Item oidPDU;
+		ASN1Item strPDU;
+		int cnt = ASN1Util.pduCountItem(pdu, beginOfst, endOfst, null);
+		int i = 0;
+		CertNames names = new CertNames();
+		while (i < cnt)
+		{
+			i++;
+	
+			path = i + ".1";
+			if ((itemPDU = ASN1Util.pduGetItem(pdu, beginOfst, endOfst, path)) != null)
+			{
+				if (itemPDU.itemType == ASN1Util.IT_SEQUENCE)
+				{
+					oidPDU = ASN1Util.pduGetItem(pdu, itemPDU.ofst, itemPDU.ofst + itemPDU.len, "1");
+					if (oidPDU != null && oidPDU.itemType == ASN1Util.IT_OID)
+					{
+						strPDU = ASN1Util.pduGetItem(pdu, itemPDU.ofst, itemPDU.ofst + itemPDU.len, "2");
+						if (strPDU != null)
+						{
+							if (ASN1Util.oidEqualsText(pdu, oidPDU.ofst, oidPDU.len, "2.5.4.6"))
+							{
+								names.countryName = new String(pdu, strPDU.ofst, strPDU.len);
+							}
+							else if (ASN1Util.oidEqualsText(pdu, oidPDU.ofst, oidPDU.len, "2.5.4.8"))
+							{
+								names.stateOrProvinceName = new String(pdu, strPDU.ofst, strPDU.len);
+							}
+							else if (ASN1Util.oidEqualsText(pdu, oidPDU.ofst, oidPDU.len, "2.5.4.7"))
+							{
+								names.localityName = new String(pdu, strPDU.ofst, strPDU.len);
+							}
+							else if (ASN1Util.oidEqualsText(pdu, oidPDU.ofst, oidPDU.len, "2.5.4.10"))
+							{
+								names.organizationName = new String(pdu, strPDU.ofst, strPDU.len);
+							}
+							else if (ASN1Util.oidEqualsText(pdu, oidPDU.ofst, oidPDU.len, "2.5.4.11"))
+							{
+								names.organizationUnitName = new String(pdu, strPDU.ofst, strPDU.len);
+							}
+							else if (ASN1Util.oidEqualsText(pdu, oidPDU.ofst, oidPDU.len, "2.5.4.3"))
+							{
+								names.commonName = new String(pdu, strPDU.ofst, strPDU.len);
+							}
+							else if (ASN1Util.oidEqualsText(pdu, oidPDU.ofst, oidPDU.len, "1.2.840.113549.1.9.1"))
+							{
+								names.emailAddress = new String(pdu, strPDU.ofst, strPDU.len);
+							}
+						}
+					}
+				}
+			}
+		}
+		if (names != null && names.commonName != null)
+		{
+			return names;
+		}
+		else
+		{
+			return null;
+		}
+	}
+
+	protected static List<String> extensionsGetCRLDistributionPoints(byte[] pdu, int beginOfst, int endOfst)
+	{
+		String path;
+		ASN1Item itemPDU;
+		ASN1Item oidPDU;
+		ASN1Item strPDU;
+		ASN1Item subItemPDU;
+		List<String> crlDistributionPoints = new ArrayList<String>();
+		int cnt = ASN1Util.pduCountItem(pdu, beginOfst, endOfst, null);
+		int i = 0;
+		while (i < cnt)
+		{
+			i++;
+	
+			path = String.valueOf(i);
+			if ((itemPDU = ASN1Util.pduGetItem(pdu, beginOfst, endOfst, path)) != null)
+			{
+				if (itemPDU.itemType == ASN1Util.IT_SEQUENCE)
+				{
+					oidPDU = ASN1Util.pduGetItem(pdu, itemPDU.ofst, itemPDU.ofst + itemPDU.len, "1");
+					if (oidPDU != null && oidPDU.itemType == ASN1Util.IT_OID)
+					{
+						strPDU = ASN1Util.pduGetItem(pdu, itemPDU.ofst, itemPDU.ofst + itemPDU.len, "2");
+						if (strPDU != null && strPDU.itemType == ASN1Util.IT_BOOLEAN)
+						{
+							strPDU = ASN1Util.pduGetItem(pdu, itemPDU.ofst, itemPDU.ofst + itemPDU.len, "3");
+						}
+						if (strPDU != null && strPDU.itemType == ASN1Util.IT_OCTET_STRING)
+						{
+							if (ASN1Util.oidEqualsText(pdu, oidPDU.ofst, oidPDU.len,"2.5.29.31")) //id-ce-cRLDistributionPoints
+							{
+								int j = 0;
+								int k = ASN1Util.pduCountItem(pdu, strPDU.ofst, strPDU.ofst + strPDU.len, "1");
+								while (j < k)
+								{
+									j++;
+									path = "1."+j;
+									subItemPDU = ASN1Util.pduGetItem(pdu, strPDU.ofst, strPDU.ofst + strPDU.len, path);
+									if (subItemPDU != null && subItemPDU.itemType == ASN1Util.IT_SEQUENCE)
+									{
+										distributionPointAdd(pdu, subItemPDU.ofst, subItemPDU.ofst + subItemPDU.len, crlDistributionPoints);
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		return crlDistributionPoints;
+	}
+
+	protected static int distributionPointAdd(byte[] pdu, int beginOfst, int endOfst, List<String> crlDistributionPoints)
+	{
+		ASN1Item itemPDU;
+		if ((itemPDU = ASN1Util.pduGetItem(pdu, beginOfst, endOfst, "1")) != null && itemPDU.itemType == ASN1Util.IT_CONTEXT_SPECIFIC_0)
+		{
+			if ((itemPDU = ASN1Util.pduGetItem(pdu, itemPDU.ofst, itemPDU.ofst + itemPDU.len, "1")) != null && itemPDU.itemType == ASN1Util.IT_CONTEXT_SPECIFIC_0)
+			{
+				if ((itemPDU = ASN1Util.pduGetItem(pdu, itemPDU.ofst, itemPDU.ofst + itemPDU.len, "1")) != null && itemPDU.itemType == ASN1Util.IT_CHOICE_6)
+				{
+					crlDistributionPoints.add(new String(pdu, itemPDU.ofst, itemPDU.len));
+					return 1;
+				}
+			}
+		}
+		return 0;
+	}
+
 	protected static KeyType keyTypeFromOID(byte[] oid, int ofst, int oidLen, boolean pubKey)
 	{
 		if (ASN1Util.oidEqualsText(oid, ofst, oidLen, "1.2.840.113549.1.1.1"))
@@ -2014,5 +2184,182 @@ public abstract class MyX509File extends ASN1Data
 			}
 		}
 		return KeyType.Unknown;
+	}
+
+	protected static AlgType algorithmIdentifierGet(byte[] pdu, int beginOfst, int endOfst)
+	{
+		int cnt = ASN1Util.pduCountItem(pdu, beginOfst, endOfst, null);
+		if (cnt != 2 && cnt != 1)
+		{
+			return AlgType.Unknown;
+		}
+		ASN1Item item = ASN1Util.pduGetItem(pdu, beginOfst, endOfst, "1");
+		if (item == null || item.itemType != ASN1Util.IT_OID)
+		{
+			return AlgType.Unknown;
+		}
+		if (ASN1Util.oidEqualsText(pdu, item.ofst, item.len,"1.2.840.113549.1.1.2")) //md2WithRSAEncryption
+		{
+			return AlgType.MD2WithRSAEncryption;
+		}
+		else if (ASN1Util.oidEqualsText(pdu, item.ofst, item.len,"1.2.840.113549.1.1.4")) //md5WithRSAEncryption
+		{
+			return AlgType.MD5WithRSAEncryption;
+		}
+		else if (ASN1Util.oidEqualsText(pdu, item.ofst, item.len,"1.2.840.113549.1.1.5")) //sha1WithRSAEncryption
+		{
+			return AlgType.SHA1WithRSAEncryption;
+		}
+		else if (ASN1Util.oidEqualsText(pdu, item.ofst, item.len,"1.2.840.113549.1.1.11")) //sha256WithRSAEncryption
+		{
+			return AlgType.SHA256WithRSAEncryption;
+		}
+		else if (ASN1Util.oidEqualsText(pdu, item.ofst, item.len,"1.2.840.113549.1.1.12")) //sha384WithRSAEncryption
+		{
+			return AlgType.SHA384WithRSAEncryption;
+		}
+		else if (ASN1Util.oidEqualsText(pdu, item.ofst, item.len,"1.2.840.113549.1.1.13")) //sha512WithRSAEncryption
+		{
+			return AlgType.SHA512WithRSAEncryption;
+		}
+		else if (ASN1Util.oidEqualsText(pdu, item.ofst, item.len,"1.2.840.113549.1.1.14")) //sha224WithRSAEncryption
+		{
+			return AlgType.SHA224WithRSAEncryption;
+		}
+		else if (ASN1Util.oidEqualsText(pdu, item.ofst, item.len,"1.2.840.10045.4.3.2")) //ecdsa-with-SHA256
+		{
+			return AlgType.ECDSAWithSHA256;
+		}
+		else if (ASN1Util.oidEqualsText(pdu, item.ofst, item.len,"1.2.840.10045.4.3.3")) //ecdsa-with-SHA384
+		{
+			return AlgType.ECDSAWithSHA384;
+		}
+		else
+		{
+			return AlgType.Unknown;
+		}
+	}
+
+	public SignedInfo getSignedInfo()
+	{
+		SignedInfo signedInfo = new SignedInfo();
+		ASN1Item item;
+		item = ASN1Util.pduGetItem(this.buff, 0, this.buff.length, "1.1");
+		if (item == null)
+		{
+			System.out.println("SignedInfo: error 1");
+			return null;
+		}
+		signedInfo.payload = this.buff;
+		signedInfo.payloadOfst = item.pduBegin;
+		signedInfo.payloadSize = item.ofst + item.len - item.pduBegin;
+		item = ASN1Util.pduGetItem(this.buff, 0, this.buff.length, "1.2");
+		if (item == null)
+		{
+			System.out.println("SignedInfo: error 2a");
+			return null;
+		}
+		else if (item.itemType != ASN1Util.IT_SEQUENCE)
+		{
+			System.out.println("SignedInfo: error 2b");
+			return null;
+		}
+		else if ((signedInfo.algType = algorithmIdentifierGet(this.buff, item.ofst, item.ofst + item.len)) == AlgType.Unknown)
+		{
+			System.out.println("SignedInfo: error 2c");
+			return null;
+		}
+		if ((item = ASN1Util.pduGetItem(this.buff, 0, this.buff.length, "1.3")) == null || item.itemType != ASN1Util.IT_BIT_STRING)
+		{
+			System.out.println("SignedInfo: error 3");
+			return null;
+		}
+		signedInfo.signature = this.buff;
+		signedInfo.signOfst = item.ofst + 1;
+		signedInfo.signSize = item.len - 1;
+		return signedInfo;
+	
+	}
+
+	public static HashType getAlgHash(AlgType algType)
+	{
+		switch (algType)
+		{
+		case SHA1WithRSAEncryption:
+			return HashType.SHA1;
+		case SHA256WithRSAEncryption:
+			return HashType.SHA256;
+		case SHA512WithRSAEncryption:
+			return HashType.SHA512;
+		case SHA384WithRSAEncryption:
+			return HashType.SHA384;
+		case SHA224WithRSAEncryption:
+			return HashType.SHA224;
+		case MD2WithRSAEncryption:
+			return HashType.Unknown;
+		case MD5WithRSAEncryption:
+			return HashType.MD5;
+		case ECDSAWithSHA256:
+			return HashType.SHA256;
+		case ECDSAWithSHA384:
+			return HashType.SHA384;
+		case Unknown:
+		default:
+			return HashType.Unknown;
+		}
+	}
+
+	public static String getAlgName(AlgType algType)
+	{
+		switch (algType)
+		{
+		case SHA1WithRSAEncryption:
+			return "SHA1withRSA";
+		case SHA256WithRSAEncryption:
+			return "SHA256withRSA";
+		case SHA512WithRSAEncryption:
+			return "SHA512withRSA";
+		case SHA384WithRSAEncryption:
+			return "SHA384withRSA";
+		case SHA224WithRSAEncryption:
+			return "SHA224withRSA";
+		case MD2WithRSAEncryption:
+			return "MD2withRSA";
+		case MD5WithRSAEncryption:
+			return "MD5withRSA";
+		case ECDSAWithSHA256:
+			return "ECDSAwithSHA256";
+		case ECDSAWithSHA384:
+			return "ECDSAWithSHA384";
+		case Unknown:
+		default:
+			return null;
+		}
+	}
+
+	public static boolean verifySignedInfo(SignedInfo signedInfo, PublicKey key)
+	{
+		try
+		{
+			Signature sign = Signature.getInstance(getAlgName(signedInfo.algType));
+			sign.initVerify(key);
+			sign.update(signedInfo.payload, signedInfo.payloadOfst, signedInfo.payloadSize);
+			return sign.verify(signedInfo.signature, signedInfo.signOfst, signedInfo.signSize);
+		}
+		catch (NoSuchAlgorithmException ex)
+		{
+			ex.printStackTrace();
+			return false;
+		}
+		catch (InvalidKeyException ex)
+		{
+			ex.printStackTrace();
+			return false;
+		}
+		catch (SignatureException ex)
+		{
+			ex.printStackTrace();
+			return false;
+		}
 	}
 }

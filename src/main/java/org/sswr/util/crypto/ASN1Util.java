@@ -33,6 +33,13 @@ public class ASN1Util
 	public static final int IT_BMPSTRING = 0x1e;
 	public static final int IT_SEQUENCE = 0x30;
 	public static final int IT_SET = 0x31;
+	public static final int IT_CHOICE_0 = 0x80;
+	public static final int IT_CHOICE_1 = 0x81;
+	public static final int IT_CHOICE_2 = 0x82;
+	public static final int IT_CHOICE_3 = 0x83;
+	public static final int IT_CHOICE_4 = 0x84;
+	public static final int IT_CHOICE_5 = 0x85;
+	public static final int IT_CHOICE_6 = 0x86;
 	public static final int IT_CONTEXT_SPECIFIC_0 = 0xa0;
 	public static final int IT_CONTEXT_SPECIFIC_1 = 0xa1;
 	public static final int IT_CONTEXT_SPECIFIC_2 = 0xa2;

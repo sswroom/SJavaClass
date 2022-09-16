@@ -572,4 +572,14 @@ public class ByteTool {
 		}
 		return true;
 	}
+
+	public static boolean byteEquals(byte[] buff1, int ofst1, byte[] buff2, int ofst2, int len)
+	{
+		while (len-- > 0)
+		{
+			if (buff1[ofst1 + len] != buff2[ofst2 + len])
+				return false;
+		}
+		return true;
+	}
 }

@@ -20,14 +20,14 @@ public class HTTPMyClient extends IOStream
 {
 	private static final boolean debug = false;
 	private HttpURLConnection conn;
-	private String method;
+	private RequestMethod method;
 	private String url;
 	private StringBuilder sbForm;
 	private boolean canWrite;
 	private InetAddress svrAddr;
 	private int respCode;
 
-	public HTTPMyClient(String url, String method) throws IOException
+	public HTTPMyClient(String url, RequestMethod method) throws IOException
 	{
 		super(url);
 		if (!url.startsWith("http://") && !url.startsWith("https://"))
@@ -40,18 +40,39 @@ public class HTTPMyClient extends IOStream
 		HttpURLConnection.setFollowRedirects(false);
 		this.svrAddr = InetAddress.getByName(targetURL.getHost());
 		this.conn = (HttpURLConnection)targetURL.openConnection();
-		this.conn.setRequestMethod(method);
 		this.conn.setDoOutput(true);
 		this.respCode = 0;
 		switch (this.method)
 		{
-		case "POST":
-		case "PUT":
-		case "PATCH":
+		case HTTP_POST:
+			this.conn.setRequestMethod("POST");
 			this.canWrite = true;
 			break;
-		default:
+		case HTTP_PUT:
+			this.conn.setRequestMethod("PUT");
+			this.canWrite = true;
+			break;
+		case HTTP_PATCH:
+			this.conn.setRequestMethod("PATCH");
+			this.canWrite = true;
+			break;
+		case HTTP_GET:
+			this.conn.setRequestMethod("GET");
 			this.canWrite = false;
+			break;
+		case HTTP_CONNECT:
+			this.conn.setRequestMethod("CONNECT");
+			this.canWrite = false;
+			break;
+		case HTTP_DELETE:
+			this.conn.setRequestMethod("DELETE");
+			this.canWrite = false;
+			break;
+		case Unknown:
+		default:
+			this.conn.setRequestMethod("GET");
+			this.canWrite = false;
+			break;
 		}
 	}
 
@@ -296,7 +317,7 @@ public class HTTPMyClient extends IOStream
 	{
 		try
 		{
-			HTTPMyClient cli = new HTTPMyClient(url, "GET");
+			HTTPMyClient cli = new HTTPMyClient(url, RequestMethod.HTTP_GET);
 			if (cli.GetRespStatus() != expectedStatusCode)
 			{
 				cli.close();
@@ -335,7 +356,7 @@ public class HTTPMyClient extends IOStream
 	{
 		try
 		{
-			HTTPMyClient cli = new HTTPMyClient(url, "GET");
+			HTTPMyClient cli = new HTTPMyClient(url, RequestMethod.HTTP_GET);
 			cli.addHeaders(customHeaders);
 			if (cli.GetRespStatus() <= 0)
 			{
@@ -379,7 +400,7 @@ public class HTTPMyClient extends IOStream
 	{
 		try
 		{
-			HTTPMyClient cli = new HTTPMyClient(url, "POST");
+			HTTPMyClient cli = new HTTPMyClient(url, RequestMethod.HTTP_POST);
 			cli.addHeaders(customHeaders);
 			Iterator<String> names = formParams.keySet().iterator();
 			if (names != null && names.hasNext())
