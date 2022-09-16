@@ -21,7 +21,7 @@ public enum RequestMethod
 	RTSP_SET_PARAMETER,
 	RTSP_TEARDOWN;
 
-	public RequestMethod fromString(String meth)
+	public static RequestMethod fromString(String meth)
 	{
 		switch (meth.toUpperCase())
 		{
