@@ -5,7 +5,10 @@ import java.util.Arrays;
 import org.sswr.util.data.LineBreakType;
 import org.sswr.util.data.SharedInt;
 import org.sswr.util.data.StringUtil;
+import org.sswr.util.net.ASN1Data;
+import org.sswr.util.net.ASN1Item;
 import org.sswr.util.net.ASN1PDUBuilder;
+import org.sswr.util.net.ASN1Util;
 
 public class MyX509Key extends MyX509File
 {
@@ -155,7 +158,36 @@ public class MyX509Key extends MyX509File
 		return sb.toString();
 	}
 
-	MyX509Key createPublicKey()
+	public KeyType getKeyType()
+	{
+		return this.keyType;
+	}
+
+/*	public int getKeySizeBits()
+	{
+		return keyGetLeng(this.buff, 0, this.buff.length, this.keyType);
+	}*/
+
+	public boolean isPrivateKey()
+	{
+		{
+			switch (this.keyType)
+			{
+			case DSA:
+			case ECDSA:
+			case ED25519:
+			case RSA:
+				return true;
+			case RSAPublic:
+			case ECPublic:
+			case Unknown:
+			default:
+				return false;
+			}
+		}
+	}
+
+	public MyX509Key createPublicKey()
 	{
 		if (this.keyType == KeyType.RSAPublic)
 		{
@@ -267,5 +299,84 @@ public class MyX509Key extends MyX509File
 	{
 		if (this.keyType != KeyType.RSA) return null;
 		return toBuff(ASN1Util.pduGetItem(this.buff, 0, this.buff.length, "1.9"));
+	}
+
+	public byte[] getECPrivate()
+	{
+		if (this.keyType == KeyType.ECDSA)
+		{
+			return toBuff(ASN1Util.pduGetItem(this.buff, 0, this.buff.length, "1.2"));
+		}
+		else
+		{
+			return null;
+		}		
+	}
+
+	public byte[] getECPublic()
+	{
+		ASN1Item itemPDU;
+		if (this.keyType == KeyType.ECPublic)
+		{
+			itemPDU = ASN1Util.pduGetItem(this.buff, 0, this.buff.length, "1.2");
+			if (itemPDU != null && itemPDU.itemType == ASN1Util.IT_BIT_STRING)
+			{
+				return Arrays.copyOfRange(this.buff, itemPDU.ofst + 1, itemPDU.ofst + itemPDU.len);
+			}
+			return null;
+		}
+		else if (this.keyType == KeyType.ECDSA)
+		{
+			itemPDU = ASN1Util.pduGetItem(this.buff, 0, this.buff.length, "1.3");
+			if (itemPDU != null && itemPDU.itemType == ASN1Util.IT_CONTEXT_SPECIFIC_1)
+			{
+				itemPDU = ASN1Util.pduGetItem(this.buff, itemPDU.ofst, itemPDU.ofst + itemPDU.len, "1");
+				if (itemPDU != null && itemPDU.itemType == ASN1Util.IT_BIT_STRING)
+				{
+					return Arrays.copyOfRange(this.buff, itemPDU.ofst + 1, itemPDU.ofst + itemPDU.len);
+				}
+				return null;
+			}
+			itemPDU = ASN1Util.pduGetItem(this.buff, 0, this.buff.length, "1.4");
+			if (itemPDU != null && itemPDU.itemType == ASN1Util.IT_CONTEXT_SPECIFIC_1)
+			{
+				itemPDU = ASN1Util.pduGetItem(this.buff, itemPDU.ofst, itemPDU.ofst + itemPDU.len, "1");
+				if (itemPDU != null && itemPDU.itemType == ASN1Util.IT_BIT_STRING)
+				{
+					return Arrays.copyOfRange(this.buff, itemPDU.ofst + 1, itemPDU.ofst + itemPDU.len);
+				}
+				return null;
+			}
+			return null;
+		}
+		else
+		{
+			return null;
+		}
+	}
+
+	public ECName getECName()
+	{
+		if (this.keyType == KeyType.ECPublic)
+		{
+			ASN1Item itemPDU = ASN1Util.pduGetItem(this.buff, 0, this.buff.length, "1.1.2");
+			if (itemPDU != null && itemPDU.itemType == ASN1Util.IT_OID)
+			{
+				return ecNameFromOID(this.buff, itemPDU.ofst, itemPDU.len);
+			}
+		}
+		else if (this.keyType == KeyType.ECDSA)
+		{
+			ASN1Item itemPDU = ASN1Util.pduGetItem(this.buff, 0, this.buff.length, "1.3");
+			if (itemPDU != null && itemPDU.itemType == ASN1Util.IT_CONTEXT_SPECIFIC_0)
+			{
+				itemPDU = ASN1Util.pduGetItem(this.buff, itemPDU.ofst, itemPDU.ofst + itemPDU.len, "1");
+				if (itemPDU != null && itemPDU.itemType == ASN1Util.IT_OID)
+				{
+					return ecNameFromOID(this.buff, itemPDU.ofst, itemPDU.len);
+				}
+			}
+		}
+		return ECName.Unknown;
 	}
 }

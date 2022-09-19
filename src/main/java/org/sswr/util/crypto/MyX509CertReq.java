@@ -1,5 +1,7 @@
 package org.sswr.util.crypto;
 
+import org.sswr.util.net.ASN1Data;
+
 public class MyX509CertReq extends MyX509File
 {
 	public MyX509CertReq(String sourceName, byte[] buff, int ofst, int size)

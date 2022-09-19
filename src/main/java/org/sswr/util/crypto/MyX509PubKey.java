@@ -1,5 +1,9 @@
 package org.sswr.util.crypto;
 
+import org.sswr.util.net.ASN1Data;
+import org.sswr.util.net.ASN1Item;
+import org.sswr.util.net.ASN1Util;
+
 public class MyX509PubKey extends MyX509File
 {
 	public MyX509PubKey(String sourceName, byte[] buff, int ofst, int size)

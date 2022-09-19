@@ -1,4 +1,4 @@
-package org.sswr.util.crypto;
+package org.sswr.util.net;
 
 public class ASN1Item
 {

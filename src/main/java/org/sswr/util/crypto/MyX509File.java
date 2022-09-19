@@ -12,6 +12,12 @@ import java.util.List;
 
 import org.sswr.util.data.LineBreakType;
 import org.sswr.util.data.StringUtil;
+import org.sswr.util.net.ASN1Data;
+import org.sswr.util.net.ASN1Item;
+import org.sswr.util.net.ASN1OIDDB;
+import org.sswr.util.net.ASN1OIDInfo;
+import org.sswr.util.net.ASN1Type;
+import org.sswr.util.net.ASN1Util;
 import org.sswr.util.net.SocketUtil;
 
 public abstract class MyX509File extends ASN1Data
@@ -36,7 +42,8 @@ public abstract class MyX509File extends ASN1Data
 		DSA,
 		ECDSA,
 		ED25519,
-		RSAPublic
+		RSAPublic,
+		ECPublic
 	}
 	
 	public enum ValidStatus
@@ -747,11 +754,11 @@ public abstract class MyX509File extends ASN1Data
 				}
 				sb.append("content-type = ");
 				ASN1Util.oidToString(pdu, contentType.ofst, contentType.len, sb);
-				OIDInfo oid = ASN1OIDDB.oidGetEntry(pdu, contentType.ofst, contentType.len);
+				ASN1OIDInfo oid = ASN1OIDDB.oidGetEntry(pdu, contentType.ofst, contentType.len);
 				if (oid != null)
 				{
 					sb.append(" (");
-					sb.append(oid.name);
+					sb.append(oid.getName());
 					sb.append(')');
 				}
 				sb.append("\r\n");
@@ -889,11 +896,11 @@ public abstract class MyX509File extends ASN1Data
 			sb.append("algorithm = ");
 			ASN1Util.oidToString(pdu, algorithm.ofst, algorithm.len, sb);
 			keyType = keyTypeFromOID(pdu, algorithm.ofst, algorithm.len, pubKey);
-			OIDInfo oid = ASN1OIDDB.oidGetEntry(pdu, algorithm.ofst, algorithm.len);
+			ASN1OIDInfo oid = ASN1OIDDB.oidGetEntry(pdu, algorithm.ofst, algorithm.len);
 			if (oid != null)
 			{
 				sb.append(" (");
-				sb.append(oid.name);
+				sb.append(oid.getName());
 				sb.append(')');
 			}
 			sb.append("\r\n");
@@ -1086,11 +1093,11 @@ public abstract class MyX509File extends ASN1Data
 				sb.append('.');
 				sb.append("extensionType = ");
 				ASN1Util.oidToString(pdu, extension.ofst, extension.len, sb);
-				OIDInfo oid = ASN1OIDDB.oidGetEntry(pdu, extension.ofst, extension.len);
+				ASN1OIDInfo oid = ASN1OIDDB.oidGetEntry(pdu, extension.ofst, extension.len);
 				if (oid != null)
 				{
 					sb.append(" (");
-					sb.append(oid.name);
+					sb.append(oid.getName());
 					sb.append(')');
 				}
 				sb.append("\r\n");
@@ -1451,11 +1458,11 @@ public abstract class MyX509File extends ASN1Data
 				sb.append(".registeredID = ");
 				ASN1Util.oidToString(pdu, subItemPDU.ofst, subItemPDU.len, sb);
 				{
-					OIDInfo ent = ASN1OIDDB.oidGetEntry(pdu, subItemPDU.ofst, subItemPDU.len);
+					ASN1OIDInfo ent = ASN1OIDDB.oidGetEntry(pdu, subItemPDU.ofst, subItemPDU.len);
 					if (ent != null)
 					{
 						sb.append(" (");
-						sb.append(ent.name);
+						sb.append(ent.getName());
 						sb.append(')');
 					}
 				}
@@ -1632,7 +1639,7 @@ public abstract class MyX509File extends ASN1Data
 			}
 			if (subItemPDU != null && subItemPDU.itemType == ASN1Util.IT_CONTEXT_SPECIFIC_1)
 			{
-				//AppendCertificate(subItemPDU, subItemPDU + subItemLen, "1", sb, CSTR("signedData.crls"));
+				//AppendCertificate(subItemPDU, subItemPDU + subItemLen, "1", sb, "signedData.crls"));
 				i++;
 				subItemPDU = ASN1Util.pduGetItem(pdu, itemPDU.ofst, itemPDU.ofst + itemPDU.len, String.valueOf(i));
 			}
@@ -1773,11 +1780,11 @@ public abstract class MyX509File extends ASN1Data
 					sb.append('.');
 					sb.append("attributeType = ");
 					ASN1Util.oidToString(pdu, oidPDU.ofst, oidPDU.len, sb);
-					OIDInfo oid = ASN1OIDDB.oidGetEntry(pdu, oidPDU.ofst, oidPDU.len);
+					ASN1OIDInfo oid = ASN1OIDDB.oidGetEntry(pdu, oidPDU.ofst, oidPDU.len);
 					if (oid != null)
 					{
 						sb.append(" (");
-						sb.append(oid.name);
+						sb.append(oid.getName());
 						sb.append(')');
 					}
 					sb.append("\r\n");
@@ -1792,11 +1799,11 @@ public abstract class MyX509File extends ASN1Data
 							sb.append('.');
 							sb.append("contentType = ");
 							ASN1Util.oidToString(pdu, itemPDU.ofst, itemPDU.len, sb);
-							OIDInfo oid = ASN1OIDDB.oidGetEntry(pdu, itemPDU.ofst, itemPDU.len);
+							ASN1OIDInfo oid = ASN1OIDDB.oidGetEntry(pdu, itemPDU.ofst, itemPDU.len);
 							if (oid != null)
 							{
 								sb.append(" (");
-								sb.append(oid.name);
+								sb.append(oid.getName());
 								sb.append(')');
 							}
 							sb.append("\r\n");
@@ -1972,11 +1979,11 @@ public abstract class MyX509File extends ASN1Data
 			sb.append(varName);
 			sb.append(".contentType = ");
 			ASN1Util.oidToString(pdu, itemPDU.ofst, itemPDU.len, sb);
-			OIDInfo oid = ASN1OIDDB.oidGetEntry(pdu, itemPDU.ofst, itemPDU.len);
+			ASN1OIDInfo oid = ASN1OIDDB.oidGetEntry(pdu, itemPDU.ofst, itemPDU.len);
 			if (oid != null)
 			{
 				sb.append(" (");
-				sb.append(oid.name);
+				sb.append(oid.getName());
 				sb.append(')');
 			}
 			sb.append("\r\n");
@@ -2186,6 +2193,23 @@ public abstract class MyX509File extends ASN1Data
 		return KeyType.Unknown;
 	}
 
+	protected static ECName ecNameFromOID(byte[] oid, int ofst, int oidLen)
+	{
+		if (ASN1Util.oidEqualsText(oid, ofst, oidLen, "1.2.840.10045.3.1.7"))
+		{
+			return ECName.secp256r1;
+		}
+		else if (ASN1Util.oidEqualsText(oid, ofst, oidLen, "1.3.132.0.34"))
+		{
+			return ECName.secp384r1;
+		}
+		else if (ASN1Util.oidEqualsText(oid, ofst, oidLen, "1.3.132.0.35"))
+		{
+			return ECName.secp521r1;
+		}
+		return ECName.Unknown;
+	}
+
 	protected static AlgType algorithmIdentifierGet(byte[] pdu, int beginOfst, int endOfst)
 	{
 		int cnt = ASN1Util.pduCountItem(pdu, beginOfst, endOfst, null);
@@ -2334,6 +2358,79 @@ public abstract class MyX509File extends ASN1Data
 		case Unknown:
 		default:
 			return null;
+		}
+	}
+	public static String keyTypeGetName(KeyType keyType)
+	{
+		switch (keyType)
+		{
+		case RSA:
+			return "RSA";
+		case DSA:
+			return "DSA";
+		case ECDSA:
+			return "ECDSA";
+		case ED25519:
+			return "ED25519";
+		case RSAPublic:
+			return "RSAPublic";
+		case ECPublic:
+			return "ECPublic";
+		case Unknown:
+		default:
+			return "Unknown";
+		}
+	}
+
+	public static String keyTypeGetOID(KeyType keyType)
+	{
+		switch (keyType)
+		{
+		case RSA:
+			return "1.2.840.113549.1.1.1";
+		case DSA:
+			return "1.2.840.10040.4.1";
+		case ECDSA:
+			return "1.2.840.10045.2.1";
+		case ED25519:
+			return "1.3.101.112";
+		case ECPublic:
+			return "1.2.840.10045.2.1";
+		case RSAPublic:
+		case Unknown:
+		default:
+			return "1.2.840.113549.1.1.1";
+		}
+	}
+	public static String ecNameGetName(ECName ecName)
+	{
+		switch (ecName)
+		{
+		case secp256r1:
+			return "secp256r1";
+		case secp384r1:
+			return "secp384r1";
+		case secp521r1:
+			return "secp521r1";
+		case Unknown:
+		default:
+			return "Unknown";
+		}
+	}
+
+	public static String ecNameGetOID(ECName ecName)
+	{
+		switch (ecName)
+		{
+		case secp256r1:
+			return "1.2.840.10045.3.1.7";
+		case secp384r1:
+			return "1.3.132.0.34";
+		case secp521r1:
+			return "1.3.132.0.35";
+		case Unknown:
+		default:
+			return "1.3.132.0.34";
 		}
 	}
 

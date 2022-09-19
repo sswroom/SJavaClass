@@ -9,8 +9,8 @@ import org.sswr.util.net.HTTPMyClient;
 
 public class MyX509Env
 {
-	private KeyStore trustStore;
-	private Map<String, Certificate> trustStoreMap;
+	protected KeyStore trustStore;
+	protected Map<String, Certificate> trustStoreMap;
 
 	public Map<String, Certificate> getTrustStore()
 	{

@@ -95,7 +95,7 @@ public class SNMPClient implements UDPPacketListener
 			ASN1PDUBuilder pdu = new ASN1PDUBuilder();
 			pdu.beginSequence();
 			pdu.appendInt32(0);
-			pdu.appendString(community);
+			pdu.appendOctetString(community);
 			pdu.beginOther((byte)0xA0);
 			pdu.appendInt32(this.reqId);
 			pdu.appendInt32(0);
@@ -142,7 +142,7 @@ public class SNMPClient implements UDPPacketListener
 			ASN1PDUBuilder pdu = new ASN1PDUBuilder();
 			pdu.beginSequence();
 			pdu.appendInt32(0);
-			pdu.appendString(community);
+			pdu.appendOctetString(community);
 			pdu.beginOther((byte)0xA1);
 			pdu.appendInt32(this.reqId);
 			pdu.appendInt32(0);
@@ -225,7 +225,7 @@ public class SNMPClient implements UDPPacketListener
 			ASN1PDUBuilder pdu = new ASN1PDUBuilder();
 			pdu.beginSequence();
 			pdu.appendInt32(0);
-			pdu.appendString(community);
+			pdu.appendOctetString(community);
 			pdu.beginOther((byte)0xA0);
 			pdu.appendInt32(this.reqId);
 			pdu.appendInt32(0);

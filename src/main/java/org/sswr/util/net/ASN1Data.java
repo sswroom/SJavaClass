@@ -1,4 +1,4 @@
-package org.sswr.util.crypto;
+package org.sswr.util.net;
 
 import java.util.Arrays;
 
@@ -29,6 +29,11 @@ public abstract class ASN1Data extends ParsedObject
 	public byte[] getASN1Buff()
 	{
 		return this.buff;
+	}
+
+	public int getASN1BuffSize()
+	{
+		return this.buff.length;
 	}
 
 	public static void appendInteger(StringBuilder sb, byte[] pdu, int ofst, int len)

@@ -189,7 +189,59 @@ public class ASN1PDUBuilder
 		}
 	}
 
-	public void appendString(String s)
+	public void appendBitString(byte bitLeft, byte[] buff, int ofst, int len)
+	{
+		len++;
+		if (len < 128)
+		{
+			this.allocateSize(len + 2);
+			this.buff[this.currOffset] = 3;
+			this.buff[this.currOffset + 1] = (byte)len;
+			if (len > 1)
+			{
+				ByteTool.copyArray(this.buff, this.currOffset + 3, buff, ofst, len - 1);
+			}
+			this.buff[this.currOffset + 2] = bitLeft;
+			this.currOffset += len + 2;
+		}
+		else if (len < 256)
+		{
+			this.allocateSize(len + 3);
+			this.buff[this.currOffset] = 3;
+			this.buff[this.currOffset + 1] = (byte)0x81;
+			this.buff[this.currOffset + 2] = (byte)len;
+			ByteTool.copyArray(this.buff, this.currOffset + 4, buff, ofst, len - 1);
+			this.buff[this.currOffset + 3] = bitLeft;
+			this.currOffset += len + 3;
+		}
+		else if (len < 65536)
+		{
+			this.allocateSize(len + 4);
+			this.buff[this.currOffset] = 3;
+			this.buff[this.currOffset + 1] = (byte)0x82;
+			ByteTool.writeMInt16(this.buff, this.currOffset + 2, len);
+			ByteTool.copyArray(this.buff, this.currOffset + 5, buff, ofst, len - 1);
+			this.buff[this.currOffset + 4] = bitLeft;
+			this.currOffset += len + 4;
+		}
+		else
+		{
+			this.allocateSize(len + 5);
+			this.buff[this.currOffset] = 3;
+			this.buff[this.currOffset + 1] = (byte)0x83;
+			ByteTool.writeMInt24(this.buff, this.currOffset + 2, len);
+			ByteTool.copyArray(this.buff, this.currOffset + 6, buff, ofst, len - 1);
+			this.buff[this.currOffset + 5] = bitLeft;
+			this.currOffset += len + 5;
+		}
+	}
+	
+	public void appendOctetString(byte[] buff, int ofst, int len)
+	{
+		this.appendOther((byte)4, buff, ofst, len);
+	}
+
+	public void appendOctetString(String s)
 	{
 		if (s == null)
 		{
@@ -253,6 +305,12 @@ public class ASN1PDUBuilder
 		this.buff[this.currOffset + 1] = (byte)len;
 		ByteTool.copyArray(this.buff, this.currOffset + 2, oid, 0, len);
 		this.currOffset += len + 2;
+	}
+
+	public void appendOIDString(String oidStr)
+	{
+		byte[] buff = ASN1Util.oidText2PDU(oidStr);
+		this.appendOID(buff, buff.length);
 	}
 
 	public void appendChoice(int v)
@@ -339,7 +397,13 @@ public class ASN1PDUBuilder
 
 	public byte[] getBuff(SharedInt buffSize)
 	{
-		buffSize.value = this.currOffset;
+		if (buffSize != null)
+			buffSize.value = this.currOffset;
 		return this.buff;
-	}	
+	}
+	
+	public int getBuffSize()
+	{
+		return this.currOffset;
+	}
 }

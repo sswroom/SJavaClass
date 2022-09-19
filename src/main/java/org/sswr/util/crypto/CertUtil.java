@@ -9,11 +9,13 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.InvalidKeyException;
 import java.security.Key;
+import java.security.KeyFactory;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.Principal;
+import java.security.PrivateKey;
 import java.security.Security;
 import java.security.SignatureException;
 import java.security.UnrecoverableKeyException;
@@ -24,11 +26,16 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
+import java.security.spec.DSAPrivateKeySpec;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.RSAPrivateKeySpec;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.sswr.util.crypto.MyX509File.FileType;
+import org.sswr.util.crypto.MyX509File.KeyType;
 import org.sswr.util.data.ByteTool;
 
 public class CertUtil
@@ -405,6 +412,84 @@ public class CertUtil
 			return (X509Certificate)cf.generateCertificate(stm);
 		}
 		catch (CertificateException ex)
+		{
+			ex.printStackTrace();
+			return null;
+		}
+	}
+
+	public static PrivateKey loadPrivateKey(File file, String password)
+	{
+
+		byte[] fileData;
+		FileInputStream fis = null;
+		try
+		{
+			fis = new FileInputStream(file);
+			fileData = fis.readAllBytes();
+			fis.close();
+		}
+		catch (IOException ex)
+		{
+			ex.printStackTrace();
+			try
+			{
+				fis.close();
+			}
+			catch (IOException ex2)
+			{
+
+			}
+			return null;
+		}
+		MyX509File x509 = X509Parser.parseBuff(fileData, 0, fileData.length, file.getName());
+		if (x509 == null)
+		{
+			return null;
+		}
+		if (x509.getFileType() != FileType.Key)
+		{
+			return null;
+		}
+		MyX509Key key = (MyX509Key)x509;
+		if (!key.isPrivateKey())
+		{
+			return null;
+		}
+		MyX509PrivKey privKey = MyX509PrivKey.createFromKey(key);
+		try
+		{
+			PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(privKey.getASN1Buff());
+			KeyFactory kf;
+			KeyType keyType = key.getKeyType();
+			if (keyType == KeyType.RSA)
+			{
+				kf = KeyFactory.getInstance("RSA");
+			}
+			else if (keyType == KeyType.DSA)
+			{
+				kf = KeyFactory.getInstance("DSA");
+			}
+			else if (keyType == KeyType.ECDSA)
+			{
+				kf = KeyFactory.getInstance("ECDSA");
+			}
+			else if (keyType == KeyType.ED25519)
+			{
+				kf = KeyFactory.getInstance("ED25519");
+			}
+			else
+			{
+				return null;
+			}
+			return kf.generatePrivate(spec);
+		}
+		catch (NoSuchAlgorithmException ex)
+		{
+			ex.printStackTrace();
+			return null;
+		}
+		catch (InvalidKeySpecException ex)
 		{
 			ex.printStackTrace();
 			return null;
