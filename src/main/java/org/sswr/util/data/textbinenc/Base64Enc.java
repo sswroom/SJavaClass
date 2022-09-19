@@ -1,6 +1,8 @@
 package org.sswr.util.data.textbinenc;
 
 import org.sswr.util.data.ByteTool;
+import org.sswr.util.data.LineBreakType;
+import org.sswr.util.data.StringUtil;
 
 public class Base64Enc extends TextBinEnc
 {
@@ -57,6 +59,17 @@ public class Base64Enc extends TextBinEnc
 	public String encodeBin(byte []dataBuff, int dataOfst, int buffSize)
 	{
 		StringBuilder sb = new StringBuilder();
+		encodeBin(sb, dataBuff, dataOfst, buffSize);
+		return sb.toString();
+	}
+
+	public void encodeBin(StringBuilder sb, byte []dataBuff, int dataOfst, int buffSize)
+	{
+		encodeBin(sb, dataBuff, dataOfst, buffSize, LineBreakType.NONE, 0);
+	}
+
+	public void encodeBin(StringBuilder sb, byte[] dataBuff, int dataOfst, int buffSize, LineBreakType lbt, int charsPerLine)
+	{
 		char []encArr = getEncArr(this.cs);
 		int outSize;
 		int tmp1 = buffSize % 3;
@@ -70,43 +83,159 @@ public class Base64Enc extends TextBinEnc
 			outSize = tmp2 * 4;
 		}
 		if (outSize == 0)
-			return "";
-		sb.ensureCapacity(outSize);
-		while (tmp2-- > 0)
+			return;
+		int lbSize;
+		switch (lbt)
 		{
-			sb.append(encArr[ByteTool.shr8(dataBuff[dataOfst + 0], 2)]);
-			sb.append(encArr[((dataBuff[dataOfst + 0] << 4) | ByteTool.shr8(dataBuff[dataOfst + 1], 4)) & 0x3f]);
-			sb.append(encArr[((dataBuff[dataOfst + 1] << 2) | ByteTool.shr8(dataBuff[dataOfst + 2], 6)) & 0x3f]);
-			sb.append(encArr[dataBuff[dataOfst + 2] & 0x3f]);
-			dataOfst += 3;
+		case CRLF:
+			lbSize = 2;
+			break;
+		case CR:
+		case LF:
+			lbSize = 1;
+			break;
+		case NONE:
+		default:
+			lbSize = 0;
+			break;
 		}
-		if (tmp1 == 1)
+		if (lbt == LineBreakType.NONE || charsPerLine == 0)
 		{
-			sb.append(encArr[ByteTool.shr8(dataBuff[dataOfst + 0], 2)]);
-			sb.append(encArr[(dataBuff[dataOfst + 0] << 4) & 0x3f]);
-			if (this.noPadding)
+			sb.ensureCapacity(outSize);
+			while (tmp2-- > 0)
 			{
+				sb.append(encArr[ByteTool.shr8(dataBuff[dataOfst + 0], 2)]);
+				sb.append(encArr[((dataBuff[dataOfst + 0] << 4) | ByteTool.shr8(dataBuff[dataOfst + 1], 4)) & 0x3f]);
+				sb.append(encArr[((dataBuff[dataOfst + 1] << 2) | ByteTool.shr8(dataBuff[dataOfst + 2], 6)) & 0x3f]);
+				sb.append(encArr[dataBuff[dataOfst + 2] & 0x3f]);
+				dataOfst += 3;
 			}
-			else
+			if (tmp1 == 1)
 			{
-				sb.append('=');
-				sb.append('=');
+				sb.append(encArr[ByteTool.shr8(dataBuff[dataOfst + 0], 2)]);
+				sb.append(encArr[(dataBuff[dataOfst + 0] << 4) & 0x3f]);
+				if (this.noPadding)
+				{
+				}
+				else
+				{
+					sb.append('=');
+					sb.append('=');
+				}
+			}
+			else if (tmp1 == 2)
+			{
+				sb.append(encArr[ByteTool.shr8(dataBuff[dataOfst + 0], 2)]);
+				sb.append(encArr[((dataBuff[dataOfst + 0] << 4) | ByteTool.shr8(dataBuff[dataOfst + 1], 4)) & 0x3f]);
+				sb.append(encArr[(dataBuff[dataOfst + 1] << 2) & 0x3f]);
+				if (this.noPadding)
+				{
+				}
+				else
+				{
+					sb.append('=');
+				}
 			}
 		}
-		else if (tmp1 == 2)
+		else
 		{
-			sb.append(encArr[ByteTool.shr8(dataBuff[dataOfst + 0], 2)]);
-			sb.append(encArr[((dataBuff[dataOfst + 0] << 4) | ByteTool.shr8(dataBuff[dataOfst + 1], 4)) & 0x3f]);
-			sb.append(encArr[(dataBuff[dataOfst + 1] << 2) & 0x3f]);
-			if (this.noPadding)
+			char[] sptr = new char[4];
+			int lineCnt = outSize / charsPerLine;
+			sb.ensureCapacity(outSize + lineCnt * lbSize);
+			int lineLeft = charsPerLine;
+			while (tmp2-- > 0)
 			{
+				sptr[0] = encArr[dataBuff[dataOfst + 0] >> 2];
+				sptr[1] = encArr[((dataBuff[dataOfst + 0] << 4) | (dataBuff[dataOfst + 1] >> 4)) & 0x3f];
+				sptr[2] = encArr[((dataBuff[dataOfst + 1] << 2) | (dataBuff[dataOfst + 2] >> 6)) & 0x3f];
+				sptr[3] = encArr[dataBuff[dataOfst + 2] & 0x3f];
+				if (lineLeft > 4)
+				{
+					sb.append(sptr);
+					lineLeft -= 4;
+				}
+				else if (lineLeft == 4)
+				{
+					sb.append(sptr);
+					StringUtil.appendLineBreak(sb, lbt);
+					lineLeft = charsPerLine;
+				}
+				else
+				{
+					sb.append(sptr, 0, lineLeft);
+					StringUtil.appendLineBreak(sb, lbt);
+					sb.append(sptr, lineLeft, 4 - lineLeft);
+					lineLeft = charsPerLine + lineLeft - 4;
+				}
+				dataOfst += 3;
 			}
-			else
+			if (tmp1 == 1)
 			{
-				sb.append('=');
+				sptr[0] = encArr[dataBuff[0] >> 2];
+				sptr[1] = encArr[(dataBuff[0] << 4) & 0x3f];
+				if (this.noPadding)
+				{
+					if (lineLeft >= 2)
+					{
+						sb.append(sptr, 0, 2);
+					}
+					else
+					{
+						sb.append(sptr[0]);
+						StringUtil.appendLineBreak(sb, lbt);
+						sb.append(sptr[1]);
+					}
+				}
+				else
+				{
+					sptr[2] = '=';
+					sptr[3] = '=';
+					if (lineLeft >= 4)
+					{
+						sb.append(sptr, 0, 4);
+					}
+					else
+					{
+						sb.append(sptr, 0, lineLeft);
+						StringUtil.appendLineBreak(sb, lbt);
+						sb.append(sptr, lineLeft, 4 - lineLeft);
+					}
+				}
+			}
+			else if (tmp1 == 2)
+			{
+				sptr[0] = encArr[dataBuff[0] >> 2];
+				sptr[1] = encArr[((dataBuff[0] << 4) | (dataBuff[1] >> 4)) & 0x3f];
+				sptr[2] = encArr[(dataBuff[1] << 2) & 0x3f];
+				if (this.noPadding)
+				{
+					if (lineLeft >= 3)
+					{
+						sb.append(sptr, 0, 3);
+					}
+					else
+					{
+						sb.append(sptr, 0, lineLeft);
+						StringUtil.appendLineBreak(sb, lbt);
+						sb.append(sptr, lineLeft, 3 - lineLeft);
+					}
+				}
+				else
+				{
+					sptr[3] = '=';
+					if (lineLeft >= 4)
+					{
+						sb.append(sptr, 0, 4);
+					}
+					else
+					{
+						sb.append(sptr, 0, lineLeft);
+						StringUtil.appendLineBreak(sb, lbt);
+						sb.append(sptr, lineLeft, 4 - lineLeft);
+					}
+				}
 			}
 		}
-		return sb.toString();
 	}
 
 	public byte []decodeBin(String s)

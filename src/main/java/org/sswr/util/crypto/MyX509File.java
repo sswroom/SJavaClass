@@ -32,7 +32,8 @@ public abstract class MyX509File extends ASN1Data
 		PublicKey,
 		PKCS7,
 		PKCS12,
-		CRL
+		CRL,
+		FileList
 	}
 
 	public enum KeyType

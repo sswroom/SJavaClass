@@ -536,7 +536,6 @@ public class StringUtil
 		appendHex(sb, buff, 0, buff.length, ch, lbt);
 	}
 
-
 	/**
 	* Convert byte array to hexadecimal String
 	*
@@ -563,20 +562,7 @@ public class StringUtil
 				i++;
 				if ((i & 15) == 0)
 				{
-					switch (lbt)
-					{
-					case NONE:
-						break;
-					case CR:
-						sb.append('\r');
-						break;
-					case LF:
-						sb.append('\n');
-						break;
-					case CRLF:
-						sb.append("\r\n");
-						break;
-					}
+					appendLineBreak(sb, lbt);
 				}
 			}
 		}
@@ -590,22 +576,33 @@ public class StringUtil
 				i++;
 				if ((i & 15) == 0)
 				{
-					switch (lbt)
-					{
-					case NONE:
-						break;
-					case CR:
-						sb.append('\r');
-						break;
-					case LF:
-						sb.append('\n');
-						break;
-					case CRLF:
-						sb.append("\r\n");
-						break;
-					}
+					appendLineBreak(sb, lbt);
 				}
 			}
+		}
+	}
+
+	/**
+	* Append Line Break to StringBuilder
+	*
+	* @param  sb  StringBuilder to append
+	* @param  lbt  LineBreakType to append
+	*/
+	public static void appendLineBreak(StringBuilder sb, LineBreakType lbt)
+	{
+		switch (lbt)
+		{
+		case NONE:
+			break;
+		case CR:
+			sb.append('\r');
+			break;
+		case LF:
+			sb.append('\n');
+			break;
+		case CRLF:
+			sb.append("\r\n");
+			break;
 		}
 	}
 
