@@ -236,6 +236,11 @@ public class CertUtil
 		{
 			System.out.println("Cert Path = "+trustPath.getAbsoluteFile());
 		}
+		return loadTrustsFromDir(certMap, trustPath);
+	}
+
+	public static boolean loadTrustsFromDir(Map<String, Certificate> certMap, File trustPath)
+	{
 		if (trustPath.isDirectory())
 		{
 			File[] files = trustPath.listFiles();
@@ -259,6 +264,7 @@ public class CertUtil
 				}
 				i++;
 			}
+			return true;
 		}
 		return false;
 	}
