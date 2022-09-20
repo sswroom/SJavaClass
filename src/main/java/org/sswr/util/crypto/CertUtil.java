@@ -16,6 +16,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.Principal;
 import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.security.Security;
 import java.security.SignatureException;
 import java.security.UnrecoverableKeyException;
@@ -32,9 +33,16 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+
 import org.sswr.util.crypto.MyX509File.FileType;
 import org.sswr.util.crypto.MyX509File.KeyType;
 import org.sswr.util.data.ByteTool;
+import org.sswr.util.net.ASN1Item;
+import org.sswr.util.net.ASN1Util;
 
 public class CertUtil
 {
@@ -605,6 +613,79 @@ public class CertUtil
 		}
 	}
 
+	public static byte[] rsaSignDecrypt(byte[] sign, int ofst, int len, Key key)
+	{
+		if (len != 256)
+		{
+			return null;
+		}
+		try
+		{
+			Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+			cipher.init(Cipher.DECRYPT_MODE, key);
+			byte[] decryptedMessageHash = cipher.doFinal(sign, ofst, len);
+			return decryptedMessageHash;
+		}
+		catch (NoSuchAlgorithmException ex)
+		{
+			ex.printStackTrace();
+			return null;
+		}
+		catch (NoSuchPaddingException ex)
+		{
+			ex.printStackTrace();
+			return null;
+		}
+		catch (InvalidKeyException ex)
+		{
+			ex.printStackTrace();
+			return null;
+		}
+		catch (BadPaddingException ex)
+		{
+			ex.printStackTrace();
+			return null;
+		}
+		catch (IllegalBlockSizeException ex)
+		{
+			ex.printStackTrace();
+			return null;
+		}
+	}
+
+	public static boolean verifySign(byte[] buff, int ofst, int buffSize, byte[] signature, int signOfst, int signLen, PublicKey key, HashType hashType)
+	{
+		byte[] digestInfo = rsaSignDecrypt(signature, signOfst, signLen, key);
+		if (digestInfo == null)
+			return false;
+		ASN1Item item = ASN1Util.pduGetItem(digestInfo, 0, digestInfo.length, "1.1.1");
+		if (item != null && item.itemType == ASN1Util.IT_OID)
+		{
+			HashType digestHash = MyX509File.hashTypeFromOID(digestInfo, item.ofst, item.len);
+			if (digestHash != hashType)
+			{
+				System.out.println("Hash Type mismatch, requested hash type = "+hashType+", hash type in signature = "+digestHash);
+				if (digestHash != HashType.Unknown)
+				{
+					hashType = digestHash;
+				}
+			}
+		}
+		Hash hash = HashCreator.createHash(hashType);
+		if (hash == null)
+			return false;
+		item = ASN1Util.pduGetItem(digestInfo, 0, digestInfo.length, "1.2");
+		if (item == null || item.itemType != ASN1Util.IT_OCTET_STRING)
+			return false;
+		hash.calc(buff, ofst, buffSize);
+		byte[] hashVal = hash.getValue();
+		if (hashVal.length != item.len)
+			return false;
+		if (ByteTool.byteEquals(hashVal, 0, digestInfo, item.ofst, item.len))
+			return true;
+		else
+			return false;
+	}
 
 	public static String getKeyStoreTypeName(KeyStoreType type)
 	{

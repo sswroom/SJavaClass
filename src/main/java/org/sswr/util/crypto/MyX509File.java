@@ -2460,4 +2460,55 @@ public abstract class MyX509File extends ASN1Data
 			return false;
 		}
 	}
+
+	public static HashType signAlgGetHashType(String signAlg)
+	{
+		switch (signAlg)
+		{
+		case "SHA1withRSA":
+			return HashType.SHA1;
+		case "SHA256withRSA":
+			return HashType.SHA256;
+		case "SHA512withRSA":
+			return HashType.SHA512;
+		case "SHA384withRSA":
+			return HashType.SHA384;
+		case "SHA224withRSA":
+			return HashType.SHA224;
+		case "MD5withRSA":
+			return HashType.MD5;
+		case "ECDSAwithSHA256":
+			return HashType.SHA256;
+		case "ECDSAWithSHA384":
+			return HashType.SHA384;
+		case "MD2withRSA":
+		default:
+			return HashType.Unknown;
+		}
+	}
+
+	public static HashType hashTypeFromOID(byte[] oid, int oidOfst, int oidLen)
+	{
+		if (ASN1Util.oidEqualsText(oid, oidOfst, oidLen, "2.16.840.1.101.3.4.2.1"))
+		{
+			return HashType.SHA256;
+		}
+		else if (ASN1Util.oidEqualsText(oid, oidOfst, oidLen, "2.16.840.1.101.3.4.2.2"))
+		{
+			return HashType.SHA384;
+		}
+		else if (ASN1Util.oidEqualsText(oid, oidOfst, oidLen, "2.16.840.1.101.3.4.2.3"))
+		{
+			return HashType.SHA512;
+		}
+		else if (ASN1Util.oidEqualsText(oid, oidOfst, oidLen, "2.16.840.1.101.3.4.2.4"))
+		{
+			return HashType.SHA224;
+		}
+		else if (ASN1Util.oidEqualsText(oid, oidOfst, oidLen, "1.3.14.3.2.26"))
+		{
+			return HashType.SHA1;
+		}
+		return HashType.Unknown;
+	}
 }

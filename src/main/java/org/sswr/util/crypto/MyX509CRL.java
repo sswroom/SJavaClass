@@ -82,6 +82,28 @@ public class MyX509CRL extends MyX509File
 		return ValidStatus.Valid;
 	}
 
+	public boolean timeValid(long timeMillis)
+	{
+		ZonedDateTime t = this.getThisUpdate();
+		if (t == null)
+		{
+			return false;
+		}
+		if (DateTimeUtil.getTimeMillis(t) > timeMillis)
+		{
+			return false;
+		}
+		t = this.getNextUpdate();
+		if (t != null)
+		{
+			if (DateTimeUtil.getTimeMillis(t) < timeMillis)
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+
 	@Override
 	public ASN1Data clone()
 	{

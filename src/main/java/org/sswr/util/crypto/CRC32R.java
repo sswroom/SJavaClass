@@ -126,7 +126,7 @@ public class CRC32R implements Hash
 
 	public CRC32R()
 	{
-		this.initTable(getPolynormialIEEE());
+		this.initTable(CRC32.getPolynormialIEEE());
 	}
 
 	public CRC32R(int polynomial)
@@ -169,10 +169,5 @@ public class CRC32R implements Hash
 	public int getResultSize()
 	{
 		return 4;
-	}
-
-	public static int getPolynormialIEEE()
-	{
-		return 0x04C11DB7;
 	}
 }
