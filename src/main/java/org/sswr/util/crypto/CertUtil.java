@@ -653,18 +653,21 @@ public class CertUtil
 		}
 	}
 
-	public static boolean verifySign(byte[] buff, int ofst, int buffSize, byte[] signature, int signOfst, int signLen, PublicKey key, HashType hashType)
+	public static boolean verifySign(byte[] buff, int ofst, int buffSize, byte[] signature, int signOfst, int signLen, PublicKey key, HashType hashType, StringBuilder sbError, String dataName)
 	{
 		byte[] digestInfo = rsaSignDecrypt(signature, signOfst, signLen, key);
 		if (digestInfo == null)
+		{
+			if (sbError != null) sbError.append(dataName+": Signature is not a valid RSA Signature.\r\n");
 			return false;
+		}
 		ASN1Item item = ASN1Util.pduGetItem(digestInfo, 0, digestInfo.length, "1.1.1");
 		if (item != null && item.itemType == ASN1Util.IT_OID)
 		{
 			HashType digestHash = MyX509File.hashTypeFromOID(digestInfo, item.ofst, item.len);
 			if (digestHash != hashType)
 			{
-				System.out.println("Hash Type mismatch, requested hash type = "+hashType+", hash type in signature = "+digestHash);
+				if (sbError != null) sbError.append(dataName+": Hash Type mismatch, requested hash type = "+hashType+", hash type in signature = "+digestHash+"\r\n");
 				if (digestHash != HashType.Unknown)
 				{
 					hashType = digestHash;
@@ -673,18 +676,30 @@ public class CertUtil
 		}
 		Hash hash = HashCreator.createHash(hashType);
 		if (hash == null)
+		{
+			if (sbError != null) sbError.append(dataName+": Hash Type is not supported: "+hashType+"\r\n");
 			return false;
+		}
 		item = ASN1Util.pduGetItem(digestInfo, 0, digestInfo.length, "1.2");
 		if (item == null || item.itemType != ASN1Util.IT_OCTET_STRING)
+		{
+			if (sbError != null) sbError.append(dataName+": Signature format is not correct\r\n");
 			return false;
+		}
 		hash.calc(buff, ofst, buffSize);
 		byte[] hashVal = hash.getValue();
 		if (hashVal.length != item.len)
+		{
+			if (sbError != null) sbError.append(dataName+": Hash length does not match: size in signature = "+item.len+", calculated hash = "+hashVal.length+"\r\n");
 			return false;
+		}
 		if (ByteTool.byteEquals(hashVal, 0, digestInfo, item.ofst, item.len))
 			return true;
 		else
+		{
+			if (sbError != null) sbError.append(dataName+": Hash value not matched\r\n");
 			return false;
+		}
 	}
 
 	public static String getKeyStoreTypeName(KeyStoreType type)
