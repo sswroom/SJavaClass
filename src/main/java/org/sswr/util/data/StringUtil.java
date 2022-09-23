@@ -1243,6 +1243,24 @@ public class StringUtil
 	}
 
 	/**
+	 * Check whether the String is ends with string (Case insensitive)
+	 * 
+	 * @param  str String to check
+	 * @param  value Value to check
+	 * @return  whether str is ends with value
+	 */
+	public static boolean endsWithICase(String str, String value)
+	{
+		int strLen = str.length();
+		int valueLen = value.length();
+		if (strLen < valueLen)
+		{
+			return false;
+		}
+		return str.substring(strLen - valueLen).equalsIgnoreCase(value);
+	}
+
+	/**
 	 * Append chars to StringBuilder
 	 * 
 	 * @param  sb StringBuilder to append
