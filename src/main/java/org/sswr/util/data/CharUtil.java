@@ -1,5 +1,6 @@
 package org.sswr.util.data;
 
+import java.lang.Character.UnicodeScript;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -56,5 +57,23 @@ public class CharUtil
 			return false;
 		}
 		return blk.getDblWidth();
+	}
+
+	public static boolean isCJK(char c)
+	{
+		UnicodeScript script = Character.UnicodeScript.of((int)c);
+		switch (script)
+		{
+		case HIRAGANA:
+		case KATAKANA:
+		case HAN:
+		case HANGUL:
+			return true;
+		default:
+//			System.out.println(c + " -> " + script.toString());
+		case LATIN:
+		case COMMON:
+			return false;
+		}
 	}
 }

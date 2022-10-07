@@ -1522,4 +1522,23 @@ public class StringUtil
 		}
 		return ret;
 	}
+
+	/**
+	 * Check whether string contains CJK characters
+	 * 
+	 * @param s the string to check
+	 * @return  true if s contain CJK characters
+	 */
+	public static boolean hasCJKChar(String s)
+	{
+		int i = 0;
+		int j = s.length();
+		while (i < j)
+		{
+			if (CharUtil.isCJK(s.charAt(i)))
+				return true;
+			i++;
+		}
+		return false;
+	}
 }
