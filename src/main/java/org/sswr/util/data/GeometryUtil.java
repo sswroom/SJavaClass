@@ -1,7 +1,12 @@
 package org.sswr.util.data;
 
+import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.io.WKTWriter;
+import org.sswr.util.math.CoordinateSystem;
+import org.sswr.util.math.CoordinateSystemManager;
+import org.sswr.util.math.unit.Distance.DistanceUnit;
 
 public class GeometryUtil
 {
@@ -9,35 +14,41 @@ public class GeometryUtil
 	{
 		WKTWriter writer = new WKTWriter();
 		return writer.write(geometry);
-/*		String type = geometry.getGeometryType();
-		if (type.equals("LinearRing"))
+	}
+
+	public static double calcMaxDistanceFromCenter(Geometry geometry, DistanceUnit unit)
+	{
+		return calcMaxDistanceFromPoint(geometry.getCentroid(), geometry, unit);
+	}
+
+	public static double calcMaxDistanceFromPoint(Point point, Geometry geometry, DistanceUnit unit)
+	{
+		Coordinate[] coordinates = geometry.getCoordinates();
+		Coordinate ccoord = point.getCoordinate();
+		int srid = geometry.getSRID();
+		double maxDist = -1;
+		Coordinate maxCoord = ccoord;
+		double thisDist;
+		int i = 0;
+		int j = coordinates.length;
+		while (i < j)
 		{
-			StringBuilder sb = new StringBuilder();
-			Coordinate coords[] = geometry.getCoordinates();
-			int i = 0;
-			int j = coords.length;
-			sb.append("POLYGON ((");
-			while (i < j)
+			thisDist = coordinates[i].distance(ccoord);
+			if (thisDist > maxDist)
 			{
-				if (i > 0)
-				{
-					sb.append(",");
-				}
-				sb.append(coords[i].getX()+" "+coords[i].getY());
-				i++;
+				maxDist = thisDist;
+				maxCoord = coordinates[i];
 			}
-			sb.append("))");
-			return sb.toString();
+			i++;
 		}
-		else if (type.equals("Point"))
+		CoordinateSystem csys = CoordinateSystemManager.srCreateCSys(srid);
+		if (csys == null)
 		{
-			StringBuilder sb = new StringBuilder();
-			Coordinate coord = geometry.getCoordinate();
-			sb.append("POINT (");
-			sb.append(coord.getX()+" "+coord.getY());
-			sb.append(")");
-			return sb.toString();
+			return maxDist;
 		}
-		return "Unknwon Geometry Type: "+type;*/
+		else
+		{
+			return csys.calSurfaceDistanceXY(ccoord.x, ccoord.y, maxCoord.x, maxCoord.y, unit);
+		}
 	}
 }
