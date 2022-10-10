@@ -42,6 +42,122 @@ public class EarthEllipsoid
 	private double eccentricity;
 	private EarthEllipsoidType eet;
 
+	public EarthEllipsoid(EarthEllipsoidType eet)
+	{
+		switch (eet)
+		{
+		default:
+		case OTHER:
+			this.semiMajorAxis = 6378137.0;
+			this.inverseFlattening = 191.0;
+			break;
+		case PLESSIS:
+			this.semiMajorAxis = 6376523.0;
+			this.inverseFlattening = 308.64;
+			break;
+		case EVEREST1830:
+			this.semiMajorAxis = 6377299.365;
+			this.inverseFlattening = 300.80172554;
+			break;
+		case EVEREST1830M:
+			this.semiMajorAxis = 6377304.063;
+			this.inverseFlattening = 300.8017;
+			break;
+		case EVEREST1830N:
+			this.semiMajorAxis = 6377298.556;
+			this.inverseFlattening = 300.8017;
+			break;
+		case AIRY1830:
+			this.semiMajorAxis = 6377563.396;
+			this.inverseFlattening = 299.3249646;
+			break;
+		case AIRY1830M:
+			this.semiMajorAxis = 6377340.189;
+			this.inverseFlattening = 299.32495141450600500090538973015;
+			break;
+		case BESSEL1841:
+			this.semiMajorAxis = 6377397.155;
+			this.inverseFlattening = 299.1528128;
+			break;
+		case CLARKE1866:
+			this.semiMajorAxis = 6378206.4;
+			this.inverseFlattening = 294.9786982;
+			break;
+		case CLARKE1878:
+			this.semiMajorAxis = 6378190.0;
+			this.inverseFlattening = 293.4659980;
+			break;
+		case CLARKE1880:
+			this.semiMajorAxis = 6378249.145;
+			this.inverseFlattening = 293.465;
+			break;
+		case HELMERT1906:
+			this.semiMajorAxis = 6378200.0;
+			this.inverseFlattening = 298.3;
+			break;
+		case HAYFORD1910:
+			this.semiMajorAxis = 6378388.0;
+			this.inverseFlattening = 297.0;
+			break;
+		case INTL1924:
+			this.semiMajorAxis = 6378388.0;
+			this.inverseFlattening = 297.0;
+			break;
+		case KRASSOVSKY1940:
+			this.semiMajorAxis = 6378245.0;
+			this.inverseFlattening = 298.3;
+			break;
+		case WGS66:
+			this.semiMajorAxis = 6378145.0;
+			this.inverseFlattening = 298.25;
+			break;
+		case AUSTRALIAN1966:
+			this.semiMajorAxis = 6378160.0;
+			this.inverseFlattening = 298.25;
+			break;
+		case NEWINTL1967:
+			this.semiMajorAxis = 6378157.5;
+			this.inverseFlattening = 298.24961539;
+			break;
+		case GPS67:
+			this.semiMajorAxis = 6378160.0;
+			this.inverseFlattening = 298.247167427;
+			break;
+		case SAM1969:
+			this.semiMajorAxis = 6378160.0;
+			this.inverseFlattening = 298.25;
+			break;
+		case WGS72:
+			this.semiMajorAxis = 6378135.0;
+			this.inverseFlattening = 298.26;
+			break;
+		case GRS80:
+			this.semiMajorAxis = 6378137.0;
+			this.inverseFlattening = 298.257222101;
+			break;
+		case WGS84:
+			this.semiMajorAxis = 6378137.0;
+			this.inverseFlattening = 298.257223563;
+			break;
+		case WGS84_OGC:
+			this.semiMajorAxis = 6378137.0;
+			this.inverseFlattening = 298.257222932867;
+			break;
+		case IERS1989:
+			this.semiMajorAxis = 6378136.0;
+			this.inverseFlattening = 298.257;
+			break;
+		case IERS2003:
+			this.semiMajorAxis = 6378136.6;
+			this.inverseFlattening = 298.25642;
+			break;
+		}
+		this.eet = eet;
+		this.semiMinorAxis = this.semiMajorAxis * (1.0 - 1.0 / this.inverseFlattening);
+		double f = 1 - getSemiMinorAxis() / this.semiMajorAxis;
+		this.eccentricity = Math.sqrt(2 * f - f * f);
+	}
+	
 	public EarthEllipsoid(double semiMajorAxis, double inverseFlattening, EarthEllipsoidType eet)
 	{
 		this.eet = eet;
