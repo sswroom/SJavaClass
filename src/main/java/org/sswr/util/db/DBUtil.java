@@ -1575,7 +1575,7 @@ public class DBUtil {
 		}
 		else if (dbType == DBType.MSSQL)
 		{
-			return "'"+new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSSSSS").format(val)+"'";
+			return "CAST('"+new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSSSSS").format(val)+"' as datetime2(7))";
 		}
 		else if (dbType == DBType.SQLite)
 		{
