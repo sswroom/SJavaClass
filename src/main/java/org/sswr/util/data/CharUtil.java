@@ -1,6 +1,5 @@
 package org.sswr.util.data;
 
-import java.lang.Character.UnicodeScript;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -61,18 +60,18 @@ public class CharUtil
 
 	public static boolean isCJK(char c)
 	{
-		UnicodeScript script = Character.UnicodeScript.of((int)c);
-		switch (script)
+		Character.UnicodeBlock ub = Character.UnicodeBlock.of(c);
+		switch (ub.toString())
 		{
-		case HIRAGANA:
-		case KATAKANA:
-		case HAN:
-		case HANGUL:
-			return true;
 		default:
-//			System.out.println(c + " -> " + script.toString());
-		case LATIN:
-		case COMMON:
+//			System.out.println(c + "("+(int)c+") -> " + ub.toString());
+//		case HIRAGANA:
+//		case KATAKANA:
+		case "CJK_UNIFIED_IDEOGRAPHS":
+		case "HALFWIDTH_AND_FULLWIDTH_FORMS":
+			return true;
+		case "BASIC_LATIN":
+//		case COMMON:
 			return false;
 		}
 	}
