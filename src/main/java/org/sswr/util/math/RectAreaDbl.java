@@ -88,6 +88,11 @@ public class RectAreaDbl
 		return rect.tl.x <= this.br.x && rect.br.x >= this.tl.x && rect.tl.y <= this.br.y && rect.br.y >= this.tl.y;	
 	}
 
+	public RectAreaDbl expand(double size)
+	{
+		return new RectAreaDbl(tl.subtract(size), br.add(size));
+	}
+
 	public static void getRectArea(RectAreaDbl area, Coord2DDbl []points)
 	{
 		int i = points.length - 1;

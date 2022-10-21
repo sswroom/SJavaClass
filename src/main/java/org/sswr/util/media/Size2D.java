@@ -4,31 +4,31 @@ import java.util.Objects;
 
 public class Size2D
 {
-	private double x;
-	private double y;
+	private double width;
+	private double height;
 
 	public Size2D() {
 	}
 
-	public Size2D(double x, double y) {
-		this.x = x;
-		this.y = y;
+	public Size2D(double width, double height) {
+		this.width = width;
+		this.height = height;
 	}
 
-	public double getX() {
-		return this.x;
+	public double getWidth() {
+		return this.width;
 	}
 
-	public void setX(double x) {
-		this.x = x;
+	public void setWidth(double width) {
+		this.width = width;
 	}
 
-	public double getY() {
-		return this.y;
+	public double getHeight() {
+		return this.height;
 	}
 
-	public void setY(double y) {
-		this.y = y;
+	public void setHeight(double height) {
+		this.height = height;
 	}
 
 	@Override
@@ -39,19 +39,19 @@ public class Size2D
 			return false;
 		}
 		Size2D size2D = (Size2D) o;
-		return x == size2D.x && y == size2D.y;
+		return width == size2D.width && height == size2D.height;
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(x, y);
+		return Objects.hash(width, height);
 	}
 
 	@Override
 	public String toString() {
 		return "{" +
-			" x='" + getX() + "'" +
-			", y='" + getY() + "'" +
+			" width='" + getWidth() + "'" +
+			", height='" + getHeight() + "'" +
 			"}";
 	}
 }

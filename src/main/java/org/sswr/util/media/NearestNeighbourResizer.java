@@ -10,7 +10,7 @@ public class NearestNeighbourResizer
 	{
 		BufferedImage bimg = img.getBufferedImage();
 		ColorModel cm = bimg.getColorModel();
-		WritableRaster raster = cm.createCompatibleWritableRaster((int)newSize.getX(), (int)newSize.getY());
+		WritableRaster raster = cm.createCompatibleWritableRaster((int)newSize.getWidth(), (int)newSize.getHeight());
 		WritableRaster srcRaster = bimg.getRaster();
 		int srcWidth = bimg.getWidth();
 		int srcHeight = bimg.getHeight();

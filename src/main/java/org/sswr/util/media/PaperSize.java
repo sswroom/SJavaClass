@@ -76,241 +76,9 @@ public class PaperSize
 
 	public PaperSize(PaperType paperType)
 	{
-		double sqr2 = Math.sqrt(2);
-		switch (paperType)
-		{
-		case PT_4A0:
-			this.widthMM = Math.sqrt(4000000 / sqr2);
-			this.heightMM = this.widthMM * sqr2;
-			break;
-		case PT_2A0:
-			this.widthMM = Math.sqrt(2000000 / sqr2);
-			this.heightMM = this.widthMM * sqr2;
-			break;
-		case PT_A0:
-			this.widthMM = Math.sqrt(1000000 / sqr2);
-			this.heightMM = this.widthMM * sqr2;
-			break;
-		case PT_A1:
-			this.widthMM = Math.sqrt(500000 / sqr2);
-			this.heightMM = this.widthMM * sqr2;
-			break;
-		case PT_A2:
-			this.widthMM = Math.sqrt(250000 / sqr2);
-			this.heightMM = this.widthMM * sqr2;
-			break;
-		case PT_A3:
-			this.widthMM = Math.sqrt(125000 / sqr2);
-			this.heightMM = this.widthMM * sqr2;
-			break;
-		default:
-		case PT_DEFAULT:
-		case PT_A4:
-			this.widthMM = Math.sqrt(62500 / sqr2);
-			this.heightMM = this.widthMM * sqr2;
-			break;
-		case PT_A5:
-			this.widthMM = Math.sqrt(31250 / sqr2);
-			this.heightMM = this.widthMM * sqr2;
-			break;
-		case PT_A6:
-			this.widthMM = Math.sqrt(15625 / sqr2);
-			this.heightMM = this.widthMM * sqr2;
-			break;
-		case PT_A7:
-			this.widthMM = Math.sqrt(7812.5 / sqr2);
-			this.heightMM = this.widthMM * sqr2;
-			break;
-		case PT_A8:
-			this.widthMM = Math.sqrt(3906.25 / sqr2);
-			this.heightMM = this.widthMM * sqr2;
-			break;
-		case PT_A9:
-			this.widthMM = Math.sqrt(1953.125 / sqr2);
-			this.heightMM = this.widthMM * sqr2;
-			break;
-		case PT_A10:
-			this.widthMM = Math.sqrt(976.5625 / sqr2);
-			this.heightMM = this.widthMM * sqr2;
-			break;
-		case PT_B0:
-			this.widthMM = 1000;
-			this.heightMM = this.widthMM * sqr2;
-			break;
-		case PT_B1:
-			this.widthMM = 500 * sqr2;
-			this.heightMM = this.widthMM * sqr2;
-			break;
-		case PT_B2:
-			this.widthMM = 500;
-			this.heightMM = this.widthMM * sqr2;
-			break;
-		case PT_B3:
-			this.widthMM = 250 * sqr2;
-			this.heightMM = this.widthMM * sqr2;
-			break;
-		case PT_B4:
-			this.widthMM = 250;
-			this.heightMM = this.widthMM * sqr2;
-			break;
-		case PT_B5:
-			this.widthMM = 125 * sqr2;
-			this.heightMM = this.widthMM * sqr2;
-			break;
-		case PT_B6:
-			this.widthMM = 125;
-			this.heightMM = this.widthMM * sqr2;
-			break;
-		case PT_B7:
-			this.widthMM = 62.5 * sqr2;
-			this.heightMM = this.widthMM * sqr2;
-			break;
-		case PT_B8:
-			this.widthMM = 62.5;
-			this.heightMM = this.widthMM * sqr2;
-			break;
-		case PT_B9:
-			this.widthMM = 31.25 * sqr2;
-			this.heightMM = this.widthMM * sqr2;
-			break;
-		case PT_B10:
-			this.widthMM = 31.25;
-			this.heightMM = this.widthMM * sqr2;
-			break;
-		case PT_C0:
-			this.heightMM = 1000 / Math.pow(2, -3.0 / 8.0) + 0.2;
-			this.widthMM = this.heightMM / sqr2;
-			break;
-		case PT_C1:
-			this.heightMM = 1000 / Math.pow(2, 1.0 / 8.0) + 0.2;
-			this.widthMM = this.heightMM / sqr2;
-			break;
-		case PT_C2:
-			this.heightMM = 1000 / Math.pow(2, 5.0 / 8.0) + 0.2;
-			this.widthMM = this.heightMM / sqr2;
-			break;
-		case PT_C3:
-			this.heightMM = 1000 / Math.pow(2, 9.0 / 8.0) + 0.2;
-			this.widthMM = this.heightMM / sqr2;
-			break;
-		case PT_C4:
-			this.heightMM = 1000 / Math.pow(2, 13.0 / 8.0) + 0.2;
-			this.widthMM = this.heightMM / sqr2;
-			break;
-		case PT_C5:
-			this.heightMM = 1000 / Math.pow(2, 17.0 / 8.0) + 0.2;
-			this.widthMM = this.heightMM / sqr2;
-			break;
-		case PT_C6:
-			this.heightMM = 1000 / Math.pow(2, 21.0 / 8.0) + 0.2;
-			this.widthMM = this.heightMM / sqr2;
-			break;
-		case PT_C7:
-			this.heightMM = 1000 / Math.pow(2, 25.0 / 8.0) + 0.2;
-			this.widthMM = this.heightMM / sqr2;
-			break;
-		case PT_C8:
-			this.heightMM = 1000 / Math.pow(2, 29.0 / 8.0) + 0.2;
-			this.widthMM = this.heightMM / sqr2;
-			break;
-		case PT_C9:
-			this.heightMM = 1000 / Math.pow(2, 33.0 / 8.0) + 0.2;
-			this.widthMM = this.heightMM / sqr2;
-			break;
-		case PT_C10:
-			this.heightMM = 1000 / Math.pow(2, 37.0 / 8.0) + 0.2;
-			this.widthMM = this.heightMM / sqr2;
-			break;
-		case PT_LETTER:
-		case PT_ANSI_A:
-			this.widthMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 8.5) * 1000;
-			this.heightMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 11) * 1000;
-			break;
-		case PT_GOV_LETTER:
-			this.widthMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 8.0) * 1000;
-			this.heightMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 10.5) * 1000;
-			break;
-		case PT_LEGAL:
-			this.widthMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 8.5) * 1000;
-			this.heightMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 14) * 1000;
-			break;
-		case PT_JUNIOR_LEGAL:
-			this.widthMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 5.0) * 1000;
-			this.heightMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 8.0) * 1000;
-			break;
-		case PT_ANSI_B:
-			this.widthMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 11) * 1000;
-			this.heightMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 17) * 1000;
-			break;
-		case PT_ANSI_C:
-			this.widthMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 17) * 1000;
-			this.heightMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 22) * 1000;
-			break;
-		case PT_ANSI_D:
-			this.widthMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 22) * 1000;
-			this.heightMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 34) * 1000;
-			break;
-		case PT_ANSI_E:
-			this.widthMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 34) * 1000;
-			this.heightMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 44) * 1000;
-			break;
-		case PT_CREDIT_CARD:
-			this.widthMM = 53.98;
-			this.heightMM = 85.60;
-			break;
-		case PT_3R:
-			this.widthMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 3) * 1000;
-			this.heightMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 5) * 1000;
-			break;
-		case PT_4R:
-			this.widthMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 4) * 1000;
-			this.heightMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 6) * 1000;
-			break;
-		case PT_4D:
-			this.widthMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 4.5) * 1000;
-			this.heightMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 6) * 1000;
-			break;
-		case PT_5R:
-			this.widthMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 5) * 1000;
-			this.heightMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 7) * 1000;
-			break;
-		case PT_6R:
-			this.widthMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 6) * 1000;
-			this.heightMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 8) * 1000;
-			break;
-		case PT_8R:
-			this.widthMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 8) * 1000;
-			this.heightMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 10) * 1000;
-			break;
-		case PT_S8R:
-			this.widthMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 8) * 1000;
-			this.heightMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 12) * 1000;
-			break;
-		case PT_10R:
-			this.widthMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 10) * 1000;
-			this.heightMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 12) * 1000;
-			break;
-		case PT_S10R:
-			this.widthMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 10) * 1000;
-			this.heightMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 15) * 1000;
-			break;
-		case PT_11R:
-			this.widthMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 11) * 1000;
-			this.heightMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 14) * 1000;
-			break;
-		case PT_S11R:
-			this.widthMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 11) * 1000;
-			this.heightMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 17) * 1000;
-			break;
-		case PT_12R:
-			this.widthMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 12) * 1000;
-			this.heightMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 15) * 1000;
-			break;
-		case PT_S12R:
-			this.widthMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 12) * 1000;
-			this.heightMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 18) * 1000;
-			break;
-		}
+		Size2D size = paperTypeGetSizeMM(paperType);
+		this.widthMM = size.getWidth();
+		this.heightMM = size.getHeight();
 	}
 
 	public double getWidthMM()
@@ -340,6 +108,247 @@ public class PaperSize
 			pf.setOrientation(PageFormat.LANDSCAPE);
 		}
 		return pf;
+	}
 
+	public static Size2D paperTypeGetSizeMM(PaperType paperType)
+	{
+		double widthMM = 100;
+		double heightMM = 100;
+		double sqr2 = Math.sqrt(2);
+		switch (paperType)
+		{
+		case PT_4A0:
+			widthMM = Math.sqrt(4000000 / sqr2);
+			heightMM = widthMM * sqr2;
+			break;
+		case PT_2A0:
+			widthMM = Math.sqrt(2000000 / sqr2);
+			heightMM = widthMM * sqr2;
+			break;
+		case PT_A0:
+			widthMM = Math.sqrt(1000000 / sqr2);
+			heightMM = widthMM * sqr2;
+			break;
+		case PT_A1:
+			widthMM = Math.sqrt(500000 / sqr2);
+			heightMM = widthMM * sqr2;
+			break;
+		case PT_A2:
+			widthMM = Math.sqrt(250000 / sqr2);
+			heightMM = widthMM * sqr2;
+			break;
+		case PT_A3:
+			widthMM = Math.sqrt(125000 / sqr2);
+			heightMM = widthMM * sqr2;
+			break;
+		default:
+		case PT_DEFAULT:
+		case PT_A4:
+			widthMM = Math.sqrt(62500 / sqr2);
+			heightMM = widthMM * sqr2;
+			break;
+		case PT_A5:
+			widthMM = Math.sqrt(31250 / sqr2);
+			heightMM = widthMM * sqr2;
+			break;
+		case PT_A6:
+			widthMM = Math.sqrt(15625 / sqr2);
+			heightMM = widthMM * sqr2;
+			break;
+		case PT_A7:
+			widthMM = Math.sqrt(7812.5 / sqr2);
+			heightMM = widthMM * sqr2;
+			break;
+		case PT_A8:
+			widthMM = Math.sqrt(3906.25 / sqr2);
+			heightMM = widthMM * sqr2;
+			break;
+		case PT_A9:
+			widthMM = Math.sqrt(1953.125 / sqr2);
+			heightMM = widthMM * sqr2;
+			break;
+		case PT_A10:
+			widthMM = Math.sqrt(976.5625 / sqr2);
+			heightMM = widthMM * sqr2;
+			break;
+		case PT_B0:
+			widthMM = 1000;
+			heightMM = widthMM * sqr2;
+			break;
+		case PT_B1:
+			widthMM = 500 * sqr2;
+			heightMM = widthMM * sqr2;
+			break;
+		case PT_B2:
+			widthMM = 500;
+			heightMM = widthMM * sqr2;
+			break;
+		case PT_B3:
+			widthMM = 250 * sqr2;
+			heightMM = widthMM * sqr2;
+			break;
+		case PT_B4:
+			widthMM = 250;
+			heightMM = widthMM * sqr2;
+			break;
+		case PT_B5:
+			widthMM = 125 * sqr2;
+			heightMM = widthMM * sqr2;
+			break;
+		case PT_B6:
+			widthMM = 125;
+			heightMM = widthMM * sqr2;
+			break;
+		case PT_B7:
+			widthMM = 62.5 * sqr2;
+			heightMM = widthMM * sqr2;
+			break;
+		case PT_B8:
+			widthMM = 62.5;
+			heightMM = widthMM * sqr2;
+			break;
+		case PT_B9:
+			widthMM = 31.25 * sqr2;
+			heightMM = widthMM * sqr2;
+			break;
+		case PT_B10:
+			widthMM = 31.25;
+			heightMM = widthMM * sqr2;
+			break;
+		case PT_C0:
+			heightMM = 1000 / Math.pow(2, -3.0 / 8.0) + 0.2;
+			widthMM = heightMM / sqr2;
+			break;
+		case PT_C1:
+			heightMM = 1000 / Math.pow(2, 1.0 / 8.0) + 0.2;
+			widthMM = heightMM / sqr2;
+			break;
+		case PT_C2:
+			heightMM = 1000 / Math.pow(2, 5.0 / 8.0) + 0.2;
+			widthMM = heightMM / sqr2;
+			break;
+		case PT_C3:
+			heightMM = 1000 / Math.pow(2, 9.0 / 8.0) + 0.2;
+			widthMM = heightMM / sqr2;
+			break;
+		case PT_C4:
+			heightMM = 1000 / Math.pow(2, 13.0 / 8.0) + 0.2;
+			widthMM = heightMM / sqr2;
+			break;
+		case PT_C5:
+			heightMM = 1000 / Math.pow(2, 17.0 / 8.0) + 0.2;
+			widthMM = heightMM / sqr2;
+			break;
+		case PT_C6:
+			heightMM = 1000 / Math.pow(2, 21.0 / 8.0) + 0.2;
+			widthMM = heightMM / sqr2;
+			break;
+		case PT_C7:
+			heightMM = 1000 / Math.pow(2, 25.0 / 8.0) + 0.2;
+			widthMM = heightMM / sqr2;
+			break;
+		case PT_C8:
+			heightMM = 1000 / Math.pow(2, 29.0 / 8.0) + 0.2;
+			widthMM = heightMM / sqr2;
+			break;
+		case PT_C9:
+			heightMM = 1000 / Math.pow(2, 33.0 / 8.0) + 0.2;
+			widthMM = heightMM / sqr2;
+			break;
+		case PT_C10:
+			heightMM = 1000 / Math.pow(2, 37.0 / 8.0) + 0.2;
+			widthMM = heightMM / sqr2;
+			break;
+		case PT_LETTER:
+		case PT_ANSI_A:
+			widthMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 8.5) * 1000;
+			heightMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 11) * 1000;
+			break;
+		case PT_GOV_LETTER:
+			widthMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 8.0) * 1000;
+			heightMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 10.5) * 1000;
+			break;
+		case PT_LEGAL:
+			widthMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 8.5) * 1000;
+			heightMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 14) * 1000;
+			break;
+		case PT_JUNIOR_LEGAL:
+			widthMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 5.0) * 1000;
+			heightMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 8.0) * 1000;
+			break;
+		case PT_ANSI_B:
+			widthMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 11) * 1000;
+			heightMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 17) * 1000;
+			break;
+		case PT_ANSI_C:
+			widthMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 17) * 1000;
+			heightMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 22) * 1000;
+			break;
+		case PT_ANSI_D:
+			widthMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 22) * 1000;
+			heightMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 34) * 1000;
+			break;
+		case PT_ANSI_E:
+			widthMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 34) * 1000;
+			heightMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 44) * 1000;
+			break;
+		case PT_CREDIT_CARD:
+			widthMM = 53.98;
+			heightMM = 85.60;
+			break;
+		case PT_3R:
+			widthMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 3) * 1000;
+			heightMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 5) * 1000;
+			break;
+		case PT_4R:
+			widthMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 4) * 1000;
+			heightMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 6) * 1000;
+			break;
+		case PT_4D:
+			widthMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 4.5) * 1000;
+			heightMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 6) * 1000;
+			break;
+		case PT_5R:
+			widthMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 5) * 1000;
+			heightMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 7) * 1000;
+			break;
+		case PT_6R:
+			widthMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 6) * 1000;
+			heightMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 8) * 1000;
+			break;
+		case PT_8R:
+			widthMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 8) * 1000;
+			heightMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 10) * 1000;
+			break;
+		case PT_S8R:
+			widthMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 8) * 1000;
+			heightMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 12) * 1000;
+			break;
+		case PT_10R:
+			widthMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 10) * 1000;
+			heightMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 12) * 1000;
+			break;
+		case PT_S10R:
+			widthMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 10) * 1000;
+			heightMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 15) * 1000;
+			break;
+		case PT_11R:
+			widthMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 11) * 1000;
+			heightMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 14) * 1000;
+			break;
+		case PT_S11R:
+			widthMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 11) * 1000;
+			heightMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 17) * 1000;
+			break;
+		case PT_12R:
+			widthMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 12) * 1000;
+			heightMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 15) * 1000;
+			break;
+		case PT_S12R:
+			widthMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 12) * 1000;
+			heightMM = Distance.convert(Distance.DistanceUnit.Inch, Distance.DistanceUnit.Meter, 18) * 1000;
+			break;
+		}
+		return new Size2D(widthMM, heightMM);
 	}
 }
