@@ -5,8 +5,6 @@ import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.time.DayOfWeek;
-import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Iterator;
 import java.util.Map;
@@ -76,6 +74,16 @@ public class HTTPMyClient extends IOStream
 		}
 	}
 
+	public boolean isError()
+	{
+		return this.conn == null;
+	}
+
+	public boolean isDown()
+	{
+		return this.isError();
+	}
+
 	public void addHeader(String name, String value)
 	{
 		this.conn.addRequestProperty(name, value);
@@ -123,7 +131,7 @@ public class HTTPMyClient extends IOStream
 
 	public void addTimeHeader(String name, ZonedDateTime dt)
 	{
-		this.addHeader(name, date2Str(dt));
+		this.addHeader(name, WebUtil.date2Str(dt));
 	}
 
 	public void addContentType(String contType)
@@ -233,14 +241,6 @@ public class HTTPMyClient extends IOStream
 	public InetAddress getSvrAddr() throws IOException
 	{
 		return this.svrAddr;
-	}
-
-	public static String date2Str(ZonedDateTime dt)
-	{
-		String wds[] = {"Mon, ", "Tue, ", "Wed, ", "Thu, ", "Fri, ", "Sat, ", "Sun, "};
-		ZonedDateTime t = dt.withZoneSameInstant(ZoneOffset.UTC);
-		DayOfWeek wd = t.getDayOfWeek();
-		return wds[wd.ordinal()] + DateTimeUtil.toString(t, "dd MMM yyyy HH:mm:ss") + " GMT";
 	}
 
 	@Override

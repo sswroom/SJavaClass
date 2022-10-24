@@ -121,6 +121,16 @@ public class TCPClient extends IOStream
 	}
 
 	@Override
+	public boolean isDown()
+	{
+		if (this.s == null || (this.flags & 6) != 0)
+		{
+			return true;
+		}
+		return false;
+	}
+
+	@Override
 	public int read(byte[] buff, int ofst, int size)
 	{
 		if (s != null && (this.flags & 6) == 0)

@@ -11,11 +11,17 @@ public abstract class IOStream extends ParsedObject
 		super(sourceName);
 	}
 
+	public abstract boolean isDown();
 	public abstract int read(byte []buff, int ofst, int size);
 	public abstract int write(byte []buff, int ofst, int size);
 	public abstract int flush();
 	public abstract void close();
 	public abstract boolean recover();
+
+	public int write(byte[] buff)
+	{
+		return write(buff, 0, buff.length);
+	}
 
 	public InputStream createInputStream()
 	{

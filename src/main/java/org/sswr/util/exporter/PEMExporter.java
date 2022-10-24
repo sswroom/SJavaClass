@@ -127,7 +127,7 @@ public class PEMExporter
 
 	public static boolean exportFile(String fileName, MyX509File x509)
 	{
-		FileStream fs = new FileStream(fileName, FileMode.CREATE, FileShare.DENY_NONE, BufferType.NORMAL);
+		FileStream fs = new FileStream(fileName, FileMode.Create, FileShare.DenyNone, BufferType.Normal);
 		if (fs.isError())
 		{
 			return false;

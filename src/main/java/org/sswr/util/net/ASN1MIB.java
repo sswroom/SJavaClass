@@ -1108,7 +1108,7 @@ public class ASN1MIB
 		ASN1ModuleInfo module;
 		boolean moduleFound = false;
 		boolean succ;
-		fs = new FileStream(fileName, FileMode.READONLY, FileShare.DENY_NONE, BufferType.NORMAL);
+		fs = new FileStream(fileName, FileMode.ReadOnly, FileShare.DenyNone, BufferType.Normal);
 		if (fs.isError())
 		{
 			errMessage.append("Error in opening file ");

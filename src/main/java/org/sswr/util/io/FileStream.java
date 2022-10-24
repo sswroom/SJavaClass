@@ -4,39 +4,46 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.file.Files;
 import java.nio.file.OpenOption;
+import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Set;
 
 public class FileStream extends SeekableStream
 {
 	public enum BufferType
 	{
-		RANDOM_ACCESS,
-		NORMAL,
-		SEQUENTIAL,
-		NO_BUFFER,
-		NO_WRITE_BUFFER
+		RandomAccess,
+		Normal,
+		Sequential,
+		NoBuffer,
+		NoWriteBuffer
 	}
 
 	public enum FileMode
 	{
-		CREATE,
-		APPEND,
-		READONLY,
-		READWRITEEXISTING,
-		DEVICE,
-		CREATEWRITE
+		Create,
+		Append,
+		ReadOnly,
+		ReadWriteExisting,
+		Device,
+		CreateWrite
 	}
 
 	public enum FileShare
 	{
-		DENY_NONE,
-		DENY_READ,
-		DENY_WRITE,
-		DENY_ALL
+		DenyNone,
+		DenyRead,
+		DenyWrite,
+		DenyAll
 	}
 
+	private Path path;
 	private FileChannel file;
 
 	public FileStream(String fileName, FileMode mode, FileShare share, BufferType buffType)
@@ -45,22 +52,22 @@ public class FileStream extends SeekableStream
 		Set<OpenOption> options;
 		switch (mode)
 		{
-			case APPEND:
+			case Append:
 				options = Set.of(StandardOpenOption.CREATE, StandardOpenOption.READ, StandardOpenOption.WRITE);
 				break;
-			case CREATE:
+			case Create:
 				options = Set.of(StandardOpenOption.CREATE, StandardOpenOption.READ, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
 				break;
-			case CREATEWRITE:
+			case CreateWrite:
 				options = Set.of(StandardOpenOption.CREATE, StandardOpenOption.WRITE);
 				break;
-			case DEVICE:
+			case Device:
 				options = Set.of(StandardOpenOption.READ, StandardOpenOption.WRITE);
 				break;
-			case READONLY:
+			case ReadOnly:
 				options = Set.of(StandardOpenOption.READ);
 				break;
-			case READWRITEEXISTING:
+			case ReadWriteExisting:
 				options = Set.of(StandardOpenOption.READ, StandardOpenOption.WRITE);
 				break;
 			default:
@@ -69,8 +76,9 @@ public class FileStream extends SeekableStream
 		File f = new File(fileName);
 		try
 		{
-			this.file = FileChannel.open(f.toPath(), options);
-			if (mode == FileMode.APPEND)
+			this.path = f.toPath();
+			this.file = FileChannel.open(this.path, options);
+			if (mode == FileMode.Append)
 			{
 				this.seekFromEnd(0);
 			}
@@ -80,6 +88,11 @@ public class FileStream extends SeekableStream
 			ex.printStackTrace();
 			this.file = null;
 		}
+	}
+
+	public boolean isDown()
+	{
+		return !this.file.isOpen();
 	}
 
 	public int read(byte []buff, int ofst, int size)
@@ -230,5 +243,31 @@ public class FileStream extends SeekableStream
 	public int getErrCode()
 	{
 		return 0;
+	}
+
+	public ZonedDateTime getCreateTime()
+	{
+		try
+		{
+			BasicFileAttributes fileAtt = Files.readAttributes(this.path, BasicFileAttributes.class);
+			return ZonedDateTime.ofInstant(fileAtt.creationTime().toInstant(), ZoneId.systemDefault());
+		}
+		catch (IOException ex)
+		{
+			return ZonedDateTime.ofInstant(Instant.ofEpochMilli(0), ZoneId.systemDefault());
+		}
+	}
+
+	public ZonedDateTime getModifyTime()
+	{
+		try
+		{
+			BasicFileAttributes fileAtt = Files.readAttributes(this.path, BasicFileAttributes.class);
+			return ZonedDateTime.ofInstant(fileAtt.lastModifiedTime().toInstant(), ZoneId.systemDefault());
+		}
+		catch (IOException ex)
+		{
+			return ZonedDateTime.ofInstant(Instant.ofEpochMilli(0), ZoneId.systemDefault());
+		}
 	}
 }
