@@ -98,7 +98,7 @@ public class UDPServer
 									UDPServer.this.logFileR.close();
 									UDPServer.this.logFileR = null;
 								}
-								UDPServer.this.logFileR = new FileStream(UDPServer.this.logPrefix + logTime.format(dateTimeFmt) + "r.udp", FileMode.APPEND, FileShare.DENY_WRITE, BufferType.NORMAL);
+								UDPServer.this.logFileR = new FileStream(UDPServer.this.logPrefix + logTime.format(dateTimeFmt) + "r.udp", FileMode.Append, FileShare.DenyWrite, BufferType.Normal);
 							}
 			
 							if (UDPServer.this.logFileR != null)
@@ -310,7 +310,7 @@ public class UDPServer
 					{
 						this.logFileS.close();
 					}
-					this.logFileS = new FileStream(this.logPrefix + logTime.format(DateTimeFormatter.ofPattern("yyyyMMdd"))+"s.udp", FileMode.APPEND, FileShare.DENY_WRITE, BufferType.NORMAL);
+					this.logFileS = new FileStream(this.logPrefix + logTime.format(DateTimeFormatter.ofPattern("yyyyMMdd"))+"s.udp", FileMode.Append, FileShare.DenyWrite, BufferType.Normal);
 				}
 		
 				if (this.logFileS != null)
