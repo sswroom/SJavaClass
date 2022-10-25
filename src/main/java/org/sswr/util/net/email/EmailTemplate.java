@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -45,12 +46,14 @@ public class EmailTemplate implements EmailMessage
 	private StringBuilder sbPre;
 	private StringBuilder sbItem;
 	private StringBuilder sbPost;
+	private List<String> attachments;
 
 	public EmailTemplate(InputStream templateStm, Map<String, String> vars) throws IOException, TemplateFormatException, TemplateItemException
 	{
 		this.itemTemplate = null;
 		this.itemOfst = 0;
 		this.sbSubj = new StringBuilder();
+		this.attachments = new ArrayList<String>();
 
 		BufferedReader reader = new BufferedReader(new InputStreamReader(templateStm));
 		this.subjTemplate = reader.readLine();
@@ -228,5 +231,23 @@ public class EmailTemplate implements EmailMessage
 		{
 			return this.sbPre.toString()+this.sbItem.toString()+this.sbPost.toString();
 		}
+	}
+
+	@Override
+	public void addAttachment(String attachmentPath)
+	{
+		this.attachments.add(attachmentPath);
+	}
+
+	@Override
+	public int getAttachmentCount()
+	{
+		return this.attachments.size();
+	}
+
+	@Override
+	public String getAttachment(int index)
+	{
+		return this.attachments.get(index);
 	}
 }

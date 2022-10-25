@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.PrivateKey;
+import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -17,7 +18,6 @@ import org.sswr.util.data.ByteTool;
 import org.sswr.util.data.StringUtil;
 import org.sswr.util.data.textbinenc.Base64Enc;
 import org.sswr.util.io.FileStream;
-import org.sswr.util.io.IOStream;
 import org.sswr.util.io.MemoryStream;
 import org.sswr.util.io.FileStream.BufferType;
 import org.sswr.util.io.FileStream.FileMode;
@@ -93,7 +93,7 @@ public class SMTPMessage
 		return true;
 	}
 
-	private void genMultipart(IOStream stm, String boundary)
+	private void genMultipart(OutputStream stm, String boundary) throws IOException
 	{
 		stm.write("--".getBytes(StandardCharsets.UTF_8));
 		stm.write(boundary.getBytes(StandardCharsets.UTF_8));
@@ -228,7 +228,7 @@ public class SMTPMessage
 			stm.write(sbuff);
 			stm.write("\"\r\n".getBytes(StandardCharsets.UTF_8));
 			MemoryStream mstm = new MemoryStream("Net.Email.EmailMessage.WriteToStream.mstm");
-			genMultipart(mstm, new String(sbuff, StandardCharsets.UTF_8));
+			genMultipart(mstm.createOutputStream(), new String(sbuff, StandardCharsets.UTF_8));
 			stm.write("Content-Length: ".getBytes(StandardCharsets.UTF_8));
 			stm.write(String.valueOf(mstm.getLength()).getBytes(StandardCharsets.UTF_8));
 			stm.write("\r\n".getBytes(StandardCharsets.UTF_8));
@@ -260,14 +260,16 @@ public class SMTPMessage
 		return new Base64Enc(Base64Enc.B64Charset.URL, true).encodeBin(sha1Val, 0, sha1Val.length).getBytes(StandardCharsets.UTF_8);
 	}
 
-	
-	private void writeB64Data(IOStream stm, byte[] data)
+	private void writeB64Data(OutputStream stm, byte[] data) throws IOException
+	{
+		writeB64Data(stm, data, 0, data.length);
+	}
+
+	private void writeB64Data(OutputStream stm, byte[] data, int dataOfst, int dataSize) throws IOException
 	{
 		Base64Enc b64 = new Base64Enc(Base64Enc.B64Charset.NORMAL, false);
 		byte[] sbuff;
 		byte[] crlf = {13, 10};
-		int dataSize = data.length;
-		int dataOfst = 0;
 		while (dataSize > 57)
 		{
 			sbuff = b64.encodeBin(data, dataOfst, 57).getBytes(StandardCharsets.UTF_8);
@@ -287,6 +289,7 @@ public class SMTPMessage
 		this.recpList = new ArrayList<String>();
 		this.headerList = new ArrayList<String>();
 		this.content = null;
+		this.attachments = new ArrayList<Attachment>();
 	}
 
 	public boolean setSubject(String subject)
@@ -306,7 +309,7 @@ public class SMTPMessage
 
 	public boolean setContent(String content, String contentType)
 	{
-		this.setHeader("Content-Type", contentType);
+		this.contentType = contentType;
 		this.content = content.getBytes(StandardCharsets.UTF_8);
 		return true;
 	
@@ -545,26 +548,22 @@ public class SMTPMessage
 			this.writeHeaders(stm);
 			if (this.signCert != null && this.signKey != null)
 			{
-	/*			MemoryStream mstm = new MemoryStream("Net.Email.EmailMessage.WriteToStream.mstm");
+				MemoryStream mstm = new MemoryStream("Net.Email.EmailMessage.WriteToStream.mstm");
 				this.writeContents(mstm.createOutputStream());
 				mstm.write("\r\n".getBytes(StandardCharsets.UTF_8));
 		
-				UInt8 signData[512];
-				UOSInt signLen;
-				UTF8Char sbuff[32];
-				UTF8Char *sptr;
-				UOSInt len;
-				sptr = genBoundary(sbuff, mstm.GetBuff(&len), mstm.GetLength());
+				byte[] signData;
+				byte[] sbuff = genBoundary(mstm.getBuff());
 				stm.write("Content-Type: multipart/signed; protocol=\"application/pkcs7-signature\";\r\n micalg=sha-256; boundary=\"".getBytes(StandardCharsets.UTF_8));
-				stm.write(sbuff, (UOSInt)(sptr - sbuff));
+				stm.write(sbuff);
 				stm.write("\"\r\n\r\n".getBytes(StandardCharsets.UTF_8));
 				stm.write("This is a cryptographically signed message in MIME format.\r\n".getBytes(StandardCharsets.UTF_8));
 				stm.write("\r\n\r\n--".getBytes(StandardCharsets.UTF_8));
-				stm.write(sbuff, (UOSInt)(sptr - sbuff));
+				stm.write(sbuff);
 				stm.write("\r\n".getBytes(StandardCharsets.UTF_8));
 				stm.write(mstm.getBuff(), 0, (int)mstm.getLength());
 				stm.write("\r\n\r\n--".getBytes(StandardCharsets.UTF_8));
-				stm.write(sbuff, (UOSInt)(sptr - sbuff));
+				stm.write(sbuff);
 				stm.write("\r\n".getBytes(StandardCharsets.UTF_8));
 				stm.write("Content-Type: application/pkcs7-signature; name=\"smime.p7s\"\r\n".getBytes(StandardCharsets.UTF_8));
 				stm.write("Content-Transfer-Encoding: base64\r\n".getBytes(StandardCharsets.UTF_8));
@@ -588,14 +587,14 @@ public class SMTPMessage
 							builder.beginSequence();
 								builder.appendOIDString("1.2.840.113549.1.7.1"); //data
 							builder.endLevel();
-							builder.appendContentSpecific(0, this.signCert.getEncoded());
+							builder.appendContentSpecific((byte)0, this.signCert.getEncoded());
 							builder.beginSet();
 								builder.beginSequence();
 									builder.appendInt32(1);
 									builder.beginSequence();
-										data = this.signCert.getIssuerNamesSeq();
+										data = this.signCert.getIssuerX500Principal().getEncoded();
 										builder.appendSequence(data);
-										data = this.signCert.getSerialNumber();
+										data = this.signCert.getSerialNumber().toByteArray();
 										builder.appendInteger(data);
 									builder.endLevel();
 									builder.beginSequence();
@@ -617,13 +616,13 @@ public class SMTPMessage
 										builder.endLevel();
 										{
 											SHA256 sha = new SHA256();
-											sha.calc(mstm.getBuff(), 0, mstm.getLength());
-											sha.getValue(signData);
+											sha.calc(mstm.getBuff(), 0, (int)mstm.getLength());
+											signData = sha.getValue();
 		
 											builder.beginSequence();
 												builder.appendOIDString("1.2.840.113549.1.9.4"); //messageDigest
 												builder.beginSet();
-													builder.appendOctetStringC(signData, 32);
+													builder.appendOctetString(signData, 0, signData.length);
 												builder.endLevel();
 											builder.endLevel();
 										}
@@ -662,9 +661,9 @@ public class SMTPMessage
 											builder.appendOIDString("1.3.6.1.4.1.311.16.4"); //outlookExpress
 											builder.beginSet();
 												builder.beginSequence();
-													data = this.signCert.getIssuerNamesSeq();
+													data = this.signCert.getIssuerX500Principal().getEncoded();
 													builder.appendSequence(data);
-													data = this.signCert.getSerialNumber();
+													data = this.signCert.getSerialNumber().toByteArray();
 													builder.appendInteger(data);
 												builder.endLevel();
 											builder.endLevel();
@@ -673,9 +672,9 @@ public class SMTPMessage
 											builder.appendOIDString("1.2.840.113549.1.9.16.2.11"); //id-aa-encrypKeyPref
 											builder.beginSet();
 												builder.beginContentSpecific(0);
-													data = this.signCert.getIssuerNamesSeq();
+													data = this.signCert.getIssuerX500Principal().getEncoded();
 													builder.appendSequence(data);
-													data = this.signCert.getSerialNumber();
+													data = this.signCert.getSerialNumber().toByteArray();
 													builder.appendInteger(data);
 												builder.endLevel();
 											builder.endLevel();
@@ -686,18 +685,18 @@ public class SMTPMessage
 										builder.appendNull();
 									builder.endLevel();
 									///////////////////////////////////////
-									this.signCert.Signature(this.signKey, Crypto::Hash::HT_SHA256, mstm.getBuff(), 0, mstm.getLength(), signData, &signLen);
-									builder.appendOctetStringC(signData, signLen);
+									//this.signCert.Signature(this.signKey, Crypto::Hash::HT_SHA256, mstm.getBuff(), 0, mstm.getLength(), signData, &signLen);
+									//builder.appendOctetString(signData, 0, signData.length);
 								builder.endLevel();
 							builder.endLevel();
 						builder.endLevel();
 					builder.endLevel();
 				builder.endLevel();
 				
-				writeB64Data(stm, builder.getBuff(), 0, builder.getBuffSize());
+				writeB64Data(stm, builder.getBuff(null), 0, builder.getBuffSize());
 				stm.write("\r\n--".getBytes(StandardCharsets.UTF_8));
-				stm.write(sbuff, (UOSInt)(sptr - sbuff));
-				stm.write("--".getBytes(StandardCharsets.UTF_8));*/
+				stm.write(sbuff);
+				stm.write("--".getBytes(StandardCharsets.UTF_8));
 			}
 			else
 			{
@@ -705,8 +704,14 @@ public class SMTPMessage
 			}
 			return true;
 		}
+		catch (CertificateEncodingException ex)
+		{
+			ex.printStackTrace();
+			return false;
+		}
 		catch (IOException ex)
 		{
+			ex.printStackTrace();
 			return false;
 		}
 	}

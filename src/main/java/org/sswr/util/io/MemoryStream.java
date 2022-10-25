@@ -24,7 +24,7 @@ public class MemoryStream extends SeekableStream
 
 	public byte[] getBuff()
 	{
-		return this.getBuff();
+		return this.memPtr;
 	}
 
 	@Override

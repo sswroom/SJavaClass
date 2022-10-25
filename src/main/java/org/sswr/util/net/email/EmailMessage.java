@@ -4,4 +4,7 @@ public interface EmailMessage
 {
 	public String getContent();
 	public String getSubject();
+	public void addAttachment(String attachmentPath);
+	public int getAttachmentCount();
+	public String getAttachment(int index);
 }

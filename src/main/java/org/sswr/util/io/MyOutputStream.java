@@ -41,7 +41,7 @@ public class MyOutputStream extends OutputStream
 	@Override
 	public void write(byte[] b, int off, int len) throws IOException
 	{
-		if (this.stm.read(b, off, len) != len)
+		if (this.stm.write(b, off, len) != len)
 		{
 			throw new IOException();
 		}

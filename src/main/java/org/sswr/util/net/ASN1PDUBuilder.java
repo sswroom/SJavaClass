@@ -1,8 +1,10 @@
 package org.sswr.util.net;
 
 import java.nio.charset.StandardCharsets;
+import java.time.ZonedDateTime;
 
 import org.sswr.util.data.ByteTool;
+import org.sswr.util.data.DateTimeUtil;
 import org.sswr.util.data.SharedInt;
 
 public class ASN1PDUBuilder
@@ -349,6 +351,32 @@ public class ASN1PDUBuilder
 		}
 	}
 
+	public void appendPrintableString(String s)
+	{
+		this.appendOther((byte)0x13, s.getBytes(StandardCharsets.UTF_8));
+	}
+
+	public void appendUTF8String(String s)
+	{
+		this.appendOther((byte)0x0C, s.getBytes(StandardCharsets.UTF_8));
+	}
+
+	public void appendIA5String(String s)
+	{
+		this.appendOther((byte)0x16, s.getBytes(StandardCharsets.UTF_8));
+	}
+
+	public void appendUTCTime(ZonedDateTime t)
+	{
+		String s = DateTimeUtil.toString(t, "yyMMddHHmmss")+"Z";
+		this.appendOther((byte)0x17, s.getBytes(StandardCharsets.UTF_8));
+	}
+
+	public void appendOther(byte type, byte[] buff)
+	{
+		this.appendOther(type, buff, 0, buff.length);
+	}
+
 	public void appendOther(byte type, byte[] buff, int buffOfst, int buffSize)
 	{
 		if (buffSize == 0)
@@ -393,6 +421,21 @@ public class ASN1PDUBuilder
 			ByteTool.copyArray(this.buff, this.currOffset + 5, buff, 0, buffSize);
 			this.currOffset += buffSize + 5;
 		}
+	}
+
+	public void appendContentSpecific(byte n, byte[] buff)
+	{
+		this.appendOther((byte)(0xA0 + n), buff, 0, buff.length);
+	}
+
+	public void appendSequence(byte[] buff)
+	{
+		this.appendOther((byte)0x30, buff, 0, buff.length);
+	}
+
+	public void appendInteger(byte[] buff)
+	{
+		this.appendOther((byte)2, buff, 0, buff.length);
 	}
 
 	public byte[] getBuff(SharedInt buffSize)

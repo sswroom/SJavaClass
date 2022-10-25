@@ -14,4 +14,6 @@ public interface TemplateEmailStatus
 	public void setEmailsSuccess(String emailList);
 	public void setEmailsFail(String emailList);
 	public void setStatus(EmailStatus status);
+	public int getAttachmentCount();
+	public String getAttachmentPath(int index, String basePath);
 }

@@ -37,6 +37,16 @@ public class SMTPDirectEmailControl implements EmailControl
 		{
 			message.addCcList(ccList);
 		}
+		int i = 0;
+		int j = msg.getAttachmentCount();
+		while (i < j)
+		{
+			if (message.addAttachment(msg.getAttachment(i)) == null)
+			{
+				return false;
+			}
+			i++;
+		}
 		return this.smtp.send(message);
 	}
 

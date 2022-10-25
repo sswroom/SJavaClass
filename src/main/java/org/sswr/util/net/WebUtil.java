@@ -15,6 +15,4 @@ public class WebUtil
 		DayOfWeek wd = t.getDayOfWeek();
 		return wds[wd.ordinal()] + DateTimeUtil.toString(t, "dd MMM yyyy HH:mm:ss") + " GMT";
 	}
-
-
 }

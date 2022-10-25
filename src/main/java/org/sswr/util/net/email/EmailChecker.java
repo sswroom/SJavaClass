@@ -1,5 +1,6 @@
 package org.sswr.util.net.email;
 
+import java.io.File;
 import java.util.Iterator;
 
 import org.sswr.util.data.DataTools;
@@ -10,13 +11,15 @@ public class EmailChecker<T extends TemplateEmailStatus> implements Runnable
 	private EmailCheckHandler<T> handler;
 	private EmailControl emailCtrl;
 	private boolean splitDestAddr;
+	private String basePath;
 
-	public EmailChecker(EmailMessageCreator msgCreator, EmailCheckHandler<T> handler, EmailControl emailCtrl, boolean splitDestAddr)
+	public EmailChecker(EmailMessageCreator msgCreator, EmailCheckHandler<T> handler, EmailControl emailCtrl, boolean splitDestAddr, String basePath)
 	{
 		this.msgCreator = msgCreator;
 		this.handler = handler;
 		this.emailCtrl = emailCtrl;
 		this.splitDestAddr = splitDestAddr;
+		this.basePath = basePath;
 	}
 
 	private void sendEmails(EmailMessage message, String toAddrs, String ccAddrs, StringBuilder sbSucc, StringBuilder sbFail)
@@ -89,7 +92,29 @@ public class EmailChecker<T extends TemplateEmailStatus> implements Runnable
 		try
 		{
 			EmailMessage message = this.msgCreator.createMessage(email.getTplname(), email.getParamObj(), email.getItemParamsObj());
-			if (email.getToEmails() == null || email.getToEmails().length() == 0)
+			boolean attErr = false;
+			int i = 0;
+			int j = email.getAttachmentCount();
+			while (i < j)
+			{
+				String attPath = email.getAttachmentPath(i, this.basePath);
+				File attFile = new File(attPath);
+				if (attFile.exists() && attFile.isFile())
+				{
+					message.addAttachment(attPath);
+				}
+				else
+				{
+					attErr = true;
+					break;
+				}
+				i++;
+			}
+			if (attErr)
+			{
+				email.setStatus(EmailStatus.ATTACHMENT_ERROR);
+			}
+			else if (email.getToEmails() == null || email.getToEmails().length() == 0)
 			{
 				email.setStatus(EmailStatus.NO_ADDRESS);
 			}
