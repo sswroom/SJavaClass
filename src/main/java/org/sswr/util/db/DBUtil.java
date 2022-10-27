@@ -17,6 +17,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -1113,7 +1114,7 @@ public class DBUtil {
 				throw new IllegalArgumentException("Field type not supported: "+fieldType.toString());
 			}
 		}
-		else if (oneToMany != null && fieldType.equals(Set.class))
+		else if (oneToMany != null && (fieldType.equals(Set.class) || fieldType.equals(List.class)))
 		{
 			Class<?> targetClass = oneToMany.targetEntity();			
 			if (targetClass.equals(void.class))
@@ -1160,7 +1161,7 @@ public class DBUtil {
 					Object targetObj = itTarget.next();
 					T tObj = tMap.get(idCol.getter.get(targetGetter.get(targetObj)));
 					@SuppressWarnings("unchecked")
-					Set<Object> targetSet = ((Set<Object>)getter.get(tObj));
+					Collection<Object> targetSet = ((Collection<Object>)getter.get(tObj));
 					targetSet.add(targetObj);
 				}
 				return true;
