@@ -11,38 +11,37 @@ public class ED538 extends MODBUSDevice
 		super(modbus, addr);
 	}
 
-
-	public boolean isDIHighByCoil(int diNum)
+	public Boolean isDIHighByCoil(int diNum)
 	{
 		if (diNum >= 8 || diNum < 0)
-			return false;
+			return null;
 		return this.readCoil(diNum + 0x20);
 	}
 
-	public boolean isDIHighByInput(int diNum)
+	public Boolean isDIHighByInput(int diNum)
 	{
 		if (diNum >= 8 || diNum < 0)
-			return false;
+			return null;
 		return this.readDInput(diNum);
 	}
 
-	public boolean isDIHighByReg(int diNum)
+	public Boolean isDIHighByReg(int diNum)
 	{
 		if (diNum >= 8 || diNum < 0)
-			return false;
+			return null;
 		SharedInt val = new SharedInt();
 		if (!this.readInputI16(diNum + 0x20, val))
-			return false;
+			return null;
 		return val.value != 0;
 	}
 
-	public int getDICountByReg(int diNum)
+	public Integer getDICountByReg(int diNum)
 	{
 		if (diNum >= 8 || diNum < 0)
-			return 0;
+			return null;
 		SharedInt val = new SharedInt();
 		if (!this.readInputI16(diNum, val))
-			return 0;
+			return null;
 		return val.value;
 	}
 
@@ -53,13 +52,13 @@ public class ED538 extends MODBUSDevice
 		return this.readInputI16(diNum, val);
 	}
 
-	public int getDICountByHolding(int diNum)
+	public Integer getDICountByHolding(int diNum)
 	{
 		if (diNum >= 8 || diNum < 0)
-			return 0;
+			return null;
 		SharedInt val = new SharedInt();
 		if (!this.readHoldingI16(diNum, val))
-			return 0;
+			return null;
 		return val.value;
 	}
 
@@ -70,10 +69,10 @@ public class ED538 extends MODBUSDevice
 		return this.writeDOutput(0x200 + diNum, true);
 	}
 
-	public boolean isRelayHigh(int index)
+	public Boolean isRelayHigh(int index)
 	{
 		if (index >= 4 || index < 0)
-			return false;
+			return null;
 		return this.readCoil(index);
 	}
 
@@ -84,10 +83,10 @@ public class ED538 extends MODBUSDevice
 		return this.writeDOutput(index, isHigh);
 	}
 
-	public boolean getOutputOverloadFlag(int diNum)
+	public Boolean getOutputOverloadFlag(int diNum)
 	{
 		if (diNum >= 8 || diNum < 0)
-			return false;
+			return null;
 		return this.readDInput(0x400 + diNum);
 	}
 }

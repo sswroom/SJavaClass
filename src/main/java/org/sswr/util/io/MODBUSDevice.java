@@ -159,9 +159,9 @@ public class MODBUSDevice implements MODBUSListener
 		}
 	}
 
-	protected void SetTimeout(int timeout)
+	public void setTimeout(int timeoutMS)
 	{
-		this.timeout = timeout;
+		this.timeout = timeoutMS;
 	}
 
 	protected boolean readInputI16(int addr, SharedInt outVal)
@@ -316,7 +316,7 @@ public class MODBUSDevice implements MODBUSListener
 		}
 	}
 
-	protected boolean readDInput(int addr)
+	protected Boolean readDInput(int addr)
 	{
 		SharedInt outVal = new SharedInt(0);
 		synchronized(this)
@@ -333,7 +333,7 @@ public class MODBUSDevice implements MODBUSListener
 			}
 			else
 			{
-				return false;
+				return null;
 			}
 		}
 	}
@@ -352,7 +352,7 @@ public class MODBUSDevice implements MODBUSListener
 		}
 	}
 
-	protected boolean readCoil(int addr)
+	protected Boolean readCoil(int addr)
 	{
 		SharedInt outVal = new SharedInt(0);
 		synchronized(this)
@@ -369,7 +369,7 @@ public class MODBUSDevice implements MODBUSListener
 			}
 			else
 			{
-				return false;
+				return null;
 			}
 		}
 	}
