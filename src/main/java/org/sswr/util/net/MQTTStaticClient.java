@@ -187,6 +187,7 @@ public class MQTTStaticClient implements Runnable, MQTTEventHdlr, MQTTClient, Fa
 					}
 					else
 					{
+						this.conn.clearPackets();
 						this.conn.sendPing();
 					}
 				}
