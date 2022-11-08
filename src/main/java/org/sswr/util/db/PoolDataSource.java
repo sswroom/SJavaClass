@@ -78,7 +78,11 @@ public class PoolDataSource implements DataSource
 		int i = this.conns.length;
 		while (i-- > 0)
 		{
-			this.conns[i].endConn();
+			if (this.conns[i] != null)
+			{
+				this.conns[i].endConn();
+				this.conns[i] = null;
+			}
 		}
 	}
 
