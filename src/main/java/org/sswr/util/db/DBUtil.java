@@ -93,7 +93,15 @@ public class DBUtil {
 
 	public static DBType connGetDBType(Connection conn)
 	{
-		String clsName = conn.getClass().getName();
+		String clsName;
+		if (conn instanceof PoolConnection)
+		{
+			clsName = ((PoolConnection)conn).getConnClass().getName();
+		}
+		else
+		{
+			clsName = conn.getClass().getName();
+		}
 		if (clsName.startsWith("com.microsoft.sqlserver.jdbc.SQLServerConnection"))
 		{
 			return DBType.MSSQL;
@@ -837,6 +845,20 @@ public class DBUtil {
 	public static <T> List<T> loadItemsAsList(Class<T> cls, Object parent, Connection conn, QueryConditions<T> conditions, List<String> joinFields, String sortString, int dataOfst, int dataCnt)
 	{
 		return new SQLConnection(conn, sqlLogger).loadItemsAsList(cls, parent, conditions, joinFields, sortString, dataOfst, dataCnt);
+	}	
+
+	public static <T> List<T> loadItemsAsListWithJoins(Class<T> cls, Object parent, Connection conn, QueryConditions<T> conditions, String sortString, int dataOfst, int dataCnt) throws NoSuchFieldException
+	{
+		List<String> joinFields = new ArrayList<String>();
+		List<T> list = new SQLConnection(conn, sqlLogger).loadItemsAsList(cls, parent, conditions, joinFields, sortString, dataOfst, dataCnt);
+		int i = 0;
+		int j = joinFields.size();
+		while (i < j)
+		{
+			DBUtil.loadJoinItems(conn, list, joinFields.get(i));
+			i++;
+		}
+		return list;
 	}	
 
 	/*
