@@ -1,6 +1,7 @@
 package org.sswr.util.web;
 
 import java.nio.charset.StandardCharsets;
+import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -8,6 +9,7 @@ import java.util.Map;
 import org.sswr.util.crypto.JWTHandler;
 import org.sswr.util.crypto.JWTParam;
 import org.sswr.util.crypto.JWTHandler.Algorithm;
+import org.sswr.util.data.DateTimeUtil;
 import org.sswr.util.data.StringUtil;
 
 public class JWTSessionManager
@@ -42,7 +44,7 @@ public class JWTSessionManager
 		this.lastId = id;
 		JWTSession sess = new JWTSession(id, userName, roleList);
 		sessMap.put(id, sess);
-		sess.setLastAccessTime(System.currentTimeMillis());
+		sess.setLastAccessTime(DateTimeUtil.timestampNow());
 		if (this.sessInit != null)
 		{
 			this.sessInit.initSession(sess);
@@ -54,13 +56,13 @@ public class JWTSessionManager
 	{
 		Object[] sessArr = this.sessMap.values().toArray();
 		JWTSession sess;
-		long currTime = System.currentTimeMillis();
+		Timestamp currTime = DateTimeUtil.timestampNow();
 		int i = 0;
 		int j = sessArr.length;
 		while (i < j)
 		{
 			sess = (JWTSession)sessArr[i];
-			if (currTime - sess.getLastAccessTime() >= timeoutMs)
+			if (currTime.getTime() - sess.getLastAccessTime().getTime() >= timeoutMs)
 			{
 				this.listener.sessionDestroy(sess);
 				this.sessMap.remove(sess.getSessId());
@@ -97,7 +99,7 @@ public class JWTSessionManager
 			JWTSession sess = this.sessMap.get(sessId);
 			if (sess != null)
 			{
-				sess.setLastAccessTime(System.currentTimeMillis());
+				sess.setLastAccessTime(DateTimeUtil.timestampNow());
 			}
 			return sess;
 		}

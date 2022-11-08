@@ -7,7 +7,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import org.sswr.util.data.DateTimeUtil;
 import org.sswr.util.net.ASN1Data;
 import org.sswr.util.net.ASN1Item;
 import org.sswr.util.net.ASN1Util;
@@ -78,14 +77,14 @@ public class MyX509Cert extends MyX509File
 		{
 			return ValidStatus.FileFormatInvalid;
 		}
-		long currTime = System.currentTimeMillis();
+		ZonedDateTime currTime = ZonedDateTime.now();
 		ZonedDateTime dt = this.getNotBefore();
 		if (dt == null)
 		{
 			System.out.println("getNotBefore = null");
 			return ValidStatus.FileFormatInvalid;
 		}
-		if (DateTimeUtil.getTimeMillis(dt) > currTime)
+		if (dt.compareTo(currTime) > 0)
 		{
 			return ValidStatus.Expired;
 		}
@@ -95,7 +94,7 @@ public class MyX509Cert extends MyX509File
 			System.out.println("getNotAfter = null");
 			return ValidStatus.FileFormatInvalid;
 		}
-		if (DateTimeUtil.getTimeMillis(dt) < currTime)
+		if (dt.compareTo(currTime) < 0)
 		{
 			return ValidStatus.Expired;
 		}

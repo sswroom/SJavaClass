@@ -1,6 +1,7 @@
 package org.sswr.util.web;
 
 import java.nio.charset.StandardCharsets;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -9,6 +10,7 @@ import java.util.Map;
 
 import org.sswr.util.basic.ThreadEvent;
 import org.sswr.util.crypto.JWTParam;
+import org.sswr.util.data.DateTimeUtil;
 import org.sswr.util.data.JSONMapper;
 import org.sswr.util.data.JSONParser;
 import org.sswr.util.data.StringUtil;
@@ -58,7 +60,7 @@ public class JWTMSvrSessionManager extends JWTSessionManager implements MQTTEven
 		this.lastId = id;
 		JWTSession sess = new JWTSession(id, userName, roleList);
 		sessMap.put(id, sess);
-		sess.setLastAccessTime(System.currentTimeMillis());
+		sess.setLastAccessTime(DateTimeUtil.timestampNow());
 		if (this.sessInit != null)
 		{
 			this.sessInit.initSession(sess);
@@ -70,13 +72,13 @@ public class JWTMSvrSessionManager extends JWTSessionManager implements MQTTEven
 	{
 		Object[] sessArr = this.sessMap.values().toArray();
 		JWTSession sess;
-		long currTime = System.currentTimeMillis();
+		Timestamp currTime = DateTimeUtil.timestampNow();
 		int i = 0;
 		int j = sessArr.length;
 		while (i < j)
 		{
 			sess = (JWTSession)sessArr[i];
-			if (currTime - sess.getLastAccessTime() >= timeoutMs)
+			if (currTime.getTime() - sess.getLastAccessTime().getTime() >= timeoutMs)
 			{
 				this.listener.sessionDestroy(sess);
 				this.sessMap.remove(sess.getSessId());
@@ -95,7 +97,7 @@ public class JWTMSvrSessionManager extends JWTSessionManager implements MQTTEven
 				while (itSess.hasNext())
 				{
 					sess = itSess.next();
-					if (currTime - sess.getLastAccessTime() >= timeoutMs)
+					if (currTime.getTime() - sess.getLastAccessTime().getTime() >= timeoutMs)
 					{
 						sessMap.remove(sess.getSessId());
 					}
@@ -144,7 +146,7 @@ public class JWTMSvrSessionManager extends JWTSessionManager implements MQTTEven
 					sess = this.sessMap.get(sessId);
 					if (sess != null)
 					{
-						sess.setLastAccessTime(System.currentTimeMillis());
+						sess.setLastAccessTime(DateTimeUtil.timestampNow());
 					}
 					return sess;
 				}
@@ -179,7 +181,7 @@ public class JWTMSvrSessionManager extends JWTSessionManager implements MQTTEven
 					}
 					else
 					{
-						sess.setLastAccessTime(System.currentTimeMillis());
+						sess.setLastAccessTime(DateTimeUtil.timestampNow());
 					}
 				}
 				else
@@ -189,7 +191,7 @@ public class JWTMSvrSessionManager extends JWTSessionManager implements MQTTEven
 					{
 						synchronized(this.remoteSessMap)
 						{
-							sess.setLastAccessTime(System.currentTimeMillis());
+							sess.setLastAccessTime(DateTimeUtil.timestampNow());
 							sessMap.put(sessId, sess);
 						}
 						if (this.sessInit != null)
@@ -287,11 +289,11 @@ public class JWTMSvrSessionManager extends JWTSessionManager implements MQTTEven
 			}
 			return null;
 		}
-		long startTime = System.currentTimeMillis();
+		Timestamp startTime = DateTimeUtil.timestampNow();
 		long t;
 		while (!req.reqEnd)
 		{
-			t = System.currentTimeMillis() - startTime;
+			t = System.currentTimeMillis() - startTime.getTime();
 			if (t >= 2000)
 			{
 				break;
@@ -353,7 +355,7 @@ public class JWTMSvrSessionManager extends JWTSessionManager implements MQTTEven
 						sess = this.sessMap.get(sessId);
 						if (sess != null)
 						{
-							sess.setLastAccessTime(System.currentTimeMillis());
+							sess.setLastAccessTime(DateTimeUtil.timestampNow());
 						}
 					}
 					reqMap = new HashMap<String, Object>();
@@ -383,7 +385,7 @@ public class JWTMSvrSessionManager extends JWTSessionManager implements MQTTEven
 						sess = this.sessMap.get(sessId);
 						if (sess != null)
 						{
-							sess.setLastAccessTime(System.currentTimeMillis());
+							sess.setLastAccessTime(DateTimeUtil.timestampNow());
 						}
 					}
 					reqMap = new HashMap<String, Object>();

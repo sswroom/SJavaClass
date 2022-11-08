@@ -13,6 +13,7 @@ import java.util.TimeZone;
 
 import org.sswr.util.basic.MyThread;
 import org.sswr.util.basic.ThreadVar;
+import org.sswr.util.data.DateTimeUtil;
 import org.sswr.util.db.CSVUtil;
 import org.sswr.util.db.DBUpdateHandler;
 
@@ -87,7 +88,7 @@ public class ActionFileStore implements Runnable, DBUpdateHandler {
 			i++;
 		}
 
-		Timestamp t = new Timestamp(System.currentTimeMillis());
+		Timestamp t = DateTimeUtil.timestampNow();
 		String line = CSVUtil.join(new String[]{t.toString(), userName, className+"."+funcName, actType.name(), fromData, toData});
 		synchronized(this.entries)
 		{

@@ -1,6 +1,7 @@
 package org.sswr.util.io;
 
 import java.io.PrintStream;
+import java.time.ZonedDateTime;
 
 public class PrintStreamLog implements LogHandler
 {
@@ -12,7 +13,7 @@ public class PrintStreamLog implements LogHandler
 	}
 
 	@Override
-	public void logAdded(long logTime, String logMsg, LogLevel logLev) {
+	public void logAdded(ZonedDateTime logTime, String logMsg, LogLevel logLev) {
 		this.pstm.println(logMsg);
 	}
 

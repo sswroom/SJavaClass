@@ -8,8 +8,6 @@ import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
-import org.sswr.util.data.DateTimeUtil;
-
 public class FileLog implements LogHandler
 {
 	private LogType logStyle;
@@ -21,10 +19,10 @@ public class FileLog implements LogHandler
 	private String extName;
 	private boolean closed;
 	
-	private String getNewName(long logTime)
+	private String getNewName(ZonedDateTime logTime)
 	{
 		StringBuilder sb = new StringBuilder();
-		ZonedDateTime time = DateTimeUtil.newZonedDateTime(logTime);
+		ZonedDateTime time = logTime;
 
 		switch (this.groupStyle)
 		{
@@ -119,8 +117,7 @@ public class FileLog implements LogHandler
 			}
 		}
 	
-		long t = System.currentTimeMillis();
-		String newFileName = getNewName(t);
+		String newFileName = getNewName(ZonedDateTime.now());
 	
 		try
 		{
@@ -153,10 +150,10 @@ public class FileLog implements LogHandler
 		}
 	}
 
-	public synchronized void logAdded(long logTime, String logMsg, LogLevel logLev)
+	public synchronized void logAdded(ZonedDateTime logTime, String logMsg, LogLevel logLev)
 	{
 		String newFile = null;
-		ZonedDateTime time = DateTimeUtil.newZonedDateTime(logTime);
+		ZonedDateTime time = logTime;
 	
 		if (this.logStyle == LogType.PER_DAY)
 		{

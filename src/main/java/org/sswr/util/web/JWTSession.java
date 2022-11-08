@@ -1,5 +1,6 @@
 package org.sswr.util.web;
 
+import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -8,7 +9,7 @@ public class JWTSession
 {
 	private long sessId;
 	private List<String> roleList;
-	private long lastAccessTime;
+	private Timestamp lastAccessTime;
 	private String userName;
 	private Map<String, Object> objectMap;
 
@@ -35,12 +36,12 @@ public class JWTSession
 		return this.userName;
 	}
 
-	public void setLastAccessTime(long lastAccessTime)
+	public void setLastAccessTime(Timestamp lastAccessTime)
 	{
 		this.lastAccessTime = lastAccessTime;
 	}
 
-	public long getLastAccessTime()
+	public Timestamp getLastAccessTime()
 	{
 		return this.lastAccessTime;
 	}

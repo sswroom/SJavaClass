@@ -3,6 +3,7 @@ package org.sswr.util.io;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,7 +32,7 @@ public class LogTool
 		synchronized(this.hdlrArr)
 		{
 			int i = hdlrArr.size();
-			long t = System.currentTimeMillis();
+			ZonedDateTime t = ZonedDateTime.now();
 			while (i-- > 0)
 			{
 				hdlrArr.get(i).logAdded(t, "End logging normally", LogLevel.FORCE);
@@ -82,7 +83,7 @@ public class LogTool
 	
 		if (!this.skipStarted)
 		{
-			long t = System.currentTimeMillis();
+			ZonedDateTime t = ZonedDateTime.now();
 			StringBuilder sb = new StringBuilder();
 			sb.append("Program ");
 			sb.append(JavaEnv.getProgName());
@@ -113,7 +114,7 @@ public class LogTool
 	public void logMessage(String logMsg, LogLevel level)
 	{
 		int iLevel = level.ordinal();
-		long t = System.currentTimeMillis();
+		ZonedDateTime t = ZonedDateTime.now();
 		synchronized(this.hdlrArr)
 		{
 			int i = this.hdlrArr.size();

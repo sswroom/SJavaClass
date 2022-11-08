@@ -1,6 +1,7 @@
 package org.sswr.util.net.email;
 
 import java.io.File;
+import java.time.ZonedDateTime;
 import java.util.Iterator;
 
 import org.sswr.util.data.DataTools;
@@ -149,7 +150,7 @@ public class EmailChecker<T extends TemplateEmailStatus> implements Runnable
 	@Override
 	public void run()
 	{
-		long t = System.currentTimeMillis();
+		ZonedDateTime t = ZonedDateTime.now();
 		T email;
 		T newEmail;
 		Iterator<T> itEmails = this.handler.getPendingEmails().iterator();

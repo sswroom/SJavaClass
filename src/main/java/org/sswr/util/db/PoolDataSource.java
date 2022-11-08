@@ -29,6 +29,7 @@ public class PoolDataSource implements DataSource
 		this.conns = new PoolConnection[maxCnt];
 		this.evt = new ThreadEvent(true);
 		this.loginTimeout = 10;
+		this.recvTimeoutMS = 30000;
 		if (debug)
 		{
 			this.connCaller = new StackTraceElement[maxCnt][];

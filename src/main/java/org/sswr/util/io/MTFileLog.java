@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.sswr.util.basic.ThreadEvent;
-import org.sswr.util.data.DateTimeUtil;
 
 public class MTFileLog implements Runnable, LogHandler
 {
@@ -25,13 +24,13 @@ public class MTFileLog implements Runnable, LogHandler
 	private boolean closed;
 	private boolean running;
 	private ThreadEvent evt;
-	private List<Long> dateList;
+	private List<ZonedDateTime> dateList;
 	private List<String> msgList;
 
-	private String getNewName(long logTime)
+	private String getNewName(ZonedDateTime logTime)
 	{
 		StringBuilder sb = new StringBuilder();
-		ZonedDateTime time = DateTimeUtil.newZonedDateTime(logTime);
+		ZonedDateTime time = logTime;
 
 		switch (this.groupStyle)
 		{
@@ -90,7 +89,7 @@ public class MTFileLog implements Runnable, LogHandler
 		return sb.toString();
 	}
 
-	private void writeArr(List<String> msgArr, List<Long> dateArr)
+	private void writeArr(List<String> msgArr, List<ZonedDateTime> dateArr)
 	{
 		int i = 0;
 		int arrCnt;
@@ -101,14 +100,14 @@ public class MTFileLog implements Runnable, LogHandler
 		while (i < arrCnt)
 		{
 			String newFile = null;
-			long logTime;
+			ZonedDateTime logTime;
 			String logMsg;
 			synchronized (msgArr)
 			{
 				logTime = dateArr.get(i);				
 				logMsg = msgArr.get(i);
 			}
-			ZonedDateTime time = DateTimeUtil.newZonedDateTime(logTime);
+			ZonedDateTime time = logTime;
 		
 			if (this.logStyle == LogType.PER_DAY)
 			{
@@ -194,7 +193,7 @@ public class MTFileLog implements Runnable, LogHandler
 	public MTFileLog(String fileName, LogType style, LogGroup groupStyle, String dateFormat)
 	{
 		this.evt = new ThreadEvent(true);
-		this.dateList = new ArrayList<Long>();
+		this.dateList = new ArrayList<ZonedDateTime>();
 		this.msgList = new ArrayList<String>();
 		if (dateFormat != null)
 		{
@@ -231,8 +230,7 @@ public class MTFileLog implements Runnable, LogHandler
 			}
 		}
 	
-		long t = System.currentTimeMillis();
-		String newFileName = getNewName(t);
+		String newFileName = getNewName(ZonedDateTime.now());
 	
 		try
 		{
@@ -256,7 +254,7 @@ public class MTFileLog implements Runnable, LogHandler
 		}
 	}
 
-	public synchronized void logAdded(long logTime, String logMsg, LogLevel logLev)
+	public synchronized void logAdded(ZonedDateTime logTime, String logMsg, LogLevel logLev)
 	{
 		if (this.closed)
 			return;
@@ -273,7 +271,7 @@ public class MTFileLog implements Runnable, LogHandler
 	public void run() {
 		int arrCnt;
 		List<String> msgArr = null;
-		List<Long> dateArr = null;
+		List<ZonedDateTime> dateArr = null;
 		this.running = true;
 		while (!this.closed)
 		{
@@ -282,7 +280,7 @@ public class MTFileLog implements Runnable, LogHandler
 				if ((arrCnt = this.msgList.size()) > 0)
 				{
 					msgArr = new ArrayList<String>();
-					dateArr = new ArrayList<Long>();
+					dateArr = new ArrayList<ZonedDateTime>();
 					msgArr.addAll(this.msgList.subList(0, arrCnt));
 					dateArr.addAll(this.dateList.subList(0, arrCnt));
 					this.msgList.removeAll(msgArr);
@@ -302,7 +300,7 @@ public class MTFileLog implements Runnable, LogHandler
 			synchronized(this)
 			{
 				msgArr = new ArrayList<String>();
-				dateArr = new ArrayList<Long>();
+				dateArr = new ArrayList<ZonedDateTime>();
 				msgArr.addAll(this.msgList.subList(0, arrCnt));
 				dateArr.addAll(this.dateList.subList(0, arrCnt));
 				this.msgList.removeAll(msgArr);
