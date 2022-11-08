@@ -53,7 +53,55 @@ public class TCPClient extends IOStream
 			}
 			else
 			{
-				this.s = new Socket(addr, port);
+				this.s = new Socket();
+				this.s.connect(new InetSocketAddress(addr, port));
+			}
+		}
+		catch (IOException ex)
+		{
+			if (debug)
+			{
+				ex.printStackTrace();
+			}
+			this.flags = 12;
+			return;
+		}
+		this.setSourceName(this.getRemoteName());
+		this.cliId = SocketUtil.genSocketId(s);
+	}
+
+	public TCPClient(String hostName, int port, TCPClientType cliType, int connTimeoutMS)
+	{
+		super(hostName);
+		this.totalRecvSize = 0;
+		this.totalSendSize = 0;
+		this.flags = 0;
+		this.s = null;
+		this.timeoutMS = 0;
+	
+		InetAddress addr;
+		try
+		{
+			addr = InetAddress.getByName(hostName);
+		}
+		catch (UnknownHostException ex)
+		{
+			//ex.printStackTrace();
+			this.flags = 12;
+			return;
+		}
+		try
+		{
+			if (cliType == TCPClientType.SSL)
+			{
+				SSLSocketFactory factory = (SSLSocketFactory)SSLSocketFactory.getDefault();
+				this.s = factory.createSocket(hostName, port);
+				((SSLSocket)this.s).startHandshake();
+			}
+			else
+			{
+				this.s = new Socket();
+				this.s.connect(new InetSocketAddress(addr, port), connTimeoutMS);
 			}
 		}
 		catch (IOException ex)
