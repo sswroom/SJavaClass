@@ -117,6 +117,54 @@ public class JWTMSvrSessionManager extends JWTSessionManager implements MQTTEven
 		return false;
 	}
 
+	@Override
+	public void removeSessions(String userName)
+	{
+		Map<String, Object> reqMap = new HashMap<String, Object>();
+		reqMap.put("act", "remuser");
+		reqMap.put("reqSvr", String.valueOf(serverId));
+		reqMap.put("user", userName);
+		this.sendReq(reqMap);
+		this.removeUserSessions(userName);
+	}
+
+	private synchronized void removeUserSessions(String userName)
+	{
+		Object[] sessArr = this.sessMap.values().toArray();
+		JWTSession sess;
+		int i = 0;
+		int j = sessArr.length;
+		while (i < j)
+		{
+			sess = (JWTSession)sessArr[i];
+			if (sess.getUserName().equals(userName))
+			{
+				this.listener.sessionDestroy(sess);
+				this.sessMap.remove(sess.getSessId());
+			}
+			i++;
+		}
+		synchronized(this.remoteSessMap)
+		{
+			Iterator<Map<Long, JWTSession>> itSessMap = this.remoteSessMap.values().iterator();
+			Map<Long, JWTSession> sessMap;
+			Iterator<JWTSession> itSess;
+			while (itSessMap.hasNext())
+			{
+				sessMap = itSessMap.next();
+				itSess = sessMap.values().iterator();
+				while (itSess.hasNext())
+				{
+					sess = itSess.next();
+					if (sess.getUserName().equals(userName))
+					{
+						sessMap.remove(sess.getSessId());
+					}
+				}
+			}
+		}		
+	}
+
 	public String createToken(JWTSession sess)
 	{
 		JWTParam param = new JWTParam();
@@ -345,71 +393,96 @@ public class JWTMSvrSessionManager extends JWTSessionManager implements MQTTEven
 			Long sessId = StringUtil.toLong((String)retMap.get("sessId"));
 			Integer reqServerId = StringUtil.toInteger((String)retMap.get("reqSvr"));
 			Integer reqId = StringUtil.toInteger((String)retMap.get("reqId"));
-			if (action != null && serverId == this.serverId && sessId != null && reqServerId != null && reqId != null)
+			if (action != null)
 			{
-				switch (action)
+				if (action.equals("remuser"))
 				{
-				case "kareq":
-					synchronized(this)
+					String userName = (String)retMap.get("user");
+					if (reqServerId != null && reqServerId != this.serverId && userName != null)
 					{
-						sess = this.sessMap.get(sessId);
-						if (sess != null)
+						this.removeUserSessions(userName);
+					}
+				}
+				else if (serverId == this.serverId && sessId != null && reqServerId != null && reqId != null)
+				{
+					switch (action)
+					{
+					case "kareq":
+						synchronized(this)
 						{
-							sess.setLastAccessTime(DateTimeUtil.timestampNow());
+							sess = this.sessMap.get(sessId);
+							if (sess != null)
+							{
+								sess.setLastAccessTime(DateTimeUtil.timestampNow());
+							}
 						}
-					}
-					reqMap = new HashMap<String, Object>();
-					reqMap.put("act", "karesp");
-					reqMap.put("svrId", String.valueOf(reqServerId));
-					reqMap.put("sessId", String.valueOf(sessId));
-					reqMap.put("reqSvr", String.valueOf(this.serverId));
-					reqMap.put("reqId", String.valueOf(reqId));
-					reqMap.put("res", (sess != null)?"ok":"err");
-					this.sendReq(reqMap);
-					break;
-				case "karesp":
-					synchronized(this.reqMap)
-					{
-						req = this.reqMap.get(reqId);
-					}
-					if (req != null)
-					{
-						req.reqResult = "ok".equals((String)retMap.get("res"));
-						req.reqEnd = true;
-						req.evt.set();
-					}
-					break;
-				case "gsreq":
-					synchronized(this)
-					{
-						sess = this.sessMap.get(sessId);
-						if (sess != null)
-						{
-							sess.setLastAccessTime(DateTimeUtil.timestampNow());
-						}
-					}
-					reqMap = new HashMap<String, Object>();
-					reqMap.put("act", "gsresp");
-					reqMap.put("svrId", String.valueOf(reqServerId));
-					reqMap.put("sessId", String.valueOf(sessId));
-					reqMap.put("reqSvr", String.valueOf(this.serverId));
-					reqMap.put("reqId", String.valueOf(reqId));
-					if (sess == null)
-					{
-						reqMap.put("cnt", "0");
-						reqMap.put("end", "1");
+						reqMap = new HashMap<String, Object>();
+						reqMap.put("act", "karesp");
+						reqMap.put("svrId", String.valueOf(reqServerId));
+						reqMap.put("sessId", String.valueOf(sessId));
+						reqMap.put("reqSvr", String.valueOf(this.serverId));
+						reqMap.put("reqId", String.valueOf(reqId));
+						reqMap.put("res", (sess != null)?"ok":"err");
 						this.sendReq(reqMap);
-					}
-					else
-					{
-						List<String> roleList = sess.getRoleList();
-						reqMap.put("cnt", String.valueOf(roleList.size()));
-						reqMap.put("user", sess.getUserName());
-						StringBuilder sb = new StringBuilder();
-						int i = 0;
-						int j = 16;
-						while (j < roleList.size())
+						break;
+					case "karesp":
+						synchronized(this.reqMap)
 						{
+							req = this.reqMap.get(reqId);
+						}
+						if (req != null)
+						{
+							req.reqResult = "ok".equals((String)retMap.get("res"));
+							req.reqEnd = true;
+							req.evt.set();
+						}
+						break;
+					case "gsreq":
+						synchronized(this)
+						{
+							sess = this.sessMap.get(sessId);
+							if (sess != null)
+							{
+								sess.setLastAccessTime(DateTimeUtil.timestampNow());
+							}
+						}
+						reqMap = new HashMap<String, Object>();
+						reqMap.put("act", "gsresp");
+						reqMap.put("svrId", String.valueOf(reqServerId));
+						reqMap.put("sessId", String.valueOf(sessId));
+						reqMap.put("reqSvr", String.valueOf(this.serverId));
+						reqMap.put("reqId", String.valueOf(reqId));
+						if (sess == null)
+						{
+							reqMap.put("cnt", "0");
+							reqMap.put("end", "1");
+							this.sendReq(reqMap);
+						}
+						else
+						{
+							List<String> roleList = sess.getRoleList();
+							reqMap.put("cnt", String.valueOf(roleList.size()));
+							reqMap.put("user", sess.getUserName());
+							StringBuilder sb = new StringBuilder();
+							int i = 0;
+							int j = 16;
+							while (j < roleList.size())
+							{
+								sb.setLength(0);
+								while (i < j)
+								{
+									if (sb.length() > 0)
+									{
+										sb.append(",");
+									}
+									sb.append(roleList.get(i));
+									i++;
+								}
+								reqMap.put("roles", sb.toString());
+								this.sendReq(reqMap);
+								j += 16;
+							}
+							j = roleList.size();
 							sb.setLength(0);
 							while (i < j)
 							{
@@ -421,63 +494,49 @@ public class JWTMSvrSessionManager extends JWTSessionManager implements MQTTEven
 								i++;
 							}
 							reqMap.put("roles", sb.toString());
+							reqMap.put("end", "1");
 							this.sendReq(reqMap);
-							j += 16;
 						}
-						j = roleList.size();
-						sb.setLength(0);
-						while (i < j)
+						break;
+					case "gsresp":
+						synchronized(this.reqMap)
 						{
-							if (sb.length() > 0)
-							{
-								sb.append(",");
-							}
-							sb.append(roleList.get(i));
-							i++;
+							req = this.reqMap.get(reqId);
 						}
-						reqMap.put("roles", sb.toString());
-						reqMap.put("end", "1");
-						this.sendReq(reqMap);
-					}
-					break;
-				case "gsresp":
-					synchronized(this.reqMap)
-					{
-						req = this.reqMap.get(reqId);
-					}
-					if (req != null)
-					{
-						req.reqUserName = (String)retMap.get("user");
-						if (req.reqCnt == 0)
+						if (req != null)
 						{
-							Integer icnt = StringUtil.toInteger((String)retMap.get("cnt"));
-							if (icnt != null)
+							req.reqUserName = (String)retMap.get("user");
+							if (req.reqCnt == 0)
 							{
-								req.reqCnt = icnt;
-							}
-						}
-						String roles = (String)retMap.get("roles");
-						if (roles != null)
-						{
-							String[] roleArr = StringUtil.split(roles, ",");
-							int i = 0;
-							int j = roleArr.length;
-							synchronized(req.reqRoles)
-							{
-								while (i < j)
+								Integer icnt = StringUtil.toInteger((String)retMap.get("cnt"));
+								if (icnt != null)
 								{
-									req.reqRoles.add(roleArr[i]);
-									i++;
+									req.reqCnt = icnt;
 								}
 							}
+							String roles = (String)retMap.get("roles");
+							if (roles != null)
+							{
+								String[] roleArr = StringUtil.split(roles, ",");
+								int i = 0;
+								int j = roleArr.length;
+								synchronized(req.reqRoles)
+								{
+									while (i < j)
+									{
+										req.reqRoles.add(roleArr[i]);
+										i++;
+									}
+								}
+							}
+							if (req.reqCnt == req.reqRoles.size() && retMap.containsKey("end"))
+							{
+								req.reqEnd = true;
+								req.evt.set();
+							}
 						}
-						if (req.reqCnt == req.reqRoles.size() && retMap.containsKey("end"))
-						{
-							req.reqEnd = true;
-							req.evt.set();
-						}
+						break;
 					}
-					break;
 				}
 			}
 		}

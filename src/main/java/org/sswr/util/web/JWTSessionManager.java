@@ -82,6 +82,24 @@ public class JWTSessionManager
 		return false;
 	}
 
+	public synchronized void removeSessions(String userName)
+	{
+		Object[] sessArr = this.sessMap.values().toArray();
+		JWTSession sess;
+		int i = 0;
+		int j = sessArr.length;
+		while (i < j)
+		{
+			sess = (JWTSession)sessArr[i];
+			if (sess.getUserName().equals(userName))
+			{
+				this.listener.sessionDestroy(sess);
+				this.sessMap.remove(sess.getSessId());
+			}
+			i++;
+		}
+	}
+
 	public String createToken(JWTSession sess)
 	{
 		JWTParam param = new JWTParam();
