@@ -5,6 +5,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,10 +29,14 @@ public class FileUtil {
 		return getRealPath(path, true);
 	}
 
-	public static boolean copyFile(File srcFile, File destFile)
+	public static boolean copyFile(File srcFile, File destFile, boolean overwrite)
 	{
 		long fileLen = srcFile.length();
 		long copyLen = 0;
+		if (!overwrite && destFile.exists())
+		{
+			return false;
+		}
 		try
 		{
 			int readCnt;
@@ -53,7 +59,7 @@ public class FileUtil {
 			fis.close();
 			if (copyLen == fileLen)
 			{
-				destFile.setLastModified(srcFile.lastModified());
+				Files.setLastModifiedTime(Paths.get(destFile.getPath()), Files.getLastModifiedTime(Paths.get(srcFile.getPath())));
 				return true;
 			}
 			else
@@ -72,16 +78,60 @@ public class FileUtil {
 		}
 	}
 
-	public static boolean moveFile(File srcFile, String destPath)
+	public static boolean moveFile(File srcFile, String destPath, boolean overwrite)
 	{
 		File destFile = new File(destPath);
 		if (srcFile.renameTo(destFile))
 		{
 			return true;
 		}
-		if (copyFile(srcFile, destFile))
+		if (copyFile(srcFile, destFile, overwrite))
 		{
 			srcFile.delete();
+			return true;
+		}
+		return false;
+	}
+
+	public static boolean copyDir(File srcDir, String destDir, boolean overwrite)
+	{
+		if (srcDir.isFile())
+		{
+			return copyFile(srcDir, new File(destDir), overwrite);
+		}
+		else
+		{
+			File destFile = new File(destDir);
+			destFile.mkdirs();
+			if (!destDir.endsWith(File.separator))
+			{
+				destDir = destDir + File.separator;
+			}
+			File[] files = srcDir.listFiles();
+			int i = 0;
+			int j = files.length;
+			while (i < j)
+			{
+				if (!files[i].getName().startsWith(".") && !copyDir(files[i], destDir+files[i].getName(), overwrite))
+				{
+					return false;
+				}
+				i++;
+			}
+			return true;
+		}
+	}
+
+	public static boolean moveDir(File srcDir, String destDir, boolean overwrite)
+	{
+		File destFile = new File(destDir);
+		if (srcDir.renameTo(destFile))
+		{
+			return true;
+		}
+		if (copyDir(srcDir, destDir, overwrite))
+		{
+			deleteFileOrDir(srcDir);
 			return true;
 		}
 		return false;
