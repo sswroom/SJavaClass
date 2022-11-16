@@ -1,11 +1,28 @@
 package org.sswr.util.data;
 
+import java.util.Arrays;
+
 import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.CoordinateXYM;
+import org.locationtech.jts.geom.CoordinateXYZM;
 import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.LinearRing;
 import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.PrecisionModel;
 import org.locationtech.jts.io.WKTWriter;
+import org.sswr.util.math.Coord2DDbl;
 import org.sswr.util.math.CoordinateSystem;
 import org.sswr.util.math.CoordinateSystemManager;
+import org.sswr.util.math.geometry.LineString;
+import org.sswr.util.math.geometry.Point2D;
+import org.sswr.util.math.geometry.PointM;
+import org.sswr.util.math.geometry.PointZ;
+import org.sswr.util.math.geometry.PointZM;
+import org.sswr.util.math.geometry.Polygon;
+import org.sswr.util.math.geometry.Polyline;
+import org.sswr.util.math.geometry.Vector2D;
+import org.sswr.util.math.geometry.Vector2D.VectorType;
 import org.sswr.util.math.unit.Distance.DistanceUnit;
 
 public class GeometryUtil
@@ -14,6 +31,181 @@ public class GeometryUtil
 	{
 		WKTWriter writer = new WKTWriter();
 		return writer.write(geometry);
+	}
+
+	public static Geometry fromVector2D(Vector2D vec)
+	{
+		if (vec == null)
+		{
+			return null;
+		}
+		GeometryFactory factory = new GeometryFactory(new PrecisionModel(), vec.getSRID());
+		if (vec.getVectorType() == VectorType.Point)
+		{
+			if (vec.hasZ())
+			{
+				if (vec.hasM())
+				{
+					PointZM pt = (PointZM)vec;
+					return factory.createPoint(new CoordinateXYZM(pt.getCenter().x, pt.getCenter().y, pt.getZ(), pt.getM()));
+				}
+				else
+				{
+					PointZ pt = (PointZ)vec;
+					return factory.createPoint(new Coordinate(pt.getCenter().x, pt.getCenter().y, pt.getZ()));
+				}
+			}
+			else
+			{
+				if (vec.hasM())
+				{
+					PointM pt = (PointM)vec;
+					return factory.createPoint(new CoordinateXYM(pt.getCenter().x, pt.getCenter().y, pt.getM()));
+				}
+				else
+				{
+					Point2D pt = (Point2D)vec;
+					return factory.createPoint(new Coordinate(pt.getCenter().x, pt.getCenter().y));
+				}
+			}
+		}
+		else if (vec.getVectorType() == VectorType.LineString)
+		{
+			LineString pl = (LineString)vec;
+			Coord2DDbl[] ptArr = pl.getPointList();
+			double[] zArr = pl.getZList();
+			double[] mArr = pl.getMList();
+			Coordinate[] coordinates = new Coordinate[ptArr.length];
+			int i = ptArr.length;
+			if (zArr != null)
+			{
+				if (mArr != null)
+				{
+					while (i-- > 0)
+					{
+						coordinates[i] = new CoordinateXYZM(ptArr[i].x, ptArr[i].y, zArr[i], mArr[i]);
+					}
+				}
+				else
+				{
+					while (i-- > 0)
+					{
+						coordinates[i] = new Coordinate(ptArr[i].x, ptArr[i].y, zArr[i]);
+					}
+				}
+			}
+			else
+			{
+				while (i-- > 0)
+				{
+					coordinates[i] = new Coordinate(ptArr[i].x, ptArr[i].y);
+				}
+			}
+			return factory.createLineString(coordinates);
+		}
+		else if (vec.getVectorType() == VectorType.Polyline)
+		{
+			Polyline pl = (Polyline)vec;
+			int[] ptOfstArr = pl.getPtOfstList();
+			org.locationtech.jts.geom.LineString[] lineStrings = new org.locationtech.jts.geom.LineString[ptOfstArr.length];
+			Coord2DDbl[] ptArr = pl.getPointList();
+			double[] zArr = pl.getZList();
+			double[] mArr = pl.getMList();
+			int ptEndOfst = ptArr.length;
+			int i = ptOfstArr.length;
+			int j;
+			int k;
+			Coordinate[] coordinates;
+			while (i-- > 0)
+			{
+				j = ptEndOfst;
+				k = ptOfstArr[i];
+				coordinates = new Coordinate[ptEndOfst - k];
+				if (zArr != null)
+				{
+					if (mArr != null)
+					{
+						while (j-- > k)
+						{
+							coordinates[j - k] = new CoordinateXYZM(ptArr[j].x, ptArr[j].y, zArr[j], mArr[j]);
+						}
+					}
+					else
+					{
+						while (j-- > k)
+						{
+							coordinates[j - k] = new Coordinate(ptArr[j].x, ptArr[j].y, zArr[j]);
+						}
+					}
+				}
+				else
+				{
+					while (j-- > k)
+					{
+						coordinates[j - k] = new Coordinate(ptArr[j].x, ptArr[j].y);
+					}
+				}
+				lineStrings[i] = factory.createLineString(coordinates);
+				ptEndOfst = k;
+			}
+			return factory.createMultiLineString(lineStrings);
+		}
+		else if (vec.getVectorType() == VectorType.Polygon)
+		{
+			Polygon pg = (Polygon)vec;
+			int[] ptOfstArr = pg.getPtOfstList();
+			LinearRing[] lineStrings = new LinearRing[ptOfstArr.length];
+			Coord2DDbl[] ptArr = pg.getPointList();
+			double[] zArr = pg.getZList();
+			double[] mArr = pg.getMList();
+			int ptEndOfst = ptArr.length;
+			int i = ptOfstArr.length;
+			int j;
+			int k;
+			Coordinate[] coordinates;
+			while (i-- > 0)
+			{
+				j = ptEndOfst;
+				k = ptOfstArr[i];
+				coordinates = new Coordinate[ptEndOfst - k];
+				if (zArr != null)
+				{
+					if (mArr != null)
+					{
+						while (j-- > k)
+						{
+							coordinates[j - k] = new CoordinateXYZM(ptArr[j].x, ptArr[j].y, zArr[j], mArr[j]);
+						}
+					}
+					else
+					{
+						while (j-- > k)
+						{
+							coordinates[j - k] = new Coordinate(ptArr[j].x, ptArr[j].y, zArr[j]);
+						}
+					}
+				}
+				else
+				{
+					while (j-- > k)
+					{
+						coordinates[j - k] = new Coordinate(ptArr[j].x, ptArr[j].y);
+					}
+				}
+				lineStrings[i] = factory.createLinearRing(coordinates);
+				ptEndOfst = k;
+			}
+			if (lineStrings.length == 1)
+			{
+				return factory.createPolygon(lineStrings[0]);
+			}
+			else
+			{
+				return factory.createPolygon(lineStrings[0], Arrays.copyOfRange(lineStrings, 1, lineStrings.length));
+			}
+		}
+		System.out.println("GeometryUtil: Unsupported type: "+vec.toString());
+		return null;
 	}
 
 	public static double calcMaxDistanceFromCenter(Geometry geometry, DistanceUnit unit)

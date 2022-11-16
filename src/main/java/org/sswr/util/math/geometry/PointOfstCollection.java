@@ -5,6 +5,7 @@ import java.util.Objects;
 import org.sswr.util.data.SharedDouble;
 import org.sswr.util.math.Coord2DDbl;
 import org.sswr.util.math.CoordinateSystem;
+import org.sswr.util.math.MathUtil;
 
 public abstract class PointOfstCollection extends PointCollection
 {
@@ -129,7 +130,77 @@ public abstract class PointOfstCollection extends PointCollection
 			return false;
 		}
 		PointOfstCollection pointOfstCollection = (PointOfstCollection) o;
-		return Objects.equals(ptOfstArr, pointOfstCollection.ptOfstArr) && Objects.equals(zArr, pointOfstCollection.zArr) && Objects.equals(mArr, pointOfstCollection.mArr) && Objects.equals(pointArr, pointOfstCollection.pointArr) && this.srid == pointOfstCollection.srid;
+		return this.getVectorType() == pointOfstCollection.getVectorType() &&
+				Objects.equals(ptOfstArr, pointOfstCollection.ptOfstArr) &&
+				Objects.equals(zArr, pointOfstCollection.zArr) &&
+				Objects.equals(mArr, pointOfstCollection.mArr) &&
+				Objects.equals(pointArr, pointOfstCollection.pointArr) &&
+				this.srid == pointOfstCollection.srid;
+	}
+
+	@Override
+	public boolean equalsNearly(Vector2D vec) {
+		if (vec == this)
+			return true;
+		if (!(vec instanceof PointOfstCollection)) {
+			return false;
+		}
+		if (vec.getVectorType() == this.getVectorType() && this.hasZ() == vec.hasZ() && this.hasM() == vec.hasM())
+		{
+			PointOfstCollection pl = (PointOfstCollection)vec;
+			int[] ptOfst = pl.getPtOfstList();
+			Coord2DDbl []ptList = pl.getPointList();
+			double []valArr;
+			if (ptOfst.length != this.ptOfstArr.length || ptList.length != this.pointArr.length)
+			{
+				return false;
+			}
+			int i = ptOfst.length;
+			while (i-- > 0)
+			{
+				if (ptOfst[i] != this.ptOfstArr[i])
+				{
+					return false;
+				}
+			}
+			i = ptList.length;
+			while (i-- > 0)
+			{
+				if (!ptList[i].equalsNearly(this.pointArr[i]))
+				{
+					return false;
+				}
+			}
+			if (this.zArr != null)
+			{
+				valArr = pl.zArr;
+				i = this.zArr.length;
+				while (i-- > 0)
+				{
+					if (!MathUtil.nearlyEqualsDbl(valArr[i], this.zArr[i]))
+					{
+						return false;
+					}
+				}
+			}
+			if (this.mArr != null)
+			{
+				valArr = pl.mArr;
+				i = this.mArr.length;
+				while (i-- > 0)
+				{
+					if (!MathUtil.nearlyEqualsDbl(valArr[i], this.mArr[i]))
+					{
+						return false;
+					}
+				}
+			}
+			return true;
+		}
+		else
+		{
+			return false;
+		}
 	}
 
 	public boolean hasZ()

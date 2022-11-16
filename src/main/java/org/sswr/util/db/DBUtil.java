@@ -604,10 +604,14 @@ public class DBUtil {
 					}
 				}
 			}
+			else if (fieldType.equals(byte[].class))
+			{
+				col.setter.set(o, rs.getBytes(i + 1));
+			}
 			else
 			{
 //							col.setterMeth.invoke(obj, rs.getObject(i + 1));
-				sqlLogger.logMessage("Unknown fieldType for "+col.field.getName()+" ("+fieldType.toString()+")", LogLevel.ERROR);
+				sqlLogger.logMessage("DBUtil: Unknown fieldType for "+col.field.getName()+" ("+fieldType.toString()+")", LogLevel.ERROR);
 			}
 			i++;
 		}

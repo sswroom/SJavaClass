@@ -69,6 +69,11 @@ public class Coord2DDbl
 		return (this.x == coord.x) && (this.y == coord.y);
 	}
 
+	public boolean equalsNearly(Coord2DDbl coord)
+	{
+		return MathUtil.nearlyEqualsDbl(this.x, coord.x) && MathUtil.nearlyEqualsDbl(this.y, coord.y);
+	}
+
 	public boolean isZero()
 	{
 		return this.x == 0 && this.y == 0;

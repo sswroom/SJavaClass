@@ -54,7 +54,7 @@ public class WKTWriter implements VectorTextWriter
 					sb.append(pointList[i].x);
 					sb.append(' ');
 					sb.append(pointList[i].y);
-					sb.append(" NULL ");
+					sb.append(" NaN ");
 					sb.append(mArr[i]);
 					i++;
 				}
@@ -138,6 +138,60 @@ public class WKTWriter implements VectorTextWriter
 		sb.append(')');
 	}
 
+	private void appendPolygonZ(StringBuilder sb, Polygon pg)
+	{
+		int nPtOfst;
+		int nPoint;
+		int []ptOfstList = pg.getPtOfstList();
+		Coord2DDbl []pointList = pg.getPointList();
+		double []zList = pg.getZList();
+		nPtOfst = ptOfstList.length;
+		nPoint = pointList.length;
+		int i;
+		int j;
+		int k;
+		k = 0;
+		i = 0;
+		j = nPtOfst - 1;
+		sb.append('(');
+		while (i < j)
+		{
+			sb.append('(');
+			while (k < ptOfstList[i + 1])
+			{
+				sb.append(pointList[k].x);
+				sb.append(' ');
+				sb.append(pointList[k].y);
+				sb.append(' ');
+				sb.append(zList[k]);
+				k++;
+				if (k < ptOfstList[i + 1])
+				{
+					sb.append(',');
+				}
+			}
+			sb.append(')');
+			sb.append(',');
+			i++;
+		}
+		sb.append('(');
+		while (k < nPoint)
+		{
+			sb.append(pointList[k].x);
+			sb.append(' ');
+			sb.append(pointList[k].y);
+			sb.append(' ');
+			sb.append(zList[k]);
+			k++;
+			if (k < nPoint)
+			{
+				sb.append(',');
+			}
+		}
+		sb.append(')');
+		sb.append(')');
+	}
+
 	private void appendPolyline(StringBuilder sb, Polyline pl)
 	{
 		sb.append('(');
@@ -187,7 +241,7 @@ public class WKTWriter implements VectorTextWriter
 		sb.append(')');
 	}
 
-	private void appendPolyline3D(StringBuilder sb, Polyline pl)
+	private void appendPolylineZ(StringBuilder sb, Polyline pl)
 	{
 		sb.append('(');
 		int nPtOfst;
@@ -231,6 +285,65 @@ public class WKTWriter implements VectorTextWriter
 			sb.append(pointList[k].y);
 			sb.append(' ');
 			sb.append(zList[k]);
+			k++;
+			if (k < nPoint)
+			{
+				sb.append(',');
+			}
+		}
+		sb.append(')');
+		sb.append(')');
+	}
+
+	private void appendPolylineZM(StringBuilder sb, Polyline pl)
+	{
+		sb.append('(');
+		int nPtOfst;
+		int nPoint;
+		int []ptOfstList = pl.getPtOfstList();
+		Coord2DDbl []pointList = pl.getPointList();
+		double []zList = pl.getZList();
+		double []mList = pl.getMList();
+		nPtOfst = ptOfstList.length;
+		nPoint = pointList.length;
+		int i;
+		int j;
+		int k;
+		k = 0;
+		i = 0;
+		j = nPtOfst - 1;
+		while (i < j)
+		{
+			sb.append('(');
+			while (k < ptOfstList[i + 1])
+			{
+				sb.append(pointList[k].x);
+				sb.append(' ');
+				sb.append(pointList[k].y);
+				sb.append(' ');
+				sb.append(zList[k]);
+				sb.append(' ');
+				sb.append(mList[k]);
+				k++;
+				if (k < ptOfstList[i + 1])
+				{
+					sb.append(',');
+				}
+			}
+			sb.append(')');
+			sb.append(',');
+			i++;
+		}
+		sb.append('(');
+		while (k < nPoint)
+		{
+			sb.append(pointList[k].x);
+			sb.append(' ');
+			sb.append(pointList[k].y);
+			sb.append(' ');
+			sb.append(zList[k]);
+			sb.append(' ');
+			sb.append(mList[k]);
 			k++;
 			if (k < nPoint)
 			{
@@ -310,7 +423,14 @@ public class WKTWriter implements VectorTextWriter
 			else if (t == VectorType.Polygon)
 			{
 				sb.append("POLYGON");
-				appendPolygon(sb, (Polygon)geometry);
+				if (geometry.hasZ())
+				{
+					appendPolygonZ(sb, (Polygon)geometry);
+				}
+				else
+				{
+					appendPolygon(sb, (Polygon)geometry);
+				}
 			}
 			i++;
 		}
@@ -371,7 +491,14 @@ public class WKTWriter implements VectorTextWriter
 			return true;
 		case Polygon:
 			sb.append("POLYGON");
-			appendPolygon(sb, (Polygon)vec);
+			if (vec.hasZ())
+			{
+				appendPolygonZ(sb, (Polygon)vec);
+			}
+			else
+			{
+				appendPolygon(sb, (Polygon)vec);
+			}
 			return true;
 		case Polyline:
 			sb.append("MULTILINESTRING");
@@ -379,7 +506,14 @@ public class WKTWriter implements VectorTextWriter
 				Polyline pl = (Polyline)vec;
 				if (pl.hasZ())
 				{
-					appendPolyline3D(sb, pl);
+					if (pl.hasM())
+					{
+						appendPolylineZM(sb, pl);
+					}
+					else
+					{
+						appendPolylineZ(sb, pl);
+					}
 				}
 				else
 				{
@@ -400,7 +534,14 @@ public class WKTWriter implements VectorTextWriter
 					{
 						sb.append(',');
 					}
-					appendPolygon(sb, mpg.getItem(i));
+					if (mpg.hasZ())
+					{
+						appendPolygonZ(sb, mpg.getItem(i));
+					}
+					else
+					{
+						appendPolygon(sb, mpg.getItem(i));
+					}
 					i++;
 				}
 				sb.append(')');

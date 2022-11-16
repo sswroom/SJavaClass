@@ -164,7 +164,7 @@ public class SQLReader extends DBReader
 			byte bytes[] = rs.getBytes(colIndex + 1);
 			if (this.dbType == DBType.MSSQL)
 			{
-				return MSGeography.parseBinaryAsVector2D(bytes);
+				return MSGeography.parseBinary(bytes);
 			}
 			else
 			{

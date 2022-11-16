@@ -9,6 +9,7 @@ import org.sswr.util.data.SharedBool;
 import org.sswr.util.data.SharedDouble;
 import org.sswr.util.math.Coord2DDbl;
 import org.sswr.util.math.CoordinateSystem;
+import org.sswr.util.math.MathUtil;
 
 public class LineString extends PointCollection
 {
@@ -215,6 +216,62 @@ public class LineString extends PointCollection
 		}
 		LineString lineString = (LineString) o;
 		return this.srid == lineString.srid && Objects.equals(pointArr, lineString.pointArr) && Objects.equals(zArr, lineString.zArr) && Objects.equals(mArr, lineString.mArr);
+	}
+
+	@Override
+	public boolean equalsNearly(Vector2D vec) {
+		if (vec == this)
+			return true;
+		if (!(vec instanceof LineString)) {
+			return false;
+		}
+		LineString pl = (LineString) vec;
+		if (this.getVectorType() == pl.getVectorType() && this.hasZ() == pl.hasZ() && this.hasM() == pl.hasM())
+		{
+			Coord2DDbl []ptList = pl.getPointList();
+			double []valArr;
+			if (this.pointArr.length != ptList.length)
+			{
+				return false;
+			}
+			int i = ptList.length;
+			while (i-- > 0)
+			{
+				if (!ptList[i].equalsNearly(this.pointArr[i]))
+				{
+					return false;
+				}
+			}
+			if (this.zArr != null)
+			{
+				valArr = pl.zArr;
+				i = valArr.length;
+				while (i-- > 0)
+				{
+					if (!MathUtil.nearlyEqualsDbl(valArr[i], this.zArr[i]))
+					{
+						return false;
+					}
+				}
+			}
+			if (this.mArr != null)
+			{
+				valArr = pl.mArr;
+				i = valArr.length;
+				while (i-- > 0)
+				{
+					if (!MathUtil.nearlyEqualsDbl(valArr[i], this.mArr[i]))
+					{
+						return false;
+					}
+				}
+			}
+			return true;
+		}
+		else
+		{
+			return false;
+		}
 	}
 
 	@Override

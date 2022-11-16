@@ -17,6 +17,7 @@ import javax.persistence.Table;
 
 import org.locationtech.jts.geom.Geometry;
 import org.sswr.util.data.DateTimeUtil;
+import org.sswr.util.data.GeometryUtil;
 import org.sswr.util.data.ReflectTools;
 import org.sswr.util.io.LogLevel;
 import org.sswr.util.io.LogTool;
@@ -211,14 +212,18 @@ public abstract class ReadingConnection
 				Geometry geom = null;
 				if (vec != null)
 				{
-					geom = vec.toGeometry();
+					geom = GeometryUtil.fromVector2D(vec);
 				}
 				col.setter.set(o, geom);
+			}
+			else if (fieldType.equals(byte[].class))
+			{
+				col.setter.set(o, r.getBinary(i));
 			}
 			else
 			{
 //							col.setterMeth.invoke(obj, rs.getObject(i + 1));
-				if (this.logger != null) this.logger.logMessage("Unknown fieldType for "+col.field.getName()+" ("+fieldType.toString()+")", LogLevel.ERROR);
+				if (this.logger != null) this.logger.logMessage("ReadingConnection: Unknown fieldType for "+col.field.getName()+" ("+fieldType.toString()+")", LogLevel.ERROR);
 			}
 			i++;
 		}

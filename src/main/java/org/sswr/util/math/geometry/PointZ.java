@@ -4,6 +4,7 @@ import java.util.Objects;
 
 import org.sswr.util.data.SharedDouble;
 import org.sswr.util.math.CoordinateSystem;
+import org.sswr.util.math.MathUtil;
 
 public class PointZ extends Point2D
 {
@@ -56,7 +57,18 @@ public class PointZ extends Point2D
 			return false;
 		}
 		PointZ pointZ = (PointZ) o;
-		return srid == pointZ.srid && z == pointZ.z && pos.equals(pointZ.pos);
+		return srid == pointZ.srid && !pointZ.hasM() && z == pointZ.z && pos.equals(pointZ.pos);
+	}
+
+	@Override
+	public boolean equalsNearly(Vector2D vec) {
+		if (vec == this)
+			return true;
+		if (!(vec instanceof PointZ)) {
+			return false;
+		}
+		PointZ pointZ = (PointZ) vec;
+		return srid == pointZ.srid && !pointZ.hasM() && MathUtil.nearlyEqualsDbl(z, pointZ.z) && pos.equalsNearly(pointZ.pos);
 	}
 
 	@Override

@@ -40,6 +40,17 @@ public class PointM extends Point2D
 	}
 
 	@Override
+	public boolean equalsNearly(Vector2D vec) {
+		if (vec == this)
+			return true;
+		if (!(vec instanceof PointM)) {
+			return false;
+		}
+		PointM pointM = (PointM) vec;
+		return this.srid == pointM.srid && this.pos.equalsNearly(pointM.pos) && m == pointM.m;
+	}
+
+	@Override
 	public int hashCode() {
 		return Objects.hash(this.srid, this.pos, this.m);
 	}

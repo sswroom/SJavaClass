@@ -144,7 +144,38 @@ public abstract class MultiGeometry<T extends Vector2D> extends Vector2D
 		}
 		@SuppressWarnings("unchecked")
 		MultiGeometry<T> multiGeometry = (MultiGeometry<T>) o;
-		return this.srid == multiGeometry.srid && Objects.equals(geometries, multiGeometry.geometries) && hasZ == multiGeometry.hasZ && hasM == multiGeometry.hasM;
+		if (this.getVectorType() != multiGeometry.getVectorType())
+			return false;
+		if (multiGeometry.geometries.size() != this.geometries.size())
+			return false;
+		int i = multiGeometry.geometries.size();
+		while (i-- > 0)
+		{
+			if (!this.geometries.get(i).equals(multiGeometry.geometries.get(i)))
+				return false;
+		}
+		return true;	}
+
+	@Override
+	public boolean equalsNearly(Vector2D vec) {
+		if (vec == this)
+			return true;
+		if (!(vec instanceof MultiGeometry)) {
+			return false;
+		}
+		if (this.getVectorType() != vec.getVectorType())
+			return false;
+		@SuppressWarnings("unchecked")
+		MultiGeometry<T> multiGeometry = (MultiGeometry<T>) vec;
+		if (multiGeometry.geometries.size() != this.geometries.size())
+			return false;
+		int i = multiGeometry.geometries.size();
+		while (i-- > 0)
+		{
+			if (!this.geometries.get(i).equalsNearly(multiGeometry.geometries.get(i)))
+				return false;
+		}
+		return true;
 	}
 
 	@Override

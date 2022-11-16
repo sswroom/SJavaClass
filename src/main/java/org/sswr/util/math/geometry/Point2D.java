@@ -32,7 +32,16 @@ public class Point2D extends Vector2D
 			return false;
 		}
 		Point2D point = (Point2D) o;
-		return this.srid == point.srid && this.pos.equals(point.pos);
+		return this.srid == point.srid && !point.hasZ() && !point.hasM() && this.pos.equals(point.pos);
+	}
+
+	@Override
+	public boolean equalsNearly(Vector2D vec) {
+		if (!(vec instanceof Point2D)) {
+			return false;
+		}
+		Point2D point = (Point2D)vec;
+		return this.srid == point.srid && !point.hasZ() && !point.hasM() && this.pos.equalsNearly(point.pos);
 	}
 
 	@Override
