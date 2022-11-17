@@ -2053,6 +2053,26 @@ public class DBUtil {
 		return update(conn, table, null, newObj, options);
 	}
 
+	public static <T> boolean objInsertAll(Connection conn, Class<T> cls, Iterable<T> objList, DBOptions options)
+	{
+		TableInfo table = null;
+		if (cls != null)
+		{
+			table = parseTableInfo(cls);
+		}
+		else
+		{
+			return false;
+		}
+		Iterator<T> it = objList.iterator();
+		while (it.hasNext())
+		{
+			if (!update(conn, table, null, it.next(), options))
+				return false;
+		}
+		return true;
+	}
+
 	public static <T> boolean objDelete(Connection conn, T oriObj, DBOptions options)
 	{
 		TableInfo table = null;

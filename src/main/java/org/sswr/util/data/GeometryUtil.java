@@ -1,6 +1,7 @@
 package org.sswr.util.data;
 
 import java.util.Arrays;
+import java.util.List;
 
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.CoordinateXYM;
@@ -31,6 +32,28 @@ public class GeometryUtil
 	{
 		WKTWriter writer = new WKTWriter();
 		return writer.write(geometry);
+	}
+
+	public static Geometry createPointZ(double x, double y, double z, int srid)
+	{
+		GeometryFactory factory = new GeometryFactory(new PrecisionModel(), srid);
+		return factory.createPoint(new Coordinate(x, y, z));
+	}
+
+	public static Geometry createLineStringZ(List<Double> points, int srid)
+	{
+		GeometryFactory factory = new GeometryFactory(new PrecisionModel(), srid);
+		Coordinate[] coordinates = new Coordinate[points.size() / 3];
+		int i = 0;
+		int j = coordinates.length;
+		int k = 0;
+		while (i < j)
+		{
+			coordinates[i] = new Coordinate(points.get(k), points.get(k + 1), points.get(k + 2));
+			k += 3;
+			i++;
+		}
+		return factory.createLineString(coordinates);
 	}
 
 	public static Geometry fromVector2D(Vector2D vec)

@@ -585,4 +585,11 @@ public class DateTimeUtil
 	{
 		return Timestamp.from(Instant.now());
 	}
+
+	public static double timeDiffSec(Instant t1, Instant t2)
+	{
+		double v = (double)(t1.getEpochSecond() - t2.getEpochSecond());
+		v += (t1.getNano() - t2.getNano()) * 0.000000001;
+		return v;
+	}
 }
