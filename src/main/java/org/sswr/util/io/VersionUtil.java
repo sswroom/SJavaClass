@@ -20,10 +20,24 @@ public class VersionUtil
 			ex.printStackTrace();
 			return null;
 		}
+		if (jarPath != null)
+		{
+			if (jarPath.startsWith("jar:"))
+			{
+				jarPath = jarPath.substring(4);
+			}
+			int i = jarPath.indexOf("!");
+			if (i >= 0)
+			{
+				jarPath = jarPath.substring(0, i);
+			}
+		}
+//		System.out.println("Jar Path: "+jarPath);
 		String ver = null;
 		if (jarPath != null && jarPath.endsWith(".jar"))
 		{
 			String filePath = jarPath+"!/META-INF/MANIFEST.MF";
+//			System.out.println("File Path: "+filePath);
 			try
 			{
 				Enumeration<URL> resources = cls.getClassLoader().getResources("META-INF/MANIFEST.MF");
@@ -34,6 +48,7 @@ public class VersionUtil
 						URL url = resources.nextElement();
 						if (url.getFile().equals(filePath))
 						{
+//							System.out.println("Manifest: "+url.toString());
 							Manifest manifest = new Manifest(url.openStream());
 							ver = manifest.getMainAttributes().getValue("Implementation-Version");
 							if (ver != null)
