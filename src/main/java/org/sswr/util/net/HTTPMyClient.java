@@ -64,7 +64,7 @@ public class HTTPMyClient extends IOStream
 			break;
 		case HTTP_DELETE:
 			this.conn.setRequestMethod("DELETE");
-			this.canWrite = false;
+			this.canWrite = true;
 			break;
 		case Unknown:
 		default:
