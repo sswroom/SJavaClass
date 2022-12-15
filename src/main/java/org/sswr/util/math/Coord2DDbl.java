@@ -64,6 +64,16 @@ public class Coord2DDbl
 		return new Coord2DDbl(this.x - val, this.y - val);
 	}
 
+	public Coord2DDbl subtract(Coord2DDbl val)
+	{
+		return new Coord2DDbl(this.x - val.x, this.y - val.y);
+	}
+
+	public Coord2DDbl multiply(double val)
+	{
+		return new Coord2DDbl(this.x * val, this.y * val);
+	}
+
 	public boolean equals(Coord2DDbl coord)
 	{
 		return (this.x == coord.x) && (this.y == coord.y);

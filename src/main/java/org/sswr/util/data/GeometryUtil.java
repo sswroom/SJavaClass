@@ -266,4 +266,43 @@ public class GeometryUtil
 			return csys.calSurfaceDistanceXY(ccoord.x, ccoord.y, maxCoord.x, maxCoord.y, unit);
 		}
 	}
+
+	public static Coord2DDbl mercatorToProject(double lat, double lon)
+	{
+		double a = 6378137.0;
+		return new Coord2DDbl(lon * a, a * Math.log(Math.tan(Math.PI * 0.25 + lat * 0.5)));
+	}
+	
+	public static void calcHVAngleRad(Coord2DDbl ptCurr, Coord2DDbl ptNext, double heightCurr, double heightNext, SharedDouble hAngle, SharedDouble vAngle)
+	{
+		Coord2DDbl projCurr = mercatorToProject(ptCurr.y, ptCurr.x);
+		Coord2DDbl projDiff = mercatorToProject(ptNext.y, ptNext.x).subtract(projCurr);
+		double len = Math.sqrt(projDiff.x * projDiff.x + projDiff.y * projDiff.y);
+		if (len == 0)
+		{
+			hAngle.value = 0;
+			if (heightNext > heightCurr)
+				vAngle.value = Math.PI;
+			else if (heightNext < heightCurr)
+				vAngle.value = -Math.PI;
+			else
+				vAngle.value = 0;
+		}
+		else
+		{
+			hAngle.value = Math.atan2(projDiff.x, projDiff.y);
+			vAngle.value = Math.atan2(heightNext - heightCurr, len);
+			if (hAngle.value < 0)
+			{
+				hAngle.value += 2 * Math.PI;
+			}
+		}
+	}
+	
+	public static void calcHVAngleDeg(Coord2DDbl ptCurr, Coord2DDbl ptNext, double heightCurr, double heightNext, SharedDouble hAngle, SharedDouble vAngle)
+	{
+		calcHVAngleRad(ptCurr.multiply(Math.PI / 180.0), ptNext.multiply(Math.PI / 180.0), heightCurr, heightNext, hAngle, vAngle);
+		hAngle.value = hAngle.value * 180 / Math.PI;
+		vAngle.value = vAngle.value * 180 / Math.PI;
+	}
 }
