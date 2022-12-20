@@ -148,9 +148,9 @@ public class WKTReader
 			{
 				return null;
 			}
-			while (wkt[++ofst] == ' ');
 			while (true)
 			{
+				while (wkt[++ofst] == ' ');
 				ofst = nextDouble(wkt, ofst, x);
 				if (ofst == -1 || wkt[ofst] != ' ')
 				{
@@ -181,7 +181,6 @@ public class WKTReader
 				}
 				else if (wkt[ofst] == ',')
 				{
-					ofst++;
 					continue;
 				}
 				else
@@ -245,17 +244,16 @@ public class WKTReader
 			{
 				return null;
 			}
-			while (wkt[++ofst] == ' ');
 			while (true)
 			{
 				if (wkt[ofst] != '(')
 				{
 					return null;
 				}
-				ofst++;
 				ptOfstList.add((ptList.size() >> 1));
 				while (true)
 				{
+					while (wkt[++ofst] == ' ');
 					ofst = nextDouble(wkt, ofst, x);
 					if (ofst == -1 || wkt[ofst] != ' ')
 					{
@@ -286,7 +284,6 @@ public class WKTReader
 					}
 					else if (wkt[ofst] == ',')
 					{
-						ofst++;
 						continue;
 					}
 					else
@@ -296,7 +293,6 @@ public class WKTReader
 				}
 				if (wkt[ofst] == ',')
 				{
-					ofst++;
 					continue;
 				}
 				else if (wkt[ofst] == ')')

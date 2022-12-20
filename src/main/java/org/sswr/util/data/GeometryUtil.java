@@ -231,6 +231,110 @@ public class GeometryUtil
 		return null;
 	}
 
+	public static Vector2D toVector2D(Geometry geometry, boolean hasZ, boolean hasM)
+	{
+		if (geometry == null)
+		{
+			return null;
+		}
+		switch (geometry.getGeometryType())
+		{
+		case Geometry.TYPENAME_POINT:
+		{
+			org.locationtech.jts.geom.Point src = (org.locationtech.jts.geom.Point)geometry;
+			if (hasZ)
+			{
+				if (hasM)
+				{
+					return new PointZM(src.getSRID(), src.getX(), src.getY(), src.getCoordinate().getZ(), src.getCoordinate().getM());
+				}
+				else
+				{
+					return new PointZ(src.getSRID(), src.getX(), src.getY(), src.getCoordinate().getZ());
+				}
+			}
+			else
+			{
+				if (hasM)
+				{
+					return new PointM(src.getSRID(), src.getX(), src.getY(), src.getCoordinate().getM());
+				}
+				else
+				{
+					return new Point2D(src.getSRID(), src.getX(), src.getY());
+				}
+			}
+		}
+		case Geometry.TYPENAME_LINESTRING:
+		{
+			org.locationtech.jts.geom.LineString src = (org.locationtech.jts.geom.LineString)geometry;
+			Coordinate[] coords = src.getCoordinates();
+			LineString dest = new LineString(src.getSRID(), coords.length, hasZ, hasM);
+			Coord2DDbl[] coordd = dest.getPointList();
+			double[] zList = dest.getZList();
+			double[] mList = dest.getMList();
+			int i = 0;
+			int j = coords.length;
+			while (i < j)
+			{
+				coordd[i] = new Coord2DDbl(coords[i].x, coords[i].y);
+				if (hasZ)
+				{
+					zList[i] = coords[i].getZ();
+				}
+				if (hasM)
+				{
+					mList[i] = coords[i].getM();
+				}
+				i++;
+			}
+			return dest;
+		}
+		case Geometry.TYPENAME_MULTILINESTRING:
+		{
+			org.locationtech.jts.geom.MultiLineString src = (org.locationtech.jts.geom.MultiLineString)geometry;
+			Polyline dest = new Polyline(src.getSRID(), src.getNumGeometries(), src.getNumPoints(), hasZ, hasM);
+			Coord2DDbl[] coordd = dest.getPointList();
+			double[] zList = dest.getZList();
+			double[] mList = dest.getMList();
+			int[] ofstd = dest.getPtOfstList();
+			int i = 0;
+			int j = src.getNumGeometries();
+			int k = 0;
+			int m;
+			int n;
+			Geometry geom;
+			while (i < j)
+			{
+				ofstd[i] = k;
+				geom = src.getGeometryN(i);
+				Coordinate[] coords = geom.getCoordinates();
+				m = 0;
+				n = coords.length;
+				while (m < n)
+				{
+					coordd[k + m] = new Coord2DDbl(coords[m].x, coords[m].y);
+					if (hasZ)
+					{
+						zList[k + m] = coords[m].getZ();
+					}
+					if (hasM)
+					{
+						mList[k + m] = coords[m].getM();
+					}
+					m++;
+				}
+				k += n;
+				i++;
+			}
+			return dest;
+		}			
+		default:
+			System.out.println("GeometryUtil.toVector2D: Unsupported type: "+geometry.getGeometryType());
+			return null;
+		}
+	}
+
 	public static double calcMaxDistanceFromCenter(Geometry geometry, DistanceUnit unit)
 	{
 		return calcMaxDistanceFromPoint(geometry.getCentroid(), geometry, unit);
