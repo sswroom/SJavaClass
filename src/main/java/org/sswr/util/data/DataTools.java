@@ -19,7 +19,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import org.locationtech.jts.geom.Geometry;
 import org.sswr.util.db.QueryConditions;
+import org.sswr.util.math.WKTWriter;
+import org.sswr.util.math.geometry.Vector2D;
 
 public class DataTools {
 	public static <T> Set<Integer> createIntSet(Iterable<T> objs, String fieldName, QueryConditions<T> cond)
@@ -913,7 +916,7 @@ public class DataTools {
 		}
 		else if (cls.equals(Timestamp.class))
 		{
-			return JSText.quoteString(o.toString());
+			return JSText.quoteString(DateTimeUtil.toStringNoZone((Timestamp)o));
 		}
 		else if (cls.equals(UUID.class))
 		{
@@ -925,11 +928,19 @@ public class DataTools {
 		}
 		else if (cls.equals(ZonedDateTime.class))
 		{
-			return DateTimeUtil.toString((ZonedDateTime)o, "yyyy-MM-dd HH:mm:ss.fff");
+			return JSText.quoteString(DateTimeUtil.toStringNoZone((ZonedDateTime)o));
 		}
 		else if (cls.isEnum())
 		{
 			return JSText.quoteString(o.toString());
+		}
+		else if (o instanceof Geometry)
+		{
+			Vector2D vec = GeometryUtil.toVector2D((Geometry)o);
+			if (vec == null)
+				return JSText.quoteString(o.toString());
+			else
+				return JSText.quoteString(new WKTWriter().generateWKT(vec));
 		}
 		else if (maxLevel <= 0)
 		{

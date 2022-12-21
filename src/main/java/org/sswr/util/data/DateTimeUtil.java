@@ -581,6 +581,48 @@ public class DateTimeUtil
 		return DateTimeFormatter.ofPattern(format.replace('f', 'n')).format(LocalDateTime.ofInstant(ts.toInstant(), ZoneId.systemDefault()));
 	}
 
+	public static String toStringNoZone(ZonedDateTime t)
+	{
+		int nano = t.getNano();
+		if (nano == 0)
+		{
+			return toString(t, "yyyy-MM-dd HH:mm:ss");
+		}
+		else if ((nano % 1000000) == 0)
+		{
+			return toString(t, "yyyy-MM-dd HH:mm:ss.fff");
+		}
+		else if ((nano % 1000) == 0)
+		{
+			return toString(t, "yyyy-MM-dd HH:mm:ss.ffffff");
+		}
+		else
+		{
+			return toString(t, "yyyy-MM-dd HH:mm:ss.fffffffff");
+		}
+	}
+
+	public static String toStringNoZone(Timestamp ts)
+	{
+		int nano = ts.getNanos();
+		if (nano == 0)
+		{
+			return toString(ts, "yyyy-MM-dd HH:mm:ss");
+		}
+		else if ((nano % 1000000) == 0)
+		{
+			return toString(ts, "yyyy-MM-dd HH:mm:ss.fff");
+		}
+		else if ((nano % 1000) == 0)
+		{
+			return toString(ts, "yyyy-MM-dd HH:mm:ss.ffffff");
+		}
+		else
+		{
+			return toString(ts, "yyyy-MM-dd HH:mm:ss.fffffffff");
+		}
+	}
+
 	public static Timestamp timestampNow()
 	{
 		return Timestamp.from(Instant.now());

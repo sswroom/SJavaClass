@@ -16,6 +16,7 @@ import org.sswr.util.math.Coord2DDbl;
 import org.sswr.util.math.CoordinateSystem;
 import org.sswr.util.math.CoordinateSystemManager;
 import org.sswr.util.math.geometry.LineString;
+import org.sswr.util.math.geometry.MultiPolygon;
 import org.sswr.util.math.geometry.Point2D;
 import org.sswr.util.math.geometry.PointM;
 import org.sswr.util.math.geometry.PointZ;
@@ -231,7 +232,7 @@ public class GeometryUtil
 		return null;
 	}
 
-	public static Vector2D toVector2D(Geometry geometry, boolean hasZ, boolean hasM)
+	public static Vector2D toVector2D(Geometry geometry)
 	{
 		if (geometry == null)
 		{
@@ -242,22 +243,23 @@ public class GeometryUtil
 		case Geometry.TYPENAME_POINT:
 		{
 			org.locationtech.jts.geom.Point src = (org.locationtech.jts.geom.Point)geometry;
-			if (hasZ)
+			Coordinate coord = src.getCoordinate();
+			if (!Double.isNaN(coord.getZ()))
 			{
-				if (hasM)
+				if (!Double.isNaN(coord.getM()))
 				{
-					return new PointZM(src.getSRID(), src.getX(), src.getY(), src.getCoordinate().getZ(), src.getCoordinate().getM());
+					return new PointZM(src.getSRID(), src.getX(), src.getY(), coord.getZ(), coord.getM());
 				}
 				else
 				{
-					return new PointZ(src.getSRID(), src.getX(), src.getY(), src.getCoordinate().getZ());
+					return new PointZ(src.getSRID(), src.getX(), src.getY(), coord.getZ());
 				}
 			}
 			else
 			{
-				if (hasM)
+				if (!Double.isNaN(coord.getM()))
 				{
-					return new PointM(src.getSRID(), src.getX(), src.getY(), src.getCoordinate().getM());
+					return new PointM(src.getSRID(), src.getX(), src.getY(), coord.getM());
 				}
 				else
 				{
@@ -269,6 +271,8 @@ public class GeometryUtil
 		{
 			org.locationtech.jts.geom.LineString src = (org.locationtech.jts.geom.LineString)geometry;
 			Coordinate[] coords = src.getCoordinates();
+			boolean hasZ = coords.length > 0 && !Double.isNaN(coords[0].getZ());
+			boolean hasM = coords.length > 0 && !Double.isNaN(coords[0].getM());
 			LineString dest = new LineString(src.getSRID(), coords.length, hasZ, hasM);
 			Coord2DDbl[] coordd = dest.getPointList();
 			double[] zList = dest.getZList();
@@ -293,6 +297,9 @@ public class GeometryUtil
 		case Geometry.TYPENAME_MULTILINESTRING:
 		{
 			org.locationtech.jts.geom.MultiLineString src = (org.locationtech.jts.geom.MultiLineString)geometry;
+			Coordinate[] allCoords = src.getCoordinates();
+			boolean hasZ = allCoords.length > 0 && !Double.isNaN(allCoords[0].getZ());
+			boolean hasM = allCoords.length > 0 && !Double.isNaN(allCoords[0].getM());
 			Polyline dest = new Polyline(src.getSRID(), src.getNumGeometries(), src.getNumPoints(), hasZ, hasM);
 			Coord2DDbl[] coordd = dest.getPointList();
 			double[] zList = dest.getZList();
@@ -328,7 +335,65 @@ public class GeometryUtil
 				i++;
 			}
 			return dest;
-		}			
+		}
+		case Geometry.TYPENAME_POLYGON:
+		{
+			org.locationtech.jts.geom.Polygon src = (org.locationtech.jts.geom.Polygon)geometry;
+			Coordinate[] allCoords = src.getCoordinates();
+			boolean hasZ = allCoords.length > 0 && !Double.isNaN(allCoords[0].getZ());
+			boolean hasM = allCoords.length > 0 && !Double.isNaN(allCoords[0].getM());
+			Polygon dest = new Polygon(src.getSRID(), src.getNumGeometries(), src.getNumPoints(), hasZ, hasM);
+			Coord2DDbl[] coordd = dest.getPointList();
+			double[] zList = dest.getZList();
+			double[] mList = dest.getMList();
+			int[] ofstd = dest.getPtOfstList();
+			int i = 0;
+			int j = src.getNumGeometries();
+			int k = 0;
+			int m;
+			int n;
+			Geometry geom;
+			while (i < j)
+			{
+				ofstd[i] = k;
+				geom = src.getGeometryN(i);
+				Coordinate[] coords = geom.getCoordinates();
+				m = 0;
+				n = coords.length;
+				while (m < n)
+				{
+					coordd[k + m] = new Coord2DDbl(coords[m].x, coords[m].y);
+					if (hasZ)
+					{
+						zList[k + m] = coords[m].getZ();
+					}
+					if (hasM)
+					{
+						mList[k + m] = coords[m].getM();
+					}
+					m++;
+				}
+				k += n;
+				i++;
+			}
+			return dest;
+		}
+		case Geometry.TYPENAME_MULTIPOLYGON:
+		{
+			org.locationtech.jts.geom.MultiPolygon src = (org.locationtech.jts.geom.MultiPolygon)geometry;
+			Coordinate[] allCoords = src.getCoordinates();
+			boolean hasZ = allCoords.length > 0 && !Double.isNaN(allCoords[0].getZ());
+			boolean hasM = allCoords.length > 0 && !Double.isNaN(allCoords[0].getM());
+			MultiPolygon dest = new MultiPolygon(src.getSRID(), hasZ, hasM);
+			int i = 0;
+			int j = src.getNumGeometries();
+			while (i < j)
+			{
+				dest.addGeometry((Polygon)toVector2D(src.getGeometryN(i)));
+				i++;
+			}
+			return dest;
+		}
 		default:
 			System.out.println("GeometryUtil.toVector2D: Unsupported type: "+geometry.getGeometryType());
 			return null;
