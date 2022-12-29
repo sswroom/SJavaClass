@@ -2064,13 +2064,102 @@ public class DBUtil {
 		{
 			return false;
 		}
-		Iterator<T> it = objList.iterator();
-		while (it.hasNext())
+		DBType dbType = connGetDBType(conn);
+		DBColumnInfo col;
+		StringBuilder sb = new StringBuilder();
+		sb.append("insert into ");
+		sb.append(getTableName(table.tableAnn, dbType));
+		sb.append(" (");
+		boolean found = false;
+		int i = 0;
+		int j = table.allCols.size();
+		while (i < j)
 		{
-			if (!update(conn, table, null, it.next(), options))
-				return false;
+			col = table.allCols.get(i);
+			if (col.genType != GenerationType.IDENTITY)
+			{
+				if (found)
+				{
+					sb.append(", ");
+				}
+				found = true;
+				sb.append(dbCol(dbType, col.colName));
+			}
+			i++;
 		}
-		return true;
+		sb.append(") values ");
+		boolean objFound = false;
+		Iterator<T> it = objList.iterator();
+		T newObj;
+		try
+		{
+			while (it.hasNext())
+			{
+				newObj = it.next();
+				if (objFound)
+				{
+					sb.append(',');
+				}
+				else
+				{
+					objFound = true;
+				}
+				sb.append("(");
+				found = false;
+				i = 0;
+				while (i < j)
+				{
+					col = table.allCols.get(i);
+					if (col.genType != GenerationType.IDENTITY)
+					{
+						if (found)
+						{
+							sb.append(", ");
+						}
+						found = true;
+						sb.append(dbVal(dbType, col, col.getter.get(newObj)));
+					}
+					i++;
+				}
+				sb.append(")");
+			}
+		}
+		catch (IllegalAccessException ex)
+		{
+			sqlLogger.logException(ex);
+			return false;
+		}
+		catch (InvocationTargetException ex)
+		{
+			sqlLogger.logException(ex);
+			return false;
+		}
+
+		found = executeNonQuery(conn, sb.toString(), options);
+		if (found)
+		{
+			if (updateHandlers != null)
+			{
+				it = objList.iterator();
+				while (it.hasNext())
+				{
+					newObj = it.next();
+					i = updateHandlers.size();
+					while (i-- > 0)
+					{
+						try
+						{
+							updateHandlers.get(i).dbUpdated(null, newObj);
+						}
+						catch (Exception ex)
+						{
+
+						}
+					}
+				}
+			}
+		}
+		return found;
 	}
 
 	public static <T> boolean objDelete(Connection conn, T oriObj, DBOptions options)
