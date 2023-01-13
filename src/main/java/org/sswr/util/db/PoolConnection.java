@@ -325,7 +325,15 @@ public class PoolConnection implements Connection
 
 	@Override
 	public void setAutoCommit(boolean arg0) throws SQLException {
-		getConn().setAutoCommit(arg0);
+		try
+		{
+			getConn().setAutoCommit(arg0);
+		}
+		catch (SQLException ex)
+		{
+			this.endConn();
+			throw ex;
+		}
 	}
 
 	@Override

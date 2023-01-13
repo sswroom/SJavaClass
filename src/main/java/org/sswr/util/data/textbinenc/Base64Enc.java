@@ -256,7 +256,7 @@ public class Base64Enc extends TextBinEnc
 			if (c < 0x80)
 			{
 				code = decArr[c];
-				if (code != 0xff)
+				if (code != (byte)0xff)
 				{
 					switch (b)
 					{

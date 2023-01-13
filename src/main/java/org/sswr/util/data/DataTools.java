@@ -892,7 +892,7 @@ public class DataTools {
 		}
 		else if (cls.equals(Byte.class) || cls.equals(byte.class))
 		{
-			return o.toString();
+			return "0x"+StringUtil.toHex(((Byte)o).byteValue());
 		}
 		else if (cls.equals(Short.class) || cls.equals(short.class))
 		{
