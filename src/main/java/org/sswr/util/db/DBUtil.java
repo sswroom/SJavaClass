@@ -72,7 +72,7 @@ public class DBUtil {
 
 	public static final int MAX_SQL_ITEMS = 100;
 	private static List<DBUpdateHandler> updateHandlers = null;
-	private static LogTool sqlLogger = new LogTool();
+	static LogTool sqlLogger = new LogTool();
 
 	public static void addUpdateHandler(DBUpdateHandler updateHandler)
 	{
@@ -584,12 +584,21 @@ public class DBUtil {
 			{
 				col.setter.set(o, rs.getString(i + 1));
 			}
+			else if (fieldType.equals(Boolean.class))
+			{
+				Boolean v = rs.getInt(i + 1) != 0;
+				if (rs.wasNull())
+				{
+					v = null;
+				}
+				col.setter.set(o, v);
+			}
 			else if (fieldType.equals(Geometry.class))
 			{
 				byte bytes[] = rs.getBytes(i + 1);
 				if (dbType == DBType.MSSQL)
 				{
-					col.setter.set(o, MSGeography.parseBinary(bytes));
+					col.setter.set(o, GeometryUtil.fromVector2D(MSGeography.parseBinary(bytes)));
 				}
 				else
 				{
@@ -726,28 +735,35 @@ public class DBUtil {
 		return loadItemsIClass(cls, null, conn, conditions, joinFields);
 	}	
 
-	/*
-	* @param joinFields return fields which are joined with other tables, null = not returns
-	*/
-	public static <T> Map<Integer, T> loadItemsIClass(Class<T> cls, Object parent, Connection conn, QueryConditions<T> conditions, List<String> joinFields)
+	static class LoadDataSession<T>
 	{
-		StringBuilder sb;
+		StringBuilder sql;
+		Constructor<T> constr;
+		DBType dbType;
+		ArrayList<DBColumnInfo> cols;
+		ArrayList<DBColumnInfo> idCols;
+		List<QueryConditions<T>.Condition> clientConditions;
+	}
+
+	private static <T> LoadDataSession<T> parseLoadSession(Class<T> cls, Object parent, Connection conn, QueryConditions<T> conditions, List<String> joinFields, boolean requireIdCol)
+	{
+		LoadDataSession<T> sess = new LoadDataSession<T>();
 		Table tableAnn = parseClassTable(cls);
 		if (tableAnn == null)
 		{
 			throw new IllegalArgumentException("Class annotation is not valid");
 		}
 
-		Constructor<T> constr;
+		
 		if (parent == null)
 		{
-			constr = ReflectTools.getEmptyConstructor(cls);
+			sess.constr = ReflectTools.getEmptyConstructor(cls);
 		}
 		else
 		{
 			try
 			{
-				constr = cls.getDeclaredConstructor(new Class<?>[]{parent.getClass()});
+				sess.constr = cls.getDeclaredConstructor(new Class<?>[]{parent.getClass()});
 			}
 			catch (NoSuchMethodException ex)
 			{
@@ -755,48 +771,60 @@ public class DBUtil {
 				throw new IllegalArgumentException("No suitable constructor found");
 			}
 		}
-		if (constr == null)
+		if (sess.constr == null)
 		{
 			throw new IllegalArgumentException("No suitable constructor found");
 		}
 
-		ArrayList<DBColumnInfo> cols = new ArrayList<DBColumnInfo>();
-		ArrayList<DBColumnInfo> idCols = new ArrayList<DBColumnInfo>();
-		parseDBCols(cls, cols, idCols, joinFields);
+		sess.cols = new ArrayList<DBColumnInfo>();
+		sess.idCols = new ArrayList<DBColumnInfo>();
+		parseDBCols(cls, sess.cols, sess.idCols, joinFields);
 
-		if (cols.size() == 0)
+		if (sess.cols.size() == 0)
 		{
 			throw new IllegalArgumentException("No selectable column found");
 		}
-		if (idCols.size() > 1)
+		if (requireIdCol)
 		{
-			throw new IllegalArgumentException("Multiple id column found");
-		}
-		if (idCols.size() == 0)
-		{
-			throw new IllegalArgumentException("No Id column found");
-		}
-
-		DBType dbType = connGetDBType(conn);
-		sb = new StringBuilder();
-		appendSelect(sb, cols, tableAnn, dbType, 0, 0);
-
-		List<QueryConditions<T>.Condition> clientConditions = new ArrayList<QueryConditions<T>.Condition>();
-		if (conditions != null)
-		{
-			Map<String, DBColumnInfo> colsMap = dbCols2Map(cols);
-			String whereClause = conditions.toWhereClause(colsMap, dbType, clientConditions, MAX_SQL_ITEMS);
-			if (!StringUtil.isNullOrEmpty(whereClause))
+			if (sess.idCols.size() > 1)
 			{
-				sb.append(" where ");
-				sb.append(whereClause);
+				throw new IllegalArgumentException("Multiple id column found");
+			}
+			if (sess.idCols.size() == 0)
+			{
+				throw new IllegalArgumentException("No Id column found");
 			}
 		}
+
+		sess.dbType = connGetDBType(conn);
+		sess.sql = new StringBuilder();
+		appendSelect(sess.sql, sess.cols, tableAnn, sess.dbType, 0, 0);
+
+		sess.clientConditions = new ArrayList<QueryConditions<T>.Condition>();
+		if (conditions != null)
+		{
+			Map<String, DBColumnInfo> colsMap = dbCols2Map(sess.cols);
+			String whereClause = conditions.toWhereClause(colsMap, sess.dbType, sess.clientConditions, MAX_SQL_ITEMS);
+			if (!StringUtil.isNullOrEmpty(whereClause))
+			{
+				sess.sql.append(" where ");
+				sess.sql.append(whereClause);
+			}
+		}
+		return sess;
+	}
+
+	/*
+	* @param joinFields return fields which are joined with other tables, null = not returns
+	*/
+	public static <T> Map<Integer, T> loadItemsIClass(Class<T> cls, Object parent, Connection conn, QueryConditions<T> conditions, List<String> joinFields)
+	{
+		LoadDataSession<T> sess = parseLoadSession(cls, parent, conn, conditions, joinFields, true);
 		try
 		{
-			sqlLogger.logMessage(sb.toString(), LogLevel.COMMAND);
+			sqlLogger.logMessage(sess.sql.toString(), LogLevel.COMMAND);
 
-			PreparedStatement stmt = conn.prepareStatement(sb.toString());
+			PreparedStatement stmt = conn.prepareStatement(sess.sql.toString());
 			ResultSet rs = stmt.executeQuery();
 			HashMap<Integer, T> retMap = new HashMap<Integer, T>();
 			while (rs.next())
@@ -806,15 +834,15 @@ public class DBUtil {
 					T obj;
 					if (parent == null)
 					{
-						obj = constr.newInstance(new Object[0]);
+						obj = sess.constr.newInstance(new Object[0]);
 					}
 					else
 					{
-						obj = constr.newInstance(parent);
+						obj = sess.constr.newInstance(parent);
 					}
-					Integer id = fillColVals(dbType, rs, obj, cols);
+					Integer id = fillColVals(sess.dbType, rs, obj, sess.cols);
 
-					if (id != null && QueryConditions.objectValid(obj, clientConditions))
+					if (id != null && QueryConditions.objectValid(obj, sess.clientConditions))
 					{
 						retMap.put(id, obj);
 					}
@@ -842,6 +870,106 @@ public class DBUtil {
 		}
 	}	
 
+	public static <T> DBIterator<T> loadData(Class<T> cls, Object parent, Connection conn, QueryConditions<T> conditions, List<String> joinFields)
+	{
+		LoadDataSession<T> sess = parseLoadSession(cls, parent, conn, conditions, joinFields, false);
+		try
+		{
+			sqlLogger.logMessage(sess.sql.toString(), LogLevel.COMMAND);
+			PreparedStatement stmt = conn.prepareStatement(sess.sql.toString());
+			ResultSet rs = stmt.executeQuery();
+			return new DBIterator<T>(rs, parent, sess.constr, sess.dbType, sess.cols, sess.clientConditions);
+		}
+		catch (SQLException ex)
+		{
+			sqlLogger.logException(ex);
+			return null;
+		}
+	}
+
+	public static <T> DBIterator<T> loadDataScript(Class<T> cls, Object parent, Connection conn, String catalog, String schema, String procName, List<Object> params)
+	{
+		Constructor<T> constr;
+		if (parent == null)
+		{
+			constr = ReflectTools.getEmptyConstructor(cls);
+		}
+		else
+		{
+			try
+			{
+				constr = cls.getDeclaredConstructor(new Class<?>[]{parent.getClass()});
+			}
+			catch (NoSuchMethodException ex)
+			{
+				sqlLogger.logException(ex);
+				throw new IllegalArgumentException("No suitable constructor found");
+			}
+		}
+		if (constr == null)
+		{
+			throw new IllegalArgumentException("No suitable constructor found");
+		}
+
+		ArrayList<DBColumnInfo> cols = new ArrayList<DBColumnInfo>();
+		ArrayList<DBColumnInfo> idCols = new ArrayList<DBColumnInfo>();
+		parseDBCols(cls, cols, idCols, null);
+		if (cols.size() == 0)
+		{
+			throw new IllegalArgumentException("No selectable column found");
+		}
+
+		StringBuilder sql = new StringBuilder();
+		DBType dbType = connGetDBType(conn);
+		sql.append("exec ");
+		if (catalog != null)
+		{
+			sql.append(dbCol(dbType, catalog));
+			sql.append('.');
+		}
+		if (schema != null)
+		{
+			sql.append(dbCol(dbType, schema));
+			sql.append('.');
+		}
+		sql.append(dbCol(dbType, procName));
+		if (params != null)
+		{
+			int i = 0;
+			int j = params.size();
+			Object param;
+			while (i < j)
+			{
+				param = params.get(i);
+				if (i > 0)
+					sql.append(',');
+				else
+					sql.append(' ');
+				if (param instanceof String)
+				{
+					sql.append(dbStr(dbType, (String)param));
+				}
+				else
+				{
+					System.out.println("Unknown param type");
+					throw new IllegalArgumentException("Unknown param type");
+				}
+				i++;
+			}
+		}
+		try
+		{
+			sqlLogger.logMessage(sql.toString(), LogLevel.COMMAND);
+			PreparedStatement stmt = conn.prepareStatement(sql.toString());
+			ResultSet rs = stmt.executeQuery();
+			return new DBIterator<T>(rs, parent, constr, dbType, cols, List.of());
+		}
+		catch (SQLException ex)
+		{
+			sqlLogger.logException(ex);
+			return null;
+		}
+	}
 
 	/*
 	* @param joinFields return fields which are joined with other tables, null = not returns
