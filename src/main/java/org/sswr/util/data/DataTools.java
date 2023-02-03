@@ -918,6 +918,10 @@ public class DataTools {
 		{
 			return o.toString();
 		}
+		else if (cls.equals(Boolean.class) || cls.equals(boolean.class))
+		{
+			return o.toString();
+		}
 		else if (cls.equals(Timestamp.class))
 		{
 			return JSText.quoteString(DateTimeUtil.toStringNoZone((Timestamp)o));

@@ -11,6 +11,7 @@ import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LinearRing;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.PrecisionModel;
+import org.locationtech.jts.io.Ordinate;
 import org.locationtech.jts.io.WKTWriter;
 import org.sswr.util.math.Coord2DDbl;
 import org.sswr.util.math.CoordinateSystem;
@@ -31,8 +32,8 @@ public class GeometryUtil
 {
 	public static String toWKT(Geometry geometry)
 	{
-		WKTWriter writer = new WKTWriter();
-		return writer.write(geometry);
+		org.sswr.util.math.WKTWriter writer = new org.sswr.util.math.WKTWriter();
+		return writer.generateWKT(toVector2D(geometry));
 	}
 
 	public static Geometry createPointZ(double x, double y, double z, int srid)

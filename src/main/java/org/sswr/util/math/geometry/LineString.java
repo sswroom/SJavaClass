@@ -166,6 +166,149 @@ public class LineString extends PointCollection
 		return dist;
 	}
 
+
+	public double calSqrDistance3D(Coord2DDbl pt, double z, Coord2DDbl nearPt, SharedDouble nearZ)
+	{
+		if (!this.hasZ())
+		{
+			if (nearZ != null)
+				nearZ.value = z;
+			return calSqrDistance(pt, nearPt);
+		}
+		int k;
+		int l;
+		Coord2DDbl[] points;
+		double[] zArr;
+	
+		points = this.pointArr;
+		zArr = this.zArr;
+
+		l = points.length;
+	
+		double calBase;
+		double calDX;
+		double calDY;
+		double calDZ;
+		double calX;
+		double calY;
+		double calZ;
+		double calD;
+		double dist = 0x7fffffff;
+		double calPtX = 0;
+		double calPtY = 0;
+		double calPtZ = 0;
+	
+		l--;
+		while (l-- > 0)
+		{
+			calDX = points[l].x - points[l + 1].x;
+			calDY = points[l].y - points[l + 1].y;
+
+			if (calDY == 0)
+			{
+				calX = pt.x;
+				calZ = z;
+			}
+			else
+			{
+				calX = (calBase = (calDX * calDX)) * pt.x;
+				calBase += calDY * calDY;
+				calX += calDY * calDY * (points[l].x);
+				calX += (pt.y - points[l].y) * calDY * calDX;
+				calX /= calBase;
+			}
+
+			if (calDX == 0)
+			{
+				calY = pt.y;
+			}
+			else
+			{
+				calY = ((calX - (points[l].x)) * calDY / calDX) + points[l].y;
+			}
+
+			if (calDX < 0)
+			{
+				if (points[l + 0].x > calX)
+					continue;
+				if (points[l + 1].x < calX)
+					continue;
+			}
+			else
+			{
+				if (points[l + 0].x < calX)
+					continue;
+				if (points[l + 1].x > calX)
+					continue;
+			}
+
+			if (calDY < 0)
+			{
+				if (points[l + 0].y > calY)
+					continue;
+				if (points[l + 1].y < calY)
+					continue;
+			}
+			else
+			{
+				if (points[l + 0].y < calY)
+					continue;
+				if (points[l + 1].y > calY)
+					continue;
+			}
+			
+			if (calDX != 0)
+			{
+				calZ = (calX - points[l + 1].x) * (zArr[l] - zArr[l + 1]) / calDX + zArr[l + 1]; 
+			}
+			else if (calDY != 0)
+			{
+				calZ = (calY - points[l + 1].y) * (zArr[l] - zArr[l + 1]) / calDY + zArr[l + 1]; 
+			}
+			else
+			{
+				calZ = zArr[l];
+			}
+
+			calDX = pt.x - calX;
+			calDY = pt.y - calY;
+			calDZ = z - calZ;
+			calD = calDX * calDX + calDY * calDY + calDZ * calDZ;
+			if (calD < dist)
+			{
+				dist = calD;
+				calPtX = calX;
+				calPtY = calY;
+				calPtZ = calZ;
+			}
+		}
+		k = this.pointArr.length;
+		while (k-- > 0)
+		{
+			calDX = pt.x - points[k].x;
+			calDY = pt.y - points[k].y;
+			calDZ = z - zArr[k];
+			calD = calDX * calDX + calDY * calDY + calDZ * calDZ;
+			if (calD < dist)
+			{
+				dist = calD;
+				calPtX = points[k].x;
+				calPtY = points[k].y;
+				calPtZ = zArr[k];
+			}
+		}
+		if (nearPt != null)
+		{
+			nearPt.x = calPtX;
+			nearPt.y = calPtY;
+		}
+		if (nearZ != null)
+		{
+			nearZ.value = calPtZ;
+		}
+		return dist;
+	}
+
 	public boolean joinVector(Vector2D vec)
 	{
 		if (vec.getVectorType() != VectorType.LineString || this.hasZ() != vec.hasZ() || this.hasM() != vec.hasM())

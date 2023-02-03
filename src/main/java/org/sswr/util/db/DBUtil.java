@@ -1728,6 +1728,11 @@ public class DBUtil {
 		}
 	}
 
+	public static String dbBool(DBType dbType, boolean val)
+	{
+		return val?"1":"0";
+	}
+
 	public static String dbTime(DBType dbType, Timestamp val)
 	{
 		if (val == null)
@@ -1832,6 +1837,17 @@ public class DBUtil {
 			if (val instanceof Double)
 			{
 				return ((Double)val).toString();
+			}
+		}
+		else if (fieldType.equals(Boolean.class))
+		{
+			if (val instanceof Boolean)
+			{
+				return dbBool(dbType, (Boolean)val);
+			}
+			else if (val instanceof Integer)
+			{
+				return dbBool(dbType, ((Integer)val) != 0);
 			}
 		}
 		else if (fieldType.equals(Geometry.class))

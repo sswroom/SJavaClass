@@ -51,7 +51,7 @@ public class FieldGetter<T>
 			this.getters[0] = ReflectTools.findGetter(field);
 			if (this.getters[0] == null)
 			{
-				throw new IllegalArgumentException("Getter not found");
+				throw new IllegalArgumentException("Getter not found: "+field.getName());
 			}
 		}
 	}
