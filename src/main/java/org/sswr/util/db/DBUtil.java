@@ -10,10 +10,12 @@ import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Time;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -579,6 +581,14 @@ public class DBUtil {
 			else if (fieldType.equals(Timestamp.class))
 			{
 				col.setter.set(o, rs.getTimestamp(i + 1));
+			}
+			else if (fieldType.equals(Date.class))
+			{
+				col.setter.set(o, rs.getDate(i + 1));
+			}
+			else if (fieldType.equals(Time.class))
+			{
+				col.setter.set(o, rs.getTime(i + 1));
 			}
 			else if (fieldType.equals(String.class))
 			{

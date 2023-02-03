@@ -269,9 +269,8 @@ public class DataTools {
 		}
 	}
 
-	public static <T> Map<String, T> createStringMap(Iterable<T> list, String fieldName, QueryConditions<T> cond)
+	public static <T> Map<String, T> createStringMap(Iterator<T> it, String fieldName, QueryConditions<T> cond)
 	{
-		Iterator<T> it = list.iterator();
 		if (!it.hasNext())
 		{
 			return new HashMap<String, T>();
@@ -340,6 +339,11 @@ public class DataTools {
 			ex.printStackTrace();
 			return null;
 		}
+	}
+
+	public static <T> Map<String, T> createStringMap(Iterable<T> list, String fieldName, QueryConditions<T> cond)
+	{
+		return createStringMap(list.iterator(), fieldName, cond);
 	}
 
 	public static <T> Map<String, T> createUpperStringMap(Iterable<T> list, String fieldName, QueryConditions<T> cond)
