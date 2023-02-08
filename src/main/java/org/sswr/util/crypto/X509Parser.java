@@ -14,7 +14,7 @@ public class X509Parser
 		{
 			lbSize = 2;
 		}
-		else if (buff[ofst + buffSize - 1] == 10)
+		else if (buff[ofst + buffSize - 1] == 10 && buff[0] != 48)
 		{
 			lbSize = 1;
 		}

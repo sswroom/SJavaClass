@@ -313,15 +313,7 @@ public class CertUtil
 		try
 		{
 			byte[] asn1 = cert.getEncoded();
-			MyX509File x509 = X509Parser.parseBuff(asn1, 0, asn1.length, "cert.cer");
-			if (x509 != null)
-			{
-				if (x509.getFileType() == FileType.Cert)
-				{
-					return (MyX509Cert)x509;
-				}
-			}
-			return null;
+			return new MyX509Cert("cert.cer", asn1, 0, asn1.length);
 		}
 		catch (CertificateEncodingException ex)
 		{
