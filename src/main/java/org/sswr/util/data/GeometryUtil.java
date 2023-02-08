@@ -11,8 +11,6 @@ import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LinearRing;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.PrecisionModel;
-import org.locationtech.jts.io.Ordinate;
-import org.locationtech.jts.io.WKTWriter;
 import org.sswr.util.math.Coord2DDbl;
 import org.sswr.util.math.CoordinateSystem;
 import org.sswr.util.math.CoordinateSystemManager;

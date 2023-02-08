@@ -1733,7 +1733,7 @@ public class DBUtil {
 		return val?"1":"0";
 	}
 
-	public static String dbTime(DBType dbType, Timestamp val)
+	public static String dbTS(DBType dbType, Timestamp val)
 	{
 		if (val == null)
 		{
@@ -1766,6 +1766,78 @@ public class DBUtil {
 		else
 		{
 			return "'"+new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(val)+"'";
+		}
+	}
+
+	public static String dbDate(DBType dbType, Date val)
+	{
+		if (val == null)
+		{
+			return "null";
+		}
+		if (dbType == DBType.Access)
+		{
+			return "#"+val.toString()+"#";
+		}
+		else if (dbType == DBType.MSSQL)
+		{
+			return "'"+new SimpleDateFormat("yyyy-MM-dd").format(val)+"'";
+		}
+		else if (dbType == DBType.SQLite)
+		{
+			return "'"+new SimpleDateFormat("yyyy-MM-dd").format(val)+"'";
+		}
+		else if (dbType == DBType.Oracle)
+		{
+			return "DATE '"+new SimpleDateFormat("yyyy-MM-dd").format(val)+"'";
+		}
+		else if (dbType == DBType.MySQL)
+		{
+			return "'"+new SimpleDateFormat("yyyy-MM-dd").format(val)+"'";
+		}
+		else if (dbType == DBType.PostgreSQL)
+		{
+			return "'"+new SimpleDateFormat("yyyy-MM-dd").format(val)+"'";
+		}
+		else
+		{
+			return "'"+new SimpleDateFormat("yyyy-MM-dd").format(val)+"'";
+		}
+	}
+
+	public static String dbTime(DBType dbType, Time val)
+	{
+		if (val == null)
+		{
+			return "null";
+		}
+		if (dbType == DBType.Access)
+		{
+			return "#"+val.toString()+"#";
+		}
+		else if (dbType == DBType.MSSQL)
+		{
+			return "'"+new SimpleDateFormat("HH:mm:ss.SSSSSSS").format(val)+"'";
+		}
+		else if (dbType == DBType.SQLite)
+		{
+			return "'"+new SimpleDateFormat("HH:mm:ss.SSS").format(val)+"'";
+		}
+		else if (dbType == DBType.Oracle)
+		{
+			return "TIMESTAMP '"+new SimpleDateFormat("HH:mm:ss.SSSSSSSSS").format(val)+"'";
+		}
+		else if (dbType == DBType.MySQL)
+		{
+			return "'"+new SimpleDateFormat("HH:mm:ss.SSSSSS").format(val)+"'";
+		}
+		else if (dbType == DBType.PostgreSQL)
+		{
+			return "'"+new SimpleDateFormat("HH:mm:ss.SSSSSS").format(val)+"'";
+		}
+		else
+		{
+			return "'"+new SimpleDateFormat("HH:mm:ss").format(val)+"'";
 		}
 	}
 
@@ -1823,7 +1895,15 @@ public class DBUtil {
 		Class<?> fieldType = col.field.getType();
 		if (fieldType.equals(Timestamp.class) && val.getClass().equals(Timestamp.class))
 		{
-			return dbTime(dbType, (Timestamp)val);
+			return dbTS(dbType, (Timestamp)val);
+		}
+		else if (fieldType.equals(Date.class) && val.getClass().equals(Date.class))
+		{
+			return dbDate(dbType, (Date)val);
+		}
+		else if (fieldType.equals(Time.class) && val.getClass().equals(Time.class))
+		{
+			return dbTime(dbType, (Time)val);
 		}
 		else if (fieldType.equals(Integer.class) || fieldType.equals(int.class))
 		{

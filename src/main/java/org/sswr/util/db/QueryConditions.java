@@ -54,9 +54,9 @@ public class QueryConditions<T>
 			DBColumnInfo col = colsMap.get(this.fieldName);
 			sb.append(DBUtil.dbCol(dbType, col.colName));
 			sb.append(" between ");
-			sb.append(DBUtil.dbTime(dbType, t1));
+			sb.append(DBUtil.dbTS(dbType, t1));
 			sb.append(" and ");
-			sb.append(DBUtil.dbTime(dbType, t2));
+			sb.append(DBUtil.dbTS(dbType, t2));
 			return sb.toString();
 		}
 
