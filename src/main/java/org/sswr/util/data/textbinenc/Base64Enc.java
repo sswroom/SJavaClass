@@ -171,8 +171,8 @@ public class Base64Enc extends TextBinEnc
 			}
 			if (tmp1 == 1)
 			{
-				sptr[0] = encArr[ByteTool.shr8(dataBuff[0], 2)];
-				sptr[1] = encArr[(dataBuff[0] << 4) & 0x3f];
+				sptr[0] = encArr[ByteTool.shr8(dataBuff[dataOfst + 0], 2)];
+				sptr[1] = encArr[(dataBuff[dataOfst + 0] << 4) & 0x3f];
 				if (this.noPadding)
 				{
 					if (lineLeft >= 2)
@@ -204,9 +204,9 @@ public class Base64Enc extends TextBinEnc
 			}
 			else if (tmp1 == 2)
 			{
-				sptr[0] = encArr[ByteTool.shr8(dataBuff[0], 2)];
-				sptr[1] = encArr[((dataBuff[0] << 4) | ByteTool.shr8(dataBuff[1], 4)) & 0x3f];
-				sptr[2] = encArr[(dataBuff[1] << 2) & 0x3f];
+				sptr[0] = encArr[ByteTool.shr8(dataBuff[dataOfst + 0], 2)];
+				sptr[1] = encArr[((dataBuff[dataOfst + 0] << 4) | ByteTool.shr8(dataBuff[dataOfst + 1], 4)) & 0x3f];
+				sptr[2] = encArr[(dataBuff[dataOfst + 1] << 2) & 0x3f];
 				if (this.noPadding)
 				{
 					if (lineLeft >= 3)
