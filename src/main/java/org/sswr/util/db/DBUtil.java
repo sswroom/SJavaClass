@@ -578,6 +578,20 @@ public class DBUtil {
 				}
 				col.setter.set(o, v);
 			}
+			else if (fieldType.equals(float.class))
+			{
+				float v = (float)rs.getDouble(i + 1);
+				col.setter.set(o, v);
+			}
+			else if (fieldType.equals(Float.class))
+			{
+				Float v = (float)rs.getDouble(i + 1);
+				if (rs.wasNull())
+				{
+					v = null;
+				}
+				col.setter.set(o, v);
+			}
 			else if (fieldType.equals(Timestamp.class))
 			{
 				col.setter.set(o, rs.getTimestamp(i + 1));
@@ -1917,6 +1931,13 @@ public class DBUtil {
 			if (val instanceof Double)
 			{
 				return ((Double)val).toString();
+			}
+		}
+		else if (fieldType.equals(Float.class) || fieldType.equals(Float.class))
+		{
+			if (val instanceof Float)
+			{
+				return ((Float)val).toString();
 			}
 		}
 		else if (fieldType.equals(Boolean.class))
