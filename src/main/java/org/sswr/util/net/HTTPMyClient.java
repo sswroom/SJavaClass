@@ -24,6 +24,7 @@ public class HTTPMyClient extends IOStream
 	private boolean canWrite;
 	private InetAddress svrAddr;
 	private int respCode;
+	private boolean hasContType;
 
 	public HTTPMyClient(String url, RequestMethod method) throws IOException
 	{
@@ -32,6 +33,7 @@ public class HTTPMyClient extends IOStream
 		{
 			throw new IOException("Not http/https request");
 		}
+		this.hasContType = false;
 		this.url = url;
 		this.method = method;
 		URL targetURL = new URL(url);
@@ -86,6 +88,10 @@ public class HTTPMyClient extends IOStream
 
 	public void addHeader(String name, String value)
 	{
+		if (name.equalsIgnoreCase("Content-Type"))
+		{
+			this.hasContType = true;
+		}
 		this.conn.addRequestProperty(name, value);
 	}
 
@@ -284,6 +290,11 @@ public class HTTPMyClient extends IOStream
 		{
 			if (this.canWrite)
 			{
+				if (!this.hasContType)
+				{
+					this.hasContType = true;
+					this.addContentType("application/octet-stream");
+				}
 				this.conn.getOutputStream().write(buff, ofst, size);
 				return size;
 			}
