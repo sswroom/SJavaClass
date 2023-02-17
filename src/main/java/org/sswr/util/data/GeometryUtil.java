@@ -482,7 +482,7 @@ public class GeometryUtil
 		SharedDouble outY = new SharedDouble();
 		SharedDouble outZ = new SharedDouble();
 		CoordinateSystem.convertXYZ(csys4326, csys3857, lon, lat, 0, outX, outY, outZ);
-		Polygon pg = new Polygon(3857, 1, nPoints, false, false);
+		Polygon pg = new Polygon(3857, 1, nPoints + 1, false, false);
 		Coord2DDbl[] ptArr = pg.getPointList();
 		double pi2 = Math.PI * 2;
 		double angle;
@@ -494,6 +494,7 @@ public class GeometryUtil
 			ptArr[i].y = outY.value + Math.cos(angle) * radiusMeter;
 			i++;
 		}
+		ptArr[nPoints] = ptArr[0].clone();
 		pg.convCSys(csys3857, csys4326);
 		return pg;
 	}
