@@ -473,4 +473,28 @@ public class GeometryUtil
 		hAngle.value = hAngle.value * 180 / Math.PI;
 		vAngle.value = vAngle.value * 180 / Math.PI;
 	}
+
+	public static Polygon createCircularPolygonWGS84(double lat, double lon, double radiusMeter, int nPoints)
+	{
+		CoordinateSystem csys4326 = CoordinateSystemManager.srCreateCSys(4326);
+		CoordinateSystem csys3857 = CoordinateSystemManager.srCreateCSys(3857);
+		SharedDouble outX = new SharedDouble();
+		SharedDouble outY = new SharedDouble();
+		SharedDouble outZ = new SharedDouble();
+		CoordinateSystem.convertXYZ(csys4326, csys3857, lon, lat, 0, outX, outY, outZ);
+		Polygon pg = new Polygon(3857, 1, nPoints, false, false);
+		Coord2DDbl[] ptArr = pg.getPointList();
+		double pi2 = Math.PI * 2;
+		double angle;
+		int i = 0;
+		while (i < nPoints)
+		{
+			angle = i * pi2 / nPoints;
+			ptArr[i].x = outX.value + Math.sin(angle) * radiusMeter;
+			ptArr[i].y = outY.value + Math.cos(angle) * radiusMeter;
+			i++;
+		}
+		pg.convCSys(csys3857, csys4326);
+		return pg;
+	}
 }
