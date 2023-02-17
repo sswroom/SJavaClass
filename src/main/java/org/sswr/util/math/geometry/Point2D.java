@@ -99,5 +99,6 @@ public class Point2D extends Vector2D
 		CoordinateSystem.convertXYZ(srcCSys, destCSys, this.pos.x, this.pos.y, 0, tmpX, tmpY, null);
 		this.pos.x = tmpX.value;
 		this.pos.y = tmpY.value;
+		this.srid = destCSys.getSRID();
 	}
 }

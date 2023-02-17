@@ -133,6 +133,7 @@ public abstract class MultiGeometry<T extends Vector2D> extends Vector2D
 		{
 			this.getItem(i).convCSys(srcCSys, destCSys);
 		}
+		this.srid = destCSys.getSRID();
 	}
 
 	@Override

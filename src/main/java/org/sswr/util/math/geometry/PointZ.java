@@ -47,6 +47,7 @@ public class PointZ extends Point2D
 		this.pos.x = tmpX.value;
 		this.pos.y = tmpY.value;
 		this.z = tmpZ.value;
+		this.srid = destCSys.getSRID();
 	}
 
 	@Override

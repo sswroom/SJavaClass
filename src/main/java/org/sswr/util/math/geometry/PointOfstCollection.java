@@ -109,10 +109,12 @@ public abstract class PointOfstCollection extends PointCollection
 				this.pointArr[i].y = tmpY.value;
 				this.zArr[i] = tmpZ.value;
 			}
+			this.srid = destCSys.getSRID();
 		}
 		else
 		{
 			CoordinateSystem.convertXYArray(srcCSys, destCSys, this.pointArr, this.pointArr);
+			this.srid = destCSys.getSRID();
 		}
 	}
 

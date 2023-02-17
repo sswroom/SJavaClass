@@ -73,5 +73,6 @@ public abstract class PointCollection extends Vector2D
 	public void convCSys(CoordinateSystem srcCSys, CoordinateSystem destCSys)
 	{
 		CoordinateSystem.convertXYArray(srcCSys, destCSys, this.pointArr, this.pointArr);
+		this.srid = destCSys.getSRID();
 	}
 }
