@@ -3,6 +3,7 @@ package org.sswr.util.io;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -197,7 +198,7 @@ public class ActionFileStore implements Runnable, DBUpdateHandler {
 
 					try
 					{
-						this.fs = new FileWriter(fileName, true);
+						this.fs = new FileWriter(fileName, StandardCharsets.UTF_8, true);
 					}
 					catch (IOException ex)
 					{
