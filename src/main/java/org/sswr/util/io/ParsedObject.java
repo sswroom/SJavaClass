@@ -1,6 +1,6 @@
 package org.sswr.util.io;
 
-public class ParsedObject
+public abstract class ParsedObject
 {
 	protected String sourceName;
 
@@ -8,6 +8,12 @@ public class ParsedObject
 	{
 		this.sourceName = sourceName;
 	}
+
+	public void dispose()
+	{
+	}
+
+	public abstract ParserType getParserType();
 
 	public String getSourceNameObj()
 	{

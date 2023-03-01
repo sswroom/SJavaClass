@@ -4,6 +4,8 @@ import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.sswr.util.io.stmdata.FileData;
+
 public class DirectoryPackage extends PackageFile
 {
 	private Set<String> fileNames;

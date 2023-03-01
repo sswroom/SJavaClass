@@ -5,30 +5,36 @@ import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.security.cert.Certificate;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLPeerUnverifiedException;
+
+import org.sswr.util.crypto.CertUtil;
+import org.sswr.util.crypto.MyX509Cert;
 import org.sswr.util.data.DateTimeUtil;
 import org.sswr.util.data.SharedInt;
-import org.sswr.util.data.textenc.URIEncoding;
-import org.sswr.util.io.IOStream;
 
-public class HTTPMyClient extends IOStream
+public class HTTPMyClient extends HTTPClient
 {
 	private static final boolean debug = false;
 	private HttpURLConnection conn;
 	private RequestMethod method;
-	private String url;
-	private StringBuilder sbForm;
-	private boolean canWrite;
-	private InetAddress svrAddr;
-	private int respCode;
 	private boolean hasContType;
 
 	public HTTPMyClient(String url, RequestMethod method) throws IOException
 	{
-		super(url);
+		this(null, url, method);
+	}
+
+	public HTTPMyClient(SocketFactory sockf, String url, RequestMethod method) throws IOException
+	{
+		super(sockf, true);
 		if (!url.startsWith("http://") && !url.startsWith("https://"))
 		{
 			throw new IOException("Not http/https request");
@@ -81,11 +87,6 @@ public class HTTPMyClient extends IOStream
 		return this.conn == null;
 	}
 
-	public boolean isDown()
-	{
-		return this.isError();
-	}
-
 	public void addHeader(String name, String value)
 	{
 		if (name.equalsIgnoreCase("Content-Type"))
@@ -108,46 +109,72 @@ public class HTTPMyClient extends IOStream
 		}
 	}
 
-	public boolean formBegin()
+	public void endRequest()
 	{
-		if (this.canWrite && this.sbForm == null)
+		if (this.canWrite && this.sbForm != null)
 		{
-			this.addContentType("application/x-www-form-urlencoded");
-			this.sbForm = new StringBuilder();
-			return true;
+			this.canWrite = false;
+			byte []buff = sbForm.toString().getBytes(StandardCharsets.UTF_8);
+			this.addContentLength(buff.length);
+			try
+			{
+				this.conn.getOutputStream().write(buff);
+			}
+			catch (IOException ex)
+			{
+				if (debug)
+				{
+					ex.printStackTrace();
+				}
+			}
 		}
-		return false;
-	}
-
-	public boolean formAdd(String name, String value)
-	{
-		if (this.sbForm == null)
+		if (this.respCode == 0)
 		{
-			return false;
+			try
+			{
+				this.respCode = this.conn.getResponseCode();
+			}
+			catch (IOException ex)
+			{
+				if (debug)
+				{
+					ex.printStackTrace();
+				}
+			}
 		}
-		if (this.sbForm.length() > 0)
+	}
+
+	public boolean isSecureConn()
+	{
+		return this.conn instanceof HttpsURLConnection;
+	}
+
+	public List<MyX509Cert> getServerCerts()
+	{
+		try
 		{
-			this.sbForm.append('&');
+			if (this.conn instanceof HttpsURLConnection)
+			{
+				HttpsURLConnection sslConn = (HttpsURLConnection)this.conn;
+				Certificate[] certs = sslConn.getServerCertificates();
+				List<MyX509Cert> ret = new ArrayList<MyX509Cert>();
+				int i = 0;
+				int j = certs.length;
+				while (i < j)
+				{
+					MyX509Cert myCert = CertUtil.toMyCert(certs[i]);
+					if (myCert != null)
+						ret.add(myCert);
+					i++;
+				}
+				return ret;
+			}
 		}
-		this.sbForm.append(URIEncoding.uriEncode(name));
-		this.sbForm.append('=');
-		this.sbForm.append(URIEncoding.uriEncode(value));
-		return true;
-	}
-
-	public void addTimeHeader(String name, ZonedDateTime dt)
-	{
-		this.addHeader(name, WebUtil.date2Str(dt));
-	}
-
-	public void addContentType(String contType)
-	{
-		this.addHeader("Content-Type", contType);
-	}
-
-	public void addContentLength(long leng)
-	{
-		this.addHeader("Content-Length", String.valueOf(leng));
+		catch (SSLPeerUnverifiedException ex)
+		{
+			ex.printStackTrace();
+		}
+		return null;
 	}
 
 	public int getRespHeaderCnt()
@@ -196,57 +223,6 @@ public class HTTPMyClient extends IOStream
 			return null;
 		}
 		return DateTimeUtil.newZonedDateTime(mod);
-	}
-
-	public String getURL()
-	{
-		return this.url;
-	}
-
-	public void endRequest()
-	{
-		if (this.canWrite && this.sbForm != null)
-		{
-			this.canWrite = false;
-			byte []buff = sbForm.toString().getBytes(StandardCharsets.UTF_8);
-			this.addContentLength(buff.length);
-			try
-			{
-				this.conn.getOutputStream().write(buff);
-			}
-			catch (IOException ex)
-			{
-				if (debug)
-				{
-					ex.printStackTrace();
-				}
-			}
-		}
-		if (this.respCode == 0)
-		{
-			try
-			{
-				this.respCode = this.conn.getResponseCode();
-			}
-			catch (IOException ex)
-			{
-				if (debug)
-				{
-					ex.printStackTrace();
-				}
-			}
-		}
-	}
-
-	public int GetRespStatus() throws IOException
-	{
-		this.endRequest();
-		return this.respCode;
-	}
-
-	public InetAddress getSvrAddr() throws IOException
-	{
-		return this.svrAddr;
 	}
 
 	@Override
@@ -329,7 +305,7 @@ public class HTTPMyClient extends IOStream
 		try
 		{
 			HTTPMyClient cli = new HTTPMyClient(url, RequestMethod.HTTP_GET);
-			if (cli.GetRespStatus() != expectedStatusCode)
+			if (cli.getRespStatus() != expectedStatusCode)
 			{
 				cli.close();
 				return null;
@@ -369,14 +345,14 @@ public class HTTPMyClient extends IOStream
 		{
 			HTTPMyClient cli = new HTTPMyClient(url, RequestMethod.HTTP_GET);
 			cli.addHeaders(customHeaders);
-			if (cli.GetRespStatus() <= 0)
+			if (cli.getRespStatus() <= 0)
 			{
 				cli.close();
 				return null;
 			}
 			if (statusCode != null)
 			{
-				statusCode.value = cli.GetRespStatus();
+				statusCode.value = cli.getRespStatus();
 			}
 			byte[] buff = cli.readToEnd();
 			cli.close();
@@ -425,7 +401,7 @@ public class HTTPMyClient extends IOStream
 			}
 			if (statusCode != null)
 			{
-				statusCode.value = cli.GetRespStatus();
+				statusCode.value = cli.getRespStatus();
 			}
 			if (debug)
 			{

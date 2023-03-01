@@ -9,6 +9,7 @@ import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -268,6 +269,23 @@ public class FileStream extends SeekableStream
 		catch (IOException ex)
 		{
 			return ZonedDateTime.ofInstant(Instant.ofEpochMilli(0), ZoneId.systemDefault());
+		}
+	}
+
+	public boolean setModifyTime(ZonedDateTime dt)
+	{
+		try
+		{
+			Files.setLastModifiedTime(this.path, FileTime.from(dt.toInstant()));
+			return true;
+		}
+		catch (IOException ex)
+		{
+			return false;
+		}
+		catch (SecurityException ex)
+		{
+			return false;
 		}
 	}
 }

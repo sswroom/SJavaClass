@@ -6,6 +6,7 @@ import org.sswr.util.data.ByteTool;
 import org.sswr.util.data.LineBreakType;
 import org.sswr.util.data.StringUtil;
 import org.sswr.util.io.ParsedObject;
+import org.sswr.util.io.ParserType;
 
 public abstract class ASN1Data extends ParsedObject
 {
@@ -17,6 +18,11 @@ public abstract class ASN1Data extends ParsedObject
 		this.buff = Arrays.copyOfRange(buff, ofst, ofst + size);
 	}
 
+	public ParserType getParserType()
+	{
+		return ParserType.ASN1Data;
+	}
+	
 	public abstract ASN1Type getASN1Type();
 	public abstract ASN1Data clone();
 	public abstract String toString();

@@ -1,0 +1,33 @@
+package org.sswr.util.io;
+
+public enum ParserType {
+	Unknown,
+	Stream,
+//		Image,
+	MediaFile,
+	PackageFile,
+	ImageList,
+	EXEFile,
+	MapLayer,
+	ReadingDB,
+	MapEnv,
+	FileCheck,
+	TextDocument,
+	Workbook,
+	SectorData,
+	LogFile,
+	Playlist,
+	CoordinateSystem,
+	CodeProject,
+	VectorDocument,
+	LUT,
+	FontRenderer,
+	MIMEObject,
+	EthernetAnalyzer,
+	JavaClass,
+	Smake,
+	ASN1Data,
+	BTScanLog,
+	SystemInfoLog,
+	JasperReport
+}

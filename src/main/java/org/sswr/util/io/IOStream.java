@@ -11,6 +11,11 @@ public abstract class IOStream extends ParsedObject
 		super(sourceName);
 	}
 
+	public void dispose()
+	{
+		this.close();
+	}
+
 	public abstract boolean isDown();
 	public abstract int read(byte []buff, int ofst, int size);
 	public abstract int write(byte []buff, int ofst, int size);
@@ -31,6 +36,11 @@ public abstract class IOStream extends ParsedObject
 	public OutputStream createOutputStream()
 	{
 		return new MyOutputStream(this);
+	}
+
+	public ParserType getParserType()
+	{
+		return ParserType.Stream;
 	}
 
 	public byte[] readToEnd()

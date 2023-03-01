@@ -1,8 +1,10 @@
-package org.sswr.util.io;
+package org.sswr.util.io.stmdata;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+
+import org.sswr.util.io.StreamData;
 
 public class FileData implements StreamData
 {

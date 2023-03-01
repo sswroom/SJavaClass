@@ -2,6 +2,7 @@ package org.sswr.util.math;
 
 import org.sswr.util.data.SharedDouble;
 import org.sswr.util.io.ParsedObject;
+import org.sswr.util.io.ParserType;
 import org.sswr.util.math.geometry.Polyline;
 import org.sswr.util.math.unit.Distance;
 
@@ -57,6 +58,11 @@ public abstract class CoordinateSystem extends ParsedObject
 	public abstract CoordinateSystemType getCoordSysType();
 	public abstract boolean isProjected();
 	public abstract void toString(StringBuilder sb);
+
+	public ParserType getParserType()
+	{
+		return ParserType.CoordinateSystem;
+	}
 
 	public boolean equals(CoordinateSystem csys)
 	{

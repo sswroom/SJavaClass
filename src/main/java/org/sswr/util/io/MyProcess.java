@@ -38,10 +38,12 @@ public class MyProcess
 		}
 		catch (IOException ex)
 		{
+			ex.printStackTrace();
 			return -1;
 		}
 		catch (InterruptedException ex)
 		{
+			ex.printStackTrace();
 			return -1;
 		}
 	}
