@@ -6,11 +6,11 @@ import java.io.IOException;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.sswr.util.basic.ThreadEvent;
+import org.sswr.util.data.DateTimeUtil;
 
 public class MTFileLog implements Runnable, LogHandler
 {
@@ -18,7 +18,7 @@ public class MTFileLog implements Runnable, LogHandler
 	private LogGroup groupStyle;
 	private int lastVal;
 	private Writer log;
-	private DateTimeFormatter dateFormat;
+	private String dateFormat;
 	private String fileName;
 	private String extName;
 	private boolean closed;
@@ -39,21 +39,21 @@ public class MTFileLog implements Runnable, LogHandler
 			break;
 		case PER_YEAR:
 			sb.append(this.fileName);
-			sb.append(time.format(DateTimeFormatter.ofPattern("yyyy")));
+			sb.append(DateTimeUtil.toString(time, "yyyy"));
 			new File(sb.toString()).mkdirs();
 			sb.append(File.separator);
 			sb.append(this.extName);
 			break;
 		case PER_MONTH:
 			sb.append(this.fileName);
-			sb.append(time.format(DateTimeFormatter.ofPattern("yyyyMM")));
+			sb.append(DateTimeUtil.toString(time, "yyyyMM"));
 			new File(sb.toString()).mkdirs();
 			sb.append(File.separator);
 			sb.append(this.extName);
 			break;
 		case PER_DAY:
 			sb.append(this.fileName);
-			sb.append(time.format(DateTimeFormatter.ofPattern("yyyyMMdd")));
+			sb.append(DateTimeUtil.toString(time, "yyyyMMdd"));
 			new File(sb.toString()).mkdirs();
 			sb.append(File.separator);
 			sb.append(this.extName);
@@ -66,22 +66,22 @@ public class MTFileLog implements Runnable, LogHandler
 			break;
 		case PER_HOUR:
 			this.lastVal = time.getDayOfMonth() * 24 + time.getHour();
-			sb.append(time.format(DateTimeFormatter.ofPattern("yyyyMMddHH")));
+			sb.append(DateTimeUtil.toString(time, "yyyyMMddHH"));
 			sb.append(".log");
 			break;
 		case PER_DAY:
 			this.lastVal = time.getDayOfMonth();
-			sb.append(time.format(DateTimeFormatter.ofPattern("yyyyMMdd")));
+			sb.append(DateTimeUtil.toString(time, "yyyyMMdd"));
 			sb.append(".log");
 			break;
 		case PER_MONTH:
 			this.lastVal = time.getMonthValue();
-			sb.append(time.format(DateTimeFormatter.ofPattern("yyyyMM")));
+			sb.append(DateTimeUtil.toString(time, "yyyyMM"));
 			sb.append(".log");
 			break;
 		case PER_YEAR:
 			this.lastVal = time.getYear();
-			sb.append(time.format(DateTimeFormatter.ofPattern("yyyy")));
+			sb.append(DateTimeUtil.toString(time, "yyyy"));
 			sb.append(".log");
 			break;
 		}
@@ -152,7 +152,7 @@ public class MTFileLog implements Runnable, LogHandler
 				try
 				{
 					this.log = new FileWriter(newFile, StandardCharsets.UTF_8, true);
-					this.log.write(time.format(this.dateFormat)+"Program running\r\n");
+					this.log.write(DateTimeUtil.toString(time, this.dateFormat)+"Program running\r\n");
 					this.log.flush();
 				}
 				catch (IOException ex)
@@ -163,7 +163,7 @@ public class MTFileLog implements Runnable, LogHandler
 			}
 		
 			StringBuilder sb = new StringBuilder();
-			sb.append(time.format(this.dateFormat));
+			sb.append(DateTimeUtil.toString(time, this.dateFormat));
 			sb.append(logMsg);
 			sb.append("\r\n");
 			try
@@ -197,11 +197,11 @@ public class MTFileLog implements Runnable, LogHandler
 		this.msgList = new ArrayList<String>();
 		if (dateFormat != null)
 		{
-			this.dateFormat = DateTimeFormatter.ofPattern(dateFormat + "\t");
+			this.dateFormat = dateFormat + "\t";
 		}
 		else
 		{
-			this.dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss\t");
+			this.dateFormat = "yyyy-MM-dd HH:mm:ss\t";
 		}
 		this.logStyle = style;
 		this.groupStyle = groupStyle;
