@@ -4,6 +4,7 @@ import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.locationtech.jts.geom.Geometry;
 import org.sswr.util.math.geometry.Vector2D;
 
 public abstract class DBReader
@@ -21,6 +22,7 @@ public abstract class DBReader
 	public abstract boolean getBool(int colIndex);
 	public abstract byte[] getBinary(int colIndex);
 	public abstract Vector2D getVector(int colIndex);
+	public abstract Geometry getGeometry(int colIndex);
 	public abstract Object getObject(int colIndex);
 
 	public abstract boolean isNull(int colIndex);

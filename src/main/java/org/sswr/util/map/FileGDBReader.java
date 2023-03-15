@@ -8,8 +8,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.locationtech.jts.geom.Geometry;
 import org.sswr.util.data.ByteTool;
 import org.sswr.util.data.DateTimeUtil;
+import org.sswr.util.data.GeometryUtil;
 import org.sswr.util.data.SharedLong;
 import org.sswr.util.data.StringUtil;
 import org.sswr.util.data.UUID;
@@ -822,6 +824,12 @@ public class FileGDBReader extends DBReader
 		return null;
 	}
 
+	public Geometry getGeometry(int colIndex)
+	{
+		Vector2D vec = this.getVector(colIndex);
+		if (vec == null) return null;
+		return GeometryUtil.fromVector2D(vec);
+	}
 	public Object getObject(int colIndex)
 	{
 		if (this.rowData == null)

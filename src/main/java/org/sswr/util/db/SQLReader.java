@@ -4,8 +4,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.ZonedDateTime;
 
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.io.ParseException;
+import org.locationtech.jts.io.WKBReader;
 import org.sswr.util.data.DateTimeUtil;
+import org.sswr.util.data.GeometryUtil;
 import org.sswr.util.data.MSGeography;
+import org.sswr.util.data.StringUtil;
 import org.sswr.util.db.DBUtil.DBType;
 import org.sswr.util.math.geometry.Vector2D;
 
@@ -162,26 +167,83 @@ public class SQLReader extends DBReader
 		try
 		{
 			byte bytes[] = rs.getBytes(colIndex + 1);
+			if (bytes == null)
+				return null;
 			if (this.dbType == DBType.MSSQL)
 			{
 				return MSGeography.parseBinary(bytes);
 			}
+			else if (this.dbType == DBType.PostgreSQL)
+			{
+				return null;
+			}
 			else
 			{
-/*				WKBReader reader = new WKBReader();
+				WKBReader reader = new WKBReader();
 				try
 				{
-					return readercol.setter.set(o, reader.read(bytes));
+					return GeometryUtil.toVector2D(reader.read(bytes));
 				}
 				catch (ParseException ex)
 				{
-					sqlLogger.logException(ex);
-				}*/
-				return null;
+					ex.printStackTrace();
+					return null;
+				}
 			}
 		}
 		catch (SQLException ex)
 		{
+			ex.printStackTrace();
+			return null;
+		}
+	}
+
+	@Override
+	public Geometry getGeometry(int colIndex)
+	{
+		if (this.rs == null) return null;
+		try
+		{
+			byte bytes[] = rs.getBytes(colIndex + 1);
+			if (bytes == null)
+			{
+				return null;
+			}
+			else if (dbType == DBType.MSSQL)
+			{
+				return GeometryUtil.fromVector2D(MSGeography.parseBinary(bytes));
+			}
+			else if (dbType == DBType.PostgreSQL)
+			{
+				bytes = StringUtil.hex2Bytes(new String(bytes));
+				WKBReader reader = new WKBReader();
+				try
+				{
+					return reader.read(bytes);
+				}
+				catch (ParseException ex)
+				{
+					ex.printStackTrace();
+					return null;
+				}
+			}
+			else
+			{
+				WKBReader reader = new WKBReader();
+				try
+				{
+					return reader.read(bytes);
+				}
+				catch (ParseException ex)
+				{
+					ex.printStackTrace();
+					return null;
+				}
+			}
+		}
+		catch (SQLException ex)
+		{
+			ex.printStackTrace();
 			return null;
 		}
 	}

@@ -17,7 +17,6 @@ import javax.persistence.Table;
 
 import org.locationtech.jts.geom.Geometry;
 import org.sswr.util.data.DateTimeUtil;
-import org.sswr.util.data.GeometryUtil;
 import org.sswr.util.data.ReflectTools;
 import org.sswr.util.io.LogLevel;
 import org.sswr.util.io.LogTool;
@@ -208,13 +207,11 @@ public abstract class ReadingConnection
 			}
 			else if (fieldType.equals(Geometry.class))
 			{
-				Vector2D vec = r.getVector(i);
-				Geometry geom = null;
-				if (vec != null)
-				{
-					geom = GeometryUtil.fromVector2D(vec);
-				}
-				col.setter.set(o, geom);
+				col.setter.set(o, r.getGeometry(i));
+			}
+			else if (fieldType.equals(Vector2D.class))
+			{
+				col.setter.set(o, r.getVector(i));
 			}
 			else if (fieldType.equals(byte[].class))
 			{

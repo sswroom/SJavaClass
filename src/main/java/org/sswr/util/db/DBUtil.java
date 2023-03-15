@@ -54,7 +54,6 @@ import org.sswr.util.data.DataTools;
 import org.sswr.util.data.FieldGetter;
 import org.sswr.util.data.FieldSetter;
 import org.sswr.util.data.GeometryUtil;
-import org.sswr.util.data.LineBreakType;
 import org.sswr.util.data.MSGeography;
 import org.sswr.util.data.ReflectTools;
 import org.sswr.util.data.SharedInt;

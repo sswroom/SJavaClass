@@ -541,11 +541,53 @@ public class GeometryUtil
 			}
 			sb.append("]}");
 		}
+		else if (t.equals(Geometry.TYPENAME_POLYGON))
+		{
+			org.locationtech.jts.geom.Polygon src = (org.locationtech.jts.geom.Polygon)geom;
+			Coordinate[] allCoords = src.getCoordinates();
+			boolean hasZ = allCoords.length > 0 && !Double.isNaN(allCoords[0].getZ());
+//			boolean hasM = allCoords.length > 0 && !Double.isNaN(allCoords[0].getM());
+			int i = 0;
+			int j = src.getNumGeometries();
+			int m;
+			int n;
+			Geometry igeom;
+			sb.append("{\"type\":\"Polygon\",");
+			sb.append("\"coordinates\":[");
+			while (i < j)
+			{
+				igeom = src.getGeometryN(i);
+				Coordinate[] coords = igeom.getCoordinates();
+				if (i > 0) sb.append(",");
+				sb.append("[");
+				m = 0;
+				n = coords.length;
+				while (m < n)
+				{
+					if (m > 0) sb.append(",");
+					sb.append("[");
+					sb.append(coords[m].x);
+					sb.append(",");
+					sb.append(coords[m].y);
+					if (hasZ)
+					{
+						sb.append(",");
+						sb.append(coords[m].getZ());
+					}
+					sb.append("]");
+					m++;
+				}
+				sb.append("]");
+				i++;
+			}
+			sb.append("]}");
+		}
 		else
 		{
-			System.out.println("Unsupported geometry type: "+t);
+			System.out.println("GeometryUtil: Unsupported geometry type: "+t);
 		}
 	}
+
 	private static <T> void appendGeojson(T o, StringBuilder sb) throws NoSuchFieldException, InvocationTargetException, IllegalAccessException
 	{
 		Class<?> cls = o.getClass();
@@ -621,6 +663,19 @@ public class GeometryUtil
 							sb.append(v);
 						}
 					}
+					else if (t.equals(double.class) || t.equals(Double.class))
+					{
+						getter = new FieldGetter<T>(cls, fields[i].getName());
+						Double v = (Double)getter.get(o);
+						if (v == null)
+						{
+							sb.append("null");
+						}
+						else
+						{
+							sb.append(v);
+						}
+					}
 					else if (t.equals(Timestamp.class))
 					{
 						getter = new FieldGetter<T>(cls, fields[i].getName());
@@ -675,5 +730,12 @@ public class GeometryUtil
 			ex.printStackTrace();
 			return null;
 		}
+	}
+
+	public static Geometry csysConv(Geometry geom, CoordinateSystem csysSrc, CoordinateSystem csysDest)
+	{
+		Vector2D vec = toVector2D(geom);
+		vec.convCSys(csysSrc, csysDest);
+		return fromVector2D(vec);
 	}
 }
