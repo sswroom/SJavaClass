@@ -1,6 +1,10 @@
 package org.sswr.util.data;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.sql.Timestamp;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 import org.locationtech.jts.geom.Coordinate;
@@ -497,5 +501,179 @@ public class GeometryUtil
 		ptArr[nPoints] = ptArr[0].clone();
 		pg.convCSys(csys3857, csys4326);
 		return pg;
+	}
+
+	private static <T> void appendGeojsonList(Iterable<T> coll, StringBuilder sb) throws NoSuchFieldException, InvocationTargetException, IllegalAccessException
+	{
+		Iterator<T> it = coll.iterator();
+		boolean first = true;
+		sb.append("{\"type\":\"FeatureCollection\",\"features\":[");
+		while (it.hasNext())
+		{
+			if (first)
+			{
+				first = false;
+			}
+			else
+			{
+				sb.append(",");
+			}
+			appendGeojson(it.next(), sb);
+		}
+		sb.append("]}");
+	}
+
+	private static void appendGeojsonGeometry(Geometry geom, StringBuilder sb)
+	{
+		String t = geom.getGeometryType();
+		if (t.equals(Geometry.TYPENAME_POINT))
+		{
+			Coordinate coord = ((Point)geom).getCoordinate();
+			sb.append("{\"type\":\"Point\",");
+			sb.append("\"coordinates\":[");
+			sb.append(coord.x);
+			sb.append(",");
+			sb.append(coord.y);
+			if (!Double.isNaN(coord.z))
+			{
+				sb.append(",");
+				sb.append(coord.getZ());
+			}
+			sb.append("]}");
+		}
+		else
+		{
+			System.out.println("Unsupported geometry type: "+t);
+		}
+	}
+	private static <T> void appendGeojson(T o, StringBuilder sb) throws NoSuchFieldException, InvocationTargetException, IllegalAccessException
+	{
+		Class<?> cls = o.getClass();
+		Field[] fields = cls.getDeclaredFields();
+		Field geomField = null;
+		int i = fields.length;
+		while (i-- > 0)
+		{
+			if (fields[i].getType().equals(Geometry.class))
+			{
+				geomField = fields[i];
+				break;
+			}
+		}
+		if (geomField == null)
+		{
+			System.out.println("No geometry field found");
+		}
+		else
+		{
+			FieldGetter<T> getter = new FieldGetter<T>(cls, geomField.getName());
+			Geometry geom = (Geometry)getter.get(o);
+			sb.append("{\"type\":\"Feature\",\"geometry\":");
+			appendGeojsonGeometry(geom, sb);
+			sb.append(",\"geometry_name\":");
+			JSText.toJSTextDQuote(sb, geomField.getName());
+			sb.append(",\"properties\":{");
+			boolean found = false;
+			i = 0;
+			int j = fields.length;
+			while (i < j)
+			{
+				if (fields[i] == geomField)
+				{
+
+				}
+				else
+				{
+					Class<?> t = fields[i].getType();
+					if (!found)
+					{
+						found = true;
+					}
+					else
+					{
+						sb.append(",");
+					}
+					JSText.toJSTextDQuote(sb, fields[i].getName());
+					sb.append(":");
+					if (t.equals(String.class))
+					{
+						getter = new FieldGetter<T>(cls, fields[i].getName());
+						String s = (String)getter.get(o);
+						if (s == null)
+						{
+							sb.append("null");
+						}
+						else
+						{
+							JSText.toJSTextDQuote(sb, (String)getter.get(o));
+						}
+					}
+					else if (t.equals(int.class) || t.equals(Integer.class))
+					{
+						getter = new FieldGetter<T>(cls, fields[i].getName());
+						Integer v = (Integer)getter.get(o);
+						if (v == null)
+						{
+							sb.append("null");
+						}
+						else
+						{
+							sb.append(v);
+						}
+					}
+					else if (t.equals(Timestamp.class))
+					{
+						getter = new FieldGetter<T>(cls, fields[i].getName());
+						Timestamp ts = (Timestamp)getter.get(o);
+						if (ts == null)
+						{
+							sb.append("null");
+						}
+						else
+						{
+							JSText.toJSTextDQuote(sb, DateTimeUtil.toString(ts, "yyyy-MM-dd HH:mm:ss.fffffffff"));
+						}
+					}
+					else
+					{
+						System.out.println("GeometryUtil.appendGeojson: Unknown properties type: "+t.toString());
+						sb.append("null");
+					}
+				}
+				i++;
+			}
+			sb.append("}");
+			sb.append("}");
+		}
+	}
+
+	public static <T> String toGeojsonList(Iterable<T> o)
+	{
+		try
+		{
+			StringBuilder sb = new StringBuilder();
+			appendGeojsonList(o, sb);
+			return sb.toString();
+		}
+		catch (Exception ex)
+		{
+			ex.printStackTrace();
+			return null;
+		}
+	}
+
+	public static <T> String toGeojson(T o)
+	{
+		try
+		{
+			StringBuilder sb = new StringBuilder();
+			appendGeojson(o, sb);
+			return sb.toString();
+		}
+		catch (Exception ex)
+		{
+			ex.printStackTrace();
+			return null;
+		}
 	}
 }

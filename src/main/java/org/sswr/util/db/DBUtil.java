@@ -54,6 +54,7 @@ import org.sswr.util.data.DataTools;
 import org.sswr.util.data.FieldGetter;
 import org.sswr.util.data.FieldSetter;
 import org.sswr.util.data.GeometryUtil;
+import org.sswr.util.data.LineBreakType;
 import org.sswr.util.data.MSGeography;
 import org.sswr.util.data.ReflectTools;
 import org.sswr.util.data.SharedInt;
@@ -104,6 +105,20 @@ public class DBUtil {
 		else
 		{
 			clsName = conn.getClass().getName();
+			if (clsName.equals("com.zaxxer.hikari.pool.HikariProxyConnection"))
+			{
+				clsName = conn.toString();
+				int i = clsName.indexOf(" wrapping ");
+				if (i >= 0)
+				{
+					clsName = clsName.substring(i + 10);
+				}
+				i = clsName.indexOf("@");
+				if (i >= 0)
+				{
+					clsName = clsName.substring(0, i);
+				}
+			}
 		}
 		if (clsName.startsWith("com.microsoft.sqlserver.jdbc.SQLServerConnection"))
 		{
@@ -120,6 +135,11 @@ public class DBUtil {
 		else if (clsName.equals("org.postgresql.jdbc.PgConnection"))
 		{
 			return DBType.PostgreSQL;
+		}
+		else if (clsName.equals("com.zaxxer.hikari.pool.HikariProxyConnection"))
+		{
+			sqlLogger.logMessage("HikariProxyConnection: "+conn.toString(), LogLevel.ERROR);
+			return DBType.Unknown;
 		}
 		else
 		{
@@ -644,9 +664,26 @@ public class DBUtil {
 				else if (fieldType.equals(Geometry.class))
 				{
 					byte bytes[] = rs.getBytes(i + 1);
-					if (dbType == DBType.MSSQL)
+					if (bytes == null)
+					{
+						col.setter.set(o, null);
+					}
+					else if (dbType == DBType.MSSQL)
 					{
 						col.setter.set(o, GeometryUtil.fromVector2D(MSGeography.parseBinary(bytes)));
+					}
+					else if (dbType == DBType.PostgreSQL)
+					{
+						bytes = StringUtil.hex2Bytes(new String(bytes));
+						WKBReader reader = new WKBReader();
+						try
+						{
+							col.setter.set(o, reader.read(bytes));
+						}
+						catch (ParseException ex)
+						{
+							sqlLogger.logException(ex);
+						}
 					}
 					else
 					{

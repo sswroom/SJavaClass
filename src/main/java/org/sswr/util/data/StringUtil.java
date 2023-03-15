@@ -4,6 +4,7 @@ import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -335,6 +336,76 @@ public class StringUtil
 		return v;
 	}
 
+	/**
+	* Convert Hexadecimal String to Byte array
+	*
+	* @param  s  Hexadecimal String to convert
+	* @return    byte array value
+	*/
+	public static byte[] hex2Bytes(String s)
+	{
+		char carr[] = s.toCharArray();
+		byte retArr[] = new byte[carr.length >> 1];
+		int i = 0;
+		int j = carr.length;
+		int v = 0;
+		int k = 0;
+		boolean found = false;
+		while (i < j)
+		{
+			if (carr[i] >= '0' && carr[i] <= '9')
+			{
+				if (found)
+				{
+					v = (v << 4) | (carr[i] - 0x30);
+					retArr[k++] = (byte)v;
+					found = false;
+				}
+				else
+				{
+					v = carr[i] - 0x30;
+					found = true;
+				}
+			}
+			else if (carr[i] >= 'A' && carr[i] <= 'Z')
+			{
+				if (found)
+				{
+					v = (v << 4) | (carr[i] - 0x37);
+					retArr[k++] = (byte)v;
+					found = false;
+				}
+				else
+				{
+					v = carr[i] - 0x37;
+					found = true;
+				}
+			}
+			else if (carr[i] >= 'a' && carr[i] <= 'z')
+			{
+				if (found)
+				{
+					v = (v << 4) | (carr[i] - 0x57);
+					retArr[k++] = (byte)v;
+					found = false;
+				}
+				else
+				{
+					v = carr[i] - 0x57;
+					found = true;
+				}
+			}
+			i++;
+		}
+		if (k == retArr.length)
+		{
+			return retArr;
+		}
+		else
+		{
+			return Arrays.copyOf(retArr, k);
+		}
+	}
 
 	/**
 	* Convert Hexadecimal String to Long
