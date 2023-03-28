@@ -77,6 +77,109 @@ public class QueryConditions<T>
 		}
 	}
 
+
+	public class TimeCondition extends Condition
+	{
+		private String fieldName;
+		private Timestamp val;
+		private CompareCondition cond;
+		private FieldGetter<T> getter;
+
+		public TimeCondition(String fieldName, Timestamp val, CompareCondition cond) throws NoSuchFieldException
+		{
+			this.fieldName = fieldName;
+			this.val = val;
+			this.cond = cond;
+			this.getter = new FieldGetter<T>(cls, fieldName);
+			Class<?> fieldType = this.getter.getFieldType();
+			if (fieldType.equals(Timestamp.class) || fieldType.equals(int.class))
+			{
+
+			}
+			else
+			{
+				throw new NoSuchFieldException("Not Timestamp format: "+fieldType.toString());
+			}
+		}
+
+		public String getFieldName()
+		{
+			return this.fieldName;
+		}
+
+		public Timestamp getVal()
+		{
+			return this.val;
+		}
+
+		public CompareCondition getCompareCond()
+		{
+			return this.cond;
+		}
+
+		public String toWhereClause(Map<String, DBColumnInfo> colsMap, DBUtil.DBType dbType, int maxDbItem)
+		{
+			StringBuilder sb = new StringBuilder();
+			DBColumnInfo col = colsMap.get(this.fieldName);
+			sb.append(DBUtil.dbCol(dbType, col.colName));
+			if (val == null)
+			{
+				if (cond != CompareCondition.NOT_EQUAL)
+				{
+					sb.append(" is null");
+				}
+				else
+				{
+					sb.append(" is not null");
+				}
+			}
+			else
+			{
+				sb.append(getCondStr(cond));
+				sb.append(DBUtil.dbTS(dbType, this.val));
+			}
+			return sb.toString();
+		}
+
+		public boolean isValid(T obj) throws IllegalAccessException, InvocationTargetException
+		{
+			Object v = this.getter.get(obj);
+			if (this.val == null)
+			{
+				if (cond != CompareCondition.NOT_EQUAL)
+				{
+					return v == null;
+				}
+				else
+				{
+					return v != null;
+				}
+			}
+
+			if (v == null)
+			{
+				return false;
+			}
+			Timestamp iVal = (Timestamp)v;
+			switch (cond)
+			{
+			case EQUAL:
+				return iVal.equals(this.val);
+			case NOT_EQUAL:
+				return !iVal.equals(this.val);
+			case GREATER:
+				return iVal.compareTo(this.val) > 0;
+			case GREATER_OR_EQUAL:
+				return iVal.compareTo(this.val) >= 0;
+			case LESS:
+				return iVal.compareTo(this.val) < 0;
+			case LESS_OR_EQUAL:
+				return iVal.compareTo(this.val) <= 0;
+			}
+			return false;
+		}
+	}
+
 	public class IntCondition extends Condition
 	{
 		private String fieldName;
@@ -815,6 +918,12 @@ public class QueryConditions<T>
 		return this;
 	}
 
+	public QueryConditions<T> timeCompare(String fieldName, CompareCondition cond, Timestamp t) throws NoSuchFieldException
+	{
+		this.conditionList.add(new TimeCondition(fieldName, t, cond));
+		return this;
+	}
+
 	public QueryConditions<T> or()
 	{
 		if (this.conditionList.size() == 0)
@@ -834,6 +943,12 @@ public class QueryConditions<T>
 	public QueryConditions<T> intEquals(String fieldName, Integer val) throws NoSuchFieldException
 	{
 		this.conditionList.add(new IntCondition(fieldName, val, CompareCondition.EQUAL));
+		return this;
+	}
+
+	public QueryConditions<T> intCompare(String fieldName, CompareCondition cond, int val) throws NoSuchFieldException
+	{
+		this.conditionList.add(new IntCondition(fieldName, val, cond));
 		return this;
 	}
 
