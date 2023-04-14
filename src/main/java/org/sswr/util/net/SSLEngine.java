@@ -76,4 +76,10 @@ public class SSLEngine
 		// All hosts will be valid
 		HttpsURLConnection.setDefaultHostnameVerifier(validHosts);
 	}
+
+	public static void setTrustStore(String path, String password)
+	{
+		System.setProperty("javax.net.ssl.trustStore", path);
+		System.setProperty("javax.net.ssl.trustStorePassword", password);
+	}
 }

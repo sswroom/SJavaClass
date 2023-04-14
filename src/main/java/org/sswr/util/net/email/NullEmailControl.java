@@ -1,11 +1,19 @@
 package org.sswr.util.net.email;
 
+import java.util.List;
+
 import org.sswr.util.data.StringUtil;
 
 public class NullEmailControl implements EmailControl
 {
 	@Override
-	public boolean sendMail(EmailMessage message, String toList, String ccList)
+	public boolean sendMail(EmailMessage msg, String toList, String ccList)
+	{
+		return false;
+	}
+
+	@Override
+	public boolean sendBatchMail(EmailMessage msg, List<String> toList)
 	{
 		return false;
 	}

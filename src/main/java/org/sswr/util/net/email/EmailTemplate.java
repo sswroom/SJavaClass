@@ -9,10 +9,12 @@ import java.util.List;
 import java.util.Map;
 
 import org.sswr.util.data.XmlUtil;
+import org.sswr.util.data.textenc.FormEncoding;
 
 /***
  * Template format:
  * [@xxxx] Attribute Text
+ * [^xxxx] Form Encoded Text
  * [#xxxx] HTML Text
  * [$xxxx] Direct HTML Tag
  * [xxxx]  Subject Text
@@ -38,22 +40,34 @@ public class EmailTemplate implements EmailMessage
 		}
 	}
 
+	public static class ItemGroup
+	{
+		public String itemTemplate;
+		public StringBuilder sbItem;
+		public String postTemplate;
+		public StringBuilder sbPost;
+		public String noItem;
+		public String hasItemPre;
+		public String hasItemPost;
+
+		public String groupTemplate;
+		public String groupPostTemplate;
+		public String groupName;
+		public String groupLast;
+	}
+
 	private String subjTemplate;
 	private String contTemplate;
-	private String itemTemplate;
-	private int itemOfst;
 	private StringBuilder sbSubj;
 	private StringBuilder sbPre;
-	private StringBuilder sbItem;
-	private StringBuilder sbPost;
+	private List<ItemGroup> groups;
 	private List<String> attachments;
 
 	public EmailTemplate(InputStream templateStm, Map<String, String> vars) throws IOException, TemplateFormatException, TemplateItemException
 	{
-		this.itemTemplate = null;
-		this.itemOfst = 0;
 		this.sbSubj = new StringBuilder();
 		this.attachments = new ArrayList<String>();
+		this.groups = new ArrayList<ItemGroup>();
 
 		BufferedReader reader = new BufferedReader(new InputStreamReader(templateStm));
 		this.subjTemplate = reader.readLine();
@@ -70,68 +84,116 @@ public class EmailTemplate implements EmailMessage
 			sb.append(line);
 			sb.append("\r\n");
 		}
-		this.contTemplate = sb.toString();
-		this.itemOfst = this.contTemplate.indexOf("[item]");
-		if (this.itemOfst >= 0)
-		{
-			int j = this.contTemplate.indexOf("[/item]");
-			if (j < this.itemOfst)
-			{
-				throw new IOException("Template format invalid");
-			}
-			this.itemTemplate = this.contTemplate.substring(this.itemOfst + 6, j);
-			this.sbPre = new StringBuilder();
-			this.sbPost = new StringBuilder();
-			this.contTemplate = this.contTemplate.substring(0, this.itemOfst) + this.contTemplate.substring(j + 7);
-			this.sbItem = new StringBuilder();
-			this.parseTemplate(this.contTemplate.substring(0, this.itemOfst), this.sbPre, vars);
-			this.parseTemplate(this.contTemplate.substring(this.itemOfst), this.sbPost, vars);
-		}
-		else
-		{
-			this.sbPre = new StringBuilder();
-			this.parseTemplate(this.contTemplate, this.sbPre, vars);
-		}
+		this.contTemplate = parseItemGroup(sb.toString(), vars);
+		this.sbPre = new StringBuilder();
+		this.parseTemplate(this.contTemplate, this.sbPre, vars);
 	}
 
 	public EmailTemplate(String subject, String content, Map<String, String> vars) throws IOException, TemplateFormatException, TemplateItemException
 	{
-		this.itemTemplate = null;
-		this.itemOfst = 0;
 		this.sbSubj = new StringBuilder();
+		this.groups = new ArrayList<ItemGroup>();
 		this.subjTemplate = subject;
 		this.parseTemplate(this.subjTemplate, this.sbSubj, vars);
-		this.contTemplate = content;
-		this.itemOfst = this.contTemplate.indexOf("[item]");
-		if (this.itemOfst >= 0)
+		this.contTemplate = parseItemGroup(content, vars);
+		this.sbPre = new StringBuilder();
+		this.parseTemplate(this.contTemplate, this.sbPre, vars);
+	}
+
+	private String parseItemGroup(String content, Map<String, String> vars) throws IOException, TemplateFormatException, TemplateItemException
+	{
+		int itemOfst = content.indexOf("[item]");
+		if (itemOfst >= 0)
 		{
-			int j = this.contTemplate.indexOf("[/item]");
-			if (j < this.itemOfst)
+			int j = content.indexOf("[/item]");
+			if (j < itemOfst)
 			{
-				throw new IOException("Template format invalid");
+				throw new IOException("Template format invalid: [/item] not found");
 			}
-			this.itemTemplate = this.contTemplate.substring(this.itemOfst + 6, j);
-			this.sbPre = new StringBuilder();
-			this.sbPost = new StringBuilder();
-			this.contTemplate = this.contTemplate.substring(0, this.itemOfst) + this.contTemplate.substring(j + 7);
-			this.sbItem = new StringBuilder();
-			this.parseTemplate(this.contTemplate.substring(0, this.itemOfst), this.sbPre, vars);
-			this.parseTemplate(this.contTemplate.substring(this.itemOfst), this.sbPost, vars);
+			ItemGroup group = new ItemGroup();
+			group.sbPost = new StringBuilder();
+			group.sbItem = new StringBuilder();
+			group.itemTemplate = content.substring(itemOfst + 6, j);
+			group.postTemplate = content.substring(j + 7);
+			content = content.substring(0, itemOfst);
+			this.groups.add(group);
+			j = group.itemTemplate.indexOf("[--noitems--]");
+			if (j >= 0)
+			{
+				group.noItem = group.itemTemplate.substring(j + 13);
+				group.itemTemplate = group.itemTemplate.substring(0, j);
+			}
+			j = group.itemTemplate.indexOf("[--hasItemPost--]");
+			if (j >= 0)
+			{
+				group.hasItemPost = group.itemTemplate.substring(j + 17);
+				group.itemTemplate = group.itemTemplate.substring(0, j);
+			}
+			j = group.itemTemplate.indexOf("[--hasItemPre--]");
+			if (j >= 0)
+			{
+				group.hasItemPre = group.itemTemplate.substring(j + 16);
+				group.itemTemplate = group.itemTemplate.substring(0, j);
+			}
+			j = group.itemTemplate.indexOf("[group ");
+			if (j >= 0)
+			{
+				int k = group.itemTemplate.indexOf(']', j + 7);
+				if (k < 0)
+				{
+					throw new IOException("Template format invalid: No ']' in group begin");
+				}
+				group.groupName = group.itemTemplate.substring(j + 7, k);
+				group.groupTemplate = group.itemTemplate.substring(k + 1);
+				group.itemTemplate = group.itemTemplate.substring(0, j);
+				j = group.groupTemplate.indexOf("[/group]");
+				if (j < 0)
+				{
+					throw new IOException("Template format invalid: No [/group] found after group begein");
+				}
+				group.groupPostTemplate = group.groupTemplate.substring(j + 8);
+				group.groupTemplate = group.groupTemplate.substring(0, j);
+			}
+
+			group.postTemplate = parseItemGroup(group.postTemplate, vars);
+			this.parseTemplate(group.postTemplate, group.sbPost, vars);
+		}
+		return content;
+	}
+
+	public void addItem(int itemIndex, Map<String, String> itemVars) throws IllegalArgumentException, TemplateFormatException, TemplateItemException
+	{
+		ItemGroup group = this.groups.get(itemIndex);
+		if (group == null)
+		{
+			throw new IllegalArgumentException("Item Template Group not found");
+		}
+		if (group.groupTemplate != null)
+		{
+			String thisVal = itemVars.get(group.groupName);
+			if (thisVal == null)
+				thisVal = "";
+			if (group.groupLast != null && group.groupLast.equals(thisVal))
+			{
+			}
+			else
+			{
+				if (group.groupLast != null)
+					group.sbItem.append(group.groupPostTemplate);
+				group.groupLast = thisVal;
+				this.parseTemplate(group.itemTemplate, group.sbItem, itemVars);
+			}
+			this.parseTemplate(group.groupTemplate, group.sbItem, itemVars);
 		}
 		else
 		{
-			this.sbPre = new StringBuilder();
-			this.parseTemplate(this.contTemplate, this.sbPre, vars);
+			this.parseTemplate(group.itemTemplate, group.sbItem, itemVars);
 		}
 	}
 
 	public void addItem(Map<String, String> itemVars) throws IllegalArgumentException, TemplateFormatException, TemplateItemException
 	{
-		if (this.itemTemplate == null)
-		{
-			throw new IllegalArgumentException("Template has no items");
-		}
-		this.parseTemplate(this.itemTemplate, this.sbItem, itemVars);
+		addItem(0, itemVars);
 	}
 
 	public void addItems(List<Map<String, String>> itemVarsList) throws IllegalArgumentException, TemplateFormatException, TemplateItemException
@@ -140,7 +202,7 @@ public class EmailTemplate implements EmailMessage
 		int j = itemVarsList.size();
 		while (i < j)
 		{
-			addItem(itemVarsList.get(i));
+			addItem(0, itemVarsList.get(i));
 			i++;
 		}
 	}
@@ -178,13 +240,10 @@ public class EmailTemplate implements EmailMessage
 				String paramName = template.substring(j + 1, k);
 				String param;
 				String keyName;
-				if (paramName.startsWith("@") || paramName.startsWith("#") || paramName.startsWith("$"))
+				keyName = paramName;
+				while (keyName.startsWith("@") || keyName.startsWith("#") || keyName.startsWith("$") || keyName.startsWith("^"))
 				{
-					keyName = paramName.substring(1);
-				}
-				else
-				{
-					keyName = paramName;
+					keyName = keyName.substring(1);
 				}
 				param = vars.get(keyName);
 				if (param == null && vars.containsKey(keyName))
@@ -195,19 +254,31 @@ public class EmailTemplate implements EmailMessage
 				{
 					throw new TemplateItemException("Parameter value ["+paramName+"] not provided");
 				}
-				if (paramName.startsWith("@"))
+				while (true)
 				{
-					param = XmlUtil.toAttr(param);
-				}
-				else if (paramName.startsWith("#"))
-				{
-					param = XmlUtil.toHTMLText(param);
-				}
-				else if (paramName.startsWith("$")) //Direct output
-				{
-				}
-				else //Subject
-				{
+					if (paramName.startsWith("@"))
+					{
+						param = XmlUtil.toAttr(param);
+						paramName = paramName.substring(1);
+					}
+					else if (paramName.startsWith("#"))
+					{
+						param = XmlUtil.toHTMLText(param);
+						paramName = paramName.substring(1);
+					}
+					else if (paramName.startsWith("^"))
+					{
+						param = FormEncoding.formEncode(param);
+						paramName = paramName.substring(1);
+					}
+					else if (paramName.startsWith("$")) //Direct output
+					{
+						paramName = paramName.substring(1);
+					}
+					else
+					{
+						break;
+					}
 				}
 				sb.append(template.substring(i, j));
 				sb.append(param);
@@ -223,14 +294,37 @@ public class EmailTemplate implements EmailMessage
 
 	public String getContent()
 	{
-		if (this.itemTemplate == null)
+		if (this.groups.size() == 0)
 		{
 			return this.sbPre.toString();
 		}
-		else
+		StringBuilder sb = new StringBuilder();
+		int i = 0;
+		int j = this.groups.size();
+		ItemGroup group;
+		sb.append(this.sbPre);
+		while (i < j)
 		{
-			return this.sbPre.toString()+this.sbItem.toString()+this.sbPost.toString();
+			group = this.groups.get(i);
+			if (group.sbItem.length() == 0)
+			{
+				if (group.noItem != null)
+					sb.append(group.noItem);
+			}
+			else
+			{
+				if (group.hasItemPre != null)
+					sb.append(group.hasItemPre);
+				sb.append(group.sbItem);
+				if (group.groupLast != null)
+					sb.append(group.groupPostTemplate);
+				if (group.hasItemPost != null)
+					sb.append(group.hasItemPost);
+			}
+			sb.append(group.sbPost);
+			i++;
 		}
+		return sb.toString();
 	}
 
 	@Override

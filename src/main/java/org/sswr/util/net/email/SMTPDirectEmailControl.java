@@ -1,7 +1,9 @@
 package org.sswr.util.net.email;
 
 import java.time.ZonedDateTime;
+import java.util.List;
 
+import org.sswr.util.data.StringUtil;
 import org.sswr.util.io.LogLevel;
 import org.sswr.util.io.LogTool;
 import org.sswr.util.io.LogToolWriter;
@@ -48,6 +50,11 @@ public class SMTPDirectEmailControl implements EmailControl
 			i++;
 		}
 		return this.smtp.send(message);
+	}
+
+	public boolean sendBatchMail(EmailMessage msg, List<String> toList)
+	{
+		return sendMail(msg, StringUtil.join(toList, ","), null);
 	}
 
 	public boolean isServerOnline()
