@@ -395,13 +395,14 @@ public class SMTPMessage
 		while (i < j)
 		{
 			toAddrs[i] = toAddrs[i].trim();
-			if (!StringUtil.isEmailAddress(toAddrs[i]))
+			EmailAddress addr = EmailAddress.parse(toAddrs[i]);
+			if (addr == null)
 			{
 				succ = false;
 			}
 			else
 			{
-				succ = succ && this.addTo(null, toAddrs[i]);
+				succ = succ && this.addTo(addr.getName(), addr.getAddress());
 			}
 			i++;
 		}
@@ -418,13 +419,14 @@ public class SMTPMessage
 		while (i < j)
 		{
 			ccAddrs[i] = ccAddrs[i].trim();
-			if (!StringUtil.isEmailAddress(ccAddrs[i]))
+			EmailAddress addr = EmailAddress.parse(ccAddrs[i]);
+			if (addr == null)
 			{
 				succ = false;
 			}
 			else
 			{
-				succ = succ && this.addCc(null, ccAddrs[i]);
+				succ = succ && this.addCc(addr.getName(), addr.getAddress());
 			}
 			i++;
 		}
@@ -469,6 +471,29 @@ public class SMTPMessage
 		return true;
 	}
 
+	public boolean addBccList(String addrs)
+	{
+		boolean succ;
+		String[] bccAddrs = StringUtil.split(addrs, ",");
+		succ = true;
+		int i = 0;
+		int j = bccAddrs.length;
+		while (i < j)
+		{
+			bccAddrs[i] = bccAddrs[i].trim();
+			EmailAddress addr = EmailAddress.parse(bccAddrs[i]);
+			if (addr == null)
+			{
+				succ = false;
+			}
+			else
+			{
+				succ = succ && this.addBcc(addr.getAddress());
+			}
+			i++;
+		}
+		return succ;
+	}
 
 	public Attachment addAttachment(String fileName)
 	{
