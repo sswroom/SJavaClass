@@ -104,7 +104,7 @@ public class StringUtil
 		while (startPtr < endPtr)
 		{
 			c = carr[startPtr++];
-			if (Character.isLetterOrDigit(c) || c == '-')
+			if (Character.isLetterOrDigit(c) || "!#$%&'*+-/=?^_`{|}~".indexOf(c) >= 0)
 			{
 	
 			}
