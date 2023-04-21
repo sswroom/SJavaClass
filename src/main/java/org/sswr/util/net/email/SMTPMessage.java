@@ -387,50 +387,34 @@ public class SMTPMessage
 
 	public boolean addToList(String addrs)
 	{
-		boolean succ;
-		String[] toAddrs = StringUtil.split(addrs, ",");
-		succ = true;
+		List<EmailAddress> addrList = EmailAddress.parseList(addrs);
+		if (addrList == null)
+			return false;
 		int i = 0;
-		int j = toAddrs.length;
+		int j = addrList.size();
 		while (i < j)
 		{
-			toAddrs[i] = toAddrs[i].trim();
-			EmailAddress addr = EmailAddress.parse(toAddrs[i]);
-			if (addr == null)
-			{
-				succ = false;
-			}
-			else
-			{
-				succ = succ && this.addTo(addr.getName(), addr.getAddress());
-			}
+			EmailAddress addr = addrList.get(i);
+			this.addTo(addr.getName(), addr.getAddress());
 			i++;
 		}
-		return succ;
+		return true;
 	}
 
 	public boolean addCcList(String addrs)
 	{
-		boolean succ;
-		String[] ccAddrs = StringUtil.split(addrs, ",");
-		succ = true;
+		List<EmailAddress> addrList = EmailAddress.parseList(addrs);
+		if (addrList == null)
+			return false;
 		int i = 0;
-		int j = ccAddrs.length;
+		int j = addrList.size();
 		while (i < j)
 		{
-			ccAddrs[i] = ccAddrs[i].trim();
-			EmailAddress addr = EmailAddress.parse(ccAddrs[i]);
-			if (addr == null)
-			{
-				succ = false;
-			}
-			else
-			{
-				succ = succ && this.addCc(addr.getName(), addr.getAddress());
-			}
+			EmailAddress addr = addrList.get(i);
+			this.addCc(addr.getName(), addr.getAddress());
 			i++;
 		}
-		return succ;
+		return true;
 	}
 
 	public boolean addCc(String name, String addr)
@@ -473,26 +457,19 @@ public class SMTPMessage
 
 	public boolean addBccList(String addrs)
 	{
-		boolean succ;
-		String[] bccAddrs = StringUtil.split(addrs, ",");
-		succ = true;
+		List<EmailAddress> addrList = EmailAddress.parseList(addrs);
+		if (addrList == null)
+			return false;
 		int i = 0;
-		int j = bccAddrs.length;
+		int j = addrList.size();
 		while (i < j)
 		{
-			bccAddrs[i] = bccAddrs[i].trim();
-			EmailAddress addr = EmailAddress.parse(bccAddrs[i]);
-			if (addr == null)
-			{
-				succ = false;
-			}
-			else
-			{
-				succ = succ && this.addBcc(addr.getAddress());
-			}
+			EmailAddress addr = addrList.get(i);
+			this.addBcc(addr.getAddress());
 			i++;
 		}
-		return succ;
+		return true;
+
 	}
 
 	public Attachment addAttachment(String fileName)

@@ -19,7 +19,7 @@ import org.sswr.util.net.TCPClientType;
 
 public class SMTPConn implements Runnable
 {
-	private static boolean VERBOSE = true;
+	private static boolean VERBOSE = false;
 
 	private TCPClient cli;
 	private UTF8Writer writer;

@@ -1,5 +1,7 @@
 package org.sswr.util.net.email;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 import org.sswr.util.data.StringUtil;
@@ -96,5 +98,30 @@ public class EmailAddress
 		{
 			return null;
 		}
+	}
+
+	public static List<EmailAddress> parseList(String val)
+	{
+		if (val == null || val.length() == 0)
+			return null;
+		List<EmailAddress> ret = new ArrayList<EmailAddress>();
+		String[] addrs = StringUtil.split(val, ",");
+		int i = 0;
+		int j = addrs.length;
+		while (i < j)
+		{
+			addrs[i] = addrs[i].trim();
+			EmailAddress addr = EmailAddress.parse(addrs[i]);
+			if (addr == null)
+			{
+				return null;
+			}
+			else
+			{
+				ret.add(addr);
+			}
+			i++;
+		}
+		return ret;
 	}
 }
