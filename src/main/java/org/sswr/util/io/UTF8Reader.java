@@ -95,7 +95,7 @@ public class UTF8Reader
 			{
 				if (this.buffSize - this.currOfst >= 2)
 				{
-					ret = ((int)(c & 0x1f) << 6) | (int)(this.buff[this.currOfst + 1] & 0x3f);
+					ret = ((c & 0x1f) << 6) | (this.buff[this.currOfst + 1] & 0x3f);
 					return (char)ret;
 				}
 			}
@@ -103,7 +103,7 @@ public class UTF8Reader
 			{
 				if (this.buffSize - this.currOfst >= 3)
 				{
-					ret = ((int)(c & 0x0f) << 12) | ((int)(this.buff[this.currOfst + 1] & 0x3f) << 6) | (int)(this.buff[this.currOfst + 2] & 0x3f);
+					ret = ((c & 0x0f) << 12) | ((this.buff[this.currOfst + 1] & 0x3f) << 6) | (this.buff[this.currOfst + 2] & 0x3f);
 					return (char)ret;
 				}
 			}
@@ -111,7 +111,7 @@ public class UTF8Reader
 			{
 				if (this.buffSize - this.currOfst >= 4)
 				{
-					ret = ((int)(c & 0x7) << 18) | ((int)(this.buff[this.currOfst + 1] & 0x3f) << 12) | ((int)(this.buff[this.currOfst + 2] & 0x3f) << 6) | (int)(this.buff[this.currOfst + 3] & 0x3f);
+					ret = ((c & 0x7) << 18) | ((this.buff[this.currOfst + 1] & 0x3f) << 12) | ((this.buff[this.currOfst + 2] & 0x3f) << 6) | (this.buff[this.currOfst + 3] & 0x3f);
 					return (char)ret;
 				}
 			}
@@ -119,7 +119,7 @@ public class UTF8Reader
 			{
 				if (this.buffSize - this.currOfst >= 5)
 				{
-					ret = ((int)(c & 0x3) << 24) | ((int)(this.buff[this.currOfst + 1] & 0x3f) << 18) | ((int)(this.buff[this.currOfst + 2] & 0x3f) << 12) | ((int)(this.buff[this.currOfst + 3] & 0x3f) << 6) | (int)(this.buff[this.currOfst + 4] & 0x3f);
+					ret = ((c & 0x3) << 24) | ((this.buff[this.currOfst + 1] & 0x3f) << 18) | ((this.buff[this.currOfst + 2] & 0x3f) << 12) | ((this.buff[this.currOfst + 3] & 0x3f) << 6) | (this.buff[this.currOfst + 4] & 0x3f);
 					return (char)ret;
 				}
 			}
@@ -127,7 +127,7 @@ public class UTF8Reader
 			{
 				if (this.buffSize - this.currOfst >= 6)
 				{
-					ret = ((int)(c & 0x1) << 30) | ((int)(this.buff[this.currOfst + 1] & 0x3f) << 24) | ((int)(this.buff[this.currOfst + 2] & 0x3f) << 18) | ((int)(this.buff[this.currOfst + 3] & 0x3f) << 12) | ((int)(this.buff[this.currOfst + 4] & 0x3f) << 6) | (int)(this.buff[this.currOfst + 5] & 0x3f);
+					ret = ((c & 0x1) << 30) | ((this.buff[this.currOfst + 1] & 0x3f) << 24) | ((this.buff[this.currOfst + 2] & 0x3f) << 18) | ((this.buff[this.currOfst + 3] & 0x3f) << 12) | ((this.buff[this.currOfst + 4] & 0x3f) << 6) | (this.buff[this.currOfst + 5] & 0x3f);
 					return (char)ret;
 				}
 			}
@@ -144,7 +144,7 @@ public class UTF8Reader
 			{
 				if (this.buffSize - this.currOfst >= 2)
 				{
-					ret = ((int)(c & 0x1f) << 6) | (int)(this.buff[this.currOfst + 1] & 0x3f);
+					ret = ((c & 0x1f) << 6) | (this.buff[this.currOfst + 1] & 0x3f);
 					return (char)ret;
 				}
 			}
@@ -152,7 +152,7 @@ public class UTF8Reader
 			{
 				if (this.buffSize - this.currOfst >= 3)
 				{
-					ret = ((int)(c & 0x0f) << 12) | ((int)(this.buff[this.currOfst + 1] & 0x3f) << 6) | (int)(this.buff[this.currOfst + 2] & 0x3f);
+					ret = ((c & 0x0f) << 12) | ((this.buff[this.currOfst + 1] & 0x3f) << 6) | (this.buff[this.currOfst + 2] & 0x3f);
 					return (char)ret;
 				}
 			}
@@ -160,7 +160,7 @@ public class UTF8Reader
 			{
 				if (this.buffSize - this.currOfst >= 4)
 				{
-					ret = ((int)(c & 0x7) << 18) | ((int)(this.buff[this.currOfst + 1] & 0x3f) << 12) | ((int)(this.buff[this.currOfst + 2] & 0x3f) << 6) | (int)(this.buff[this.currOfst + 3] & 0x3f);
+					ret = ((c & 0x7) << 18) | ((this.buff[this.currOfst + 1] & 0x3f) << 12) | ((this.buff[this.currOfst + 2] & 0x3f) << 6) | (this.buff[this.currOfst + 3] & 0x3f);
 					return (char)ret;
 				}
 			}
@@ -168,7 +168,7 @@ public class UTF8Reader
 			{
 				if (this.buffSize - this.currOfst >= 5)
 				{
-					ret = ((int)(c & 0x3) << 24) | ((int)(this.buff[this.currOfst + 1] & 0x3f) << 18) | ((int)(this.buff[this.currOfst + 2] & 0x3f) << 12) | ((int)(this.buff[this.currOfst + 3] & 0x3f) << 6) | (int)(this.buff[this.currOfst + 4] & 0x3f);
+					ret = ((c & 0x3) << 24) | ((this.buff[this.currOfst + 1] & 0x3f) << 18) | ((this.buff[this.currOfst + 2] & 0x3f) << 12) | ((this.buff[this.currOfst + 3] & 0x3f) << 6) | (this.buff[this.currOfst + 4] & 0x3f);
 					return (char)ret;
 				}
 			}
@@ -176,7 +176,7 @@ public class UTF8Reader
 			{
 				if (this.buffSize - this.currOfst >= 6)
 				{
-					ret = ((int)(c & 0x1) << 30) | ((int)(this.buff[this.currOfst + 1] & 0x3f) << 24) | ((int)(this.buff[this.currOfst + 2] & 0x3f) << 18) | ((int)(this.buff[this.currOfst + 3] & 0x3f) << 12) | ((int)(this.buff[this.currOfst + 4] & 0x3f) << 6) | (int)(this.buff[this.currOfst + 5] & 0x3f);
+					ret = ((c & 0x1) << 30) | ((this.buff[this.currOfst + 1] & 0x3f) << 24) | ((this.buff[this.currOfst + 2] & 0x3f) << 18) | ((this.buff[this.currOfst + 3] & 0x3f) << 12) | ((this.buff[this.currOfst + 4] & 0x3f) << 6) | (this.buff[this.currOfst + 5] & 0x3f);
 					return (char)ret;
 				}
 			}
@@ -199,7 +199,7 @@ public class UTF8Reader
 			{
 				if (this.buffSize - this.currOfst >= 2)
 				{
-					ret = ((int)(c & 0x1f) << 6) | (int)(this.buff[this.currOfst + 1] & 0x3f);
+					ret = ((c & 0x1f) << 6) | (this.buff[this.currOfst + 1] & 0x3f);
 					this.currOfst += 2;
 					return (char)ret;
 				}
@@ -208,7 +208,7 @@ public class UTF8Reader
 			{
 				if (this.buffSize - this.currOfst >= 3)
 				{
-					ret = ((int)(c & 0x0f) << 12) | ((int)(this.buff[this.currOfst + 1] & 0x3f) << 6) | (int)(this.buff[this.currOfst + 2] & 0x3f);
+					ret = ((c & 0x0f) << 12) | ((this.buff[this.currOfst + 1] & 0x3f) << 6) | (this.buff[this.currOfst + 2] & 0x3f);
 					this.currOfst += 3;
 					return (char)ret;
 				}
@@ -217,7 +217,7 @@ public class UTF8Reader
 			{
 				if (this.buffSize - this.currOfst >= 4)
 				{
-					ret = ((int)(c & 0x7) << 18) | ((int)(this.buff[this.currOfst + 1] & 0x3f) << 12) | ((int)(this.buff[this.currOfst + 2] & 0x3f) << 6) | (int)(this.buff[this.currOfst + 3] & 0x3f);
+					ret = ((c & 0x7) << 18) | ((this.buff[this.currOfst + 1] & 0x3f) << 12) | ((this.buff[this.currOfst + 2] & 0x3f) << 6) | (this.buff[this.currOfst + 3] & 0x3f);
 					this.currOfst += 4;
 					return (char)ret;
 				}
@@ -226,7 +226,7 @@ public class UTF8Reader
 			{
 				if (this.buffSize - this.currOfst >= 5)
 				{
-					ret = ((int)(c & 0x3) << 24) | ((int)(this.buff[this.currOfst + 1] & 0x3f) << 18) | ((int)(this.buff[this.currOfst + 2] & 0x3f) << 12) | ((int)(this.buff[this.currOfst + 3] & 0x3f) << 6) | (int)(this.buff[this.currOfst + 4] & 0x3f);
+					ret = ((c & 0x3) << 24) | ((this.buff[this.currOfst + 1] & 0x3f) << 18) | ((this.buff[this.currOfst + 2] & 0x3f) << 12) | ((this.buff[this.currOfst + 3] & 0x3f) << 6) | (this.buff[this.currOfst + 4] & 0x3f);
 					this.currOfst += 5;
 					return (char)ret;
 				}
@@ -235,7 +235,7 @@ public class UTF8Reader
 			{
 				if (this.buffSize - this.currOfst >= 6)
 				{
-					ret = ((int)(c & 0x1) << 30) | ((int)(this.buff[this.currOfst + 1] & 0x3f) << 24) | ((int)(this.buff[this.currOfst + 2] & 0x3f) << 18) | ((int)(this.buff[this.currOfst + 3] & 0x3f) << 12) | ((int)(this.buff[this.currOfst + 4] & 0x3f) << 6) | (int)(this.buff[this.currOfst + 5] & 0x3f);
+					ret = ((c & 0x1) << 30) | ((this.buff[this.currOfst + 1] & 0x3f) << 24) | ((this.buff[this.currOfst + 2] & 0x3f) << 18) | ((this.buff[this.currOfst + 3] & 0x3f) << 12) | ((this.buff[this.currOfst + 4] & 0x3f) << 6) | (this.buff[this.currOfst + 5] & 0x3f);
 					this.currOfst += 6;
 					return (char)ret;
 				}
@@ -254,7 +254,7 @@ public class UTF8Reader
 			{
 				if (this.buffSize - this.currOfst >= 2)
 				{
-					ret = ((int)(c & 0x1f) << 6) | (int)(this.buff[this.currOfst + 1] & 0x3f);
+					ret = ((c & 0x1f) << 6) | (this.buff[this.currOfst + 1] & 0x3f);
 					this.currOfst += 2;
 					return (char)ret;
 				}
@@ -263,7 +263,7 @@ public class UTF8Reader
 			{
 				if (this.buffSize - this.currOfst >= 3)
 				{
-					ret = ((int)(c & 0x0f) << 12) | ((int)(this.buff[this.currOfst + 1] & 0x3f) << 6) | (int)(this.buff[this.currOfst + 2] & 0x3f);
+					ret = ((c & 0x0f) << 12) | ((this.buff[this.currOfst + 1] & 0x3f) << 6) | (this.buff[this.currOfst + 2] & 0x3f);
 					this.currOfst += 3;
 					return (char)ret;
 				}
@@ -272,7 +272,7 @@ public class UTF8Reader
 			{
 				if (this.buffSize - this.currOfst >= 4)
 				{
-					ret = ((int)(c & 0x7) << 18) | ((int)(this.buff[this.currOfst + 1] & 0x3f) << 12) | ((int)(this.buff[this.currOfst + 2] & 0x3f) << 6) | (int)(this.buff[this.currOfst + 3] & 0x3f);
+					ret = ((c & 0x7) << 18) | ((this.buff[this.currOfst + 1] & 0x3f) << 12) | ((this.buff[this.currOfst + 2] & 0x3f) << 6) | (this.buff[this.currOfst + 3] & 0x3f);
 					this.currOfst += 4;
 					return (char)ret;
 				}
@@ -281,7 +281,7 @@ public class UTF8Reader
 			{
 				if (this.buffSize - this.currOfst >= 5)
 				{
-					ret = ((int)(c & 0x3) << 24) | ((int)(this.buff[this.currOfst + 1] & 0x3f) << 18) | ((int)(this.buff[this.currOfst + 2] & 0x3f) << 12) | ((int)(this.buff[this.currOfst + 3] & 0x3f) << 6) | (int)(this.buff[this.currOfst + 4] & 0x3f);
+					ret = ((c & 0x3) << 24) | ((this.buff[this.currOfst + 1] & 0x3f) << 18) | ((this.buff[this.currOfst + 2] & 0x3f) << 12) | ((this.buff[this.currOfst + 3] & 0x3f) << 6) | (this.buff[this.currOfst + 4] & 0x3f);
 					this.currOfst += 5;
 					return (char)ret;
 				}
@@ -290,7 +290,7 @@ public class UTF8Reader
 			{
 				if (this.buffSize - this.currOfst >= 6)
 				{
-					ret = ((int)(c & 0x1) << 30) | ((int)(this.buff[this.currOfst + 1] & 0x3f) << 24) | ((int)(this.buff[this.currOfst + 2] & 0x3f) << 18) | ((int)(this.buff[this.currOfst + 3] & 0x3f) << 12) | ((int)(this.buff[this.currOfst + 4] & 0x3f) << 6) | (int)(this.buff[this.currOfst + 5] & 0x3f);
+					ret = ((c & 0x1) << 30) | ((this.buff[this.currOfst + 1] & 0x3f) << 24) | ((this.buff[this.currOfst + 2] & 0x3f) << 18) | ((this.buff[this.currOfst + 3] & 0x3f) << 12) | ((this.buff[this.currOfst + 4] & 0x3f) << 6) | (this.buff[this.currOfst + 5] & 0x3f);
 					this.currOfst += 6;
 					return (char)ret;
 				}

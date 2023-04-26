@@ -195,7 +195,7 @@ public class MODBUSTCPMaster implements MODBUSMaster, Runnable
 				{
 					try
 					{
-						Thread.sleep((int)(CMDDELAY - (int)(t * 1000)));
+						Thread.sleep((CMDDELAY - (int)(t * 1000)));
 					}
 					catch (InterruptedException ex)
 					{
@@ -231,7 +231,7 @@ public class MODBUSTCPMaster implements MODBUSMaster, Runnable
 				{
 					try
 					{
-						Thread.sleep((int)(CMDDELAY - (int)(t * 1000)));
+						Thread.sleep((CMDDELAY - (int)(t * 1000)));
 					}
 					catch (InterruptedException ex)
 					{
@@ -267,7 +267,7 @@ public class MODBUSTCPMaster implements MODBUSMaster, Runnable
 				{
 					try
 					{
-						Thread.sleep((int)(CMDDELAY - (int)(t * 1000)));
+						Thread.sleep((CMDDELAY - (int)(t * 1000)));
 					}
 					catch (InterruptedException ex)
 					{
@@ -303,7 +303,7 @@ public class MODBUSTCPMaster implements MODBUSMaster, Runnable
 				{
 					try
 					{
-						Thread.sleep((int)(CMDDELAY - (int)(t * 1000)));
+						Thread.sleep((CMDDELAY - (int)(t * 1000)));
 					}
 					catch (InterruptedException ex)
 					{
@@ -346,7 +346,7 @@ public class MODBUSTCPMaster implements MODBUSMaster, Runnable
 				{
 					try
 					{
-						Thread.sleep((int)(CMDDELAY - (int)(t * 1000)));
+						Thread.sleep((CMDDELAY - (int)(t * 1000)));
 					}
 					catch (InterruptedException ex)
 					{
@@ -382,7 +382,7 @@ public class MODBUSTCPMaster implements MODBUSMaster, Runnable
 				{
 					try
 					{
-						Thread.sleep((int)(CMDDELAY - (int)(t * 1000)));
+						Thread.sleep((CMDDELAY - (int)(t * 1000)));
 					}
 					catch (InterruptedException ex)
 					{
@@ -421,7 +421,7 @@ public class MODBUSTCPMaster implements MODBUSMaster, Runnable
 				{
 					try
 					{
-						Thread.sleep((int)(CMDDELAY - (int)(t * 1000)));
+						Thread.sleep((CMDDELAY - (int)(t * 1000)));
 					}
 					catch (InterruptedException ex)
 					{

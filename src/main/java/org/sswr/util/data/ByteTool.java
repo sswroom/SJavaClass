@@ -359,7 +359,7 @@ public class ByteTool {
 		{
 			return val;
 		}
-		return (byte)((val & (int)0xff) >> cnt);
+		return (byte)((val & 0xff) >> cnt);
 	}
 
 	public static int shr32(int val, int cnt)

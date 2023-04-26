@@ -15,7 +15,7 @@ public class CPPObjectParser<T>
 
 	public CPPObjectParser(Class<T> cls, String[] fieldNames) throws NoSuchMethodException, NoSuchFieldException
 	{
-		this.constructor = cls.getConstructor(new Class[0]);
+		this.constructor = cls.getConstructor(new Class<?>[0]);
 		this.setters = new ArrayList<FieldSetter>();
 		if (fieldNames == null)
 		{
