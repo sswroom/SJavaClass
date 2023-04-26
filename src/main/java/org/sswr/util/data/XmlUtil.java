@@ -12,6 +12,16 @@ public class XmlUtil {
 		return v;
 	}
 	
+	public static String toXMLText(String v)
+	{
+		v = v.replace("&", "&amp;");
+		v = v.replace("<", "&lt;");
+		v = v.replace(">", "&gt;");
+		v = v.replace("'", "&apos;");
+		v = v.replace("\"", "&quot;");
+		return v;
+	}
+
 	public static String toHTMLText(String v)
 	{
 		v = v.replace("&", "&amp;");
