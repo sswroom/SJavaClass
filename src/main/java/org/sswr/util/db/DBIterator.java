@@ -19,6 +19,7 @@ public class DBIterator<T> implements Iterator<T>
 	private ArrayList<DBColumnInfo> cols;
 	private Object parent;
 	private List<QueryConditions<T>.Condition> clientConditions;
+	private boolean connError;
 
 	DBIterator(ResultSet rs, Object parent, Constructor<T> constr, DBType dbType, ArrayList<DBColumnInfo> cols, List<QueryConditions<T>.Condition> clientConditions)
 	{
@@ -28,6 +29,7 @@ public class DBIterator<T> implements Iterator<T>
 		this.parent = parent;
 		this.cols = cols;
 		this.clientConditions = clientConditions;
+		this.connError = false;
 		this.readNext();
 	}
 
@@ -75,6 +77,7 @@ public class DBIterator<T> implements Iterator<T>
 			catch (SQLException ex)
 			{
 				DBUtil.sqlLogger.logException(ex);
+				this.connError = true;
 			}
 			this.close();
 		}
@@ -92,6 +95,11 @@ public class DBIterator<T> implements Iterator<T>
 		T ret = this.nextItem;
 		this.readNext();
 		return ret;
+	}
+
+	public boolean isConnError()
+	{
+		return this.connError;
 	}
 
 	public void close()

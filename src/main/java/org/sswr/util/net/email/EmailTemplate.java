@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -69,7 +70,7 @@ public class EmailTemplate implements EmailMessage
 		this.attachments = new ArrayList<String>();
 		this.groups = new ArrayList<ItemGroup>();
 
-		BufferedReader reader = new BufferedReader(new InputStreamReader(templateStm));
+		BufferedReader reader = new BufferedReader(new InputStreamReader(templateStm, StandardCharsets.UTF_8));
 		this.subjTemplate = reader.readLine();
 		this.parseTemplate(this.subjTemplate, this.sbSubj, vars);
 		StringBuilder sb = new StringBuilder();
