@@ -14,6 +14,11 @@ public class CSVTableBuilder implements TableBuilder
 		sb = new StringBuilder();
 	}
 
+	public void appendBOM()
+	{
+		sb.append((char)65279);
+	}
+
 	@Override
 	public void appendRow()
 	{
