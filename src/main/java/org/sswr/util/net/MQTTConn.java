@@ -261,22 +261,23 @@ public class MQTTConn implements Runnable, ProtocolDataListener
 
 	public boolean sendPublish(String topic, String message)
 	{
-		byte[] packet1 = new byte[512];
-		byte[] packet2 = new byte[512];
-		byte[] sbuff;
+		byte[] topicBytes;
+		byte[] msgBytes;
 	
 		int i;
 		int j;
 		i = 0;
 	
-		sbuff = topic.getBytes(StandardCharsets.UTF_8);
-		j = sbuff.length;
+		topicBytes = topic.getBytes(StandardCharsets.UTF_8);
+		msgBytes = message.getBytes(StandardCharsets.UTF_8);
+		byte[] packet1 = new byte[topicBytes.length + msgBytes.length + 2];
+		byte[] packet2 = new byte[packet1.length + 5];
+		j = topicBytes.length;
 		ByteTool.writeMInt16(packet1, i, j);
-		ByteTool.copyArray(packet1, i + 2, sbuff, 0, j);
+		ByteTool.copyArray(packet1, i + 2, topicBytes, 0, j);
 		i += j + 2;
-		sbuff = message.getBytes(StandardCharsets.UTF_8);
-		j = sbuff.length;
-		ByteTool.copyArray(packet1, i, sbuff, 0, j);
+		j = msgBytes.length;
+		ByteTool.copyArray(packet1, i, msgBytes, 0, j);
 		i += j;
 	
 		j = this.protoHdlr.buildPacket(packet2, 0, 0x30, 0, packet1, 0, i, this.cliData);
@@ -307,16 +308,16 @@ public class MQTTConn implements Runnable, ProtocolDataListener
 
 	public boolean sendSubscribe(int packetId, String topic)
 	{
-		byte[] packet1 = new byte[512];
-		byte[] packet2 = new byte[512];
-		byte[] sbuff;
+		byte[] sbuff = topic.getBytes(StandardCharsets.UTF_8);
+		byte[] packet1 = new byte[sbuff.length + 5];
+		byte[] packet2 = new byte[packet1.length + 5];
 	
 		int i;
 		int j;
 	
 		ByteTool.writeMInt16(packet1, 0, packetId);
 		i = 2;
-		sbuff = topic.getBytes(StandardCharsets.UTF_8);
+		
 		j = sbuff.length;
 		ByteTool.writeMInt16(packet1, i, j);
 		ByteTool.copyArray(packet1, i + 2, sbuff, 0, j);
