@@ -82,6 +82,11 @@ public class HTTPMyClient extends HTTPClient
 		}
 	}
 
+	public void setReadTimeout(int timeoutMS)
+	{
+		this.conn.setReadTimeout(timeoutMS);
+	}
+
 	public boolean isError()
 	{
 		return this.conn == null;
