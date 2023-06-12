@@ -383,16 +383,18 @@ public class HTTPMyClient extends HTTPClient
 		return new String(ret, StandardCharsets.UTF_8);
 	}
 
-	public static byte[] formPostAsBytes(String url, Map<String, String> formParams, SharedInt statusCode)
+	public static byte[] formPostAsBytes(String url, Map<String, String> formParams, SharedInt statusCode, int timeoutMS)
 	{
-		return formPostAsBytes(url, formParams, null, statusCode);
+		return formPostAsBytes(url, formParams, null, statusCode, timeoutMS);
 	}
 
-	public static byte[] formPostAsBytes(String url, Map<String, String> formParams, Map<String, String> customHeaders, SharedInt statusCode)
+	public static byte[] formPostAsBytes(String url, Map<String, String> formParams, Map<String, String> customHeaders, SharedInt statusCode, int timeoutMS)
 	{
 		try
 		{
 			HTTPMyClient cli = new HTTPMyClient(url, RequestMethod.HTTP_POST);
+			if (timeoutMS != 0)
+				cli.setReadTimeout(timeoutMS);
 			cli.addHeaders(customHeaders);
 			Iterator<String> names = formParams.keySet().iterator();
 			if (names != null && names.hasNext())
@@ -432,9 +434,9 @@ public class HTTPMyClient extends HTTPClient
 		}
 	}
 
-	public static String formPostAsString(String url, Map<String, String> formParams, SharedInt statusCode)
+	public static String formPostAsString(String url, Map<String, String> formParams, SharedInt statusCode, int timeoutMS)
 	{
-		byte []ret = formPostAsBytes(url, formParams, statusCode);
+		byte []ret = formPostAsBytes(url, formParams, statusCode, timeoutMS);
 		if (ret == null)
 		{
 			return null;
@@ -442,9 +444,9 @@ public class HTTPMyClient extends HTTPClient
 		return new String(ret, StandardCharsets.UTF_8);
 	}
 
-	public static String formPostAsString(String url, Map<String, String> formParams, Map<String, String> customHeaders, SharedInt statusCode)
+	public static String formPostAsString(String url, Map<String, String> formParams, Map<String, String> customHeaders, SharedInt statusCode, int timeoutMS)
 	{
-		byte []ret = formPostAsBytes(url, formParams, customHeaders, statusCode);
+		byte []ret = formPostAsBytes(url, formParams, customHeaders, statusCode, timeoutMS);
 		if (ret == null)
 		{
 			return null;
