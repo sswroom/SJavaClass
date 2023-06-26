@@ -573,12 +573,12 @@ public class DateTimeUtil
 
 	public static String toString(ZonedDateTime t, String format)
 	{
-		return DateTimeFormatter.ofPattern(format.replace('f', 'n')).format(t);
+		return DateTimeFormatter.ofPattern(format.replace('f', 'n').replace('z', 'Z')).format(t);
 	}
 
 	public static String toString(Timestamp ts, String format)
 	{
-		return DateTimeFormatter.ofPattern(format.replace('f', 'n')).format(LocalDateTime.ofInstant(ts.toInstant(), ZoneId.systemDefault()));
+		return DateTimeFormatter.ofPattern(format.replace('f', 'n').replace('z', 'Z')).format(ZonedDateTime.ofInstant(ts.toInstant(), ZoneId.systemDefault()));
 	}
 
 	public static String toStringNoZone(ZonedDateTime t)
