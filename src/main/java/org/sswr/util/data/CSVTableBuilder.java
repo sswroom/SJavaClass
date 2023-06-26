@@ -58,7 +58,7 @@ public class CSVTableBuilder implements TableBuilder
 					{
 						s = o.toString();
 					}
-					if (s.indexOf('\r') >= 0 || s.indexOf('\n') >= 0 || s.indexOf('"') >= 0)
+					if (s.indexOf('\r') >= 0 || s.indexOf('\n') >= 0 || s.indexOf(",") >= 0 || s.indexOf('"') >= 0)
 					{
 						sb.append(CSVUtil.quote(s));
 					}
@@ -77,5 +77,4 @@ public class CSVTableBuilder implements TableBuilder
 	{
 		return sb.toString().getBytes(StandardCharsets.UTF_8);
 	}
-
 }
