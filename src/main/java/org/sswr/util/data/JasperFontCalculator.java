@@ -81,8 +81,10 @@ public class JasperFontCalculator
 		int lineEnd = carr.length;
 		while (lineStart < carr.length)
 		{
-			if (font.getStringBounds(carr, lineStart, lineEnd, frc).getWidth() <= maxWidth)
+			double w = font.getStringBounds(carr, lineStart, lineEnd, frc).getWidth();
+			if (w <= maxWidth)
 			{
+//				System.out.println("W = "+w+", line = "+new String(carr, lineStart, lineEnd - lineStart));
 				ret.add(new String(carr, lineStart, lineEnd - lineStart));
 				lineStart = lineEnd;
 				lineEnd = carr.length;
@@ -121,15 +123,16 @@ public class JasperFontCalculator
 		return ret;
 	}
 
-	public JasperTextField calcTextField(String fontName, float maxPtSize, String text, double maxWidth, int maxLineCnt) throws IOException, FontFormatException
+	public JasperTextField calcTextFieldBySize(String fontName, float maxPtSize, String text, double maxWidth, double maxHeight) throws IOException, FontFormatException
 	{
 		float currSize = maxPtSize;
 		Font font = loadFont(fontName);
 		List<String> strs;
 		while (currSize >= 3)
 		{
+//			System.out.println("Font size = "+currSize);
 			strs = splitLineText(font.deriveFont(currSize), text, maxWidth);
-			if (strs != null && strs.size() <= maxLineCnt)
+			if (strs != null && strs.size() * currSize * 1.5 - currSize * 0.5 + 0.5 < maxHeight)
 			{
 				JasperTextField ret = new JasperTextField();
 				ret.lines = DataTools.toArray(String.class, strs);
