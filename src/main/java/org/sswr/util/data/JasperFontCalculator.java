@@ -82,7 +82,7 @@ public class JasperFontCalculator
 		while (lineStart < carr.length)
 		{
 			double w = font.getStringBounds(carr, lineStart, lineEnd, frc).getWidth();
-			if (w <= maxWidth)
+			if (w < maxWidth)
 			{
 //				System.out.println("W = "+w+", line = "+new String(carr, lineStart, lineEnd - lineStart));
 				ret.add(new String(carr, lineStart, lineEnd - lineStart));
@@ -98,8 +98,10 @@ public class JasperFontCalculator
 						return null;
 					if (carr[lineEnd] == ' ')
 					{
-						if (font.getStringBounds(carr, lineStart, lineEnd, frc).getWidth() <= maxWidth)
+						w = font.getStringBounds(new String(carr, lineStart, lineEnd - lineStart), frc).getWidth();
+						if (w < maxWidth)
 						{
+//							System.out.println("W = "+w+", line = "+new String(carr, lineStart, lineEnd - lineStart));
 							ret.add(new String(carr, lineStart, lineEnd - lineStart));
 							lineStart = lineEnd + 1;
 							lineEnd = carr.length;
@@ -109,8 +111,10 @@ public class JasperFontCalculator
 					else if (CharUtil.isEng(carr[lineEnd]) && CharUtil.isEng(carr[lineEnd - 1]))
 					{
 						String s = new String(carr, lineStart, lineEnd - lineStart) + "-";
-						if (font.getStringBounds(s, frc).getWidth() <= maxWidth)
+						w = font.getStringBounds(s, frc).getWidth();
+						if (w < maxWidth)
 						{
+//							System.out.println("W = "+w+", line = "+s);
 							ret.add(s);
 							lineStart = lineEnd;
 							lineEnd = carr.length;
