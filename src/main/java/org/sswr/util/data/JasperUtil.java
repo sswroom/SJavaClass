@@ -172,7 +172,7 @@ public class JasperUtil
 
 	public static String toStyled(String text, float ptSize)
 	{
-		return "<style size=\""+ptSize+"\">"+text+"</style>";
+		return "<style size=\""+ptSize+"\">"+XmlUtil.toXMLText(text)+"</style>";
 	}
 
 	public static String toStyled(JasperTextField txt)
@@ -187,7 +187,7 @@ public class JasperUtil
 			{
 				sb.append("\r\n");
 			}
-			sb.append(txt.lines[i]);
+			sb.append(XmlUtil.toXMLText(txt.lines[i]));
 			i++;
 		}
 		sb.append("</style>");
