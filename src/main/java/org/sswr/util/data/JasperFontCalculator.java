@@ -132,7 +132,7 @@ public class JasperFontCalculator
 		{
 //			System.out.println("Font size = "+currSize);
 			strs = splitLineText(font.deriveFont(currSize), text, maxWidth);
-			if (strs != null && strs.size() * currSize * 1.5 - currSize * 0.5 + 0.5 < maxHeight)
+			if (strs != null && strs.size() * currSize * 96.0 / 72.0 < maxHeight)
 			{
 				JasperTextField ret = new JasperTextField();
 				ret.lines = DataTools.toArray(String.class, strs);
