@@ -173,4 +173,9 @@ public class EmailChecker<T extends TemplateEmailStatus> implements Runnable
 	{
 		return this.emailCtrl.sendTestingEmail(toAddress);
 	}
+
+	public EmailMessageCreator getEmailMessageCreator()
+	{
+		return this.msgCreator;
+	}
 }
