@@ -13,7 +13,7 @@ public class StreamUtil
 			if (stm instanceof FileInputStream)
 			{
 				FileInputStream fis = (FileInputStream)stm;
-				fis.getChannel().position(0);
+				fis.getChannel().position(offset);
 				return true;
 			}
 			return false;
