@@ -2,6 +2,7 @@ package org.sswr.util.crypto;
 
 import org.sswr.util.net.ASN1Data;
 import org.sswr.util.net.ASN1Item;
+import org.sswr.util.net.ASN1PDUBuilder;
 import org.sswr.util.net.ASN1Util;
 
 public class MyX509PubKey extends MyX509File
@@ -50,5 +51,31 @@ public class MyX509PubKey extends MyX509File
 			}
 		}
 		return null;
+	}
+
+	public static MyX509PubKey createFromKeyBuff(KeyType keyType, byte[] buff, int ofst, int buffSize, String sourceName)
+	{
+		ASN1PDUBuilder keyPDU = new ASN1PDUBuilder();
+		keyPDU.beginSequence();
+		keyPDU.beginSequence();
+		String oidStr = keyTypeGetOID(keyType);
+		keyPDU.appendOIDString(oidStr);
+		keyPDU.appendNull();
+		keyPDU.endLevel();
+		if (keyType == KeyType.RSAPublic)
+		{
+			keyPDU.appendBitString((byte)0, buff, ofst, buffSize);
+		}
+		else
+		{
+			keyPDU.appendBitString((byte)0, buff, ofst, buffSize);
+		}
+		keyPDU.endLevel();
+		return new MyX509PubKey(sourceName, keyPDU.getBuff(), 0, keyPDU.getBuffSize());
+	}
+	
+	public static MyX509PubKey createFromKey(MyX509Key key)
+	{
+		return createFromKeyBuff(key.getKeyType(), key.getASN1Buff(), 0, key.getASN1BuffSize(), key.getSourceNameObj());
 	}
 }

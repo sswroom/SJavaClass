@@ -740,18 +740,10 @@ public class StringUtil
 	*/
 	public static int toIntegerS(String s, int failVal)
 	{
-		try
-		{
-			if (isNullOrEmpty(s))
-			{
-				return failVal;
-			}
-			return Integer.parseInt(s);
-		}
-		catch (NumberFormatException ex)
-		{
+		Integer iVal = toInteger(s);
+		if (iVal == null)
 			return failVal;
-		}
+		return iVal;
 	}
 
 	/**
@@ -781,6 +773,21 @@ public class StringUtil
 	}
 
 	/**
+	* Parse String to Long with fail value
+	*
+	* @param  s  String to parse
+	* @param  failVal  value to assign on fail
+	* @return     null if it is not valid Long
+	*/
+	public static long toLongS(String s, long failVal)
+	{
+		Long lVal = toLong(s);
+		if (lVal == null)
+			return failVal;
+		return lVal;
+	}
+
+	/**
 	* Parse String to Double
 	*
 	* @param  s  String to parse
@@ -800,6 +807,22 @@ public class StringUtil
 		{
 			return null;
 		}
+	}
+
+	/**
+	* Parse String to Double with fail value
+	*
+	* @param  s  String to parse
+	* @param failVal value to assign on fail
+	* @return     null if it is not valid Double
+	*/
+	public static double toDoubleS(String s, double failVal)
+	{
+		Double dVal = toDouble(s);
+		if (s == null)
+			return failVal;
+		else
+			return dVal;
 	}
 
 	/**
@@ -1419,6 +1442,22 @@ public class StringUtil
 	}
 
 	/**
+	 * Check whether the char buffer is starts with a string
+	 * 
+	 * @param  buff char buffer to check
+	 * @param  ofst offset of char buffer start
+	 * @param  len length of the buffer from ofst
+	 * @param  value Value to check
+	 * @return  whether it is starts with a string
+	 */
+	public static boolean startsWith(char[] buff, int ofst, int len, String value)
+	{
+		if (len < value.length() || ofst + len > buff.length)
+			return false;
+		return new String(buff, ofst, value.length()).equals(value);
+	}
+
+	/**
 	 * Check whether the byte buffer is starts with a string
 	 * 
 	 * @param  buff byte buffer to check
@@ -1611,5 +1650,26 @@ public class StringUtil
 			i++;
 		}
 		return false;
+	}
+
+	/**
+	 * Check index of character inside a char array
+	 * 
+	 * @param carr the char array to check
+	 * @param startIndex the first index to start searching
+	 * @param c the character to search
+	 * @return  -1 if character not found
+	 * 			other = index of the first appear
+	 */
+	public static int indexOfChar(char[] carr, int startIndex, char c)
+	{
+		int j = carr.length;
+		while (startIndex < j)
+		{
+			if (carr[startIndex] == c)
+				return startIndex;
+			startIndex++;
+		}
+		return -1;
 	}
 }

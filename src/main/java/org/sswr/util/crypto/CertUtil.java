@@ -18,6 +18,7 @@ import java.security.Principal;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Security;
+import java.security.Signature;
 import java.security.SignatureException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CRLException;
@@ -692,6 +693,56 @@ public class CertUtil
 			if (sbError != null) sbError.append(dataName+": Hash value not matched\r\n");
 			return false;
 		}
+	}
+
+	public static byte[] signature(byte[] buff, int ofst, int buffSize, HashType hashType, PrivateKey key)
+	{
+		if (key.getAlgorithm().equals("RSA"))
+		{
+			Signature sig;
+			try
+			{
+				switch (hashType)
+				{
+				case SHA1:
+					sig = Signature.getInstance("SHA1withRSA");
+					break;
+				case SHA224:
+					sig = Signature.getInstance("SHA224withRSA");
+					break;
+				case SHA256:
+					sig = Signature.getInstance("SHA256withRSA");
+					break;
+				case SHA384:
+					sig = Signature.getInstance("SHA384withRSA");
+					break;
+				case SHA512:
+					sig = Signature.getInstance("SHA512withRSA");
+					break;
+				default:
+					return null;
+				}
+				sig.initSign(key);
+				sig.update(buff, ofst, buffSize);
+				return sig.sign();
+			}
+			catch (NoSuchAlgorithmException ex)
+			{
+				ex.printStackTrace();
+				return null;
+			}
+			catch (InvalidKeyException ex)
+			{
+				ex.printStackTrace();
+				return null;
+			}
+			catch (SignatureException ex)
+			{
+				ex.printStackTrace();
+				return null;
+			}
+		}
+		return null;
 	}
 
 	public static String getKeyStoreTypeName(KeyStoreType type)

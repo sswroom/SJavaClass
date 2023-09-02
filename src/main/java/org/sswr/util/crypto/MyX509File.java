@@ -2178,6 +2178,33 @@ public abstract class MyX509File extends ASN1Data
 		return 0;
 	}
 
+	protected static MyX509Key publicKeyGetNew(byte[] pdu, int beginOfst, int endOfst)
+	{
+		ASN1Item oidItem = ASN1Util.pduGetItem(pdu, beginOfst, endOfst, "1.1");
+		ASN1Item bstrItem = ASN1Util.pduGetItem(pdu, beginOfst, endOfst, "2");
+		if (oidItem != null && oidItem.itemType == ASN1Util.IT_OID && bstrItem != null && bstrItem.itemType == ASN1Util.IT_BIT_STRING)
+		{
+			KeyType keyType = keyTypeFromOID(pdu, oidItem.ofst, oidItem.len, true);
+			if (keyType == KeyType.ECPublic)
+			{
+				ASN1Item paramItem = ASN1Util.pduGetItem(pdu, beginOfst, endOfst, "1.2");
+				if (paramItem != null && paramItem.itemType == ASN1Util.IT_OID)
+				{
+					return MyX509Key.fromECPublicKey(pdu, bstrItem.ofst + 1, bstrItem.len - 1, pdu, paramItem.ofst, paramItem.len);
+					///////////////////////////////////////
+	//				Crypto::Cert::X509Key *key;
+	//				NEW_CLASS(key, Crypto::Cert::X509Key(CSTR("public.key"), bstrPDU + 1, bstrLen - 1, keyType));
+	//				return key;
+				}
+			}
+			else if (keyType != KeyType.Unknown)
+			{
+				return new MyX509Key("public.key", pdu, bstrItem.ofst + 1, bstrItem.len - 1, keyType);
+			}
+		}
+		return null;
+	}
+
 	protected static KeyType keyTypeFromOID(byte[] oid, int ofst, int oidLen, boolean pubKey)
 	{
 		if (ASN1Util.oidEqualsText(oid, ofst, oidLen, "1.2.840.113549.1.1.1"))

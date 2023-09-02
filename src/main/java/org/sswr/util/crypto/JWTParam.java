@@ -101,6 +101,15 @@ public class JWTParam
 		return this.jti;
 	}
 
+	public boolean isExpired(long timeMillis)
+	{
+		if (this.nbf != 0 && timeMillis < this.nbf * 1000)
+			return true;
+		if (this.exp != 0 && timeMillis >= this.exp * 1000)
+			return true;
+		return false;
+	}
+
 	public String toString()
 	{
 		StringBuilder sb = new StringBuilder();

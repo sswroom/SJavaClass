@@ -10,6 +10,7 @@ import java.util.Map;
 
 import org.sswr.util.basic.ThreadEvent;
 import org.sswr.util.crypto.JWTParam;
+import org.sswr.util.crypto.JWToken;
 import org.sswr.util.data.DateTimeUtil;
 import org.sswr.util.data.JSONMapper;
 import org.sswr.util.data.JSONParser;
@@ -177,7 +178,10 @@ public class JWTMSvrSessionManager extends JWTSessionManager implements MQTTEven
 	public JWTSession getSession(String token)
 	{
 		JWTParam param = new JWTParam();
-		Map<String, String> payload = jwt.parse(token, param);
+		JWToken t = JWToken.parse(token, null);
+		if (t == null)
+			return null;
+		Map<String, String> payload = t.parsePayload(param, false, null);
 		if (payload == null)
 		{
 			return null;

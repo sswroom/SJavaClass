@@ -68,6 +68,11 @@ public class Base64Enc extends TextBinEnc
 		encodeBin(sb, dataBuff, dataOfst, buffSize, LineBreakType.NONE, 0);
 	}
 
+	public void encodeBin(StringBuilder sb, byte []dataBuff)
+	{
+		encodeBin(sb, dataBuff, 0, dataBuff.length, LineBreakType.NONE, 0);
+	}
+
 	public void encodeBin(StringBuilder sb, byte[] dataBuff, int dataOfst, int buffSize, LineBreakType lbt, int charsPerLine)
 	{
 		char []encArr = getEncArr(this.cs);

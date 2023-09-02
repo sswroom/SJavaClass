@@ -502,4 +502,19 @@ public class JSONParser
 			throw new IllegalArgumentException("Unexpected character found ("+c+")");
 		}
 	}
+
+	public static Object parseJSONStr(String s)
+	{
+		try
+		{
+			char[] carr = s.toCharArray();
+			SharedInt endIndex = new SharedInt();
+			return parseJSONStr2(carr, 0, carr.length, endIndex);
+		}
+		catch (Exception ex)
+		{
+//			ex.printStackTrace();
+			return null;
+		}
+	}
 }

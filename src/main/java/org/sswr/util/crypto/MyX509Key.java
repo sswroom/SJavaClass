@@ -1,5 +1,12 @@
 package org.sswr.util.crypto;
 
+import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
 
 import org.sswr.util.data.LineBreakType;
@@ -378,5 +385,121 @@ public class MyX509Key extends MyX509File
 			}
 		}
 		return ECName.Unknown;
+	}
+
+	public PrivateKey createJPrivateKey()
+	{
+		MyX509PrivKey privKey = MyX509PrivKey.createFromKey(this);
+		if (privKey == null)
+			return null;
+		try
+		{
+			PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(privKey.getASN1Buff());
+			KeyFactory kf;
+			if (keyType == KeyType.RSA)
+			{
+				kf = KeyFactory.getInstance("RSA");
+			}
+			else if (keyType == KeyType.DSA)
+			{
+				kf = KeyFactory.getInstance("DSA");
+			}
+			else if (keyType == KeyType.ECDSA)
+			{
+				kf = KeyFactory.getInstance("ECDSA");
+			}
+			else if (keyType == KeyType.ED25519)
+			{
+				kf = KeyFactory.getInstance("ED25519");
+			}
+			else
+			{
+				return null;
+			}
+			return kf.generatePrivate(spec);
+		}
+		catch (NoSuchAlgorithmException ex)
+		{
+			ex.printStackTrace();
+			return null;
+		}
+		catch (InvalidKeySpecException ex)
+		{
+			ex.printStackTrace();
+			return null;
+		}		
+	}
+
+	public PublicKey createJPublicKey()
+	{
+		MyX509Key pKey = createPublicKey();
+		if (pKey == null)
+			return null;
+		MyX509PubKey pubKey = MyX509PubKey.createFromKey(pKey);
+		try
+		{
+			X509EncodedKeySpec spec = new X509EncodedKeySpec(pubKey.getASN1Buff());
+			KeyFactory kf;
+			if (keyType == KeyType.RSAPublic || keyType == KeyType.RSA)
+			{
+				kf = KeyFactory.getInstance("RSA");
+			}
+			else if (keyType == KeyType.DSA)
+			{
+				kf = KeyFactory.getInstance("DSA");
+			}
+			else if (keyType == KeyType.ECDSA)
+			{
+				kf = KeyFactory.getInstance("ECDSA");
+			}
+			else if (keyType == KeyType.ED25519)
+			{
+				kf = KeyFactory.getInstance("ED25519");
+			}
+			else
+			{
+				return null;
+			}
+			return kf.generatePublic(spec);
+		}
+		catch (NoSuchAlgorithmException ex)
+		{
+			ex.printStackTrace();
+			return null;
+		}
+		catch (InvalidKeySpecException ex)
+		{
+			ex.printStackTrace();
+			return null;
+		}	
+	}
+
+	public byte[] signature(HashType hashType, byte[] buff, int ofst, int len)
+	{
+		PrivateKey key = createJPrivateKey();
+		if (key == null)
+			return null;
+		return CertUtil.signature(buff, ofst, len, hashType, key);
+	}
+
+	public boolean signatureVerify(HashType hashType, byte[] buff, int ofst, int len, byte[] sign, int signOfst, int signSize)
+	{
+		PublicKey key = createJPublicKey();
+		if (key == null)
+			return false;
+		return CertUtil.verifySign(buff, ofst, len, sign, signOfst, signSize, key, hashType, null, "temp");
+	}
+
+	public static MyX509Key fromECPublicKey(byte[] buff, int buffOfst, int buffSize, byte[] paramOID, int oidOfst, int oidLen)
+	{
+		ASN1PDUBuilder pdu = new ASN1PDUBuilder();
+		pdu.beginSequence();
+		pdu.beginSequence();
+		pdu.appendOIDString("1.2.840.10045.2.1");
+		pdu.appendOID(paramOID, oidOfst, oidLen);
+		pdu.endLevel();
+		pdu.appendBitString((byte)0, buff, buffOfst, buffSize);
+		pdu.endLevel();
+		return new MyX509Key("ECPublic.key", pdu.getBuff(), 0, pdu.getBuffSize(), KeyType.ECPublic);
 	}
 }

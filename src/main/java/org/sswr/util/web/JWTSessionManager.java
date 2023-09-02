@@ -6,9 +6,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.sswr.util.crypto.JWSignature;
 import org.sswr.util.crypto.JWTHandler;
 import org.sswr.util.crypto.JWTParam;
-import org.sswr.util.crypto.JWTHandler.Algorithm;
+import org.sswr.util.crypto.JWToken;
 import org.sswr.util.data.DateTimeUtil;
 import org.sswr.util.data.StringUtil;
 
@@ -30,7 +31,7 @@ public class JWTSessionManager
 		this.lastId = 0;
 		this.timeoutMs = timeoutMs;
 		this.sessInit = sessInit;
-		this.jwt = JWTHandler.createHMAC(Algorithm.HS512, password.getBytes(StandardCharsets.UTF_8));
+		this.jwt = JWTHandler.createHMAC(JWSignature.Algorithm.HS512, password.getBytes(StandardCharsets.UTF_8));
 		this.sessMap = new HashMap<Long, JWTSession>();
 	}
 
@@ -110,7 +111,10 @@ public class JWTSessionManager
 	public synchronized JWTSession getSession(String token)
 	{
 		JWTParam param = new JWTParam();
-		jwt.parse(token, param);
+		JWToken t = JWToken.parse(token, null);
+		if (t == null)
+			return null;
+		t.parsePayload(param, false, null);
 		Long sessId = StringUtil.toLong(param.getJWTId());
 		if (sessId != null)
 		{

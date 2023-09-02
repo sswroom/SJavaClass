@@ -242,6 +242,42 @@ public class MyX509Cert extends MyX509File
 		return null;
 	}
 
+	public MyX509Key getNewPublicKey()
+	{
+		ASN1Item item = ASN1Util.pduGetItem(this.buff, 0, this.buff.length, "1.1.1");
+		if (item == null)
+		{
+			return null;
+		}
+		if (item.itemType == ASN1Util.IT_CONTEXT_SPECIFIC_0)
+		{
+			item = ASN1Util.pduGetItem(this.buff, 0, this.buff.length, "1.1.7");
+			if (item != null)
+			{
+				return publicKeyGetNew(this.buff, item.ofst, item.ofst + item.len);
+			}
+		}
+		else
+		{
+			item = ASN1Util.pduGetItem(this.buff, 0, this.buff.length, "1.1.6");
+			if (item != null)
+			{
+				return publicKeyGetNew(this.buff, item.ofst, item.ofst + item.len);
+			}
+		}
+		return null;
+	}
+
+	public byte[] getKeyId() //20 bytes
+	{
+		MyX509Key key = this.getNewPublicKey();
+		if (key == null)
+		{
+			return null;
+		}
+		return key.getKeyId();
+	}
+
 	public ZonedDateTime getNotBefore()
 	{
 		ASN1Item tmpBuff;

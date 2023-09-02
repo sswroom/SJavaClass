@@ -302,10 +302,15 @@ public class ASN1PDUBuilder
 
 	public void appendOID(byte[] oid, int len)
 	{
+		appendOID(oid, 0, len);
+	}
+
+	public void appendOID(byte[] oid, int ofst, int len)
+	{
 		this.allocateSize(len + 2);
 		this.buff[this.currOffset] = 6;
 		this.buff[this.currOffset + 1] = (byte)len;
-		ByteTool.copyArray(this.buff, this.currOffset + 2, oid, 0, len);
+		ByteTool.copyArray(this.buff, this.currOffset + 2, oid, ofst, len);
 		this.currOffset += len + 2;
 	}
 
@@ -438,6 +443,11 @@ public class ASN1PDUBuilder
 		this.appendOther((byte)2, buff, 0, buff.length);
 	}
 
+	public byte[] getBuff()
+	{
+		return this.buff;
+	}
+	
 	public byte[] getBuff(SharedInt buffSize)
 	{
 		if (buffSize != null)

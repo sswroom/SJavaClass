@@ -2,6 +2,16 @@ package org.sswr.util.math;
 
 public class MathUtil
 {
+	public static int double2Int32(double val)
+	{
+		return ((val) < 0)?(int)(val - 0.5):(int)(val + 0.5);
+	}
+
+	public static long double2Int64(double val)
+	{
+		return ((val) < 0)?(long)(val - 0.5):(long)(val + 0.5);
+	}
+
 	public static boolean nearlyEquals(double val1, double val2, double diffRatio)
 	{
 		if (Double.isInfinite(val1))
