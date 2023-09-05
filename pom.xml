@@ -8,6 +8,7 @@
 	<name>util</name>
 	<packaging>jar</packaging>
 	<description>Utilities for Java applications</description>
+	<url>https://github.com/sswroom/SJavaClass</url>
 
 	<properties>
 		<java.version>17</java.version>
