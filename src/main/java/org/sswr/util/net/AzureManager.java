@@ -75,7 +75,7 @@ public class AzureManager
 		return cert.getNewPublicKey();        
 	}
 
-	public String getTokenEmail(String token, boolean ignoreSignCheck, boolean ignoreTimeCheck)
+	public AzureToken parseToken(String token, boolean ignoreSignCheck, boolean ignoreTimeCheck)
 	{
 		JWToken jwt = JWToken.parse(token, null);
 		if (jwt == null)
@@ -126,13 +126,7 @@ public class AzureManager
 					return null;
 				}
 			}
-			String email = result.get("preferred_username");
-			if (email == null)
-			{
-				if (debug) System.out.println("preferred_username not found");
-				return null;
-			}
-			return email;
+			return new AzureToken(result);
 		}
 	}
 }
