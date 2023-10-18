@@ -159,7 +159,7 @@ public class MQTTConn implements Runnable, ProtocolDataListener
 		}	
 	}
 
-	public MQTTConn(String host, int port, TCPClientType cliType)
+	public MQTTConn(String host, int port, SSLEngine ssl, TCPClientType cliType)
 	{
 		this.recvRunning = false;
 		this.recvStarted = false;
@@ -168,7 +168,7 @@ public class MQTTConn implements Runnable, ProtocolDataListener
 		this.packetList = new ArrayList<MQTTPacketInfo>();
 		this.packetEvt = new ThreadEvent(true);
 		this.protoHdlr = new ProtoMQTTHandler(this);
-		this.cli = new TCPClient(host, port, cliType);
+		this.cli = new TCPClient(host, port, ssl, cliType);
 		if (this.cli.isConnectError())
 		{
 			this.cli.close();
@@ -381,9 +381,9 @@ public class MQTTConn implements Runnable, ProtocolDataListener
 		}	
 	}
 
-	public static boolean publishMessage(String host, int port, TCPClientType cliType, String username, String password, String topic, String message)
+	public static boolean publishMessage(String host, int port, SSLEngine ssl, TCPClientType cliType, String username, String password, String topic, String message)
 	{
-		MQTTConn cli = new MQTTConn(host, port, cliType);
+		MQTTConn cli = new MQTTConn(host, port, ssl, cliType);
 		if (cli.isError())
 		{
 			cli.close();

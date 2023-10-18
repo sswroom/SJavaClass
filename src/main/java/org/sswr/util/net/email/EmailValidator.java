@@ -88,7 +88,7 @@ public class EmailValidator
 		{
 			return Status.S_DOMAIN_NOT_RESOLVED;
 		}
-		conn = new SMTPConn(emailSvr, 25, SMTPConnType.PLAIN, null);
+		conn = new SMTPConn(emailSvr, 25, null, SMTPConnType.PLAIN, null);
 		if (conn.isError())
 		{
 			conn.close();

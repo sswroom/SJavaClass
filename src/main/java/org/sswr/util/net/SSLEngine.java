@@ -1,30 +1,160 @@
 package org.sswr.util.net;
 
+import java.io.File;
 import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.net.SocketFactory;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
-import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
+import javax.security.auth.x500.X500Principal;
+
+import org.sswr.util.crypto.CertUtil;
 
 public class SSLEngine
 {
-	SSLSocketFactory factory;
-	public SSLEngine()
+	private SSLContext sc;
+	private boolean noCertCheck;
+	private List<X509Certificate> certList;
+
+	class SSLTrustManager implements X509TrustManager
 	{
-		this.factory = (SSLSocketFactory)SSLSocketFactory.getDefault();
+		private TrustManager[] tms;
+		public SSLTrustManager(TrustManager[] tms)
+		{
+			this.tms = tms;
+		}
+
+		public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+			return null;
+		}
+
+		private boolean certValid(X509Certificate cert) throws CertificateException
+		{
+			cert.checkValidity();
+			X500Principal principal = cert.getIssuerX500Principal();
+			int i = certList.size();
+			while (i-- > 0)
+			{
+				if (principal.equals(certList.get(i).getSubjectX500Principal()))
+					return true;
+			}
+			return false;
+		}
+
+		@Override
+		public void checkClientTrusted(X509Certificate[] arg0, String arg1)	throws CertificateException
+		{
+			if (noCertCheck)
+				return;
+			
+			boolean valid = false;
+			int i = 0;
+			int j = arg0.length;
+			while (i < j)
+			{
+				valid = valid || certValid(arg0[i]);
+				i++;
+			}
+			if (!valid)
+			{
+				i = 0;
+				j = tms.length;
+				while (i < j)
+				{
+					if (tms[i] instanceof X509TrustManager)
+					{
+						((X509TrustManager)tms[i]).checkClientTrusted(arg0, arg1);
+						valid = true;
+					}
+					i++;
+				}
+				if (!valid)
+					throw new CertificateException("Cert not found");
+			}
+		}
+
+		@Override
+		public void checkServerTrusted(X509Certificate[] arg0, String arg1) throws CertificateException
+		{
+			if (noCertCheck)
+				return;
+			
+			boolean valid = false;
+			int i = 0;
+			int j = arg0.length;
+			while (i < j)
+			{
+				valid = valid || certValid(arg0[i]);
+				i++;
+			}
+			if (!valid)
+			{
+				i = 0;
+				j = tms.length;
+				while (i < j)
+				{
+					if (tms[i] instanceof X509TrustManager)
+					{
+						((X509TrustManager)tms[i]).checkServerTrusted(arg0, arg1);
+						valid = true;
+					}
+					i++;
+				}
+				if (!valid)
+					throw new CertificateException("Cert not found");
+			}
+		}
+	};
+
+	public SSLEngine(boolean noCertCheck) throws KeyManagementException, NoSuchAlgorithmException, KeyStoreException
+	{
+		this.noCertCheck = noCertCheck;
+		this.certList = new ArrayList<X509Certificate>();
+		this.sc = SSLContext.getInstance("SSL");
+		TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+		tmf.init((KeyStore)null);
+		TrustManager[] newTMS;
+		newTMS = new TrustManager[1];
+		newTMS[0] = new SSLTrustManager(tmf.getTrustManagers());
+		this.sc.init(null, newTMS, new java.security.SecureRandom());
 	}
 
 	public SocketFactory getSocketFactory()
 	{
-		return this.factory;
+		return this.sc.getSocketFactory();
+	}
+
+	public boolean isNoCertCheck()
+	{
+		return this.isNoCertCheck();
+	}
+
+	public void setNoCertCheck(boolean noCertCheck)
+	{
+		this.noCertCheck = noCertCheck;
+	}
+
+	public boolean addCert(String fileName)
+	{
+		X509Certificate cert = CertUtil.loadCertificate(new File(fileName));
+		if (cert != null)
+		{
+			this.certList.add(cert);
+			return true;
+		}
+		return false;
 	}
 
 	public static void ignoreCertCheck()
@@ -47,7 +177,7 @@ public class SSLEngine
 				}
 			}
 		};
-	
+
 		SSLContext sc=null;
 		try
 		{

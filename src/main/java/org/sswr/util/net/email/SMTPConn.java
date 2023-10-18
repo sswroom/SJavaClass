@@ -14,6 +14,7 @@ import org.sswr.util.data.textbinenc.Base64Enc;
 import org.sswr.util.io.IOWriter;
 import org.sswr.util.io.UTF8Reader;
 import org.sswr.util.io.UTF8Writer;
+import org.sswr.util.net.SSLEngine;
 import org.sswr.util.net.TCPClient;
 import org.sswr.util.net.TCPClientType;
 
@@ -136,7 +137,7 @@ public class SMTPConn implements Runnable
 			return 0;
 	}
 	
-	public SMTPConn(String host, int port, SMTPConnType connType, IOWriter logWriter)
+	public SMTPConn(String host, int port, SSLEngine ssl, SMTPConnType connType, IOWriter logWriter)
 	{
 		this.threadStarted = false;
 		this.threadRunning = false;
@@ -161,14 +162,14 @@ public class SMTPConn implements Runnable
 		}
 		if (connType == SMTPConnType.SSL)
 		{
-			this.cli = new TCPClient(host, port, TCPClientType.SSL);
+			this.cli = new TCPClient(host, port, ssl, TCPClientType.SSL);
 		}
 		else if (connType == SMTPConnType.STARTTLS)
 		{
 			byte[] buff = new byte[1024];
 			int buffSize;
 			String buffStr;
-			this.cli = new TCPClient(addr, port, TCPClientType.PLAIN);
+			this.cli = new TCPClient(addr, port, ssl, TCPClientType.PLAIN);
 			this.cli.setTimeout(2000);
 			buffSize = this.cli.read(buff, 0, 1024);
 			if (this.logWriter != null)
@@ -222,7 +223,7 @@ public class SMTPConn implements Runnable
 		}
 		else
 		{
-			this.cli = new TCPClient(addr, port, TCPClientType.PLAIN);
+			this.cli = new TCPClient(addr, port, ssl, TCPClientType.PLAIN);
 		}
 		this.cli.setNoDelay(false);
 		this.writer = new UTF8Writer(this.cli);

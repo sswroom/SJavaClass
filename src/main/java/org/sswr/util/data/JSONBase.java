@@ -402,38 +402,38 @@ public abstract class JSONBase
 						return -1;
 					c = jsonStr[startIndex++];
 					if (c >= '0' && c <= '9')
-						v = (v << 4) + (int)(c - '0');
+						v = (v << 4) + (c - '0');
 					else if (c >= 'A' && c <= 'F')
-						v = (v << 4) + (int)(c - 0x37);
+						v = (v << 4) + (c - 0x37);
 					else if (c >= 'a' && c <= 'f')
-						v = (v << 4) + (int)(c - 0x57);
+						v = (v << 4) + (c - 0x57);
 					else
 						return -1;
 					c = jsonStr[startIndex++];
 					if (c >= '0' && c <= '9')
-						v = (v << 4) + (int)(c - '0');
+						v = (v << 4) + (c - '0');
 					else if (c >= 'A' && c <= 'F')
-						v = (v << 4) + (int)(c - 0x37);
+						v = (v << 4) + (c - 0x37);
 					else if (c >= 'a' && c <= 'f')
-						v = (v << 4) + (int)(c - 0x57);
+						v = (v << 4) + (c - 0x57);
 					else
 						return -1;
 					c = jsonStr[startIndex++];
 					if (c >= '0' && c <= '9')
-						v = (v << 4) + (int)(c - '0');
+						v = (v << 4) + (c - '0');
 					else if (c >= 'A' && c <= 'F')
-						v = (v << 4) + (int)(c - 0x37);
+						v = (v << 4) + (c - 0x37);
 					else if (c >= 'a' && c <= 'f')
-						v = (v << 4) + (int)(c - 0x57);
+						v = (v << 4) + (c - 0x57);
 					else
 						return -1;
 					c = jsonStr[startIndex++];
 					if (c >= '0' && c <= '9')
-						v = (v << 4) + (int)(c - '0');
+						v = (v << 4) + (c - '0');
 					else if (c >= 'A' && c <= 'F')
-						v = (v << 4) + (int)(c - 0x37);
+						v = (v << 4) + (c - 0x37);
 					else if (c >= 'a' && c <= 'f')
-						v = (v << 4) + (int)(c - 0x57);
+						v = (v << 4) + (c - 0x57);
 					else
 						return -1;
 	

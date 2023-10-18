@@ -30,13 +30,14 @@ public class MQTTStaticClient implements Runnable, MQTTEventHdlr, MQTTClient, Fa
 	private List<MQTTEventHdlr> hdlrList;
 	private String brokerHost;
 	private int port;
+	private SSLEngine ssl;
 	private TCPClientType cliType;
 	private String clientId;
 	private String username;
 	private String password;
 	private List<TopicInfo> topicList;
 
-	public MQTTStaticClient(String brokerHost, int port, TCPClientType cliType, int keepAliveS, String username, String password, boolean autoReconnect)
+	public MQTTStaticClient(String brokerHost, int port, SSLEngine ssl, TCPClientType cliType, int keepAliveS, String username, String password, boolean autoReconnect)
 	{
 		this.packetId = 1;
 		this.keepAliveS = keepAliveS;
@@ -46,6 +47,7 @@ public class MQTTStaticClient implements Runnable, MQTTEventHdlr, MQTTClient, Fa
 
 		this.brokerHost = brokerHost;
 		this.port = port;
+		this.ssl = ssl;
 		this.cliType = cliType;
 		this.clientId = "sswrMQTT/" + System.currentTimeMillis();
 		this.username = username;
@@ -61,7 +63,7 @@ public class MQTTStaticClient implements Runnable, MQTTEventHdlr, MQTTClient, Fa
 	private ConnError connect()
 	{
 		this.packetId = 1;
-		MQTTConn conn = new MQTTConn(this.brokerHost, this.port, this.cliType);
+		MQTTConn conn = new MQTTConn(this.brokerHost, this.port, this.ssl, this.cliType);
 		if (conn.isError())
 		{
 			conn.close();

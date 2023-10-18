@@ -7,6 +7,7 @@ import org.sswr.util.data.StringUtil;
 import org.sswr.util.io.LogLevel;
 import org.sswr.util.io.LogTool;
 import org.sswr.util.io.LogToolWriter;
+import org.sswr.util.net.SSLEngine;
 import org.sswr.util.net.SocketFactory;
 import org.sswr.util.net.email.EmailValidator.Status;
 
@@ -16,10 +17,10 @@ public class SMTPDirectEmailControl implements EmailControl
 	private String smtpFrom;
 	private EmailValidator validator;
 
-	public SMTPDirectEmailControl(String smtpHost, Integer smtpPort, SMTPConnType connType, String username, String password, String smtpFrom, LogTool logger)
+	public SMTPDirectEmailControl(String smtpHost, Integer smtpPort, SSLEngine ssl, SMTPConnType connType, String username, String password, String smtpFrom, LogTool logger)
 	{
 		this.smtpFrom = smtpFrom;
-		this.smtp = new SMTPClient(smtpHost, (smtpPort == null)?getDefaultPort():smtpPort.intValue(), connType, new LogToolWriter(logger, LogLevel.RAW));
+		this.smtp = new SMTPClient(smtpHost, (smtpPort == null)?getDefaultPort():smtpPort.intValue(), ssl, connType, new LogToolWriter(logger, LogLevel.RAW));
 		if (username != null && username.length() > 0 && password != null && password.length() > 0)
 		{
 			this.smtp.setPlainAuth(username, password);

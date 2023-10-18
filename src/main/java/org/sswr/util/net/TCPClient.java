@@ -17,15 +17,17 @@ public class TCPClient extends IOStream
 {
 	private static boolean debug = false;
 	private Socket s;
+	private SSLEngine ssl;
 	private long totalRecvSize;
 	private long totalSendSize;
 	private long cliId;
 	private int flags; //1 = shutdown send, 2 = shutdown recv, 4 = closed, 8 = connect error
 	private int timeoutMS;
 
-	public TCPClient(String hostName, int port, TCPClientType cliType)
+	public TCPClient(String hostName, int port, SSLEngine ssl, TCPClientType cliType)
 	{
 		super(hostName);
+		this.ssl = ssl;
 		this.totalRecvSize = 0;
 		this.totalSendSize = 0;
 		this.flags = 0;
@@ -47,7 +49,7 @@ public class TCPClient extends IOStream
 		{
 			if (cliType == TCPClientType.SSL)
 			{
-				SSLSocketFactory factory = (SSLSocketFactory)SSLSocketFactory.getDefault();
+				javax.net.SocketFactory factory = ssl.getSocketFactory();
 				this.s = factory.createSocket(addr, port);
 				((SSLSocket)this.s).startHandshake();
 			}
@@ -70,9 +72,10 @@ public class TCPClient extends IOStream
 		this.cliId = SocketUtil.genSocketId(s);
 	}
 
-	public TCPClient(String hostName, int port, TCPClientType cliType, int connTimeoutMS)
+	public TCPClient(String hostName, int port, SSLEngine ssl, TCPClientType cliType, int connTimeoutMS)
 	{
 		super(hostName);
+		this.ssl = ssl;
 		this.totalRecvSize = 0;
 		this.totalSendSize = 0;
 		this.flags = 0;
@@ -94,7 +97,7 @@ public class TCPClient extends IOStream
 		{
 			if (cliType == TCPClientType.SSL)
 			{
-				SSLSocketFactory factory = (SSLSocketFactory)SSLSocketFactory.getDefault();
+				javax.net.SocketFactory factory = ssl.getSocketFactory();
 				this.s = factory.createSocket(hostName, port);
 				((SSLSocket)this.s).startHandshake();
 			}
@@ -117,9 +120,10 @@ public class TCPClient extends IOStream
 		this.cliId = SocketUtil.genSocketId(s);
 	}
 
-	public TCPClient(InetAddress addr, int port, TCPClientType cliType)
+	public TCPClient(InetAddress addr, int port, SSLEngine ssl, TCPClientType cliType)
 	{
 		super("");
+		this.ssl = ssl;
 		this.totalRecvSize = 0;
 		this.totalSendSize = 0;
 		this.s = null;
@@ -129,7 +133,7 @@ public class TCPClient extends IOStream
 		{
 			if (cliType == TCPClientType.SSL)
 			{
-				SSLSocketFactory factory = (SSLSocketFactory)SSLSocketFactory.getDefault();
+				javax.net.SocketFactory factory = ssl.getSocketFactory();
 				this.s = factory.createSocket(addr, port);
 				((SSLSocket)this.s).startHandshake();
 			}
@@ -148,9 +152,10 @@ public class TCPClient extends IOStream
 		this.cliId = SocketUtil.genSocketId(s);
 	}
 
-	public TCPClient(Socket s)
+	public TCPClient(Socket s, SSLEngine ssl)
 	{
 		super("");
+		this.ssl = ssl;
 		this.s = s;
 		this.flags = 0;
 		this.totalRecvSize = 0;
@@ -403,8 +408,8 @@ public class TCPClient extends IOStream
 		{
 			try
 			{
-				SSLSocketFactory factory = (SSLSocketFactory)SSLSocketFactory.getDefault();
-				SSLSocket soc = (SSLSocket)factory.createSocket(this.s, null, false);;
+				SSLSocketFactory factory = (SSLSocketFactory)this.ssl.getSocketFactory();
+				SSLSocket soc = (SSLSocket)factory.createSocket(this.s, null, false);
 				this.s = soc;
 				soc.setSoTimeout(5000);
 				soc.setUseClientMode(true);

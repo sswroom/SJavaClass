@@ -4,6 +4,8 @@ import java.util.ArrayList;
 
 public abstract class SortableArrayList<T> extends ArrayList<T>
 {
+	private static final long serialVersionUID = -4816476556L;
+	
 	public abstract int compareItem(T obj1, T obj2);
 
 	public int sortedInsert(T val)

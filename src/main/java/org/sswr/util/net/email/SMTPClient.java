@@ -5,20 +5,23 @@ import java.util.List;
 
 import org.sswr.util.basic.MyThread;
 import org.sswr.util.io.IOWriter;
+import org.sswr.util.net.SSLEngine;
 
 public class SMTPClient
 {
 	private String host;
 	private int port;
+	private SSLEngine ssl;
 	private SMTPConnType connType;
 	private IOWriter logWriter;
 	private String authUser;
 	private String authPassword;
 
-	public SMTPClient(String host, int port, SMTPConnType connType, IOWriter logWriter)
+	public SMTPClient(String host, int port, SSLEngine ssl, SMTPConnType connType, IOWriter logWriter)
 	{
 		this.host = host;
 		this.port = port;
+		this.ssl = ssl;
 		this.connType = connType;
 		this.logWriter = logWriter;
 		this.authUser = null;
@@ -42,7 +45,7 @@ public class SMTPClient
 		{
 			return false;
 		}
-		SMTPConn conn = new SMTPConn(this.host, this.port, this.connType, this.logWriter);
+		SMTPConn conn = new SMTPConn(this.host, this.port, this.ssl, this.connType, this.logWriter);
 		if (conn.isError())
 		{
 			conn.close();
@@ -91,7 +94,7 @@ public class SMTPClient
 
 	public boolean testServerOnline()
 	{
-		SMTPConn conn = new SMTPConn(this.host, this.port, this.connType, this.logWriter);
+		SMTPConn conn = new SMTPConn(this.host, this.port, this.ssl, this.connType, this.logWriter);
 		if (conn.isError())
 		{
 			conn.close();

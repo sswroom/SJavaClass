@@ -379,8 +379,8 @@ public class ASN1Util
 				sb.append(")\r\n");
 				beginOfst = ofst + len.value;
 				break;
-			case 0x0:
-				if (len.value == 0)
+			default:
+				if ((type & 255) == 0 && len.value == 0)
 				{
 					if (nextOfst != null)
 					{
@@ -388,7 +388,6 @@ public class ASN1Util
 					}
 					return true;
 				}
-			default:
 				if ((type & 255) < 0x30)
 				{
 					StringUtil.appendChar(sb, '\t', level);
