@@ -12,7 +12,7 @@ public class MemoryStream extends SeekableStream
 	private int currSize;
 	private byte[] memPtr;
 
-	public MemoryStream(String dbg)
+	public MemoryStream()
 	{
 		super("MemoryStream");
 

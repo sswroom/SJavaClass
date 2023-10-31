@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.github.sswroom</groupId>
 	<artifactId>util</artifactId>
-	<version>0.2.20231018</version>
+	<version>0.2.20231031</version>
 	<name>util</name>
 	<packaging>jar</packaging>
 	<description>Utilities for Java applications</description>

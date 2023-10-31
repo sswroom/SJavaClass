@@ -227,7 +227,7 @@ public class SMTPMessage
 			stm.write("Content-Type: multipart/mixed;\r\n\tboundary=\"".getBytes(StandardCharsets.UTF_8));
 			stm.write(sbuff);
 			stm.write("\"\r\n".getBytes(StandardCharsets.UTF_8));
-			MemoryStream mstm = new MemoryStream("Net.Email.EmailMessage.WriteToStream.mstm");
+			MemoryStream mstm = new MemoryStream();
 			genMultipart(mstm.createOutputStream(), new String(sbuff, StandardCharsets.UTF_8));
 			stm.write("Content-Length: ".getBytes(StandardCharsets.UTF_8));
 			stm.write(String.valueOf(mstm.getLength()).getBytes(StandardCharsets.UTF_8));
@@ -550,7 +550,7 @@ public class SMTPMessage
 			this.writeHeaders(stm);
 			if (this.signCert != null && this.signKey != null)
 			{
-				MemoryStream mstm = new MemoryStream("Net.Email.EmailMessage.WriteToStream.mstm");
+				MemoryStream mstm = new MemoryStream();
 				this.writeContents(mstm.createOutputStream());
 				mstm.write("\r\n".getBytes(StandardCharsets.UTF_8));
 		

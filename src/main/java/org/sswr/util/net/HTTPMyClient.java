@@ -133,6 +133,27 @@ public class HTTPMyClient extends HTTPClient
 				}
 			}
 		}
+		else if (this.canWrite && this.mstm != null)
+		{
+			this.canWrite = false;
+			String s = "--"+this.boundary+"--\r\n";
+			this.mstm.write(s.getBytes(StandardCharsets.UTF_8));
+
+			byte []buff = this.mstm.getBuff();
+			this.addContentLength(this.mstm.getLength());
+			try
+			{
+				this.conn.getOutputStream().write(buff, 0, (int)this.mstm.getLength());
+			}
+			catch (IOException ex)
+			{
+				if (debug)
+				{
+					ex.printStackTrace();
+				}
+			}
+		}
+
 		if (this.respCode == 0)
 		{
 			try

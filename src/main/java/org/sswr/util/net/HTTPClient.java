@@ -1,5 +1,8 @@
 package org.sswr.util.net;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
@@ -9,8 +12,10 @@ import java.util.Map;
 
 import org.sswr.util.basic.HiResClock;
 import org.sswr.util.crypto.MyX509Cert;
+import org.sswr.util.data.textenc.FormEncoding;
 import org.sswr.util.data.textenc.URIEncoding;
 import org.sswr.util.io.IOStream;
+import org.sswr.util.io.MemoryStream;
 
 public abstract class HTTPClient extends IOStream
 {
@@ -20,6 +25,8 @@ public abstract class HTTPClient extends IOStream
 	protected InetAddress svrAddr;
 	protected boolean canWrite;
 	protected StringBuilder sbForm;
+	protected String boundary;
+	protected MemoryStream mstm;
 	protected String url;
 	protected int respCode;
 
@@ -30,6 +37,8 @@ public abstract class HTTPClient extends IOStream
 		this.canWrite = false;
 		this.svrAddr = null;
 		this.sbForm = null;
+		this.boundary = null;
+		this.mstm = null;
 		this.url = null;
 		this.respCode = 0;
 //		this.kaConn = kaConn;
@@ -51,29 +60,110 @@ public abstract class HTTPClient extends IOStream
 
 	public boolean formBegin()
 	{
-		if (this.canWrite && this.sbForm == null)
+		return formBegin(false);
+	}
+
+	public boolean formBegin(boolean hasFile)
+	{
+		if (this.canWrite && this.sbForm == null && this.boundary == null)
 		{
-			this.addContentType("application/x-www-form-urlencoded");
-			this.sbForm = new StringBuilder();
-			return true;
+			if (hasFile)
+			{
+				this.boundary = "---------------------------Boundary" + System.currentTimeMillis();
+				this.mstm = new MemoryStream();
+				this.addContentType("multipart/form-data; boundary="+this.boundary);
+			}
+			else
+			{
+				this.addContentType("application/x-www-form-urlencoded");
+				this.sbForm = new StringBuilder();
+				return true;
+			}
 		}
 		return false;
 	}
 
 	public boolean formAdd(String name, String value)
 	{
-		if (this.sbForm == null)
+		if (this.sbForm != null)
 		{
-			return false;
+			if (this.sbForm.length() > 0)
+			{
+				this.sbForm.append('&');
+			}
+			this.sbForm.append(URIEncoding.uriEncode(name));
+			this.sbForm.append('=');
+			this.sbForm.append(URIEncoding.uriEncode(value));
+			return true;
 		}
-		if (this.sbForm.length() > 0)
+		else if (this.boundary != null)
 		{
-			this.sbForm.append('&');
+			String s = "--"+this.boundary+"\r\nContent-Disposition: form-data; name=\""+FormEncoding.formEncode(name)+"\"\r\n\r\n"+URIEncoding.uriEncode(value)+"\r\n";
+			this.mstm.write(s.getBytes(StandardCharsets.UTF_8));
+			return true;
 		}
-		this.sbForm.append(URIEncoding.uriEncode(name));
-		this.sbForm.append('=');
-		this.sbForm.append(URIEncoding.uriEncode(value));
-		return true;
+		return false;
+	}
+
+	public boolean formAddFile(String name, File filePath)
+	{
+		if (this.boundary != null)
+		{
+			FileInputStream fis = null;
+			try
+			{
+				fis = new FileInputStream(filePath);
+				long fileLength = fis.getChannel().size();
+				if (fileLength > 0 && fileLength < 104857600)
+				{
+					StringBuilder sb = new StringBuilder();
+					sb.append("--");
+					sb.append(this.boundary);
+					sb.append("\r\nContent-Disposition: form-data; ");
+					sb.append("name=\"");
+					sb.append(FormEncoding.formEncode(name));
+					sb.append("\"; ");
+					sb.append("filename=\"");
+					sb.append(FormEncoding.formEncode(filePath.getName()));
+					sb.append("\"\r\n");
+
+					String mime = MIME.getMIMEFromFileName(filePath.getName());
+					sb.append("Content-Type: ");
+					sb.append(mime);
+					sb.append("\r\n\r\n");
+					byte[] fileCont = fis.readAllBytes();
+					this.mstm.write(sb.toString().getBytes(StandardCharsets.UTF_8));
+					this.mstm.write(fileCont);
+					this.mstm.write("\r\n".getBytes());
+					fis.close();
+					return true;
+				}
+				fis.close();
+				return false;
+			}
+			catch (FileNotFoundException ex)
+			{
+				ex.printStackTrace();
+				return false;
+			}
+			catch (IOException ex)
+			{
+				ex.printStackTrace();
+				if (fis != null)
+				{
+					try
+					{
+						fis.close();
+					}
+					catch (IOException ex2)
+					{
+
+					}
+				}
+				return false;
+			}
+		}
+		return false;
 	}
 
 	public void addTimeHeader(String name, ZonedDateTime dt)
