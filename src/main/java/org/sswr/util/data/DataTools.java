@@ -1175,6 +1175,284 @@ public class DataTools {
 		return toObjectStringInner(o, 5);
 	}
 
+	public static String toJSONStringInner(Object o, int maxLevel)	
+	{
+		if (o == null)
+		{
+			return "null";
+		}
+		Class<?> cls = o.getClass();
+		if (cls.equals(String.class))
+		{
+			return JSText.dquoteString(o.toString());
+		}
+		else if (cls.equals(Character.class))
+		{
+			return JSText.dquoteString(o.toString());
+		}
+		else if (cls.equals(Byte.class) || cls.equals(byte.class))
+		{
+			return String.valueOf(((Byte)o).byteValue() & 255);
+		}
+		else if (cls.equals(Short.class) || cls.equals(short.class))
+		{
+			return o.toString();
+		}
+		else if (cls.equals(Integer.class) || cls.equals(int.class))
+		{
+			return o.toString();
+		}
+		else if (cls.equals(Long.class) || cls.equals(long.class))
+		{
+			return o.toString();
+		}
+		else if (cls.equals(Float.class) || cls.equals(float.class))
+		{
+			return o.toString();
+		}
+		else if (cls.equals(Double.class) || cls.equals(double.class))
+		{
+			return o.toString();
+		}
+		else if (cls.equals(Boolean.class) || cls.equals(boolean.class))
+		{
+			return o.toString();
+		}
+		else if (cls.equals(Timestamp.class))
+		{
+			return JSText.dquoteString(((Timestamp)o).toString());
+		}
+		else if (cls.equals(UUID.class))
+		{
+			return JSText.dquoteString(o.toString());
+		}
+		else if (cls.equals(Inet4Address.class))
+		{
+			return JSText.dquoteString(((Inet4Address)o).getHostAddress());
+		}
+		else if (cls.equals(ZonedDateTime.class))
+		{
+			return JSText.dquoteString(DateTimeUtil.toStringNoZone((ZonedDateTime)o));
+		}
+		else if (cls.isEnum())
+		{
+			return JSText.dquoteString(o.toString());
+		}
+		else if (o instanceof Geometry)
+		{
+			Vector2D vec = GeometryUtil.toVector2D((Geometry)o);
+			if (vec == null)
+				return JSText.dquoteString(o.toString());
+			else
+				return JSText.dquoteString(new WKTWriter().generateWKT(vec));
+		}
+		else if (maxLevel <= 0)
+		{
+			return "{\"type\":"+JSText.dquoteString(cls.getSimpleName())+"}";
+		}
+		else if (o instanceof Iterable)
+		{
+			Iterator<?> it = ((Iterable<?>)o).iterator();
+			StringBuilder sb = new StringBuilder();
+			sb.append('[');
+			if (it.hasNext())
+			{
+				sb.append(toJSONStringInner(it.next(), maxLevel - 1));
+				while (it.hasNext())
+				{
+					sb.append(",");
+					sb.append(toJSONStringInner(it.next(), maxLevel - 1));
+				}
+			}
+			sb.append(']');
+			return sb.toString();
+		}
+		else if (o instanceof Map)
+		{
+			Map<?, ?> map = (Map<?, ?>)o;
+			Set<?> keySet = map.keySet();
+			Iterator<?> it;
+			Object key;
+			StringBuilder sb = new StringBuilder();
+			sb.append('{');
+			sb.append("\"type\":");
+			sb.append(JSText.dquoteString(cls.getSimpleName()));
+			it = keySet.iterator();
+			while (it.hasNext())
+			{
+				sb.append(',');
+				key = it.next();
+				sb.append(toJSONStringInner(key, maxLevel - 1));
+				sb.append(':');
+				sb.append(toJSONStringInner(map.get(key), maxLevel - 1));
+			}
+			sb.append('}');
+			return sb.toString();
+		}
+		else if (cls.isArray())
+		{
+			int i = 0;
+			int j = Array.getLength(o);
+			StringBuilder sb = new StringBuilder();
+			sb.append('[');
+			if (j > 64)
+			{
+				while (i < 32)
+				{
+					if (i > 0)
+					{
+						sb.append(",");
+					}
+					sb.append(toJSONStringInner(Array.get(o, i), maxLevel - 1));
+					i++;
+				}
+
+				sb.append(",\"...\"");
+				i = j - 32;
+				while (i < j)
+				{
+					sb.append(",");
+					sb.append(toJSONStringInner(Array.get(o, i), maxLevel - 1));
+					i++;
+				}
+			}
+			else
+			{
+				while (i < j)
+				{
+					if (i > 0)
+					{
+						sb.append(",");
+					}
+					sb.append(toJSONStringInner(Array.get(o, i), maxLevel - 1));
+					i++;
+				}
+			}
+			sb.append(']');
+			return sb.toString();
+		}
+		else
+		{
+			StringBuilder sb = new StringBuilder();
+			sb.append('{');
+			sb.append("\"type\":");
+			sb.append(JSText.dquoteString(cls.getSimpleName()));
+			Field fields[] = cls.getDeclaredFields();
+			boolean found = false;
+			int i = 0;
+			int j = fields.length;
+			while (i < j)
+			{
+				if ((fields[i].getModifiers() & Modifier.STATIC) == 0)
+				{
+					try
+					{
+						Method getter = ReflectTools.findGetter(fields[i]);
+						Object innerObj;
+						if (getter != null)
+						{
+							innerObj = getter.invoke(o);
+						}
+						else
+						{
+							innerObj = fields[i].get(o);
+						}
+						sb.append(',');
+						sb.append(JSText.dquoteString(fields[i].getName()));
+						sb.append(':');
+						if (innerObj == o)
+						{
+							sb.append("\"self\"");
+						}
+						else
+						{
+							sb.append(toJSONStringInner(innerObj, maxLevel - 1));
+						}
+						found = true;
+					}
+					catch (IllegalAccessException ex)
+					{
+
+					}
+					catch (IllegalArgumentException ex)
+					{
+
+					}
+					catch (InvocationTargetException ex)
+					{
+
+					}
+				}
+				i++;
+			}
+			if (!found)
+			{
+				Method meths[] = cls.getMethods();
+				i = 0;
+				j = meths.length;
+				while (i < j)
+				{
+					if (meths[i].getParameterCount() == 0)
+					{
+						String methName = meths[i].getName();
+					
+						if (methName.equals("getClass"))
+						{
+	
+						}
+						else if (methName.startsWith("get") && methName.length() > 3 && Character.isUpperCase(methName.charAt(3)))
+						{
+							try
+							{
+								Object innerObj = meths[i].invoke(o);
+								sb.append(',');
+								sb.append(JSText.dquoteString(Character.toLowerCase(methName.charAt(3))+methName.substring(4)));
+								sb.append(':');
+								if (innerObj == o)
+								{
+									sb.append("\"self\"");
+								}
+								else
+								{
+									sb.append(toJSONStringInner(innerObj, maxLevel - 1));
+								}
+								found = true;
+							}
+							catch (Exception ex)
+							{
+
+							}	
+						}
+						else if (methName.startsWith("is") && methName.length() > 2 && Character.isUpperCase(methName.charAt(2)) && meths[i].getReturnType().equals(boolean.class))
+						{
+							try
+							{
+								Boolean res = (Boolean)meths[i].invoke(o);
+								sb.append(',');
+								sb.append(JSText.dquoteString(Character.toLowerCase(methName.charAt(2))+methName.substring(3)));
+								sb.append(':');
+								sb.append(res.toString());
+								found = true;
+							}
+							catch (Exception ex)
+							{
+
+							}
+						}
+					}
+					i++;
+				}
+			}
+			sb.append('}');
+			return sb.toString();
+		}
+	}
+
+	public static String toJSONString(Object o)
+	{
+		return toJSONStringInner(o, 5);
+	}
+
 	public static <T> T cloneEntity(T o)
 	{
 		try
