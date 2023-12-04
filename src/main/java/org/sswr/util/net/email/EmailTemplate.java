@@ -329,6 +329,12 @@ public class EmailTemplate implements EmailMessage
 	}
 
 	@Override
+	public boolean isContentHTML()
+	{
+		return true;
+	}
+
+	@Override
 	public void addAttachment(String attachmentPath)
 	{
 		this.attachments.add(attachmentPath);
