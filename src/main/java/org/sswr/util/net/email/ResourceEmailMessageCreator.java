@@ -18,7 +18,7 @@ public class ResourceEmailMessageCreator implements EmailMessageCreator
 	}
 
 	@Override
-	public EmailMessage createMessage(String tplName, Map<String, String> vars, List<Map<String, String>> itemVars) throws IOException, TemplateFormatException, TemplateItemException
+	public EmailTemplate createMessage(String tplName, Map<String, String> vars, List<Map<String, String>> itemVars) throws IOException, TemplateFormatException, TemplateItemException
 	{
 		EmailTemplate template = new EmailTemplate(ResourceLoader.load(this.cls, "email/"+tplName+".txt", null), vars);
 		if (itemVars != null)

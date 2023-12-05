@@ -17,26 +17,13 @@ import org.sswr.util.crypto.SHA256;
 import org.sswr.util.data.ByteTool;
 import org.sswr.util.data.StringUtil;
 import org.sswr.util.data.textbinenc.Base64Enc;
-import org.sswr.util.io.FileStream;
 import org.sswr.util.io.MemoryStream;
-import org.sswr.util.io.FileStream.BufferType;
-import org.sswr.util.io.FileStream.FileMode;
-import org.sswr.util.io.FileStream.FileShare;
 import org.sswr.util.net.ASN1PDUBuilder;
 import org.sswr.util.net.MIME;
 import org.sswr.util.net.WebUtil;
 
 public class SMTPMessage
 {
-	class Attachment
-	{
-		public byte[] content;
-		public String contentId;
-		public String fileName;
-		public ZonedDateTime createTime;
-		public ZonedDateTime modifyTime;
-		public boolean isInline;
-	}
 	public static final int LINECHARCNT = 77;
 
 	private String fromAddr;
@@ -44,7 +31,7 @@ public class SMTPMessage
 	private List<String> headerList;
 	private String contentType;
 	private byte[] content;
-	private List<Attachment> attachments;
+	private List<EmailAttachment> attachments;
 
 	private X509Certificate signCert;
 	private PrivateKey signKey;
@@ -103,8 +90,7 @@ public class SMTPMessage
 		writeB64Data(stm, this.content);
 	
 		byte[] strBuff;
-		Attachment att;
-		String mime;
+		EmailAttachment att;
 		int k;
 		int i = 0;
 		int j = this.attachments.size();
@@ -115,8 +101,7 @@ public class SMTPMessage
 			stm.write("--".getBytes(StandardCharsets.UTF_8));
 			stm.write(boundary.getBytes(StandardCharsets.UTF_8));
 			stm.write("\r\nContent-Type: ".getBytes(StandardCharsets.UTF_8));
-			mime = MIME.getMIMEFromFileName(att.fileName);
-			stm.write(mime.getBytes(StandardCharsets.UTF_8));
+			stm.write(att.contentType.getBytes(StandardCharsets.UTF_8));
 			stm.write("; name=\"".getBytes(StandardCharsets.UTF_8));
 			stm.write(fileNameBuff);
 			stm.write("\"\r\nContent-Description: ".getBytes(StandardCharsets.UTF_8));
@@ -289,7 +274,7 @@ public class SMTPMessage
 		this.recpList = new ArrayList<String>();
 		this.headerList = new ArrayList<String>();
 		this.content = null;
-		this.attachments = new ArrayList<Attachment>();
+		this.attachments = new ArrayList<EmailAttachment>();
 	}
 
 	public boolean setSubject(String subject)
@@ -472,44 +457,31 @@ public class SMTPMessage
 
 	}
 
-	public Attachment addAttachment(String fileName)
+	public EmailAttachment addAttachment(String fileName)
 	{
-		FileStream fs = new FileStream(fileName, FileMode.ReadOnly, FileShare.DenyNone, BufferType.Normal);
-		if (fs.isError())
-		{
-			return null;
-		}
-		long len = fs.getLength();
-		if (len > 104857600)
-		{
-			return null;
-		}
-		Attachment attachment = new Attachment();
-		attachment.content = new byte[(int)len];
-		if (fs.read(attachment.content, 0, (int)len) != len)
-		{
-			return null;
-		}
-		attachment.createTime = fs.getCreateTime();
-		attachment.modifyTime = fs.getModifyTime();
-		attachment.fileName = fileName.substring(fileName.lastIndexOf(File.separator) + 1);
-		attachment.contentId = "attach"+(this.attachments.size() + 1);
-		attachment.isInline = false;
-		this.attachments.add(attachment);
-		return attachment;
+		EmailAttachment att = EmailAttachment.createFromFile(fileName, "attach"+(this.attachments.size() + 1));
+		if (att != null)
+			this.attachments.add(att);
+		return att;
 	}
 
-	public Attachment addAttachment(byte[] content, String fileName)
+	public EmailAttachment addAttachment(byte[] content, String fileName)
 	{
-		Attachment attachment = new Attachment();
+		EmailAttachment attachment = new EmailAttachment();
 		attachment.content = content;
 		attachment.createTime = ZonedDateTime.now();
 		attachment.modifyTime = attachment.createTime;
 		attachment.fileName = fileName.substring(fileName.lastIndexOf(File.separator) + 1);
 		attachment.contentId = "attach" + (this.attachments.size() + 1);
 		attachment.isInline = false;
+		attachment.contentType = MIME.getMIMEFromFileName(attachment.fileName);
 		this.attachments.add(attachment);
 		return attachment;
+	}
+
+	public void addAttachment(EmailAttachment att)
+	{
+		this.attachments.add(att.clone());
 	}
 
 	public boolean addSignature(X509Certificate cert, PrivateKey key)

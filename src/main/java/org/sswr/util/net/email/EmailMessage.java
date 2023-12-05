@@ -5,7 +5,9 @@ public interface EmailMessage
 	public String getContent();
 	public boolean isContentHTML();
 	public String getSubject();
-	public void addAttachment(String attachmentPath);
+	public int getCustomHeaderCount();
+	public String getCustomHeaderName(int index);
+	public String getCustomHeaderValue(int index);
 	public int getAttachmentCount();
-	public String getAttachment(int index);
+	public EmailAttachment getAttachment(int index);
 }

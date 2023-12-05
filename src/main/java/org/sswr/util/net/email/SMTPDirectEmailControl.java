@@ -44,10 +44,12 @@ public class SMTPDirectEmailControl implements EmailControl
 		int j = msg.getAttachmentCount();
 		while (i < j)
 		{
-			if (message.addAttachment(msg.getAttachment(i)) == null)
+			EmailAttachment att = msg.getAttachment(i);
+			if (att == null)
 			{
 				return false;
 			}
+			message.addAttachment(att);
 			i++;
 		}
 		return this.smtp.send(message);

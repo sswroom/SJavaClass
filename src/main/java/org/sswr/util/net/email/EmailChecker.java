@@ -92,7 +92,7 @@ public class EmailChecker<T extends TemplateEmailStatus> implements Runnable
 	{
 		try
 		{
-			EmailMessage message = this.msgCreator.createMessage(email.getTplname(), email.getParamObj(), email.getItemParamsObj());
+			EmailTemplate message = this.msgCreator.createMessage(email.getTplname(), email.getParamObj(), email.getItemParamsObj());
 			boolean attErr = false;
 			int i = 0;
 			int j = email.getAttachmentCount();

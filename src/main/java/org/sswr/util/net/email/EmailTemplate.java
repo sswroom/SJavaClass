@@ -62,13 +62,17 @@ public class EmailTemplate implements EmailMessage
 	private StringBuilder sbSubj;
 	private StringBuilder sbPre;
 	private List<ItemGroup> groups;
-	private List<String> attachments;
+	private List<EmailAttachment> attachments;
+	private List<String> headerName;
+	private List<String> headerValue;
 
 	public EmailTemplate(InputStream templateStm, Map<String, String> vars) throws IOException, TemplateFormatException, TemplateItemException
 	{
 		this.sbSubj = new StringBuilder();
-		this.attachments = new ArrayList<String>();
+		this.attachments = new ArrayList<EmailAttachment>();
 		this.groups = new ArrayList<ItemGroup>();
+		this.headerName = new ArrayList<String>();
+		this.headerValue = new ArrayList<String>();
 
 		BufferedReader reader = new BufferedReader(new InputStreamReader(templateStm, StandardCharsets.UTF_8));
 		this.subjTemplate = reader.readLine();
@@ -334,10 +338,36 @@ public class EmailTemplate implements EmailMessage
 		return true;
 	}
 
-	@Override
-	public void addAttachment(String attachmentPath)
+	public void addCustomHeader(String name, String value)
 	{
-		this.attachments.add(attachmentPath);
+		this.headerName.add(name);
+		this.headerValue.add(value);
+	}
+
+	@Override
+	public int getCustomHeaderCount() {
+		return this.headerName.size();
+	}
+
+	@Override
+	public String getCustomHeaderName(int index) {
+		return this.headerName.get(index);
+	}
+
+	@Override
+	public String getCustomHeaderValue(int index) {
+		return this.headerValue.get(index);
+	}
+
+	public boolean addAttachment(String attachmentPath)
+	{
+		EmailAttachment att = EmailAttachment.createFromFile(attachmentPath, "attach"+(this.attachments.size() + 1));
+		if (att != null)
+		{
+			this.attachments.add(att);
+			return true;
+		}
+		return false;
 	}
 
 	@Override
@@ -347,7 +377,7 @@ public class EmailTemplate implements EmailMessage
 	}
 
 	@Override
-	public String getAttachment(int index)
+	public EmailAttachment getAttachment(int index)
 	{
 		return this.attachments.get(index);
 	}
