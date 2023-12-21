@@ -10,4 +10,5 @@ public interface EmailMessage
 	public String getCustomHeaderValue(int index);
 	public int getAttachmentCount();
 	public EmailAttachment getAttachment(int index);
+	public boolean addAttachmentFile(String attachmentPath);
 }

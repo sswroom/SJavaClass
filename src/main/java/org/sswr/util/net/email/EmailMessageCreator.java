@@ -9,5 +9,5 @@ import org.sswr.util.net.email.EmailTemplate.TemplateItemException;
 
 public interface EmailMessageCreator
 {
-	public EmailTemplate createMessage(String tplName, Map<String, String> vars, List<Map<String, String>> itemVars) throws IOException, TemplateFormatException, TemplateItemException;
+	public EmailMessage createMessage(String tplName, Map<String, String> vars, List<Map<String, String>> itemVars) throws IOException, TemplateFormatException, TemplateItemException;
 }

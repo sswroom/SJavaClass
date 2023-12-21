@@ -58,7 +58,8 @@ public class SimpleEmailMessage implements EmailMessage
 		return this.headerValue.get(index);
 	}
 
-	public boolean addAttachment(String attachmentPath) {
+	@Override
+	public boolean addAttachmentFile(String attachmentPath) {
 		EmailAttachment att = EmailAttachment.createFromFile(attachmentPath, "attach"+(this.attachment.size() + 1));
 		if (att != null)
 		{
