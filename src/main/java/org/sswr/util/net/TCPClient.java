@@ -49,7 +49,11 @@ public class TCPClient extends IOStream
 		{
 			if (cliType == TCPClientType.SSL)
 			{
-				javax.net.SocketFactory factory = ssl.getSocketFactory();
+				javax.net.SocketFactory factory;
+				if (ssl != null)
+					factory = ssl.getSocketFactory();
+				else
+					factory = SSLSocketFactory.getDefault();
 				this.s = factory.createSocket(addr, port);
 				((SSLSocket)this.s).startHandshake();
 			}
@@ -97,7 +101,11 @@ public class TCPClient extends IOStream
 		{
 			if (cliType == TCPClientType.SSL)
 			{
-				javax.net.SocketFactory factory = ssl.getSocketFactory();
+				javax.net.SocketFactory factory;
+				if (ssl != null)
+					factory = ssl.getSocketFactory();
+				else
+					factory = SSLSocketFactory.getDefault();
 				this.s = factory.createSocket(hostName, port);
 				((SSLSocket)this.s).startHandshake();
 			}
@@ -133,7 +141,11 @@ public class TCPClient extends IOStream
 		{
 			if (cliType == TCPClientType.SSL)
 			{
-				javax.net.SocketFactory factory = ssl.getSocketFactory();
+				javax.net.SocketFactory factory;
+				if (ssl != null)
+					factory = ssl.getSocketFactory();
+				else
+					factory = SSLSocketFactory.getDefault();
 				this.s = factory.createSocket(addr, port);
 				((SSLSocket)this.s).startHandshake();
 			}
@@ -408,7 +420,11 @@ public class TCPClient extends IOStream
 		{
 			try
 			{
-				SSLSocketFactory factory = (SSLSocketFactory)this.ssl.getSocketFactory();
+				SSLSocketFactory factory;
+				if (this.ssl != null)
+					factory = (SSLSocketFactory)this.ssl.getSocketFactory();
+				else
+					factory = (SSLSocketFactory)SSLSocketFactory.getDefault();
 				SSLSocket soc = (SSLSocket)factory.createSocket(this.s, null, false);
 				this.s = soc;
 				soc.setSoTimeout(5000);
