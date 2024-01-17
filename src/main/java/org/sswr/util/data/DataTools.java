@@ -7,6 +7,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.Inet4Address;
 import java.sql.Timestamp;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -883,7 +884,7 @@ public class DataTools {
 		throw new IllegalArgumentException("Object class is not supported: "+cls.toString());
 	}
 
-	private static String toObjectStringInner(Object o, int maxLevel)
+	private static String toObjectStringInner(Object o, int maxLevel, int thisLevel, boolean wellformat)
 	{
 		if (o == null)
 		{
@@ -950,6 +951,10 @@ public class DataTools {
 			else
 				return JSText.quoteString(new WKTWriter().generateWKT(vec));
 		}
+		else if (o instanceof ZoneOffset)
+		{
+			return "ZoneOffset{id='"+((ZoneOffset)o).getId()+"'}";
+		}
 		else if (maxLevel <= 0)
 		{
 			return cls.getSimpleName();
@@ -961,11 +966,15 @@ public class DataTools {
 			sb.append('[');
 			if (it.hasNext())
 			{
-				sb.append(toObjectStringInner(it.next(), maxLevel - 1));
+				if (wellformat)
+					sb.append("\r\n"+"\t".repeat(thisLevel + 1));
+				sb.append(toObjectStringInner(it.next(), maxLevel - 1, thisLevel + 1, wellformat));
 				while (it.hasNext())
 				{
 					sb.append(",");
-					sb.append(toObjectStringInner(it.next(), maxLevel - 1));
+					if (wellformat)
+						sb.append("\r\n"+"\t".repeat(thisLevel + 1));
+					sb.append(toObjectStringInner(it.next(), maxLevel - 1, thisLevel + 1, wellformat));
 				}
 			}
 			sb.append(']');
@@ -984,17 +993,22 @@ public class DataTools {
 			if (it.hasNext())
 			{
 				key = it.next();
-				sb.append(toObjectStringInner(key, maxLevel - 1));
+				if (wellformat)
+					sb.append("\r\n"+"\t".repeat(thisLevel + 1));
+				sb.append(toObjectStringInner(key, maxLevel - 1, thisLevel + 1, wellformat));
 				sb.append('=');
-				sb.append(toObjectStringInner(map.get(key), maxLevel - 1));
+				sb.append(toObjectStringInner(map.get(key), maxLevel - 1, thisLevel + 1, wellformat));
 				while (it.hasNext())
 				{
 					sb.append(',');
-					sb.append(' ');
+					if (wellformat)
+						sb.append("\r\n"+"\t".repeat(thisLevel + 1));
+					else
+						sb.append(' ');
 					key = it.next();
-					sb.append(toObjectStringInner(key, maxLevel - 1));
+					sb.append(toObjectStringInner(key, maxLevel - 1, thisLevel + 1, wellformat));
 					sb.append('=');
-					sb.append(toObjectStringInner(map.get(key), maxLevel - 1));
+					sb.append(toObjectStringInner(map.get(key), maxLevel - 1, thisLevel + 1, wellformat));
 				}
 			}
 			sb.append('}');
@@ -1014,7 +1028,7 @@ public class DataTools {
 					{
 						sb.append(",");
 					}
-					sb.append(toObjectStringInner(Array.get(o, i), maxLevel - 1));
+					sb.append(toObjectStringInner(Array.get(o, i), maxLevel - 1, thisLevel + 1, wellformat));
 					i++;
 				}
 
@@ -1023,7 +1037,7 @@ public class DataTools {
 				while (i < j)
 				{
 					sb.append(",");
-					sb.append(toObjectStringInner(Array.get(o, i), maxLevel - 1));
+					sb.append(toObjectStringInner(Array.get(o, i), maxLevel - 1, thisLevel + 1, wellformat));
 					i++;
 				}
 			}
@@ -1035,7 +1049,7 @@ public class DataTools {
 					{
 						sb.append(",");
 					}
-					sb.append(toObjectStringInner(Array.get(o, i), maxLevel - 1));
+					sb.append(toObjectStringInner(Array.get(o, i), maxLevel - 1, thisLevel + 1, wellformat));
 					i++;
 				}
 			}
@@ -1047,7 +1061,7 @@ public class DataTools {
 			StringBuilder sb = new StringBuilder();
 			sb.append(cls.getSimpleName());
 			sb.append('{');
-			Field fields[] = cls.getDeclaredFields();
+			Field fields[] = cls.getFields();
 			boolean found = false;
 			int i = 0;
 			int j = fields.length;
@@ -1055,23 +1069,33 @@ public class DataTools {
 			{
 				if ((fields[i].getModifiers() & Modifier.STATIC) == 0)
 				{
+					Object innerObj;
 					try
 					{
-						Method getter = ReflectTools.findGetter(fields[i]);
-						Object innerObj;
-						if (getter != null)
+						System.out.println("Field name = "+fields[i].getName());
+						if (fields[i].canAccess(o))
 						{
-							innerObj = getter.invoke(o);
+							innerObj = fields[i].get(o);
 						}
 						else
 						{
-							innerObj = fields[i].get(o);
+							Method getter = ReflectTools.findGetter(fields[i]);
+							if (getter != null)
+							{
+								innerObj = getter.invoke(o);
+							}
+							else
+							{
+								innerObj = fields[i].get(o);
+							}
 						}
 						if (found)
 						{
 							sb.append(',');
 							sb.append(' ');
 						}
+						if (wellformat)
+							sb.append("\r\n"+"\t".repeat(thisLevel + 1));
 						sb.append(fields[i].getName());
 						sb.append('=');
 						if (innerObj == o)
@@ -1080,7 +1104,7 @@ public class DataTools {
 						}
 						else
 						{
-							sb.append(toObjectStringInner(innerObj, maxLevel - 1));
+							sb.append(toObjectStringInner(innerObj, maxLevel - 1, thisLevel + 1, wellformat));
 						}
 						found = true;
 					}
@@ -1124,6 +1148,8 @@ public class DataTools {
 									sb.append(',');
 									sb.append(' ');
 								}
+								if (wellformat)
+									sb.append("\r\n"+"\t".repeat(thisLevel + 1));
 								sb.append(Character.toLowerCase(methName.charAt(3))+methName.substring(4));
 								sb.append('=');
 								if (innerObj == o)
@@ -1132,7 +1158,7 @@ public class DataTools {
 								}
 								else
 								{
-									sb.append(toObjectStringInner(innerObj, maxLevel - 1));
+									sb.append(toObjectStringInner(innerObj, maxLevel - 1, thisLevel + 1, wellformat));
 								}
 								found = true;
 							}
@@ -1151,6 +1177,8 @@ public class DataTools {
 									sb.append(',');
 									sb.append(' ');
 								}
+								if (wellformat)
+									sb.append("\r\n"+"\t".repeat(thisLevel + 1));
 								sb.append(Character.toLowerCase(methName.charAt(2))+methName.substring(3));
 								sb.append('=');
 								sb.append(res.toString());
@@ -1172,10 +1200,15 @@ public class DataTools {
 
 	public static String toObjectString(Object o)
 	{
-		return toObjectStringInner(o, 5);
+		return toObjectStringInner(o, 5, 0, false);
 	}
 
-	public static String toJSONStringInner(Object o, int maxLevel)	
+	public static String toObjectStringWF(Object o)
+	{
+		return toObjectStringInner(o, 5, 0, true);
+	}
+
+	public static String toJSONStringInner(Object o, int maxLevel)
 	{
 		if (o == null)
 		{

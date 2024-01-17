@@ -73,12 +73,12 @@ public class SMTPClient
 			conn.close();
 			return false;
 		}
-		List<String> recpList = message.getRecpList();
+		List<EmailAddress> recpList = message.getRecpList();
 		int i = 0;
 		int j = recpList.size();
 		while (i < j)
 		{
-			if (!conn.sendRcptTo(recpList.get(i)))
+			if (!conn.sendRcptTo(recpList.get(i).getAddress()))
 			{
 				conn.close();
 				return false;

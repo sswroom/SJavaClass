@@ -63,14 +63,25 @@ public class EmailAddress
 
 	@Override
 	public String toString() {
-		if (name == null)
+		StringBuilder sb = new StringBuilder();
+		if (name != null && name.length() > 0)
 		{
-			return this.address;
+			if (StringUtil.isNonASCII(name))
+			{
+				sb.append(EmailTools.toUTF8Header(name));
+			}
+			else
+			{
+				sb.append('"');
+				sb.append(name);
+				sb.append('"');
+			}
+			sb.append(' ');
 		}
-		else
-		{
-			return "\""+this.name+"\" <"+this.address+">";
-		}
+		sb.append('<');
+		sb.append(this.address);
+		sb.append('>');
+		return sb.toString();
 	}
 
 	public static EmailAddress parse(String val)

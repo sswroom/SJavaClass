@@ -34,7 +34,7 @@ public class SMTPDirectEmailControl implements EmailControl
 		message.setSubject(msg.getSubject());
 		message.setContent(msg.getContent(), "text/html; charset=utf-8");
 		message.setSentDate(ZonedDateTime.now());
-		message.setFrom(null, this.smtpFrom);
+		message.setFrom(new EmailAddress(null, this.smtpFrom));
 		message.addToList(toList);
 		if (ccList != null && ccList.length() > 0)
 		{
@@ -76,7 +76,7 @@ public class SMTPDirectEmailControl implements EmailControl
 		message.setSubject("Email Testing");
 		message.setContent("This is a test email", "text/html; charset=utf-8");
 		message.setSentDate(ZonedDateTime.now());
-		message.setFrom(null, this.smtpFrom);
+		message.setFrom(new EmailAddress(null, this.smtpFrom));
 		message.addToList(toAddress);
 		if (this.smtp.send(message))
 		{

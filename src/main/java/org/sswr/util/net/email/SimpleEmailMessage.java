@@ -69,6 +69,14 @@ public class SimpleEmailMessage implements EmailMessage
 		return false;
 	}
 
+	public void addAttachment(EmailAttachment attachment)
+	{
+		if (attachment != null)
+		{
+			this.attachment.add(attachment);
+		}
+	}
+
 	@Override
 	public int getAttachmentCount() {
 		return this.attachment.size();
@@ -77,5 +85,11 @@ public class SimpleEmailMessage implements EmailMessage
 	@Override
 	public EmailAttachment getAttachment(int index) {
 		return this.attachment.get(index);
+	}
+
+	@Override
+	public List<EmailAttachment> getAttachments()
+	{
+		return this.attachment;
 	}
 }

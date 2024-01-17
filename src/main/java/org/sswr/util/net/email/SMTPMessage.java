@@ -26,8 +26,8 @@ public class SMTPMessage
 {
 	public static final int LINECHARCNT = 77;
 
-	private String fromAddr;
-	private List<String> recpList;
+	private EmailAddress fromAddr;
+	private List<EmailAddress> recpList;
 	private List<String> headerList;
 	private String contentType;
 	private byte[] content;
@@ -73,10 +73,7 @@ public class SMTPMessage
 	}
 	private boolean appendUTF8Header(StringBuilder sb, String val)
 	{
-		Base64Enc b64 = new Base64Enc();
-		sb.append("=?UTF-8?B?");
-		sb.append(b64.encodeBin(val.getBytes(StandardCharsets.UTF_8)));
-		sb.append("?=");
+		sb.append(EmailTools.toUTF8Header(val));
 		return true;
 	}
 
@@ -271,7 +268,7 @@ public class SMTPMessage
 	public SMTPMessage()
 	{
 		this.fromAddr = null;
-		this.recpList = new ArrayList<String>();
+		this.recpList = new ArrayList<EmailAddress>();
 		this.headerList = new ArrayList<String>();
 		this.content = null;
 		this.attachments = new ArrayList<EmailAttachment>();
@@ -314,58 +311,28 @@ public class SMTPMessage
 		return this.setHeader("Message-ID", sb.toString());
 	}
 
-	public boolean setFrom(String name, String addr)
+	public boolean setFrom(EmailAddress addr)
 	{
-		StringBuilder sb = new StringBuilder();
-		if (name != null && name.length() > 0)
-		{
-			if (StringUtil.isNonASCII(name))
-			{
-				this.appendUTF8Header(sb, name);
-			}
-			else
-			{
-				sb.append('"');
-				sb.append(name);
-				sb.append('"');
-			}
-			sb.append(' ');
-		}
-		sb.append('<');
-		sb.append(addr);
-		sb.append('>');
-		this.setHeader("From", sb.toString());
+		this.setHeader("From", addr.toString());
 		this.fromAddr = addr;
 		return true;
 	}
 
-	public boolean addTo(String name, String addr)
+	public boolean addTo(EmailAddress addr)
 	{
 		int i = this.getHeaderIndex("To");
-		StringBuilder sb = new StringBuilder();
 		if (i != -1)
 		{
+			StringBuilder sb = new StringBuilder();
 			sb.append(this.headerList.get(i).substring(4));
 			sb.append(", ");
+			sb.append(addr.toString());
+			this.setHeader("To", sb.toString());
 		}
-		if (name != null && name.length() > 0)
+		else
 		{
-			if (StringUtil.isNonASCII(name))
-			{
-				this.appendUTF8Header(sb, name);
-			}
-			else
-			{
-				sb.append('"');
-				sb.append(name);
-				sb.append('"');
-			}
-			sb.append(' ');
+			this.setHeader("To", addr.toString());
 		}
-		sb.append('<');
-		sb.append(addr);
-		sb.append('>');
-		this.setHeader("To", sb.toString());
 		this.recpList.add(addr);
 		return true;		
 	}
@@ -380,7 +347,7 @@ public class SMTPMessage
 		while (i < j)
 		{
 			EmailAddress addr = addrList.get(i);
-			this.addTo(addr.getName(), addr.getAddress());
+			this.addTo(addr);
 			i++;
 		}
 		return true;
@@ -396,45 +363,33 @@ public class SMTPMessage
 		while (i < j)
 		{
 			EmailAddress addr = addrList.get(i);
-			this.addCc(addr.getName(), addr.getAddress());
+			this.addCc(addr);
 			i++;
 		}
 		return true;
 	}
 
-	public boolean addCc(String name, String addr)
+	public boolean addCc(EmailAddress addr)
 	{
 		int i = this.getHeaderIndex("Cc");
-		StringBuilder sb = new StringBuilder();
 		if (i != -1)
 		{
+			StringBuilder sb = new StringBuilder();
 			String s = this.headerList.get(i);
 			sb.append(s.substring(4));
 			sb.append(", ");
+			sb.append(addr.toString());
+			this.setHeader("Cc", sb.toString());
 		}
-		if (name != null && name.length() > 0)
+		else
 		{
-			if (StringUtil.isNonASCII(name))
-			{
-				this.appendUTF8Header(sb, name);
-			}
-			else
-			{
-				sb.append('"');
-				sb.append(name);
-				sb.append('"');
-			}
-			sb.append(' ');
+			this.setHeader("Cc", addr.toString());
 		}
-		sb.append('<');
-		sb.append(addr);
-		sb.append('>');
-		this.setHeader("Cc", sb.toString());
 		this.recpList.add(addr);
 		return true;
 	}
 
-	public boolean addBcc(String addr)
+	public boolean addBcc(EmailAddress addr)
 	{
 		this.recpList.add(addr);
 		return true;
@@ -450,11 +405,10 @@ public class SMTPMessage
 		while (i < j)
 		{
 			EmailAddress addr = addrList.get(i);
-			this.addBcc(addr.getAddress());
+			this.addBcc(addr);
 			i++;
 		}
 		return true;
-
 	}
 
 	public EmailAttachment addAttachment(String fileName)
@@ -503,10 +457,10 @@ public class SMTPMessage
 
 	public String getFromAddr()
 	{
-		return this.fromAddr;
+		return (this.fromAddr != null)?this.fromAddr.getAddress():null;
 	}
 
-	public List<String> getRecpList()
+	public List<EmailAddress> getRecpList()
 	{
 		return this.recpList;
 	}

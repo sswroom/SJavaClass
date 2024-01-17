@@ -1,5 +1,7 @@
 package org.sswr.util.net.email;
 
+import java.util.List;
+
 public interface EmailMessage
 {
 	public String getContent();
@@ -10,5 +12,6 @@ public interface EmailMessage
 	public String getCustomHeaderValue(int index);
 	public int getAttachmentCount();
 	public EmailAttachment getAttachment(int index);
+	public List<EmailAttachment> getAttachments();
 	public boolean addAttachmentFile(String attachmentPath);
 }

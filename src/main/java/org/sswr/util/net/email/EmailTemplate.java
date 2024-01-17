@@ -378,6 +378,12 @@ public class EmailTemplate implements EmailMessage
 	}
 
 	@Override
+	public List<EmailAttachment> getAttachments()
+	{
+		return this.attachments;
+	}
+
+	@Override
 	public EmailAttachment getAttachment(int index)
 	{
 		return this.attachments.get(index);
