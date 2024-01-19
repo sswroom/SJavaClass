@@ -36,12 +36,12 @@ public class SMTPClient
 
 	public boolean send(SMTPMessage message)
 	{
-		if (!message.completedMessage())
+		if (!message.canSend())
 		{
 			return false;
 		}
 		ByteArrayOutputStream mstm = new ByteArrayOutputStream();
-		if (!message.writeToStream(mstm))
+		if (!message.writeMessage(mstm))
 		{
 			return false;
 		}

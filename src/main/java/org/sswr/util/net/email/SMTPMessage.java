@@ -143,36 +143,42 @@ public class SMTPMessage
 				stm.write(";".getBytes(StandardCharsets.UTF_8));
 				k += 7 + strBuff.length;
 			}
-			if (k + 47 > LINECHARCNT)
+			if (att.createTime != null)
 			{
-				stm.write("\r\n\tcreation-date=\"".getBytes(StandardCharsets.UTF_8));
-				strBuff = WebUtil.date2Str(att.createTime).getBytes(StandardCharsets.UTF_8);
-				stm.write(strBuff);
-				stm.write("\";".getBytes(StandardCharsets.UTF_8));
-				k = 21 + strBuff.length;
+				if (k + 47 > LINECHARCNT)
+				{
+					stm.write("\r\n\tcreation-date=\"".getBytes(StandardCharsets.UTF_8));
+					strBuff = WebUtil.date2Str(att.createTime).getBytes(StandardCharsets.UTF_8);
+					stm.write(strBuff);
+					stm.write("\";".getBytes(StandardCharsets.UTF_8));
+					k = 21 + strBuff.length;
+				}
+				else
+				{
+					stm.write(" creation-date=\"".getBytes(StandardCharsets.UTF_8));
+					strBuff = WebUtil.date2Str(att.createTime).getBytes(StandardCharsets.UTF_8);
+					stm.write(strBuff);
+					stm.write("\";".getBytes(StandardCharsets.UTF_8));
+					k += 18 + strBuff.length;
+				}
 			}
-			else
+			if (att.modifyTime != null)
 			{
-				stm.write(" creation-date=\"".getBytes(StandardCharsets.UTF_8));
-				strBuff = WebUtil.date2Str(att.createTime).getBytes(StandardCharsets.UTF_8);
-				stm.write(strBuff);
-				stm.write("\";".getBytes(StandardCharsets.UTF_8));
-				k += 18 + strBuff.length;
-			}
-			if (k + 50 > LINECHARCNT)
-			{
-				stm.write("\r\n\tmodification-date=\"".getBytes(StandardCharsets.UTF_8));
-				strBuff = WebUtil.date2Str(att.modifyTime).getBytes(StandardCharsets.UTF_8);
-				stm.write(strBuff);
-				stm.write("\"\r\n".getBytes(StandardCharsets.UTF_8));
-			}
-			else
-			{
-				stm.write(" modification-date=\"".getBytes(StandardCharsets.UTF_8));
-				strBuff = WebUtil.date2Str(att.modifyTime).getBytes(StandardCharsets.UTF_8);
-				stm.write(strBuff);
-				stm.write("\"\r\n".getBytes(StandardCharsets.UTF_8));
-				k = 21 + strBuff.length;
+				if (k + 50 > LINECHARCNT)
+				{
+					stm.write("\r\n\tmodification-date=\"".getBytes(StandardCharsets.UTF_8));
+					strBuff = WebUtil.date2Str(att.modifyTime).getBytes(StandardCharsets.UTF_8);
+					stm.write(strBuff);
+					stm.write("\"\r\n".getBytes(StandardCharsets.UTF_8));
+				}
+				else
+				{
+					stm.write(" modification-date=\"".getBytes(StandardCharsets.UTF_8));
+					strBuff = WebUtil.date2Str(att.modifyTime).getBytes(StandardCharsets.UTF_8);
+					stm.write(strBuff);
+					stm.write("\"\r\n".getBytes(StandardCharsets.UTF_8));
+					k = 21 + strBuff.length;
+				}
 			}
 			stm.write("Content-ID: <".getBytes(StandardCharsets.UTF_8));
 			stm.write(att.contentId.getBytes(StandardCharsets.UTF_8));
@@ -446,7 +452,7 @@ public class SMTPMessage
 	}
 
 
-	public boolean completedMessage()
+	public boolean canSend()
 	{
 		if (this.fromAddr == null || this.recpList.size() == 0 || this.content == null)
 		{
@@ -465,12 +471,16 @@ public class SMTPMessage
 		return this.recpList;
 	}
 
-	public boolean writeToStream(OutputStream stm)
+	public boolean writeToSend(OutputStream stm)
 	{
-		if (!this.completedMessage())
+		if (!this.canSend())
 		{
 			return false;
 		}
+		return this.writeMessage(stm);
+	}
+	public boolean writeMessage(OutputStream stm)
+	{
 		try
 		{
 			this.writeHeaders(stm);

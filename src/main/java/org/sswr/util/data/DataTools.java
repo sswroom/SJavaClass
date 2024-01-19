@@ -1072,7 +1072,6 @@ public class DataTools {
 					Object innerObj;
 					try
 					{
-						System.out.println("Field name = "+fields[i].getName());
 						if (fields[i].canAccess(o))
 						{
 							innerObj = fields[i].get(o);
