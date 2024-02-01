@@ -208,7 +208,7 @@ public class StringUtil
 	/**
 	* Pad integer to string with '0'
 	*
-	* @param  s  original string
+	* @param  val  integer value
 	* @param  minDigits minimum number of digits of the string
 	* @return      padded string
 	*/
@@ -227,7 +227,7 @@ public class StringUtil
 	/**
 	* Join strings into string
 	*
-	* @param  objs  list of string
+	* @param  strs  list of string
 	* @param  seperator seperator of strings
 	* @return      joined string or null if objs is null
 	*/
@@ -1239,8 +1239,8 @@ public class StringUtil
 	 * 
 	 * @param  list List of string
 	 * @param  value Value to search
-	 * @return  >= 0 for exact match
-	 *          < 0 for not matching, ~return = position for sorted value to insert
+	 * @return  {@literal >}= 0 for exact match
+	 *          {@literal <} 0 for not matching, ~return = position for sorted value to insert
 	 */
 	public static int sortedIndexOf(List<String> list, String value)
 	{
@@ -1537,10 +1537,11 @@ public class StringUtil
 	}
 
 	/**
-	 * Convert byte of utf-8 char to double
+	 * Convert bytes of utf-8 char to double
 	 * 
-	 * @param  c the char to convert
-	 * @return  converted char
+	 * @param  buff utf-8 byte buffer of string to convert
+	 * @param  ofst offset of the byte buffer to be start of the string
+	 * @return  result double value or 0 if error occurs
 	 */
 	public static double toDouble(byte[] buff, int ofst)
 	{
