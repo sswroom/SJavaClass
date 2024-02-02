@@ -6,7 +6,7 @@
 	<artifactId>util</artifactId>
 	<version>0.2.20240202</version>
 	
-	<name>util</name>
+	<name>sswr-util</name>
 	<packaging>jar</packaging>
 	<description>Utilities for Java applications</description>
 	<url>https://github.com/sswroom/SJavaClass</url>
@@ -18,6 +18,26 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.arg>-Xlint:deprecation</maven.compiler.arg>
 	</properties>
+
+	<licenses>
+		<license>
+			<name>MIT License</name>
+			<url>http://www.opensource.org/licenses/mit-license.php</url>
+		</license>
+	</licenses>
+
+	<developers>
+		<developer>
+			<name>Simon Wong</name>
+			<email>sswroom@yahoo.com</email>
+		</developer>
+	</developers>
+
+	<scm>
+		<connection>scm:git:git://github.com/sswroom/SJavaClass.git</connection>
+		<developerConnection>scm:git:ssh://github.com:sswroom/SJavaClass.git</developerConnection>
+		<url>http://github.com/sswroom/SJavaClass/tree/master</url>
+	</scm>
 
 	<dependencies>
 		<dependency>
@@ -98,6 +118,10 @@
 						<goals>
 							<goal>sign</goal>
 						</goals>
+						<configuration>
+							<keyname>0x0648FFA8</keyname>
+							<passphraseServerId>sswroom</passphraseServerId>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>
