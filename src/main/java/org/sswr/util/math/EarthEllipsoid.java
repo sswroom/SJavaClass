@@ -1,7 +1,9 @@
 package org.sswr.util.math;
 
 import org.sswr.util.data.SharedDouble;
+import org.sswr.util.math.geometry.LineString;
 import org.sswr.util.math.geometry.Polyline;
+import org.sswr.util.math.geometry.Vector2D.VectorType;
 import org.sswr.util.math.unit.Distance;
 
 public class EarthEllipsoid
@@ -200,73 +202,89 @@ public class EarthEllipsoid
 		return d;
 	}
 	
+	public double calLineStringDistance(LineString lineString, boolean include3D, Distance.DistanceUnit unit)
+	{
+		int nPoint;
+		Coord2DDbl[] points;
+		double[] alts;
+		points = lineString.getPointList();
+		nPoint = points.length;
+		int j = nPoint;
+		double totalDist = 0;
+		double dist;
+		Coord2DDbl lastPt;
+		Double lastH;
+		if (j == 0)
+			return 0;
+		if (include3D && (alts = lineString.getZList()) != null)
+		{
+			if (lineString.getVectorType() == VectorType.LinearRing)
+			{
+				lastPt = points[0];
+				lastH = alts[0];
+			}
+			else
+			{
+				j--;
+				lastPt = points[j];
+				lastH = alts[j];
+			}
+			while (j-- > 0)
+			{
+				dist = calSurfaceDistance(lastPt.y, lastPt.x, points[j].y, points[j].x, unit);;
+				dist = Math.sqrt(dist * dist + (alts[j] - lastH) * (alts[j] - lastH));
+				totalDist += dist;
+				lastPt = points[j];
+				lastH = alts[j];
+			}
+			return totalDist;
+		}
+		else
+		{
+			if (lineString.getVectorType() == VectorType.LinearRing)
+			{
+				lastPt = points[0];
+			}
+			else
+			{
+				j--;
+				lastPt = points[j];
+			}
+			while (j-- > 0)
+			{
+				totalDist += calSurfaceDistance(lastPt.y, lastPt.x, points[j].y, points[j].x, unit);
+				lastPt = points[j];
+			}
+			return totalDist;
+		}
+	}
+
 	public double calPLDistance(Polyline pl, Distance.DistanceUnit unit)
 	{
-		int []ptOfsts;
-		Coord2DDbl []points;
-		ptOfsts = pl.getPtOfstList();
-		points = pl.getPointList();
-		int i = ptOfsts.length;
-		int j = points.length;
-		int k;
+		LineString lineString;
+		int i = pl.getCount();
 		double totalDist = 0;
-		boolean hasLast;
-		double lastX = 0;
-		double lastY = 0;
 		while (i-- > 0)
 		{
-			k = ptOfsts[i];
-			hasLast = false;
-			while (j-- > k)
+			if ((lineString = pl.getItem(i)) != null)
 			{
-				if (hasLast)
-				{
-					totalDist += calSurfaceDistance(lastY, lastX, points[j].y, points[j].x, unit);
-				}
-				hasLast = true;
-				lastX = points[j].x;
-				lastY = points[j].y;
+				totalDist += calLineStringDistance(lineString, false, unit);
 			}
-			j++;
 		}
 		return totalDist;
 	}
 
 	public double calPLDistance3D(Polyline pl, Distance.DistanceUnit unit)
 	{
-		int []ptOfsts;
-		Coord2DDbl []points;
-		double []alts;
-		ptOfsts = pl.getPtOfstList();
-		points = pl.getPointList();
-		alts = pl.getZList();
-		int i = ptOfsts.length;
-		int j = points.length;
-		int k;
-		double dist;
+		LineString lineString;
+		int i = pl.getCount();
 		double totalDist = 0;
-		boolean hasLast;
-		double lastX = 0;
-		double lastY = 0;
-		double lastH = 0;
 		while (i-- > 0)
 		{
-			k = ptOfsts[i];
-			hasLast = false;
-			while (j-- > k)
+			if ((lineString = pl.getItem(i)) != null)
 			{
-				if (hasLast)
-				{
-					dist = calSurfaceDistance(lastY, lastX, points[j].y, points[j].x, unit);
-					dist = Math.sqrt(dist * dist + (alts[j] - lastH) * (alts[j] - lastH));
-					totalDist += dist;
-				}
-				hasLast = true;
-				lastX = points[j].x;
-				lastY = points[j].y;
-				lastH = alts[j];
+				totalDist += calLineStringDistance(lineString, true, unit);
 			}
-			j++;
 		}
 		return totalDist;
 	}

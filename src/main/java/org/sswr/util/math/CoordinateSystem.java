@@ -3,7 +3,7 @@ package org.sswr.util.math;
 import org.sswr.util.data.SharedDouble;
 import org.sswr.util.io.ParsedObject;
 import org.sswr.util.io.ParserType;
-import org.sswr.util.math.geometry.Polyline;
+import org.sswr.util.math.geometry.LineString;
 import org.sswr.util.math.unit.Distance;
 
 public abstract class CoordinateSystem extends ParsedObject
@@ -51,9 +51,8 @@ public abstract class CoordinateSystem extends ParsedObject
 		this.csysName = csysName;
 	}
 
-	public abstract double calSurfaceDistanceXY(double x1, double y1, double x2, double y2, Distance.DistanceUnit unit);
-	public abstract double calPLDistance(Polyline pl, Distance.DistanceUnit unit);
-	public abstract double calPLDistance3D(Polyline pl, Distance.DistanceUnit unit);
+	public abstract double calSurfaceDistance(Coord2DDbl pos1, Coord2DDbl pos2, Distance.DistanceUnit unit);
+	public abstract double calLineStringDistance(LineString pl, boolean include3D, Distance.DistanceUnit unit);
 	public abstract CoordinateSystem clone();
 	public abstract CoordinateSystemType getCoordSysType();
 	public abstract boolean isProjected();

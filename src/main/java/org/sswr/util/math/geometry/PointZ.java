@@ -2,6 +2,7 @@ package org.sswr.util.math.geometry;
 
 import java.util.Objects;
 
+import org.sswr.util.basic.Vector3;
 import org.sswr.util.data.SharedDouble;
 import org.sswr.util.math.CoordinateSystem;
 import org.sswr.util.math.MathUtil;
@@ -26,11 +27,9 @@ public class PointZ extends Point2D
 		return this.z;
 	}
 
-	public void getCenter3D(SharedDouble x, SharedDouble y, SharedDouble z)
+	public Vector3 getPos3D()
 	{
-		x.value = this.pos.x;
-		y.value = this.pos.y;
-		z.value = this.z;
+		return new Vector3(this.pos, this.z);
 	}
 
 	public boolean hasZ()
@@ -51,25 +50,17 @@ public class PointZ extends Point2D
 	}
 
 	@Override
-	public boolean equals(Object o) {
-		if (o == this)
-			return true;
-		if (!(o instanceof PointZ)) {
-			return false;
-		}
-		PointZ pointZ = (PointZ) o;
-		return srid == pointZ.srid && !pointZ.hasM() && z == pointZ.z && pos.equals(pointZ.pos);
-	}
-
-	@Override
-	public boolean equalsNearly(Vector2D vec) {
+	public boolean equals(Vector2D vec, boolean sameTypeOnly, boolean nearlyVal) {
 		if (vec == this)
 			return true;
 		if (!(vec instanceof PointZ)) {
 			return false;
 		}
-		PointZ pointZ = (PointZ) vec;
-		return srid == pointZ.srid && !pointZ.hasM() && MathUtil.nearlyEqualsDbl(z, pointZ.z) && pos.equalsNearly(pointZ.pos);
+		PointZ pointZ = (PointZ)vec;
+		if (nearlyVal)
+			return srid == pointZ.srid && !pointZ.hasM() && MathUtil.nearlyEqualsDbl(z, pointZ.z) && pos.equalsNearly(pointZ.pos);
+		else
+			return srid == pointZ.srid && !pointZ.hasM() && z == pointZ.z && pos.equals(pointZ.pos);
 	}
 
 	@Override

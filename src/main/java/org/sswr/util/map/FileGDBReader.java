@@ -21,6 +21,7 @@ import org.sswr.util.db.DBReader;
 import org.sswr.util.io.StreamData;
 import org.sswr.util.math.Coord2DDbl;
 import org.sswr.util.math.WKTWriter;
+import org.sswr.util.math.geometry.LineString;
 import org.sswr.util.math.geometry.Point2D;
 import org.sswr.util.math.geometry.PointM;
 import org.sswr.util.math.geometry.PointZ;
@@ -569,64 +570,83 @@ public class FileGDBReader extends DBReader
 					srid = this.tableInfo.getCsys().getSRID();
 				}
 				int i;
-				int []parts;
+				int j;
+				int k;
+				LineString lineString;
+				int []ptOfstList;
 				Coord2DDbl []points;
 				double []zArr;
 				double []mArr;
-				pl = new Polyline(srid, (int)nParts.value, (int)nPoints.value, (this.tableInfo.getGeometryFlags() & 0x80) != 0, (this.tableInfo.getGeometryFlags() & 0x40) != 0);
-				parts = pl.getPtOfstList();
-				points = pl.getPointList();
-				zArr = pl.getZList();
-				mArr = pl.getMList();
-				parts[0] = 0;
+				pl = new Polyline(srid);//, (int)nParts.value, (int)nPoints.value, (this.tableInfo.getGeometryFlags() & 0x80) != 0, (this.tableInfo.getGeometryFlags() & 0x40) != 0
+				ptOfstList = new int[(int)nParts.value];
+				ptOfstList[0] = 0;
 				int ptOfst = 0;
 				i = 1;
 				while (i < nParts.value)
 				{
 					ofst = FileGDBUtil.readVarUInt(this.rowData, ofst, v);
 					ptOfst += (int)v.value;
-					parts[i] = ptOfst;
+					ptOfstList[i] = ptOfst;
 					i++;
 				}
 				SharedLong iv = new SharedLong();
 				int dx = 0;
 				int dy = 0;
+				int dz = 0;
+				int dm = 0;
 				i = 0;
-				while (i < nPoints.value)
+				while (i < nParts.value)
 				{
-					ofst = FileGDBUtil.readVarInt(this.rowData, ofst, iv);
-					dx -= (int)iv.value;
-					x = (double)(dx) / this.tableInfo.getXyScale() + this.tableInfo.getXOrigin();
-					ofst = FileGDBUtil.readVarInt(this.rowData, ofst, iv);
-					dy -= (int)iv.value;
-					y = (double)(dy) / this.tableInfo.getXyScale() + this.tableInfo.getYOrigin();
-					points[i].x = x;
-					points[i].y = y;
+					if (i + 1 == nParts.value)
+					{
+						k = (int)nPoints.value - ptOfstList[i];
+					}
+					else
+					{
+						k = ptOfstList[i + 1] - ptOfstList[i];
+					}
+					lineString = new LineString(srid, k, (this.tableInfo.getGeometryFlags() & 0x80) != 0, (this.tableInfo.getGeometryFlags() & 0x40) != 0);
+					points = lineString.getPointList();
+					zArr = lineString.getZList();
+					mArr = lineString.getMList();
+	
+					j = 0;
+					while (j < k)
+					{
+						ofst = FileGDBUtil.readVarInt(this.rowData, ofst, iv);
+						dx -= (int)iv.value;
+						x = (double)(dx) / this.tableInfo.getXyScale() + this.tableInfo.getXOrigin();
+						ofst = FileGDBUtil.readVarInt(this.rowData, ofst, iv);
+						dy -= (int)iv.value;
+						y = (double)(dy) / this.tableInfo.getXyScale() + this.tableInfo.getYOrigin();
+						points[j] = new Coord2DDbl(x, y);
+						j++;
+					}
+					if ((this.tableInfo.getGeometryFlags() & 0x80) != 0)
+					{
+						j = 0;
+						while (j < k)
+						{
+							ofst = FileGDBUtil.readVarInt(this.rowData, ofst, iv);
+							dz += (int)iv.value;
+							zArr[j] = (double)(dz) / this.tableInfo.getZScale() + this.tableInfo.getZOrigin();
+							j++;
+						}
+					}
+					if ((this.tableInfo.getGeometryFlags() & 0x40) != 0)
+					{
+						j = 0;
+						while (j < k)
+						{
+							ofst = FileGDBUtil.readVarInt(this.rowData, ofst, iv);
+							dm += (int)iv.value;
+							mArr[j] = (double)(dm) / this.tableInfo.getMScale() + this.tableInfo.getMOrigin();
+							j++;
+						}
+					}
+					pl.addGeometry(lineString);
+
 					i++;
-				}
-				if ((this.tableInfo.getGeometryFlags() & 0x80) != 0)
-				{
-					dx = 0;
-					i = 0;
-					while (i < nPoints.value)
-					{
-						ofst = FileGDBUtil.readVarInt(this.rowData, ofst, iv);
-						dx -= iv.value;
-						zArr[i] = (double)(dx) / this.tableInfo.getZScale() + this.tableInfo.getZOrigin();
-						i++;
-					}
-				}
-				if ((this.tableInfo.getGeometryFlags() & 0x40) != 0)
-				{
-					dx = 0;
-					i = 0;
-					while (i < nPoints.value)
-					{
-						ofst = FileGDBUtil.readVarInt(this.rowData, ofst, iv);
-						dx -= iv.value;
-						mArr[i] = (double)(dx) / this.tableInfo.getMScale() + this.tableInfo.getMOrigin();
-						i++;
-					}
 				}
 				return pl;
 			}
@@ -654,12 +674,20 @@ public class FileGDBReader extends DBReader
 				{
 					srid = this.tableInfo.getCsys().getSRID();
 				}
-				pg = new Polygon(srid, (int)nParts.value, (int)nPoints.value, (this.tableInfo.getGeometryFlags() & 0x80) != 0, (this.tableInfo.getGeometryFlags() & 0x40) != 0);
+				pg = new Polygon(srid);
 				int i;
-				int []parts = pg.getPtOfstList();
-				Coord2DDbl []points = pg.getPointList();
-				double []zArr = pg.getZList();
-				double []mArr = pg.getMList();
+				int []parts = new int[(int)nParts.value];
+				Coord2DDbl []points = new Coord2DDbl[(int)nPoints.value];
+				double []zArr = null;
+				double []mArr = null;
+				if ((this.tableInfo.getGeometryFlags() & 0x80) != 0)
+				{
+					zArr = new double[(int)nPoints.value];
+				}
+				if ((this.tableInfo.getGeometryFlags() & 0x40) != 0)
+				{
+					mArr = new double[(int)nPoints.value];
+				}
 				parts[0] = 0;
 				int ptOfst = 0;
 				i = 1;
@@ -710,7 +738,8 @@ public class FileGDBReader extends DBReader
 						i++;
 					}
 				}
-				return pg;
+				pg.addFromPtOfst(parts, points, zArr, mArr);
+				return pg.createMultiPolygon();
 			}
 		case 50: //SHPT_GENERALPOLYLINE
 			if (this.rowData[ofst] == 0)
@@ -727,6 +756,7 @@ public class FileGDBReader extends DBReader
 				if ((geometryType.value & 0x20000000) != 0)
 				{
 					ofst = FileGDBUtil.readVarUInt(this.rowData, ofst, nCurves);
+					System.out.println("FileGDBReader: geometry has curves, may not fully support");
 				}
 				ofst = FileGDBUtil.readVarUInt(this.rowData, ofst, v); //xmin
 				ofst = FileGDBUtil.readVarUInt(this.rowData, ofst, v); //ymin
@@ -734,92 +764,94 @@ public class FileGDBReader extends DBReader
 				ofst = FileGDBUtil.readVarUInt(this.rowData, ofst, v); //ymax
 				Polyline pl;
 				srid = 0;
-				int i;
 				if (this.tableInfo.getCsys() != null)
 				{
 					srid = this.tableInfo.getCsys().getSRID();
 				}
-				int []parts;
+				int i;
+				int j;
+				int k;
+				LineString lineString;
+				int []ptOfstList;
 				Coord2DDbl []points;
-				double []altitiudes = null;
-				if ((geometryType.value & 0x80000000) != 0)
-				{
-					pl = new Polyline(srid, (int)nParts.value, (int)nPoints.value, true, false);
-					altitiudes = pl.getZList();
-				}
-				else
-				{
-					pl = new Polyline(srid, (int)nParts.value, (int)nPoints.value, false, false);
-				}
-				parts = pl.getPtOfstList();
-				points = pl.getPointList();
-				parts[0] = 0;
+				double[] zArr;
+				double[] mArr;
+				pl = new Polyline(srid);
+				//, (UOSInt)nParts, (UOSInt)nPoints, (this->tableInfo->geometryFlags & 0x80) != 0, (this->tableInfo->geometryFlags & 0x40) != 0
+				ptOfstList = new int[(int)nParts.value];
+				ptOfstList[0] = 0;
 				int ptOfst = 0;
 				i = 1;
 				while (i < nParts.value)
 				{
 					ofst = FileGDBUtil.readVarUInt(this.rowData, ofst, v);
 					ptOfst += (int)v.value;
-					parts[i] = ptOfst;
+					ptOfstList[i] = ptOfst;
 					i++;
 				}
-				int j;
-				int k;
+				SharedLong iv = new SharedLong();
 				i = 0;
 				while (i < nParts.value)
 				{
-					SharedLong iv = new SharedLong();
-					int dx = 0;
-					int dy = 0;
-					j = parts[i];
-					if (i + 1 < nParts.value)
+					if (i + 1 == nParts.value)
 					{
-						k = parts[i + 1];
+						k = (int)nPoints.value - ptOfstList[i];
 					}
 					else
 					{
-						k = (int)nPoints.value;
+						k = ptOfstList[i + 1] - ptOfstList[i];
 					}
+					lineString = new LineString(srid, k, (this.tableInfo.getGeometryFlags() & 0x80) != 0, (this.tableInfo.getGeometryFlags() & 0x40) != 0);
+					points = lineString.getPointList();
+					zArr = lineString.getZList();
+					mArr = lineString.getMList();
+	
+					int dx = 0;
+					int dy = 0;
+					int dz = 0;
+					int dm = 0;
+					j = 0;
 					while (j < k)
 					{
 						ofst = FileGDBUtil.readVarInt(this.rowData, ofst, iv);
-						dx -= iv.value;
+						dx += (int)iv.value;
 						x = (double)(dx) / this.tableInfo.getXyScale() + this.tableInfo.getXOrigin();
 						ofst = FileGDBUtil.readVarInt(this.rowData, ofst, iv);
-						dy -= iv.value;
+						dy += (int)iv.value;
 						y = (double)(dy) / this.tableInfo.getXyScale() + this.tableInfo.getYOrigin();
-						points[j].x = x;
-						points[j].y = y;
+						points[j] = new Coord2DDbl(x, y);
 						j++;
 					}
-					if ((geometryType.value & 0x80000000) != 0)
+					if ((this.tableInfo.getGeometryFlags() & 0x80) != 0)
 					{
-						dx = 0;
-						j = parts[i];
+						j = 0;
 						while (j < k)
 						{
 							ofst = FileGDBUtil.readVarInt(this.rowData, ofst, iv);
-							dx -= iv.value;
-							z = (double)(dx) / this.tableInfo.getZScale() + this.tableInfo.getZOrigin();
-							altitiudes[j] = z;
+							dz += (int)iv.value;
+							z = (double)(dz) / this.tableInfo.getZScale() + this.tableInfo.getZOrigin();
+							zArr[j] = z;
 							j++;
 						}
 					}
-					if ((geometryType.value & 0x40000000) != 0)
+					if ((this.tableInfo.getGeometryFlags() & 0x40) != 0)
 					{
-						dx = 0;
-						j = parts[i];
+						j = 0;
 						while (j < k)
 						{
 							ofst = FileGDBUtil.readVarInt(this.rowData, ofst, iv);
-							dx -= iv.value;
-							//m = (double)(dx) / this.tableInfo.mScale + this.tableInfo.mOrigin;
+							dm += (int)iv.value;
+							m = (double)(dm) / this.tableInfo.getMScale() + this.tableInfo.getMOrigin();
+							mArr[j] = m;
+							j++;
 						}
 					}
+					pl.addGeometry(lineString);
+	
 					i++;
 				}
+				return pl;
 			}
-			break;
 		}
 		return null;
 	}

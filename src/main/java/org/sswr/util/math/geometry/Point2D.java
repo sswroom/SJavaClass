@@ -23,27 +23,6 @@ public class Point2D extends Vector2D
 		super(srid);
 		this.pos = pos;
 	}
-
-	@Override
-	public boolean equals(Object o) {
-		if (o == this)
-			return true;
-		if (!(o instanceof Point2D)) {
-			return false;
-		}
-		Point2D point = (Point2D) o;
-		return this.srid == point.srid && !point.hasZ() && !point.hasM() && this.pos.equals(point.pos);
-	}
-
-	@Override
-	public boolean equalsNearly(Vector2D vec) {
-		if (!(vec instanceof Point2D)) {
-			return false;
-		}
-		Point2D point = (Point2D)vec;
-		return this.srid == point.srid && !point.hasZ() && !point.hasM() && this.pos.equalsNearly(point.pos);
-	}
-
 	@Override
 	public int hashCode() {
 		return Objects.hash(pos);
@@ -69,22 +48,23 @@ public class Point2D extends Vector2D
 		return new Point2D(this.srid, this.pos.clone());
 	}
 
-	public void getBounds(RectAreaDbl bounds)
+	public RectAreaDbl getBounds()
 	{
-		bounds.tl = this.pos.clone();
-		bounds.br = this.pos.clone();
+		return new RectAreaDbl(pos.clone(), pos.clone());
 	}
 
-	public double calSqrDistance(Coord2DDbl pt, Coord2DDbl nearPt)
+	public double calBoundarySqrDistance(Coord2DDbl pt, Coord2DDbl nearPt)
 	{
 		double xDiff = pt.x - this.pos.x;
 		double yDiff = pt.y - this.pos.y;
-		if (nearPt != null)
-		{
-			nearPt.x = this.pos.x;
-			nearPt.y = this.pos.y;
-		}
+		nearPt.x = this.pos.x;
+		nearPt.y = this.pos.y;
 		return xDiff * xDiff + yDiff * yDiff;
+	}
+
+	public double calArea()
+	{
+		return 0;
 	}
 
 	public boolean joinVector(Vector2D vec)
@@ -100,5 +80,24 @@ public class Point2D extends Vector2D
 		this.pos.x = tmpX.value;
 		this.pos.y = tmpY.value;
 		this.srid = destCSys.getSRID();
+	}
+
+	@Override
+	public boolean equals(Vector2D vec, boolean sameTypeOnly, boolean nearlyVal) {
+		if (vec == this)
+			return true;
+		if (!(vec instanceof Point2D)) {
+			return false;
+		}
+		Point2D point = (Point2D)vec;
+		if (nearlyVal)
+			return this.srid == point.srid && this.pos.equalsNearly(point.pos);
+		else
+			return this.srid == point.srid && this.pos.equals(point.pos);
+	}
+
+	public boolean insideOrTouch(Coord2DDbl coord)
+	{
+		return this.pos.equals(coord);
 	}
 }

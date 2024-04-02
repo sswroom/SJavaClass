@@ -603,4 +603,14 @@ public class ByteTool {
 		}
 		return true;
 	}
+
+	public static <T> void listAddArray(List<T> list, T[] arr, int ofst, int len)
+	{
+		int i = 0;
+		while (i < len)
+		{
+			list.add(arr[ofst + i]);
+			i++;
+		}
+	}
 }

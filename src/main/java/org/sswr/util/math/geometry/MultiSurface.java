@@ -2,9 +2,9 @@ package org.sswr.util.math.geometry;
 
 public class MultiSurface extends MultiGeometry<Vector2D>
 {
-	public MultiSurface(int srid, boolean hasZ, boolean hasM)
+	public MultiSurface(int srid)
 	{
-		super(srid, hasZ, hasM);
+		super(srid);
 	}
 
 	public void addGeometry(Vector2D geometry)
@@ -23,7 +23,7 @@ public class MultiSurface extends MultiGeometry<Vector2D>
 
 	public Vector2D clone()
 	{
-		MultiSurface newObj = new MultiSurface(this.srid, this.hasZ, this.hasM);
+		MultiSurface newObj = new MultiSurface(this.srid);
 		int i = 0;
 		int j = this.geometries.size();
 		while (i < j)

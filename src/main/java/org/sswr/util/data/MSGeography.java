@@ -2,6 +2,7 @@ package org.sswr.util.data;
 
 import org.sswr.util.math.Coord2DDbl;
 import org.sswr.util.math.geometry.LineString;
+import org.sswr.util.math.geometry.LinearRing;
 import org.sswr.util.math.geometry.MultiPolygon;
 import org.sswr.util.math.geometry.Point2D;
 import org.sswr.util.math.geometry.PointZ;
@@ -99,27 +100,50 @@ public class MSGeography
 						return null;
 					}
 					Polyline pl;
+					LineString lineString;
 					int i;
 					int j;
-					pl = new Polyline(srid, nFigures, nPoints, false, false);
-					Coord2DDbl []points = pl.getPointList();
-					i = 0;
-					j = points.length;
-					while (i < j)
+					int k;
+					int l;
+					Coord2DDbl []points;
+					pl = new Polyline(srid);
+					if (nFigures <= 1)
 					{
-						points[i].x = ByteTool.readDouble(buff, pointInd + i * 16);
-						points[i].y = ByteTool.readDouble(buff, pointInd + i * 16 + 8);
-						i++;
-					}
-					if (nFigures > 1)
-					{
-						int[] ofstList = pl.getPtOfstList();
+						lineString = new LineString(srid, nPoints, false, false);
+						points = lineString.getPointList();
 						i = 0;
-						j = ofstList.length;
+						j = points.length;
 						while (i < j)
 						{
-							ofstList[i] = ByteTool.readInt32(buff, figureInd + i * 5 + 1);
+							points[i] = new Coord2DDbl(ByteTool.readDouble(buff, pointInd + i * 16), ByteTool.readDouble(buff, pointInd + i * 16 + 8));
 							i++;
+						}
+						pl.addGeometry(lineString);
+					}
+					else
+					{
+						i = 0;
+						while (i < nFigures)
+						{
+							l = ByteTool.readInt32(buff, figureInd + i * 5 + 1);
+							if (i + 1 == nFigures)
+							{
+								k = nPoints;
+							}
+							else
+							{
+								k = ByteTool.readInt32(buff, figureInd + i * 5 + 6);
+							}
+							lineString = new LineString(srid, k - l, false, false);
+							points = lineString.getPointList();
+							j = 0;
+							while (l < k)
+							{
+								points[j] = new Coord2DDbl(ByteTool.readDouble(buff, pointInd + l * 16), ByteTool.readDouble(buff, pointInd + l * 16 + 8));
+								l++;
+								j++;
+							}
+							pl.addGeometry(lineString);
 						}
 					}
 					return pl;
@@ -131,47 +155,80 @@ public class MSGeography
 						System.out.println("MSGeography: Type 4-3 must be single shape\r\n");
 						return null;
 					}
-					Polygon pg = new Polygon(srid, nFigures, nPoints, false, false);
-					Coord2DDbl []points = pg.getPointList();
-					int i = 0;
-					while (i < nPoints)
+					Polygon pg = new Polygon(srid);
+					LinearRing lr;
+					int i;
+					int j;
+					int k;
+					int l;
+					j = 0;
+					i = 0;
+					while (i < nFigures)
 					{
-						points[i].x = ByteTool.readDouble(buff, pointInd + i * 16);
-						points[i].y = ByteTool.readDouble(buff, pointInd + i * 16 + 8);
-						i++;
-					}
-					if (nFigures > 1)
-					{
-						int []ofstList = pg.getPtOfstList();
-						int j = ofstList.length;
-						i = 0;
-						while (i < j)
+						if (i + 1 >= nFigures)
+							k = nPoints;
+						else
+							k = ByteTool.readInt32(buff, figureInd + i * 5 + 1);
+						lr = new LinearRing(srid, (k - j), false ,false);
+						Coord2DDbl []points = lr.getPointList();
+						l = 0;
+						while (j < k)
 						{
-							ofstList[i] = ByteTool.readInt32(buff, figureInd + i * 5 + 1);
-							i++;
+							points[l] = new Coord2DDbl(ByteTool.readDouble(buff, pointInd + j * 16), ByteTool.readDouble(buff, pointInd + j * 16 + 8));
+							j++;
+							l++;
 						}
+						pg.addGeometry(lr);
+						i++;
 					}
 					return pg;
 				}
 				else if (buff[shapeInd + 8] == 5)
 				{
-					Polyline pl = new Polyline(srid, nFigures, nPoints, false, false);
-					Coord2DDbl []points = pl.getPointList();
-					int i = 0;
-					while (i < nPoints)
+					Polyline pl = new Polyline(srid);
+					LineString lineString;
+					int i;
+					int j;
+					int k;
+					int l;
+					Coord2DDbl[] points;
+					if (nFigures <= 1)
 					{
-						points[i].x = ByteTool.readDouble(buff, pointInd + i * 16);
-						points[i].y = ByteTool.readDouble(buff, pointInd + i * 16 + 8);
-						i++;
-					}
-					if (nFigures > 1)
-					{
-						int []ofstList = pl.getPtOfstList();
-						int j = ofstList.length;
+						lineString = new LineString(srid, nPoints, false, false);
+						points = lineString.getPointList();
 						i = 0;
+						j = points.length;
 						while (i < j)
 						{
-							ofstList[i] = ByteTool.readInt32(buff, figureInd + i * 5 + 1);
+							points[i] = new Coord2DDbl(ByteTool.readDouble(buff, pointInd + i * 16), ByteTool.readDouble(buff, pointInd + i * 16 + 8));
+							i++;
+						}
+						pl.addGeometry(lineString);
+					}
+					else
+					{
+						i = 0;
+						while (i < nFigures)
+						{
+							l = ByteTool.readInt32(buff, figureInd + i * 5 + 1);
+							if (i + 1 == nFigures)
+							{
+								k = nPoints;
+							}
+							else
+							{
+								k = ByteTool.readInt32(buff, figureInd + i * 5 + 6);
+							}
+							lineString = new LineString(srid, k - l, false, false);
+							points = lineString.getPointList();
+							j = 0;
+							while (l < k)
+							{
+								points[j] = new Coord2DDbl(ByteTool.readDouble(buff, pointInd + l * 16), ByteTool.readDouble(buff, pointInd + l * 16 + 8));
+								l++;
+								j++;
+							}
+							pl.addGeometry(lineString);
 							i++;
 						}
 					}
@@ -181,51 +238,38 @@ public class MSGeography
 				{
 					MultiPolygon mpg;
 					Polygon pg;
+					LinearRing lr;
 					int i;
 					int j;
 					int k;
 					int l;
-					mpg = new MultiPolygon(srid, false, false);
-					if (nFigures > 1)
+					mpg = new MultiPolygon(srid);
+					if (nFigures == 0)
+						nFigures = 1;
+					i = 0;
+					j = 0;
+					while (i < nFigures)
 					{
-						i = 0;
-						j = 0;
-						while (i < nFigures)
+						i++;
+						if (i == nFigures)
 						{
-							i++;
-							if (i == nFigures)
-							{
-								k = nPoints;
-							}
-							else
-							{
-								k = ByteTool.readInt32(buff, figureInd + i * 5 + 1);
-							}
-							pg = new Polygon(srid, 1, k - j, false, false);
-							Coord2DDbl []points = pg.getPointList();
-							l = 0;
-							while (j < k)
-							{
-								points[l].x = ByteTool.readDouble(buff, pointInd + j * 16);
-								points[l].y = ByteTool.readDouble(buff, pointInd + j * 16 + 8);
-								j++;
-								l++;
-							}
-							mpg.addGeometry(pg);
+							k = nPoints;
 						}
-					}
-					else
-					{
-						pg = new Polygon(srid, 1, nPoints, false, false);
-						Coord2DDbl []points = pg.getPointList();
-						i = 0;
-						j = points.length;
-						while (i < j)
+						else
 						{
-							points[i].x = ByteTool.readDouble(buff, pointInd + i * 16);
-							points[i].y = ByteTool.readDouble(buff, pointInd + i * 16 + 8);
-							i++;
+							k = ByteTool.readInt32(buff, figureInd + i * 5 + 1);
 						}
+						pg = new Polygon(srid);
+						lr = new LinearRing(srid, (k - j), false, false);
+						Coord2DDbl[] points = lr.getPointList();
+						l = 0;
+						while (j < k)
+						{
+							points[l] = new Coord2DDbl(ByteTool.readDouble(buff, pointInd + j * 16), ByteTool.readDouble(buff, pointInd + j * 16 + 8));
+							j++;
+							l++;
+						}
+						pg.addGeometry(lr);
 						mpg.addGeometry(pg);
 					}
 					return mpg;
@@ -324,69 +368,92 @@ public class MSGeography
 						return null;
 					}
 					Polygon pg;
+					LinearRing lr;
 					int i;
 					int j;
-					pg = new Polygon(srid, nFigures, nPoints, true, false);
-					Coord2DDbl []points = pg.getPointList();
-					double []zList = pg.getZList();
+					int k;
+					int l;
+					int zInd = pointInd + nPoints * 16;
+					if (nFigures == 0)
+						nFigures = 1;
+					pg = new Polygon(srid);
 					i = 0;
-					j = points.length;
-					while (i < j)
+					j = 0;
+					while (i < nFigures)
 					{
-						points[i].x = ByteTool.readDouble(buff, pointInd + i * 16);
-						points[i].y = ByteTool.readDouble(buff, pointInd + i * 16 + 8);
 						i++;
-					}
-					pointInd += j * 16;
-					i = 0;
-					while (i < j)
-					{
-						zList[i] = ByteTool.readDouble(buff, pointInd + i * 8);
-						i++;
-					}
-					if (nFigures > 1)
-					{
-						int []ofstList = pg.getPtOfstList();
-						i = 0;
-						j = ofstList.length;
-						while (i < j)
+						if (i >= nFigures)
+							k = nPoints;
+						else
+							k = ByteTool.readInt32(buff, figureInd + i * 5 + 1);
+						lr = new LinearRing(srid, (k - j), true, false);
+						Coord2DDbl[] points = lr.getPointList();
+						double[] zList = lr.getZList();
+						l = 0;
+						while (j < k)
 						{
-							ofstList[i] = ByteTool.readInt32(buff, figureInd + i * 5 + 1);
-							i++;
+							points[l] = new Coord2DDbl(ByteTool.readDouble(buff, pointInd + j * 16), ByteTool.readDouble(buff, pointInd + j * 16 + 8));
+							zList[l] = ByteTool.readDouble(buff, zInd + j * 8);
+							j++;
+							l++;
 						}
+						pg.addGeometry(lr);
 					}
 					return pg;
 				}
 				else if (buff[shapeInd + 8] == 5)
 				{
+					int zInd = pointInd + nPoints * 16;
 					Polyline pl;
+					LineString lineString;
 					int i;
 					int j;
-					pl = new Polyline(srid, nFigures, nPoints, true, false);
-					Coord2DDbl []points = pl.getPointList();
-					double []zList = pl.getZList();
-					i = 0;
-					j = points.length;
-					while (i < j)
+					int k;
+					int l;
+					Coord2DDbl[] points;
+					double[] zArr;					
+					pl = new Polyline(srid);
+					if (nFigures <= 1)
 					{
-						points[i].x = ByteTool.readDouble(buff, pointInd + i * 16);
-						points[i].y = ByteTool.readDouble(buff, pointInd + i * 16 + 8);
-						i++;
-					}
-					pointInd += j * 16;
-					i = 0;
-					while (i < j)
-					{
-						zList[i] = ByteTool.readDouble(buff, pointInd + i * 8);
-						i++;
-					}
-					if (nFigures > 1)
-					{
-						int []ofstList = pl.getPtOfstList();
+						lineString = new LineString(srid, nPoints, true, false);
+						points = lineString.getPointList();
+						zArr = lineString.getZList();
 						i = 0;
+						j = points.length;
 						while (i < j)
 						{
-							ofstList[i] = ByteTool.readInt32(buff, figureInd + i * 5 + 1);
+							points[i] = new Coord2DDbl(ByteTool.readDouble(buff, pointInd + i * 16), ByteTool.readDouble(buff, pointInd + i * 16 + 8));
+							zArr[i] = ByteTool.readDouble(buff, zInd + i * 8);
+							i++;
+						}
+						pl.addGeometry(lineString);
+					}
+					else
+					{
+						i = 0;
+						while (i < nFigures)
+						{
+							l = ByteTool.readInt32(buff, figureInd + i * 5 + 1);
+							if (i + 1 == nFigures)
+							{
+								k = nPoints;
+							}
+							else
+							{
+								k = ByteTool.readInt32(buff, figureInd + i * 5 + 6);
+							}
+							lineString = new LineString(srid, k - l, true, false);
+							points = lineString.getPointList();
+							zArr = lineString.getZList();
+							j = 0;
+							while (l < k)
+							{
+								points[j] = new Coord2DDbl(ByteTool.readDouble(buff, pointInd + l * 16), ByteTool.readDouble(buff, pointInd + l * 16 + 8));
+								zArr[j] = ByteTool.readDouble(buff, zInd + l * 8);
+								l++;
+								j++;
+							}
+							pl.addGeometry(lineString);
 							i++;
 						}
 					}
@@ -395,7 +462,7 @@ public class MSGeography
 				else if (buff[shapeInd + 8] == 6)
 				{
 					MultiPolygon mpg;
-					mpg = new MultiPolygon(srid, true, false);
+					mpg = new MultiPolygon(srid);
 					shapeInd += 9;
 					int thisFigure;
 					int nextFigure = ByteTool.readInt32(buff, shapeInd + 4);
@@ -421,36 +488,29 @@ public class MSGeography
 							nextPtOfst = ByteTool.readInt32(buff, figureInd + nextFigure * 5 + 1);
 						}
 						Polygon pg;
+						LinearRing lr;
 						int k;
 						int l;
-						pg = new Polygon(srid, nextFigure - thisFigure, nextPtOfst - thisPtOfst, true, false);
-						Coord2DDbl []points = pg.getPointList();
-						double []zList = pg.getZList();
-						k = 0;
-						l = points.length;
-						while (k < l)
-						{
-							points[k].x = ByteTool.readDouble(buff, pointInd + (k + thisPtOfst) * 16);
-							points[k].y = ByteTool.readDouble(buff, pointInd + (k + thisPtOfst) * 16 + 8);
-							k++;
-						}
+						int m = thisFigure;
 						pointIndTmp = pointInd + nPoints * 16;
+						pg = new Polygon(srid);
 						k = 0;
-						while (k < l)
+						while (m < nextFigure)
 						{
-							zList[k] = ByteTool.readDouble(buff, pointIndTmp + (k + thisPtOfst) * 8);
-							k++;
-						}
-						if ((nextFigure - thisFigure) > 1)
-						{
-							int []ofstList = pg.getPtOfstList();
-							k = 0;
-							l = ofstList.length;
+							if (m + 1 >= nextFigure)
+								l = nextFigure - thisFigure;
+							else
+								l = ByteTool.readInt32(buff, figureInd + (k + thisFigure) * 5 + 1);
+							lr = new LinearRing(srid, l - k, true, false);
+							Coord2DDbl[] points = lr.getPointList();
+							double[] zList = lr.getZList();
 							while (k < l)
 							{
-								ofstList[k] = ByteTool.readInt32(buff, figureInd + (k + thisFigure) * 5 + 1) - thisPtOfst;
+								points[k] = new Coord2DDbl(ByteTool.readDouble(buff, pointInd + (k + thisPtOfst) * 16), ByteTool.readDouble(buff, pointInd + (k + thisPtOfst) * 16 + 8));
+								zList[k] = ByteTool.readDouble(buff, pointIndTmp + (k + thisPtOfst) * 8);
 								k++;
 							}
+							pg.addGeometry(lr);
 						}
 						mpg.addGeometry(pg);
 	
@@ -582,43 +642,63 @@ public class MSGeography
 				}*/
 				else if (buff[shapeInd + 8] == 5)
 				{
+					int zInd = pointInd + nPoints * 16;
+					int mInd = zInd + nPoints * 8;
 					Polyline pl;
+					LineString lineString;
 					int i;
 					int j;
-					pl = new Polyline(srid, nFigures, nPoints, true, true);
-					Coord2DDbl []points = pl.getPointList();
-					double []zList = pl.getZList();
-					double []mList = pl.getMList();
-					i = 0;
-					j = points.length;
-					while (i < j)
+					int k;
+					int l;
+					Coord2DDbl []points;
+					double []zArr;
+					double []mArr;
+					pl = new Polyline(srid);
+					if (nFigures <= 1)
 					{
-						points[i].x = ByteTool.readDouble(buff, pointInd + i * 16);
-						points[i].y = ByteTool.readDouble(buff, pointInd + i * 16 + 8);
-						i++;
-					}
-					pointInd += j * 16;
-					i = 0;
-					while (i < j)
-					{
-						zList[i] = ByteTool.readDouble(buff, pointInd + i * 8);
-						i++;
-					}
-					pointInd += j * 8;
-					i = 0;
-					while (i < j)
-					{
-						mList[i] = ByteTool.readDouble(buff, pointInd + i * 8);
-						i++;
-					}
-					if (nFigures > 1)
-					{
-						int []ofstList = pl.getPtOfstList();
+						lineString = new LineString(srid, nPoints, true, true);
+						points = lineString.getPointList();
+						zArr = lineString.getZList();
+						mArr = lineString.getMList();
 						i = 0;
-						j = ofstList.length;
+						j = points.length;
 						while (i < j)
 						{
-							ofstList[i] = ByteTool.readInt32(buff, figureInd + i * 5 + 1);
+							points[i] = new Coord2DDbl(ByteTool.readDouble(buff, pointInd + i * 16), ByteTool.readDouble(buff, pointInd + i * 16 + 8));
+							zArr[i] = ByteTool.readDouble(buff, zInd + i * 8);
+							mArr[i] = ByteTool.readDouble(buff, mInd + i * 8);
+							i++;
+						}
+						pl.addGeometry(lineString);
+					}
+					else
+					{
+						i = 0;
+						while (i < nFigures)
+						{
+							l = ByteTool.readInt32(buff, figureInd + i * 5 + 1);
+							if (i + 1 == nFigures)
+							{
+								k = nPoints;
+							}
+							else
+							{
+								k = ByteTool.readInt32(buff, figureInd + i * 5 + 6);
+							}
+							lineString = new LineString(srid, k - l, true, true);
+							points = lineString.getPointList();
+							zArr = lineString.getZList();
+							mArr = lineString.getMList();
+							j = 0;
+							while (l < k)
+							{
+								points[j] = new Coord2DDbl(ByteTool.readDouble(buff, pointInd + l * 16), ByteTool.readDouble(buff, pointInd + l * 16 + 8));
+								zArr[j] = ByteTool.readDouble(buff, zInd + l * 8);
+								mArr[j] = ByteTool.readDouble(buff, mInd + l * 8);
+								l++;
+								j++;
+							}
+							pl.addGeometry(lineString);
 							i++;
 						}
 					}

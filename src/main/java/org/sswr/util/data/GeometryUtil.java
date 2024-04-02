@@ -12,13 +12,13 @@ import org.locationtech.jts.geom.CoordinateXYM;
 import org.locationtech.jts.geom.CoordinateXYZM;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
-import org.locationtech.jts.geom.LinearRing;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.PrecisionModel;
 import org.sswr.util.math.Coord2DDbl;
 import org.sswr.util.math.CoordinateSystem;
 import org.sswr.util.math.CoordinateSystemManager;
 import org.sswr.util.math.geometry.LineString;
+import org.sswr.util.math.geometry.LinearRing;
 import org.sswr.util.math.geometry.MultiPolygon;
 import org.sswr.util.math.geometry.Point2D;
 import org.sswr.util.math.geometry.PointM;
@@ -130,97 +130,59 @@ public class GeometryUtil
 			}
 			return factory.createLineString(coordinates);
 		}
-		else if (vec.getVectorType() == VectorType.Polyline)
+		else if (vec.getVectorType() == VectorType.LinearRing)
 		{
-			Polyline pl = (Polyline)vec;
-			int[] ptOfstArr = pl.getPtOfstList();
-			org.locationtech.jts.geom.LineString[] lineStrings = new org.locationtech.jts.geom.LineString[ptOfstArr.length];
-			Coord2DDbl[] ptArr = pl.getPointList();
-			double[] zArr = pl.getZList();
-			double[] mArr = pl.getMList();
-			int ptEndOfst = ptArr.length;
-			int i = ptOfstArr.length;
-			int j;
-			int k;
-			Coordinate[] coordinates;
-			while (i-- > 0)
+			LinearRing lr = (LinearRing)vec;
+			Coord2DDbl[] ptArr = lr.getPointList();
+			double[] zArr = lr.getZList();
+			double[] mArr = lr.getMList();
+			Coordinate[] coordinates = new Coordinate[ptArr.length];
+			int i = ptArr.length;
+			if (zArr != null)
 			{
-				j = ptEndOfst;
-				k = ptOfstArr[i];
-				coordinates = new Coordinate[ptEndOfst - k];
-				if (zArr != null)
+				if (mArr != null)
 				{
-					if (mArr != null)
+					while (i-- > 0)
 					{
-						while (j-- > k)
-						{
-							coordinates[j - k] = new CoordinateXYZM(ptArr[j].x, ptArr[j].y, zArr[j], mArr[j]);
-						}
-					}
-					else
-					{
-						while (j-- > k)
-						{
-							coordinates[j - k] = new Coordinate(ptArr[j].x, ptArr[j].y, zArr[j]);
-						}
+						coordinates[i] = new CoordinateXYZM(ptArr[i].x, ptArr[i].y, zArr[i], mArr[i]);
 					}
 				}
 				else
 				{
-					while (j-- > k)
+					while (i-- > 0)
 					{
-						coordinates[j - k] = new Coordinate(ptArr[j].x, ptArr[j].y);
+						coordinates[i] = new Coordinate(ptArr[i].x, ptArr[i].y, zArr[i]);
 					}
 				}
-				lineStrings[i] = factory.createLineString(coordinates);
-				ptEndOfst = k;
+			}
+			else
+			{
+				while (i-- > 0)
+				{
+					coordinates[i] = new Coordinate(ptArr[i].x, ptArr[i].y);
+				}
+			}
+			return factory.createLinearRing(coordinates);
+		}
+		else if (vec.getVectorType() == VectorType.Polyline)
+		{
+			Polyline pl = (Polyline)vec;
+			org.locationtech.jts.geom.LineString[] lineStrings = new org.locationtech.jts.geom.LineString[pl.getCount()];
+			int i = pl.getCount();
+			while (i-- > 0)
+			{
+				lineStrings[i] = (org.locationtech.jts.geom.LineString)fromVector2D(pl.getItem(i));
 			}
 			return factory.createMultiLineString(lineStrings);
 		}
 		else if (vec.getVectorType() == VectorType.Polygon)
 		{
 			Polygon pg = (Polygon)vec;
-			int[] ptOfstArr = pg.getPtOfstList();
-			LinearRing[] lineStrings = new LinearRing[ptOfstArr.length];
-			Coord2DDbl[] ptArr = pg.getPointList();
-			double[] zArr = pg.getZList();
-			double[] mArr = pg.getMList();
-			int ptEndOfst = ptArr.length;
-			int i = ptOfstArr.length;
-			int j;
-			int k;
-			Coordinate[] coordinates;
+			org.locationtech.jts.geom.LinearRing[] lineStrings = new org.locationtech.jts.geom.LinearRing[pg.getCount()];
+			int i = pg.getCount();
 			while (i-- > 0)
 			{
-				j = ptEndOfst;
-				k = ptOfstArr[i];
-				coordinates = new Coordinate[ptEndOfst - k];
-				if (zArr != null)
-				{
-					if (mArr != null)
-					{
-						while (j-- > k)
-						{
-							coordinates[j - k] = new CoordinateXYZM(ptArr[j].x, ptArr[j].y, zArr[j], mArr[j]);
-						}
-					}
-					else
-					{
-						while (j-- > k)
-						{
-							coordinates[j - k] = new Coordinate(ptArr[j].x, ptArr[j].y, zArr[j]);
-						}
-					}
-				}
-				else
-				{
-					while (j-- > k)
-					{
-						coordinates[j - k] = new Coordinate(ptArr[j].x, ptArr[j].y);
-					}
-				}
-				lineStrings[i] = factory.createLinearRing(coordinates);
-				ptEndOfst = k;
+				lineStrings[i] = (org.locationtech.jts.geom.LinearRing)fromVector2D(pg.getItem(i));
 			}
 			if (lineStrings.length == 1)
 			{
@@ -303,38 +265,37 @@ public class GeometryUtil
 			Coordinate[] allCoords = src.getCoordinates();
 			boolean hasZ = allCoords.length > 0 && !Double.isNaN(allCoords[0].getZ());
 			boolean hasM = allCoords.length > 0 && !Double.isNaN(allCoords[0].getM());
-			Polyline dest = new Polyline(src.getSRID(), src.getNumGeometries(), src.getNumPoints(), hasZ, hasM);
-			Coord2DDbl[] coordd = dest.getPointList();
-			double[] zList = dest.getZList();
-			double[] mList = dest.getMList();
-			int[] ofstd = dest.getPtOfstList();
+			Polyline dest = new Polyline(src.getSRID());
+			LineString lineString;
 			int i = 0;
 			int j = src.getNumGeometries();
-			int k = 0;
 			int m;
 			int n;
 			Geometry geom;
 			while (i < j)
 			{
-				ofstd[i] = k;
 				geom = src.getGeometryN(i);
 				Coordinate[] coords = geom.getCoordinates();
+				lineString = new LineString(src.getSRID(), coords.length, hasZ, hasM);
+				Coord2DDbl[] coordd = lineString.getPointList();
+				double[] zList = lineString.getZList();
+				double[] mList = lineString.getMList();
 				m = 0;
 				n = coords.length;
 				while (m < n)
 				{
-					coordd[k + m] = new Coord2DDbl(coords[m].x, coords[m].y);
+					coordd[m] = new Coord2DDbl(coords[m].x, coords[m].y);
 					if (hasZ)
 					{
-						zList[k + m] = coords[m].getZ();
+						zList[m] = coords[m].getZ();
 					}
 					if (hasM)
 					{
-						mList[k + m] = coords[m].getM();
+						mList[m] = coords[m].getM();
 					}
 					m++;
 				}
-				k += n;
+				dest.addGeometry(lineString);
 				i++;
 			}
 			return dest;
@@ -345,38 +306,37 @@ public class GeometryUtil
 			Coordinate[] allCoords = src.getCoordinates();
 			boolean hasZ = allCoords.length > 0 && !Double.isNaN(allCoords[0].getZ());
 			boolean hasM = allCoords.length > 0 && !Double.isNaN(allCoords[0].getM());
-			Polygon dest = new Polygon(src.getSRID(), src.getNumGeometries(), src.getNumPoints(), hasZ, hasM);
-			Coord2DDbl[] coordd = dest.getPointList();
-			double[] zList = dest.getZList();
-			double[] mList = dest.getMList();
-			int[] ofstd = dest.getPtOfstList();
+			Polygon dest = new Polygon(src.getSRID());
+			LinearRing lr;
 			int i = 0;
 			int j = src.getNumGeometries();
-			int k = 0;
 			int m;
 			int n;
 			Geometry geom;
 			while (i < j)
 			{
-				ofstd[i] = k;
 				geom = src.getGeometryN(i);
 				Coordinate[] coords = geom.getCoordinates();
+				lr = new LinearRing(src.getSRID(), coords.length, hasZ, hasM);
+				Coord2DDbl[] coordd = lr.getPointList();
+				double[] zList = lr.getZList();
+				double[] mList = lr.getMList();
 				m = 0;
 				n = coords.length;
 				while (m < n)
 				{
-					coordd[k + m] = new Coord2DDbl(coords[m].x, coords[m].y);
+					coordd[m] = new Coord2DDbl(coords[m].x, coords[m].y);
 					if (hasZ)
 					{
-						zList[k + m] = coords[m].getZ();
+						zList[m] = coords[m].getZ();
 					}
 					if (hasM)
 					{
-						mList[k + m] = coords[m].getM();
+						mList[m] = coords[m].getM();
 					}
 					m++;
 				}
-				k += n;
+				dest.addGeometry(lr);
 				i++;
 			}
 			return dest;
@@ -384,10 +344,7 @@ public class GeometryUtil
 		case Geometry.TYPENAME_MULTIPOLYGON:
 		{
 			org.locationtech.jts.geom.MultiPolygon src = (org.locationtech.jts.geom.MultiPolygon)geometry;
-			Coordinate[] allCoords = src.getCoordinates();
-			boolean hasZ = allCoords.length > 0 && !Double.isNaN(allCoords[0].getZ());
-			boolean hasM = allCoords.length > 0 && !Double.isNaN(allCoords[0].getM());
-			MultiPolygon dest = new MultiPolygon(src.getSRID(), hasZ, hasM);
+			MultiPolygon dest = new MultiPolygon(src.getSRID());
 			int i = 0;
 			int j = src.getNumGeometries();
 			while (i < j)
@@ -435,7 +392,7 @@ public class GeometryUtil
 		}
 		else
 		{
-			return csys.calSurfaceDistanceXY(ccoord.x, ccoord.y, maxCoord.x, maxCoord.y, unit);
+			return csys.calSurfaceDistance(new Coord2DDbl(ccoord.x, ccoord.y), new Coord2DDbl(maxCoord.x, maxCoord.y), unit);
 		}
 	}
 
@@ -486,8 +443,10 @@ public class GeometryUtil
 		SharedDouble outY = new SharedDouble();
 		SharedDouble outZ = new SharedDouble();
 		CoordinateSystem.convertXYZ(csys4326, csys3857, lon, lat, 0, outX, outY, outZ);
-		Polygon pg = new Polygon(3857, 1, nPoints + 1, false, false);
-		Coord2DDbl[] ptArr = pg.getPointList();
+		Polygon pg = new Polygon(3857);
+		LinearRing lr = new LinearRing(3857, nPoints + 1, false, false);
+		pg.addGeometry(lr);
+		Coord2DDbl[] ptArr = lr.getPointList();
 		double pi2 = Math.PI * 2;
 		double angle;
 		int i = 0;
@@ -501,6 +460,87 @@ public class GeometryUtil
 		ptArr[nPoints] = ptArr[0].clone();
 		pg.convCSys(csys3857, csys4326);
 		return pg;
+	}
+
+	private static double sqrtFix(double sqrtVal, double addVal, double targetVal)
+	{
+		double o1 = targetVal - (addVal + sqrtVal);
+		double o2 = targetVal - (addVal - sqrtVal);
+		if (o1 < 0)
+			o1 = -o1;
+		if (o2 < 0)
+			o2 = -o2;
+		if (o1 < o2)
+			return addVal + sqrtVal;
+		else
+			return addVal - sqrtVal;
+	}
+
+	private static Coord2DDbl arcNearest(double x, double y, double h, double k, double r, int cnt)
+	{
+		double r2 = r * r;
+		double thisX = x;
+		double thisY = y;
+		double tmpX;
+		double tmpY;
+		double angle;
+		while (cnt-- > 0)
+		{
+			tmpY = sqrtFix(Math.sqrt(r2 - (thisX - h) * (thisX - h)), k, y);
+			tmpX = sqrtFix(Math.sqrt(r2 - (thisY - k) * (thisY - k)), h, x);
+			angle = Math.atan2(tmpX, tmpY);
+			thisX += Math.sin(angle) * (tmpY - thisY);
+			thisY += Math.cos(angle) * (tmpX - thisX);
+		}
+		return new Coord2DDbl(thisX, thisY);
+	}
+	
+	public static int arcToLine(Coord2DDbl pt1, Coord2DDbl pt2, Coord2DDbl pt3, double minDist, List<Coord2DDbl> ptOut)
+	{
+		//(x – h)^2 + (y – k)^2 = r^2
+		//2h(x1 - x2) + 2k(y1 - y2) = x1^2 - x2^2 + y1^2 - y2^2
+		//2k = (x1^2 - x2^2 + y1^2 - y2^2 - 2h(x1 - x2)) / (y1 - y2)
+		//(x1^2 - x3^2 + y1^2 - y3^2 - 2h(x1 - x3)) / (y1 - y3) = (x1^2 - x2^2 + y1^2 - y2^2 - 2h(x1 - x2)) / (y1 - y2)
+		//(x1^2 - x3^2 + y1^2 - y3^2 - 2h(x1 - x3)) * (y1 - y2) = (x1^2 - x2^2 + y1^2 - y2^2 - 2h(x1 - x2)) * (y1 - y3)
+		//(x1^2 - x3^2 + y1^2 - y3^2) * (y1 - y2) - 2h(x1 - x3) * (y1 - y2) = (x1^2 - x2^2 + y1^2 - y2^2) * (y1 - y3) - 2h(x1 - x2) * (y1 - y3)
+		//(x1^2 - x3^2 + y1^2 - y3^2) * (y1 - y2) - (x1^2 - x2^2 + y1^2 - y2^2) * (y1 - y3) = 2h(x1 - x3) * (y1 - y2) - 2h(x1 - x2) * (y1 - y3)
+		//(x1^2 - x3^2 + y1^2 - y3^2) * (y1 - y2) - (x1^2 - x2^2 + y1^2 - y2^2) * (y1 - y3) / (2 * (x1 - x3) * (y1 - y2) - 2 * (x1 - x2) * (y1 - y3)) = h
+		Coord2DDbl d13 = pt1.subtract(pt3);
+		Coord2DDbl d12 = pt1.subtract(pt2);
+		Double c1 = (pt1.x * pt1.x - pt3.x * pt3.x + pt1.y * pt1.y - pt3.y * pt3.y) * d12.y;
+		Double c2 = (pt1.x * pt1.x - pt2.x * pt2.x + pt1.y * pt1.y - pt2.y * pt2.y);
+		Double c2b = c2 * d13.y;
+		Double c3 = 2 * ((d13.x * d12.y) - (d12.x * d13.y));
+		Double h = c1 - c2b / c3;
+		Double k = (c2 - 2 * h * d12.x) / d12.y / 2;
+		Double r = Math.sqrt((pt1.x - h) * (pt1.x - h) + (pt1.y - k) * (pt1.y - k));
+		Coord2DDbl d23 = pt2.subtract(pt3);
+
+		int initCnt = ptOut.size();
+		ptOut.add(pt1.clone());
+		double leng = Math.sqrt(d12.x * d12.x + d12.y * d12.y);
+		int ptCnt = (int)Math.floor(leng / minDist);
+		int i = 1;
+		double di;
+		double dcnt = ptCnt;
+		while (i < ptCnt)
+		{
+			di = i;
+			ptOut.add(arcNearest(pt1.x + (pt2.x - pt1.x) * di / dcnt, pt1.y + (pt2.y - pt1.y) * di / dcnt, h, k, r, 5));
+			i++;
+		}
+		ptOut.add(pt2.clone());
+		leng = Math.sqrt(d23.x * d23.x + d23.y * d23.y);
+		ptCnt = (int)Math.floor(leng / minDist);
+		dcnt = ptCnt;
+		while (i < ptCnt)
+		{
+			di = i;
+			ptOut.add(arcNearest(pt2.x + (pt3.x - pt2.x) * di / dcnt, pt2.y + (pt3.y - pt2.y) * di / dcnt, h, k, r, 5));
+			i++;
+		}
+		ptOut.add(pt3.clone());
+		return ptOut.size() - initCnt;
 	}
 
 	private static <T> void appendGeojsonList(Iterable<T> coll, StringBuilder sb) throws NoSuchFieldException, InvocationTargetException, IllegalAccessException

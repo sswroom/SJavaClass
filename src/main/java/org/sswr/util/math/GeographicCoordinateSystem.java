@@ -1,7 +1,7 @@
 package org.sswr.util.math;
 
 import org.sswr.util.data.SharedDouble;
-import org.sswr.util.math.geometry.Polyline;
+import org.sswr.util.math.geometry.LineString;
 import org.sswr.util.math.unit.Angle;
 import org.sswr.util.math.unit.Distance;
 
@@ -36,19 +36,14 @@ public class GeographicCoordinateSystem extends CoordinateSystem
 		this.unit = unit;
 	}
 
-	public double calSurfaceDistanceXY(double x1, double y1, double x2, double y2, Distance.DistanceUnit unit)
+	public double calSurfaceDistance(Coord2DDbl pos1, Coord2DDbl pos2, Distance.DistanceUnit unit)
 	{
-		return this.datum.getSpheroid().getEllipsoid().calSurfaceDistance(y1, x1, y2, x2, unit);
+		return this.datum.getSpheroid().getEllipsoid().calSurfaceDistance(pos1.y, pos1.x, pos2.y, pos2.x, unit);
 	}
 
-	public double calPLDistance(Polyline pl, Distance.DistanceUnit unit)
+	public double calLineStringDistance(LineString lineString, boolean include3D, Distance.DistanceUnit unit)
 	{
-		return this.datum.getSpheroid().getEllipsoid().calPLDistance(pl, unit);
-	}
-
-	public double calPLDistance3D(Polyline pl, Distance.DistanceUnit unit)
-	{
-		return this.datum.getSpheroid().getEllipsoid().calPLDistance3D(pl, unit);
+		return this.datum.getSpheroid().getEllipsoid().calLineStringDistance(lineString, include3D, unit);
 	}
 
 	public CoordinateSystem clone()

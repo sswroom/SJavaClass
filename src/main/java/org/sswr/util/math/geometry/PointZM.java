@@ -32,25 +32,17 @@ public class PointZM extends PointZ
 	}
 	
 	@Override
-	public boolean equals(Object o) {
-		if (o == this)
-			return true;
-		if (!(o instanceof PointZM)) {
-			return false;
-		}
-		PointZM pointZM = (PointZM) o;
-		return this.srid == pointZM.srid && this.pos.equals(pointZM.pos) && this.z == pointZM.z && m == pointZM.m;
-	}
-
-	@Override
-	public boolean equalsNearly(Vector2D vec) {
+	public boolean equals(Vector2D vec, boolean sameTypeOnly, boolean nearlyVal) {
 		if (vec == this)
 			return true;
 		if (!(vec instanceof PointZM)) {
 			return false;
 		}
-		PointZM pointZM = (PointZM) vec;
-		return this.srid == pointZM.srid && this.pos.equalsNearly(pointZM.pos) && MathUtil.nearlyEqualsDbl(this.z, pointZM.z) && MathUtil.nearlyEqualsDbl(this.m, pointZM.m);
+		PointZM pointZM = (PointZM)vec;
+		if (nearlyVal)
+			return this.srid == pointZM.srid && this.pos.equalsNearly(pointZM.pos) && MathUtil.nearlyEqualsDbl(this.z, pointZM.z) && MathUtil.nearlyEqualsDbl(this.m, pointZM.m);
+		else
+			return this.srid == pointZM.srid && this.pos.equals(pointZM.pos) && this.z == pointZM.z && m == pointZM.m;
 	}
 
 	@Override

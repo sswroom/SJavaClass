@@ -155,7 +155,7 @@ public class SQLConnection extends ReadingConnection
 			if (this.logger != null) this.logger.logMessage(sb.toString(), LogLevel.COMMAND);
 
 			PreparedStatement stmt = conn.prepareStatement(sb.toString());
-			DBReader r = new SQLReader(this.dbType, stmt.executeQuery());
+			DBReader r = new SQLReader(this.dbType, "sde".equals(tableAnn.schema()), stmt.executeQuery());
 			List<T> retList = this.readAsList(r, status, dataOfst, dataCnt, parent, constr, cols, clientConditions);
 			r.close();
 			return retList;
@@ -214,7 +214,7 @@ public class SQLConnection extends ReadingConnection
 			if (this.logger != null) this.logger.logMessage(sb.toString(), LogLevel.COMMAND);
 
 			PreparedStatement stmt = conn.prepareStatement(sb.toString());
-			DBReader r = new SQLReader(this.dbType, stmt.executeQuery());
+			DBReader r = new SQLReader(this.dbType, "sde".equals(tableAnn.schema()), stmt.executeQuery());
 			Map<Integer, T> retMap = this.readAsMap(r, parent, constr, cols, clientConditions);
 			r.close();
 			return retMap;

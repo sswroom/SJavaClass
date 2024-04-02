@@ -36,6 +36,28 @@ public class ArcGISTools {
 				return null;
 			}
 		}
+		else if (dbType == DBType.PostgreSQL)
+		{
+			try
+			{
+				PreparedStatement stmt = conn.prepareStatement("select "+DBUtil.dbCol(dbType, dbName)+".sde.next_rowid(?, ?);");
+				stmt.setString(1, "sde");
+				stmt.setString(2, tableName);
+				ResultSet rs = stmt.executeQuery();
+				Integer id = null;
+				if (rs.next())
+				{
+					id = rs.getInt(1);
+				}
+				rs.close();
+				return id;
+			}
+			catch (Exception ex)
+			{
+				ex.printStackTrace();
+				return null;
+			}
+		}
 		else
 		{
 			try
@@ -99,6 +121,28 @@ public class ArcGISTools {
 			{
 				PreparedStatement stmt = conn.prepareStatement("DECLARE @myval bigint;EXEC "+DBUtil.dbCol(dbType, dbName)+".dbo.next_rowid64 'dbo', ?, @myval OUTPUT;SELECT @myval 'Next RowID';");
 				stmt.setString(1, tableName);
+				ResultSet rs = stmt.executeQuery();
+				Long id = null;
+				if (rs.next())
+				{
+					id = rs.getLong(1);
+				}
+				rs.close();
+				return id;
+			}
+			catch (Exception ex)
+			{
+				ex.printStackTrace();
+				return null;
+			}
+		}
+		else if (dbType == DBType.PostgreSQL)
+		{
+			try
+			{
+				PreparedStatement stmt = conn.prepareStatement("select "+DBUtil.dbCol(dbType, dbName)+".sde.next_rowid64(?, ?);");
+				stmt.setString(1, "sde");
+				stmt.setString(2, tableName);
 				ResultSet rs = stmt.executeQuery();
 				Long id = null;
 				if (rs.next())

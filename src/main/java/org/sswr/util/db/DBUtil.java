@@ -1131,7 +1131,7 @@ public class DBUtil {
 		sb.append(" where ");
 		sb.append(idCol.colName);
 		sb.append(" = ");
-		sb.append(dbVal(dbType, idCol, id));
+		sb.append(dbVal(dbType, idCol, id, null));
 		try
 		{
 			sqlLogger.logMessage(sb.toString(), LogLevel.COMMAND);
@@ -1941,7 +1941,7 @@ public class DBUtil {
 		}
 	}
 
-	public static String dbGeometry(DBType dbType, Geometry geometry)
+	public static String dbGeometry(DBType dbType, Geometry geometry, DBOptions options)
 	{
 		if (geometry == null)
 		{
@@ -1957,7 +1957,14 @@ public class DBUtil {
 		}
 		else if (dbType == DBType.PostgreSQL)
 		{
-			return "ST_GeomFromText('"+GeometryUtil.toWKT(geometry)+"', "+geometry.getSRID()+")";
+			if (options != null && options.arcGISSDE)
+			{
+				return "sde.st_geometry('"+GeometryUtil.toWKT(geometry)+"', "+geometry.getSRID()+")";
+			}
+			else
+			{
+				return "ST_GeomFromText('"+GeometryUtil.toWKT(geometry)+"', "+geometry.getSRID()+")";
+			}
 		}
 		else
 		{
@@ -1966,7 +1973,7 @@ public class DBUtil {
 		}
 	}
 
-	public static String dbVal(DBType dbType, DBColumnInfo col, Object val)
+	public static String dbVal(DBType dbType, DBColumnInfo col, Object val, DBOptions options)
 	{
 		if (val == null)
 		{
@@ -2021,7 +2028,7 @@ public class DBUtil {
 		{
 			if (val instanceof Geometry)
 			{
-				return dbGeometry(dbType, (Geometry)val);
+				return dbGeometry(dbType, (Geometry)val, options);
 			}
 		}
 		if (fieldType.equals(String.class) && val.getClass().equals(String.class))
@@ -2049,7 +2056,7 @@ public class DBUtil {
 				col = idCols.get(0);
 				try
 				{
-					return dbVal(dbType, col, col.getter.get(val));
+					return dbVal(dbType, col, col.getter.get(val), options);
 				}
 				catch (IllegalAccessException ex)
 				{
@@ -2174,7 +2181,7 @@ public class DBUtil {
 					}
 					dbCol(sb, dbType, col.colName);
 					sb.append(" = ");
-					sb.append(dbVal(dbType, col, col.getter.get(oriObj)));
+					sb.append(dbVal(dbType, col, col.getter.get(oriObj), options));
 					i++;
 				}
 				boolean ret = executeNonQuery(conn, sb.toString(), options);
@@ -2231,7 +2238,7 @@ public class DBUtil {
 							sb.append(", ");
 						}
 						found = true;
-						sb.append(dbVal(dbType, col, col.getter.get(newObj)));
+						sb.append(dbVal(dbType, col, col.getter.get(newObj), options));
 					}
 					i++;
 				}
@@ -2289,7 +2296,7 @@ public class DBUtil {
 						}
 						sb.append(dbCol(dbType, col.colName));
 						sb.append(" = ");
-						sb.append(dbVal(dbType, col, o2));
+						sb.append(dbVal(dbType, col, o2, options));
 						found = true;
 					}
 					i++;
@@ -2310,7 +2317,7 @@ public class DBUtil {
 					}
 					sb.append(dbCol(dbType, col.colName));
 					sb.append(" = ");
-					sb.append(dbVal(dbType, col, col.getter.get(oriObj)));
+					sb.append(dbVal(dbType, col, col.getter.get(oriObj), options));
 					i++;
 				}
 				if (executeNonQuery(conn, sb.toString(), options))
@@ -2438,7 +2445,7 @@ public class DBUtil {
 							sb.append(", ");
 						}
 						found = true;
-						sb.append(dbVal(dbType, col, col.getter.get(newObj)));
+						sb.append(dbVal(dbType, col, col.getter.get(newObj), options));
 					}
 					i++;
 				}

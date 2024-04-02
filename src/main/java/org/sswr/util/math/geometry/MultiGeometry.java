@@ -1,6 +1,7 @@
 package org.sswr.util.math.geometry;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 
@@ -10,16 +11,13 @@ import org.sswr.util.math.RectAreaDbl;
 
 public abstract class MultiGeometry<T extends Vector2D> extends Vector2D
 {
+	private static boolean VERBOSE = false;
 	protected List<T> geometries;
-	protected boolean hasZ;
-	protected boolean hasM;
 
-	public MultiGeometry(int srid, boolean hasZ, boolean hasM)
+	public MultiGeometry(int srid)
 	{
 		super(srid);
 		this.geometries = new ArrayList<T>();
-		this.hasZ = hasZ;
-		this.hasM = hasM;
 	}
 
 	public void addGeometry(T geometry)
@@ -32,6 +30,11 @@ public abstract class MultiGeometry<T extends Vector2D> extends Vector2D
 		return this.geometries.size();
 	}
 
+	public Iterator<T> iterator()
+	{
+		return this.geometries.iterator();
+	}
+
 	public T getItem(int index)
 	{
 		return this.geometries.get(index);
@@ -39,32 +42,53 @@ public abstract class MultiGeometry<T extends Vector2D> extends Vector2D
 
 	public Coord2DDbl getCenter()
 	{
-		RectAreaDbl bounds = new RectAreaDbl();
-		this.getBounds(bounds);
-		return new Coord2DDbl((bounds.tl.x + bounds.br.x) * 0.5, (bounds.tl.y + bounds.br.y) * 0.5);
+		return this.getBounds().getCenter();
 	}
 
-	public void getBounds(RectAreaDbl bounds)
+	public RectAreaDbl getBounds()
 	{
-		int i = 1;
-		int j = this.geometries.size();
-		if (j == 0)
+		RectAreaDbl bounds;
+		Iterator<T> it = this.iterator();
+		if (!it.hasNext())
 		{
-			bounds.tl = new Coord2DDbl(0, 0);
-			bounds.br = new Coord2DDbl(0, 0);
+			bounds = new RectAreaDbl(0, 0, 0, 0);
 		}
 		else
 		{
-			RectAreaDbl thisBounds = new RectAreaDbl();
-			this.geometries.get(0).getBounds(bounds);
-			while (i < j)
+			bounds = it.next().getBounds();
+			while (it.hasNext())
 			{
-				this.geometries.get(i).getBounds(thisBounds);
-				bounds.tl.setMin(thisBounds.tl);
-				bounds.br.setMax(thisBounds.br);
-				i++;
+				bounds = bounds.mergeArea(it.next().getBounds());
 			}
 		}
+		return bounds;
+	}
+
+	public double calBoundarySqrDistance(Coord2DDbl pt, Coord2DDbl nearPt)
+	{
+		Iterator<T> it = this.iterator();
+		if (!it.hasNext())
+		{
+			nearPt.x = 0;
+			nearPt.y = 0;
+			return 1000000000;
+		}
+		Coord2DDbl minPt = new Coord2DDbl();
+		double minDist = it.next().calBoundarySqrDistance(pt, minPt);
+		Coord2DDbl thisPt = new Coord2DDbl();
+		Double thisDist;
+		while (it.hasNext())
+		{
+			thisDist = it.next().calBoundarySqrDistance(pt, thisPt);
+			if (minDist > thisDist)
+			{
+				minDist = thisDist;
+				minPt = thisPt;
+			}
+		}
+		nearPt.x = minPt.x;
+		nearPt.y = minPt.y;
+		return minDist;
 	}
 
 	public double calSqrDistance(Coord2DDbl pt, Coord2DDbl nearPt)
@@ -96,6 +120,17 @@ public abstract class MultiGeometry<T extends Vector2D> extends Vector2D
 		return minDist;
 	}
 
+	public double calArea()
+	{
+		double totalArea = 0;
+		Iterator<T> it = this.geometries.iterator();
+		while (it.hasNext())
+		{
+			totalArea += it.next().calArea();
+		}
+		return totalArea;
+	}
+
 	public boolean joinVector(Vector2D vec)
 	{
 		if (this.getVectorType() != vec.getVectorType())
@@ -104,26 +139,28 @@ public abstract class MultiGeometry<T extends Vector2D> extends Vector2D
 		}
 		@SuppressWarnings("unchecked")
 		MultiGeometry<T> obj = (MultiGeometry<T> )vec;
-		int i = 0;
-		int j = obj.getCount();
-		while (i < j)
+		Iterator<T> it = obj.iterator();
+		while (it.hasNext())
 		{
 			@SuppressWarnings("unchecked")
-			T t = (T)obj.getItem(i).clone();
+			T t = (T)it.next().clone();
 			this.addGeometry(t);
-			i++;
 		}
 		return true;
 	}
 
 	public boolean hasZ()
 	{
-		return this.hasZ;
+		if (this.geometries.size() > 0)
+			this.geometries.get(0).hasZ();
+		return false;
 	}
 
 	public boolean hasM()
 	{
-		return this.hasM;
+		if (this.geometries.size() > 0)
+			this.geometries.get(0).hasM();
+		return false;
 	}
 
 	public void convCSys(CoordinateSystem srcCSys, CoordinateSystem destCSys)
@@ -137,51 +174,50 @@ public abstract class MultiGeometry<T extends Vector2D> extends Vector2D
 	}
 
 	@Override
-	public boolean equals(Object o) {
-		if (o == this)
-			return true;
-		if (!(o instanceof MultiGeometry)) {
-			return false;
-		}
-		@SuppressWarnings("unchecked")
-		MultiGeometry<T> multiGeometry = (MultiGeometry<T>) o;
-		if (this.getVectorType() != multiGeometry.getVectorType())
-			return false;
-		if (multiGeometry.geometries.size() != this.geometries.size())
-			return false;
-		int i = multiGeometry.geometries.size();
-		while (i-- > 0)
-		{
-			if (!this.geometries.get(i).equals(multiGeometry.geometries.get(i)))
-				return false;
-		}
-		return true;	}
-
-	@Override
-	public boolean equalsNearly(Vector2D vec) {
+	public boolean equals(Vector2D vec, boolean sameTypeOnly, boolean nearlyVal) {
 		if (vec == this)
 			return true;
-		if (!(vec instanceof MultiGeometry)) {
+		if (this.getVectorType() != vec.getVectorType())
+		{
+			if (!sameTypeOnly && this.geometries.size() == 1)
+			{
+				return this.geometries.get(0).equals(vec, sameTypeOnly, nearlyVal);
+			}
+			if (VERBOSE)
+				System.out.println("MultiGeometry: Vector type different");
 			return false;
 		}
-		if (this.getVectorType() != vec.getVectorType())
-			return false;
 		@SuppressWarnings("unchecked")
-		MultiGeometry<T> multiGeometry = (MultiGeometry<T>) vec;
-		if (multiGeometry.geometries.size() != this.geometries.size())
+		MultiGeometry<T> multiGeometry = (MultiGeometry<T>)vec;
+		if (multiGeometry.getCount() != this.getCount())
+		{
+			if (VERBOSE)
+				System.out.println("MultiGeometry: Vector count different: "+multiGeometry.getCount()+" != "+this.getCount());
 			return false;
+		}
 		int i = multiGeometry.geometries.size();
 		while (i-- > 0)
 		{
-			if (!this.geometries.get(i).equalsNearly(multiGeometry.geometries.get(i)))
+			if (!this.geometries.get(i).equals(multiGeometry.geometries.get(i), sameTypeOnly, nearlyVal))
 				return false;
 		}
 		return true;
 	}
 
+	public boolean insideOrTouch(Coord2DDbl coord)
+	{
+		Iterator<T> it = this.geometries.iterator();
+		while (it.hasNext())
+		{
+			if (it.next().insideOrTouch(coord))
+				return true;
+		}
+		return false;
+	}
+
 	@Override
 	public int hashCode() {
-		return Objects.hash(geometries, hasZ, hasM);
+		return Objects.hash(geometries);
 	}
 
 }

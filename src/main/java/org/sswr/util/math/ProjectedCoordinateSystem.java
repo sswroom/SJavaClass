@@ -1,7 +1,8 @@
 package org.sswr.util.math;
 
 import org.sswr.util.data.SharedDouble;
-import org.sswr.util.math.geometry.Polyline;
+import org.sswr.util.math.geometry.LineString;
+import org.sswr.util.math.geometry.Vector2D.VectorType;
 import org.sswr.util.math.unit.Distance;
 
 public abstract class ProjectedCoordinateSystem extends CoordinateSystem
@@ -27,11 +28,11 @@ public abstract class ProjectedCoordinateSystem extends CoordinateSystem
 		this.unit = unit;
 	}
 
-	public double calSurfaceDistanceXY(double x1, double y1, double x2, double y2, Distance.DistanceUnit unit)
+	public double calSurfaceDistance(Coord2DDbl pos1, Coord2DDbl pos2, Distance.DistanceUnit unit)
 	{
-		Double xDiff = x2 - x1;
-		Double yDiff = y2 - y1;
-		Double d = Math.sqrt(xDiff * xDiff + yDiff * yDiff);
+		Coord2DDbl diff = pos2.subtract(pos1);
+		diff = diff.multiply(diff);
+		double d = Math.sqrt(diff.x + diff.y);
 		if (unit != Distance.DistanceUnit.Meter)
 		{
 			d = Distance.convert(Distance.DistanceUnit.Meter, unit, d);
@@ -39,77 +40,63 @@ public abstract class ProjectedCoordinateSystem extends CoordinateSystem
 		return d;
 	}
 
-	public double calPLDistance(Polyline pl, Distance.DistanceUnit unit)
+	public double calLineStringDistance(LineString lineString, boolean include3D, Distance.DistanceUnit unit)
 	{
-		int []ptOfsts;
-		Coord2DDbl []points;
-		ptOfsts = pl.getPtOfstList();
-		points = pl.getPointList();
-		int i = ptOfsts.length;
-		int j = points.length;
-		int k;
+		int nPoint;
+		Coord2DDbl[] points;
+		double[] alts;
+		points = lineString.getPointList();
+		nPoint = points.length;
+		int j = nPoint;
 		double totalDist = 0;
-		boolean hasLast;
-		double lastX = 0;
-		double lastY = 0;
-		while (i-- > 0)
-		{
-			k = ptOfsts[i];
-			hasLast = false;
-			while (j-- > k)
-			{
-				if (hasLast)
-				{
-					totalDist += calSurfaceDistanceXY(lastX, lastY, points[j].x, points[j].y, unit);
-				}
-				hasLast = true;
-				lastX = points[j].x;
-				lastY = points[j].y;
-			}
-			j++;
-		}
-		return totalDist;
-	}
-
-	public double calPLDistance3D(Polyline pl, Distance.DistanceUnit unit)
-	{
-		int []ptOfsts;
-		Coord2DDbl []points;
-		double []alts;
-		ptOfsts = pl.getPtOfstList();
-		points = pl.getPointList();
-		alts = pl.getZList();
-		int i = ptOfsts.length;
-		int j = points.length;
-		int k;
 		double dist;
-		double totalDist = 0;
-		boolean hasLast;
-		double lastX = 0;
-		double lastY = 0;
-		double lastH = 0;
-		while (i-- > 0)
+		Coord2DDbl lastPt;
+		double lastH;
+		if (j == 0)
+			return 0;
+		if (include3D && (alts = lineString.getZList()) != null)
 		{
-			k = ptOfsts[i];
-			hasLast = false;
-			while (j-- > k)
+			if (lineString.getVectorType() == VectorType.LinearRing)
 			{
-				if (hasLast)
-				{
-					dist = calSurfaceDistanceXY(lastX, lastY, points[j].x, points[j].y, unit);
-					dist = Math.sqrt(dist * dist + (alts[j] - lastH) * (alts[j] - lastH));
-					totalDist += dist;
-				}
-				hasLast = true;
-				lastX = points[j].x;
-				lastY = points[j].y;
+				lastPt = points[0];
+				lastH = alts[0];
+			}
+			else
+			{
+				j--;
+				lastPt = points[j];
 				lastH = alts[j];
 			}
-			j++;
+			while (j-- > 0)
+			{
+				dist = calSurfaceDistance(lastPt, points[j], unit);
+				dist = Math.sqrt(dist * dist + (alts[j] - lastH) * (alts[j] - lastH));
+				totalDist += dist;
+				lastPt = points[j];
+				lastH = alts[j];
+			}
+			return totalDist;
 		}
-		return totalDist;
+		else
+		{
+			if (lineString.getVectorType() == VectorType.LinearRing)
+			{
+				lastPt = points[0];
+			}
+			else
+			{
+				j--;
+				lastPt = points[j];
+			}
+			while (j-- > 0)
+			{
+				totalDist += calSurfaceDistance(lastPt, points[j], unit);
+				lastPt = points[j];
+			}
+			return totalDist;
+		}
 	}
-
+	
 	public abstract CoordinateSystem clone();
 	public abstract CoordinateSystemType getCoordSysType();
 	

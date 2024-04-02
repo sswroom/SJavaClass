@@ -1,17 +1,16 @@
 package org.sswr.util.math.geometry;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.Iterator;
 
 import org.sswr.util.data.ByteTool;
 import org.sswr.util.math.Coord2DDbl;
 
-public class Polygon extends PointOfstCollection
+public class Polygon extends MultiGeometry<LinearRing>
 {
-	public Polygon(int srid, int nPtOfst, int nPoint, boolean hasZ, boolean hasM)
+	public Polygon(int srid)
 	{
-		super(srid, nPtOfst, nPoint, null, hasZ, hasM);
+		super(srid);
 	}
 
 	public VectorType getVectorType()
@@ -21,239 +20,62 @@ public class Polygon extends PointOfstCollection
 
 	public Vector2D clone()
 	{
-		Polygon pg = new Polygon(this.srid, this.ptOfstArr.length, this.pointArr.length, this.hasZ(), this.hasM());
-		ByteTool.copyArray(pg.pointArr, 0, this.pointArr, 0, this.pointArr.length);
-		ByteTool.copyArray(pg.ptOfstArr, 0, this.ptOfstArr, 0, this.ptOfstArr.length);
-		if (this.zArr != null)
+		Polygon pg = new Polygon(this.srid);
+		Iterator<LinearRing> it = this.geometries.iterator();
+		while (it.hasNext())
 		{
-			ByteTool.copyArray(pg.zArr, 0, this.zArr, 0, this.zArr.length);
-		}
-		if (this.mArr != null)
-		{
-			ByteTool.copyArray(pg.mArr, 0, this.mArr, 0, this.mArr.length);
+			pg.addGeometry((LinearRing)it.next().clone());
 		}
 		return pg;
 	}
 
-	public double calSqrDistance(Coord2DDbl pt, Coord2DDbl nearPt)
+	public double calBoundarySqrDistance(Coord2DDbl pt, Coord2DDbl nearPt)
 	{
-		if (this.insideVector(pt))
+		double minDist = 100000000000.0;
+		Coord2DDbl minPt = new Coord2DDbl(0, 0);
+		Coord2DDbl thisPt = new Coord2DDbl();
+		double thisDist;
+		Iterator<LinearRing> it = this.geometries.iterator();
+		while (it.hasNext())
 		{
-			if (nearPt != null)
+			thisDist = it.next().calBoundarySqrDistance(pt, thisPt);
+			if (thisDist < minDist)
 			{
-				nearPt.x = pt.x;
-				nearPt.y = pt.y;
-			}
-			return 0;
-		}
-	
-		int k;
-		int l;
-		int m;
-		int []ptOfsts;
-		Coord2DDbl []points;
-	
-		ptOfsts = this.ptOfstArr;
-		points = this.pointArr;
-	
-		k = this.ptOfstArr.length;
-		l = this.pointArr.length;
-	
-		double calBase;
-		double calH;
-		double calW;
-		double calX;
-		double calY;
-		double calD;
-		double dist = 0x7fffffff;
-		double calPtX = 0;
-		double calPtY = 0;
-	
-		while (k-- > 0)
-		{
-			m = ptOfsts[k];
-			l--;
-			while (l-- > m)
-			{
-				calH = points[l].y - points[l + 1].y;
-				calW = points[l].x - points[l + 1].x;
-	
-				if (calH == 0)
-				{
-					calX = pt.x;
-				}
-				else
-				{
-					calX = (calBase = (calW * calW)) * pt.x;
-					calBase += calH * calH;
-					calX += calH * calH * (points[l].x);
-					calX += (pt.y - points[l].y) * calH * calW;
-					calX /= calBase;
-				}
-	
-				if (calW == 0)
-				{
-					calY = pt.y;
-				}
-				else
-				{
-					calY = ((calX - (points[l].x)) * calH / calW) + points[l].y;
-				}
-	
-				if (calW < 0)
-				{
-					if (points[l + 0].x > calX)
-						continue;
-					if (points[l + 1].x < calX)
-						continue;
-				}
-				else
-				{
-					if (points[l + 0].x < calX)
-						continue;
-					if (points[l + 1].x > calX)
-						continue;
-				}
-	
-				if (calH < 0)
-				{
-					if (points[l + 0].y > calY)
-						continue;
-					if (points[l + 1].y < calY)
-						continue;
-				}
-				else
-				{
-					if (points[l + 0].y < calY)
-						continue;
-					if (points[l + 1].y > calY)
-						continue;
-				}
-	
-				calH = pt.y - calY;
-				calW = pt.x - calX;
-				calD = calW * calW + calH * calH;
-				if (calD < dist)
-				{
-					dist = calD;
-					calPtX = calX;
-					calPtY = calY;
-				}
+				minDist = thisDist;
+				minPt = thisPt;
 			}
 		}
-		k = this.pointArr.length >> 1;
-		while (k-- > 0)
-		{
-			calH = pt.y - points[k].y;
-			calW = pt.x - points[k].x;
-			calD = calW * calW + calH * calH;
-			if (calD < dist)
-			{
-				dist = calD;
-				calPtX = points[k].x;
-				calPtY = points[k].y;
-			}
-		}
-		if (nearPt != null)
-		{
-			nearPt.x = calPtX;
-			nearPt.y = calPtY;
-		}
-		return dist;
+		nearPt.x = minPt.x;
+		nearPt.y = minPt.y;
+		return minDist;
 	}
 
 	public boolean joinVector(Vector2D vec)
 	{
-		if (vec.getVectorType() != VectorType.Polygon)
+		if (vec.getVectorType() != VectorType.Polygon || this.srid != vec.getSRID())
 			return false;
 		Polygon pg = (Polygon)vec;
-		Coord2DDbl []newPoints;
-		int nPoint = (this.pointArr.length + pg.pointArr.length);
-		int []newPtOfsts;
-		int nPtOfst = this.ptOfstArr.length + pg.ptOfstArr.length;
-		
-		newPoints = new Coord2DDbl[nPoint];
-		newPtOfsts = new int[nPtOfst];
-		ByteTool.copyArray(newPoints, 0, this.pointArr, 0, this.pointArr.length);
-		ByteTool.copyArray(newPoints, this.pointArr.length, pg.pointArr, 0, pg.pointArr.length);
-		ByteTool.copyArray(newPtOfsts, 0, this.ptOfstArr, 0, this.ptOfstArr.length);
-		int i = pg.ptOfstArr.length;
-		int j = i + this.ptOfstArr.length;
-		int k = this.pointArr.length;
-		while (i-- > 0)
+		Iterator<LinearRing> it = pg.geometries.iterator();
+		while (it.hasNext())
 		{
-			j--;
-			newPtOfsts[j] = pg.ptOfstArr[i] + k;
+			this.addGeometry((LinearRing)it.next().clone());
 		}
-		this.ptOfstArr = newPtOfsts;
-		this.pointArr = newPoints;
 		return true;
 	}
 
-	public boolean insideVector(Coord2DDbl coord)
+	public boolean insideOrTouch(Coord2DDbl coord)
 	{
-		double thisX;
-		double thisY;
-		double lastX;
-		double lastY;
-		int j;
-		int k;
-		int l;
-		int m;
-		int leftCnt = 0;
-		double tmpX;
-	
-		k = this.ptOfstArr.length;
-		l = this.pointArr.length;
-	
-		while (k-- > 0)
+		int insideCnt = 0;
+		Iterator<LinearRing> it = this.geometries.iterator();
+		while (it.hasNext())
 		{
-			m = this.ptOfstArr[k];
-	
-			lastX = this.pointArr[m].x;
-			lastY = this.pointArr[m].y;
-			while (l-- > m)
-			{
-				thisX = this.pointArr[l].x;
-				thisY = this.pointArr[l].y;
-				j = 0;
-				if (lastY > coord.y)
-					j += 1;
-				if (thisY > coord.y)
-					j += 1;
-	
-				if (j == 1)
-				{
-					tmpX = lastX - (lastX - thisX) * (lastY - coord.y) / (lastY - thisY);
-					if (tmpX == coord.x)
-					{
-						return true;
-					}
-					else if (tmpX < coord.x)
-						leftCnt++;
-				}
-				else if (thisY == coord.y && lastY == coord.y)
-				{
-					if ((thisX >= coord.x && lastX <= coord.x) || (lastX >= coord.x && thisX <= coord.x))
-					{
-						return true;
-					}
-				}
-				else if (thisY == coord.y && thisX == coord.x)
-				{
-					return true;
-				}
-	
-				lastX = thisX;
-				lastY = thisY;
-			}
-			l++;
+			if (it.next().insideOrTouch(coord))
+				insideCnt++;
 		}
-	
-		return (leftCnt & 1) != 0;
+		return (insideCnt & 1) != 0;
 	}
 
-	public boolean hasJunction()
+/* 	public boolean hasJunction()
 	{
 		int i;
 		int j;
@@ -512,5 +334,121 @@ public class Polygon extends PointOfstCollection
 			lastIndex = i;
 		}
 		results.add(this);
+	}*/
+
+	public MultiPolygon createMultiPolygon()
+	{
+		MultiPolygon mpg = new MultiPolygon(this.srid);
+		if (this.geometries.size() <= 1)
+		{
+			mpg.addGeometry((Polygon)this.clone());
+			return mpg;
+		}
+		ArrayList<Polygon> pgList = new ArrayList<Polygon>();
+		Polygon pg;
+		LinearRing lr;
+		Iterator<LinearRing> it = this.geometries.iterator();
+		int k;
+		boolean found;
+		while (it.hasNext())
+		{
+			lr = it.next();
+			found = false;
+			k = pgList.size();
+			while (k-- > 0)
+			{
+				pg = pgList.get(k);
+				if (pg != null && pg.insideOrTouch(lr.getPoint(0)))
+				{
+					found = true;
+					pg.addGeometry((LinearRing)lr.clone());
+					break;
+				}
+			}
+			if (!found)
+			{
+				pg = new Polygon(this.srid);
+				pg.addGeometry((LinearRing)lr.clone());
+				pgList.add(pg);
+			}
+		}
+		Iterator<Polygon> itPG = pgList.iterator();
+		while (itPG.hasNext())
+		{
+			mpg.addGeometry(itPG.next());
+		}
+		return mpg;
+	}
+
+	public void addFromPtOfst(int[] ptOfstList, Coord2DDbl[] pointList, double[] zList, double[] mList)
+	{
+		LinearRing linearRing;
+		int i = 0;
+		int j;
+		int k;
+		int nPtOfst = ptOfstList.length;
+		int nPoint = pointList.length;
+		Coord2DDbl[] ptArr;
+		double[] zArr;
+		double[] mArr;
+		while (i < nPtOfst)
+		{
+			j = ptOfstList[i];
+			if (i + 1 >= nPtOfst)
+				k = nPoint;
+			else
+				k = ptOfstList[i + 1];
+			linearRing = new LinearRing(this.srid, k - j, zList != null, mList != null);
+			ptArr = linearRing.getPointList();
+			zArr = linearRing.getZList();
+			mArr = linearRing.getMList();
+			ByteTool.copyArray(ptArr, 0, pointList, j, (k - j));
+			if (zList != null)
+			{
+				ByteTool.copyArray(zArr, 0, zList, j, (k - j));
+			}
+			if (mList != null)
+			{
+				ByteTool.copyArray(mArr, 0, mList, j, (k - j));
+			}
+			this.addGeometry(linearRing);
+			i++;
+		}
+	}
+
+	public int fillPointOfstList(Coord2DDbl[] pointList, int[] ptOfstList, double[] zList, double[] mList)
+	{
+		int totalCnt = 0;
+		LineString lineString;
+		Coord2DDbl[] thisPtList;
+		double[] dList;
+		Iterator<LinearRing> it = this.geometries.iterator();
+		int i = 0;
+		while (it.hasNext())
+		{
+			ptOfstList[i] = totalCnt;
+			lineString = it.next();
+			thisPtList = lineString.getPointList();
+			ByteTool.copyArray(pointList, totalCnt, thisPtList, 0, thisPtList.length);
+			if (zList != null)
+			{
+				dList = lineString.getZList();
+				if (dList != null)
+				{
+					ByteTool.copyArray(zList, totalCnt, dList, 0, dList.length);
+				}
+			}
+			if (mList != null)
+			{
+				dList = lineString.getMList();
+				if (dList != null)
+				{
+					ByteTool.copyArray(mList, totalCnt, dList, 0, dList.length);
+				}
+			}
+			totalCnt += thisPtList.length;
+			i++;
+		}
+		return totalCnt;
 	}
 }

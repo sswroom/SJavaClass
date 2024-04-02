@@ -10,15 +10,18 @@ import org.sswr.util.data.SharedDouble;
 import org.sswr.util.math.Coord2DDbl;
 import org.sswr.util.math.CoordinateSystem;
 import org.sswr.util.math.MathUtil;
+import org.sswr.util.math.RectAreaDbl;
 
-public class LineString extends PointCollection
+public class LineString extends Vector2D
 {
+	protected Coord2DDbl[] pointArr;
 	protected double []zArr;
 	protected double []mArr;
 
 	public LineString(int srid, int nPoint, boolean hasZ, boolean hasM)
 	{
-		super(srid, nPoint, null);
+		super(srid);
+		this.pointArr = new Coord2DDbl[nPoint];
 		if (hasZ)
 		{
 			this.zArr = new double[nPoint];
@@ -37,12 +40,98 @@ public class LineString extends PointCollection
 		}
 	}
 
+	public LineString(int srid, Coord2DDbl[] pointArr, double[] zArr, double[] mArr)
+	{
+		super(srid);
+		int i = 0;
+		int j = pointArr.length;
+		this.pointArr = new Coord2DDbl[pointArr.length];
+		while (i < j)
+		{
+			this.pointArr[i] = pointArr[i].clone();
+			i++;
+		}
+		if (zArr != null)
+		{
+			if (zArr.length != j)
+				throw new IllegalArgumentException("zArr");
+			this.zArr = new double[j];
+			i = 0;
+			while (i < j)
+			{
+				this.zArr[i] = zArr[i];
+				i++;
+			}
+		}
+		else
+		{
+			this.zArr = null;
+		}
+		if (mArr != null)
+		{
+			if (mArr.length != j)
+				throw new IllegalArgumentException("mArr");
+			this.mArr = new double[j];
+			i = 0;
+			while (i < j)
+			{
+				this.mArr[i] = mArr[i];
+				i++;
+			}
+		}
+		else
+		{
+			this.mArr = null;
+		}
+	}
+
 	public VectorType getVectorType()
 	{
 		return VectorType.LineString;
 	}
 
+	public Coord2DDbl getCenter()
+	{
+		double maxX;
+		double maxY;
+		double minX;
+		double minY;
+		double v;
+		if (this.pointArr.length <= 0)
+		{
+			return new Coord2DDbl(0, 0);
+		}
+		else
+		{
+			int i = this.pointArr.length;
+			minX = maxX = this.pointArr[0].x;
+			minY = maxY = this.pointArr[0].y;
 	
+			while (i-- > 0)
+			{
+				v = this.pointArr[i].x;
+				if (v > maxX)
+				{
+					maxX = v;
+				}
+				if (v < minX)
+				{
+					minX = v;
+				}
+				v = this.pointArr[i].y;
+				if (v > maxY)
+				{
+					maxY = v;
+				}
+				else if (v < minY)
+				{
+					minY = v;
+				}
+			}
+			return new Coord2DDbl((minX + maxX) * 0.5, (minY + maxY) * 0.5);
+		}
+	}
+
 	public Vector2D clone()
 	{
 		LineString pl = new LineString(this.srid, this.pointArr.length, this.hasZ(), this.hasM());
@@ -58,7 +147,23 @@ public class LineString extends PointCollection
 		return pl;
 	}
 
-	public double calSqrDistance(Coord2DDbl pt, Coord2DDbl nearPt)
+	public RectAreaDbl getBounds()
+	{
+		int i = this.pointArr.length;
+		Coord2DDbl min;
+		Coord2DDbl max;
+		min = this.pointArr[0].clone();
+		max = min.clone();
+		while (i > 1)
+		{
+			i -= 1;
+			min = min.setMin(this.pointArr[i]);
+			max = max.setMax(this.pointArr[i]);
+		}
+		return new RectAreaDbl(min, max);		
+	}
+
+	public double calBoundarySqrDistance(Coord2DDbl pt, Coord2DDbl nearPt)
 	{
 		int l;
 		Coord2DDbl[] points;
@@ -165,7 +270,6 @@ public class LineString extends PointCollection
 		}
 		return dist;
 	}
-
 
 	public double calSqrDistance3D(Coord2DDbl pt, double z, Coord2DDbl nearPt, SharedDouble nearZ)
 	{
@@ -309,11 +413,65 @@ public class LineString extends PointCollection
 		return dist;
 	}
 
+	public double calArea()
+	{
+		return 0;
+	}
+
 	public boolean joinVector(Vector2D vec)
 	{
 		if (vec.getVectorType() != VectorType.LineString || this.hasZ() != vec.hasZ() || this.hasM() != vec.hasM())
 		{
 			return false;
+		}
+		LineString ls = (LineString)vec;
+		int i;
+		int j;
+		Coord2DDbl[] points = ls.pointArr;
+		Coord2DDbl[] newPoints;
+		if (points[0] == this.pointArr[this.pointArr.length - 1])
+		{
+			newPoints = new Coord2DDbl[this.pointArr.length + points.length - 1];
+			ByteTool.copyArray(newPoints, 0, this.pointArr, 0, this.pointArr.length);
+			ByteTool.copyArray(newPoints, this.pointArr.length, points, 1, points.length - 1);
+			this.pointArr = newPoints;
+			return true;
+		}
+		else if (points[points.length - 1] == this.pointArr[this.pointArr.length - 1])
+		{
+			newPoints = new Coord2DDbl[this.pointArr.length + points.length - 1];
+			ByteTool.copyArray(newPoints, 0, this.pointArr, 0, this.pointArr.length);
+			i = points.length - 1;
+			j = this.pointArr.length;
+			while (i-- > 0)
+			{
+				newPoints[j] = points[i];
+				j++;
+			}
+			this.pointArr = newPoints;
+			return true;
+		}
+		else if (points[points.length - 1] == this.pointArr[0])
+		{
+			newPoints = new Coord2DDbl[this.pointArr.length + points.length - 1];
+			ByteTool.copyArray(newPoints, 0, points, 0, points.length - 1);
+			ByteTool.copyArray(newPoints, points.length - 1, this.pointArr, 0, this.pointArr.length);
+			this.pointArr = newPoints;
+			return true;
+		}
+		else if (points[0] == this.pointArr[0])
+		{
+			newPoints = new Coord2DDbl[this.pointArr.length + points.length - 1];
+			ByteTool.copyArray(newPoints, points.length - 1, this.pointArr, 0, this.pointArr.length);
+			i = points.length - 1;
+			j = 1;
+			while (i-- > 0)
+			{
+				newPoints[i] = points[j];
+				j++;
+			}
+			this.pointArr = newPoints;
+			return true;
 		}
 		return false;
 	}
@@ -353,65 +511,93 @@ public class LineString extends PointCollection
 	}
 
 	@Override
-	public boolean equals(Object o) {
-		if (o == this)
-			return true;
-		if (!(o instanceof LineString)) {
-			return false;
-		}
-		LineString lineString = (LineString) o;
-		return this.srid == lineString.srid && Objects.equals(pointArr, lineString.pointArr) && Objects.equals(zArr, lineString.zArr) && Objects.equals(mArr, lineString.mArr);
-	}
-
-	@Override
-	public boolean equalsNearly(Vector2D vec) {
+	public boolean equals(Vector2D vec, boolean sameTypeOnly, boolean nearlyVal) {
 		if (vec == this)
 			return true;
 		if (!(vec instanceof LineString)) {
 			return false;
 		}
-		LineString pl = (LineString) vec;
-		if (this.getVectorType() == pl.getVectorType() && this.hasZ() == pl.hasZ() && this.hasM() == pl.hasM())
+		LineString lineString = (LineString)vec;
+		if (this.getVectorType() == lineString.getVectorType() && this.hasZ() == lineString.hasZ() && this.hasM() == lineString.hasM())
 		{
-			Coord2DDbl []ptList = pl.getPointList();
+			Coord2DDbl []ptList = lineString.getPointList();
 			double []valArr;
 			if (this.pointArr.length != ptList.length)
 			{
 				return false;
 			}
-			int i = ptList.length;
-			while (i-- > 0)
+			if (nearlyVal)
 			{
-				if (!ptList[i].equalsNearly(this.pointArr[i]))
-				{
-					return false;
-				}
-			}
-			if (this.zArr != null)
-			{
-				valArr = pl.zArr;
-				i = valArr.length;
+				int i = ptList.length;
 				while (i-- > 0)
 				{
-					if (!MathUtil.nearlyEqualsDbl(valArr[i], this.zArr[i]))
+					if (!ptList[i].equalsNearly(this.pointArr[i]))
 					{
 						return false;
 					}
 				}
+				if (this.zArr != null)
+				{
+					valArr = lineString.zArr;
+					i = valArr.length;
+					while (i-- > 0)
+					{
+						if (!MathUtil.nearlyEqualsDbl(valArr[i], this.zArr[i]))
+						{
+							return false;
+						}
+					}
+				}
+				if (this.mArr != null)
+				{
+					valArr = lineString.mArr;
+					i = valArr.length;
+					while (i-- > 0)
+					{
+						if (!MathUtil.nearlyEqualsDbl(valArr[i], this.mArr[i]))
+						{
+							return false;
+						}
+					}
+				}
+				return true;
 			}
-			if (this.mArr != null)
+			else
 			{
-				valArr = pl.mArr;
-				i = valArr.length;
+				int i = ptList.length;
 				while (i-- > 0)
 				{
-					if (!MathUtil.nearlyEqualsDbl(valArr[i], this.mArr[i]))
+					if (!ptList[i].equals(this.pointArr[i]))
 					{
 						return false;
 					}
 				}
+				if (this.zArr != null)
+				{
+					valArr = lineString.zArr;
+					i = valArr.length;
+					while (i-- > 0)
+					{
+						if (valArr[i] != this.zArr[i])
+						{
+							return false;
+						}
+					}
+				}
+				if (this.mArr != null)
+				{
+					valArr = lineString.mArr;
+					i = valArr.length;
+					while (i-- > 0)
+					{
+						if (valArr[i] != this.mArr[i])
+						{
+							return false;
+						}
+					}
+				}
+				return true;
 			}
-			return true;
 		}
 		else
 		{
@@ -419,9 +605,89 @@ public class LineString extends PointCollection
 		}
 	}
 
+	public boolean insideOrTouch(Coord2DDbl coord)
+	{
+		double thisX;
+		double thisY;
+		double lastX;
+		double lastY;
+		int j;
+		int l;
+		double tmpX;
+
+		l = this.pointArr.length;
+		lastX = this.pointArr[0].x;
+		lastY = this.pointArr[0].y;
+		while (l-- > 0)
+		{
+			thisX = this.pointArr[l].x;
+			thisY = this.pointArr[l].y;
+			j = 0;
+			if (lastY > coord.y)
+				j += 1;
+			if (thisY > coord.y)
+				j += 1;
+
+			if (j == 1)
+			{
+				tmpX = lastX - (lastX - thisX) * (lastY - coord.y) / (lastY - thisY);
+				if (tmpX == coord.x)
+				{
+					return true;
+				}
+			}
+			else if (thisY == coord.y && lastY == coord.y)
+			{
+				if ((thisX >= coord.x && lastX <= coord.x) || (lastX >= coord.x && thisX <= coord.x))
+				{
+					return true;
+				}
+			}
+			else if (thisY == coord.y && thisX == coord.x)
+			{
+				return true;
+			}
+
+			lastX = thisX;
+			lastY = thisY;
+		}
+		return false;
+	}
+
 	@Override
 	public int hashCode() {
 		return Objects.hash(srid, pointArr, zArr, mArr);
+	}
+
+	public Coord2DDbl[] getPointList()
+	{
+		return this.pointArr;
+	}
+
+	public int getPointCount()
+	{
+		return this.pointArr.length;
+	}
+
+	public Coord2DDbl getPoint(int index)
+	{
+		if (index >= this.pointArr.length)
+			return this.pointArr[0];
+		else
+			return this.pointArr[index];
+	}
+
+	public double calcLength()
+	{
+		double leng = 0;
+		Coord2DDbl diff;
+		int i = this.pointArr.length;
+		while (i-- > 1)
+		{
+			diff = this.pointArr[i].subtract(this.pointArr[i - 1]);
+			leng += Math.sqrt(diff.x * diff.x + diff.y * diff.y);
+		}
+		return leng;
 	}
 
 	public double []getZList()
@@ -916,10 +1182,12 @@ public class LineString extends PointCollection
 		outPoints.add(lastPtY);
 
 		Polygon pg;
+		LinearRing lr;
 		int nPoints;
-		Coord2DDbl []pts;
-		pg = new Polygon(this.srid, 1, outPoints.size() >> 1, false, false);
-		pts = pg.getPointList();
+		Coord2DDbl[] pts;
+		pg = new Polygon(this.srid);
+		lr = new LinearRing(this.srid, outPoints.size() >> 1, false, false);
+		pts = lr.getPointList();
 		nPoints = pts.length;
 		i = 0;
 		while (i < nPoints)
@@ -928,6 +1196,14 @@ public class LineString extends PointCollection
 			pts[i].y = outPoints.get((i << 1) + 1);
 			i++;
 		}
+		pg.addGeometry(lr);
 		return pg;
+	}
+
+	public Polyline createPolyline()
+	{
+		Polyline pl = new Polyline(this.srid);
+		pl.addGeometry((LineString)this.clone());
+		return pl;
 	}
 }

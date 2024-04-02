@@ -26,6 +26,7 @@ public abstract class Vector2D
 		PolyhedralSurface,
 		Tin,
 		Triangle,
+		LinearRing,
 
 		Image,
 		String,
@@ -43,8 +44,20 @@ public abstract class Vector2D
 	public abstract VectorType getVectorType();
 	public abstract Coord2DDbl getCenter();
 	public abstract Vector2D clone();
-	public abstract void getBounds(RectAreaDbl bounds);
-	public abstract double calSqrDistance(Coord2DDbl pt, Coord2DDbl nearPt);
+	public abstract RectAreaDbl getBounds();
+	public abstract double calBoundarySqrDistance(Coord2DDbl pt, Coord2DDbl nearPt);
+	public double calSqrDistance(Coord2DDbl pt, Coord2DDbl nearPt)
+	{
+		if (this.insideOrTouch(pt))
+		{
+			nearPt.x = pt.x;
+			nearPt.y = pt.y;
+			return 0;
+		}
+		return this.calBoundarySqrDistance(pt, nearPt);
+	}
+
+	public abstract double calArea();
 	public abstract boolean joinVector(Vector2D vec);
 
 	public boolean hasZ()
@@ -58,8 +71,8 @@ public abstract class Vector2D
 	}
 
 	public abstract void convCSys(CoordinateSystem srcCSys, CoordinateSystem destCSys);
-	public abstract boolean equals(Object vec);
-	public abstract boolean equalsNearly(Vector2D vec);
+	public abstract boolean equals(Vector2D vec, boolean sameTypeOnly, boolean nearlyVal);
+	public abstract boolean insideOrTouch(Coord2DDbl coord);
 
 	public int getSRID()
 	{

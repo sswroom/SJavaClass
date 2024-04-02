@@ -2,6 +2,8 @@ package org.sswr.util.math.geometry;
 
 import java.util.Objects;
 
+import org.sswr.util.math.MathUtil;
+
 public class PointM extends Point2D
 {
 	protected double m;
@@ -29,25 +31,17 @@ public class PointM extends Point2D
 	}
 	
 	@Override
-	public boolean equals(Object o) {
-		if (o == this)
-			return true;
-		if (!(o instanceof PointM)) {
-			return false;
-		}
-		PointM pointM = (PointM) o;
-		return this.srid == pointM.srid && this.pos.equals(pointM.pos) && m == pointM.m;
-	}
-
-	@Override
-	public boolean equalsNearly(Vector2D vec) {
+	public boolean equals(Vector2D vec, boolean sameTypeOnly, boolean nearlyVal) {
 		if (vec == this)
 			return true;
 		if (!(vec instanceof PointM)) {
 			return false;
 		}
-		PointM pointM = (PointM) vec;
-		return this.srid == pointM.srid && this.pos.equalsNearly(pointM.pos) && m == pointM.m;
+		PointM pointM = (PointM)vec;
+		if (nearlyVal)
+			return this.srid == pointM.srid && this.pos.equalsNearly(pointM.pos) && MathUtil.nearlyEqualsDbl(this.m, pointM.m);
+		else
+			return this.srid == pointM.srid && this.pos.equals(pointM.pos) && m == pointM.m;
 	}
 
 	@Override

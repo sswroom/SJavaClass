@@ -1,29 +1,20 @@
 package org.sswr.util.math.geometry;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.Iterator;
 
 import org.sswr.util.data.ByteTool;
 import org.sswr.util.data.SharedBool;
 import org.sswr.util.data.SharedDouble;
 import org.sswr.util.math.Coord2DDbl;
 
-public class Polyline extends PointOfstCollection
+public class Polyline extends MultiGeometry<LineString>
 {
 	protected int flags;
 	protected int color;
 
-	public Polyline(int srid, Coord2DDbl[] pointArr, boolean hasZ, boolean hasM)
+	public Polyline(int srid)
 	{
-		super(srid, 1, pointArr.length, pointArr, hasZ, hasM);
-		this.flags = 0;
-		this.color = 0;
-	}
-
-	public Polyline(int srid, int nPtOfst, int nPoint, boolean hasZ, boolean hasM)
-	{
-		super(srid, nPtOfst, nPoint, null, hasZ, hasM);
+		super(srid);
 		this.flags = 0;
 		this.color = 0;
 	}
@@ -35,289 +26,43 @@ public class Polyline extends PointOfstCollection
 
 	public Vector2D clone()
 	{
-		Polyline pl = new Polyline(this.srid, this.ptOfstArr.length, this.pointArr.length, this.hasZ(), this.hasM());
-		ByteTool.copyArray(pl.pointArr, 0, this.pointArr, 0, this.pointArr.length);
-		ByteTool.copyArray(pl.ptOfstArr, 0, this.ptOfstArr, 0, this.ptOfstArr.length);
-		if (this.zArr != null)
-		{	
-			ByteTool.copyArray(pl.zArr, 0, this.zArr, 0, this.zArr.length);
-		}
-		if (this.mArr != null)
-		{	
-			ByteTool.copyArray(pl.mArr, 0, this.mArr, 0, this.mArr.length);
+		Polyline pl = new Polyline(this.srid);
+		Iterator<LineString> it = this.geometries.iterator();
+		while (it.hasNext())
+		{
+			pl.addGeometry((LineString)it.next().clone());
 		}
 		pl.flags = this.flags;
 		pl.color = this.color;
 		return pl;
 	}
 
-	public double calSqrDistance(Coord2DDbl pt, Coord2DDbl nearPt)
+	public double calBoundarySqrDistance(Coord2DDbl pt, Coord2DDbl nearPt)
 	{
-		int k;
-		int l;
-		int m;
-		int []ptOfsts;
-		Coord2DDbl[] points;
-	
-		ptOfsts = this.ptOfstArr;
-		points = this.pointArr;
-	
-		k = ptOfsts.length;
-		l = points.length;
-	
-		double calBase;
-		double calH;
-		double calW;
-		double calX;
-		double calY;
-		double calD;
-		double dist = 0x7fffffff;
-		double calPtX = 0;
-		double calPtY = 0;
-	
-		while (k-- > 0)
+		Iterator<LineString> it = this.geometries.iterator();
+		if (!it.hasNext())
 		{
-			m = ptOfsts[k];
-			l--;
-			while (l-- > m)
+			nearPt.x = 0;
+			nearPt.y = 0;
+			return 9999999.0;
+		}
+		Coord2DDbl minPt = new Coord2DDbl();
+		double minDist = it.next().calBoundarySqrDistance(pt, minPt);
+		while (it.hasNext())
+		{
+			Coord2DDbl thisPt = new Coord2DDbl();
+			double thisDist = it.next().calBoundarySqrDistance(pt, thisPt);
+			if (thisDist < minDist)
 			{
-				calH = points[l].y - points[l + 1].y;
-				calW = points[l].x - points[l + 1].x;
-	
-				if (calH == 0)
-				{
-					calX = pt.x;
-				}
-				else
-				{
-					calX = (calBase = (calW * calW)) * pt.x;
-					calBase += calH * calH;
-					calX += calH * calH * (points[l].x);
-					calX += (pt.y - points[l].y) * calH * calW;
-					calX /= calBase;
-				}
-	
-				if (calW == 0)
-				{
-					calY = pt.y;
-				}
-				else
-				{
-					calY = ((calX - (points[l].x)) * calH / calW) + points[l].y;
-				}
-	
-				if (calW < 0)
-				{
-					if (points[l + 0].x > calX)
-						continue;
-					if (points[l + 1].x < calX)
-						continue;
-				}
-				else
-				{
-					if (points[l + 0].x < calX)
-						continue;
-					if (points[l + 1].x > calX)
-						continue;
-				}
-	
-				if (calH < 0)
-				{
-					if (points[l + 0].y > calY)
-						continue;
-					if (points[l + 1].y < calY)
-						continue;
-				}
-				else
-				{
-					if (points[l + 0].y < calY)
-						continue;
-					if (points[l + 1].y > calY)
-						continue;
-				}
-	
-				calH = pt.y - calY;
-				calW = pt.x - calX;
-				calD = calW * calW + calH * calH;
-				if (calD < dist)
-				{
-					dist = calD;
-					calPtX = calX;
-					calPtY = calY;
-				}
+				minDist = thisDist;
+				minPt = thisPt;
 			}
 		}
-		k = this.pointArr.length;
-		while (k-- > 0)
-		{
-			calH = pt.y - points[k].y;
-			calW = pt.x - points[k].x;
-			calD = calW * calW + calH * calH;
-			if (calD < dist)
-			{
-				dist = calD;
-				calPtX = points[k].x;
-				calPtY = points[k].y;
-			}
-		}
-		if (nearPt != null)
-		{
-			nearPt.x = calPtX;
-			nearPt.y = calPtY;
-		}
-		return dist;
+		nearPt.x = minPt.x;
+		nearPt.y = minPt.y;
+		return minDist;
 	}
-
-	public double calSqrDistance3D(Coord2DDbl pt, double z, Coord2DDbl nearPt, SharedDouble nearZ)
-	{
-		if (!this.hasZ())
-		{
-			if (nearZ != null)
-				nearZ.value = z;
-			return calSqrDistance(pt, nearPt);
-		}
-		int k;
-		int l;
-		int m;
-		int []ptOfsts;
-		Coord2DDbl[] points;
-		double[] zArr;
 	
-		ptOfsts = this.ptOfstArr;
-		points = this.pointArr;
-		zArr = this.zArr;
-
-		k = ptOfsts.length;
-		l = points.length;
-	
-		double calBase;
-		double calDX;
-		double calDY;
-		double calDZ;
-		double calX;
-		double calY;
-		double calZ;
-		double calD;
-		double dist = 0x7fffffff;
-		double calPtX = 0;
-		double calPtY = 0;
-		double calPtZ = 0;
-	
-		while (k-- > 0)
-		{
-			m = ptOfsts[k];
-			l--;
-			while (l-- > m)
-			{
-				calDX = points[l].x - points[l + 1].x;
-				calDY = points[l].y - points[l + 1].y;
-
-				if (calDY == 0)
-				{
-					calX = pt.x;
-					calZ = z;
-				}
-				else
-				{
-					calX = (calBase = (calDX * calDX)) * pt.x;
-					calBase += calDY * calDY;
-					calX += calDY * calDY * (points[l].x);
-					calX += (pt.y - points[l].y) * calDY * calDX;
-					calX /= calBase;
-				}
-	
-				if (calDX == 0)
-				{
-					calY = pt.y;
-				}
-				else
-				{
-					calY = ((calX - (points[l].x)) * calDY / calDX) + points[l].y;
-				}
-	
-				if (calDX < 0)
-				{
-					if (points[l + 0].x > calX)
-						continue;
-					if (points[l + 1].x < calX)
-						continue;
-				}
-				else
-				{
-					if (points[l + 0].x < calX)
-						continue;
-					if (points[l + 1].x > calX)
-						continue;
-				}
-	
-				if (calDY < 0)
-				{
-					if (points[l + 0].y > calY)
-						continue;
-					if (points[l + 1].y < calY)
-						continue;
-				}
-				else
-				{
-					if (points[l + 0].y < calY)
-						continue;
-					if (points[l + 1].y > calY)
-						continue;
-				}
-				
-				if (calDX != 0)
-				{
-					calZ = (calX - points[l + 1].x) * (zArr[l] - zArr[l + 1]) / calDX + zArr[l + 1]; 
-				}
-				else if (calDY != 0)
-				{
-					calZ = (calY - points[l + 1].y) * (zArr[l] - zArr[l + 1]) / calDY + zArr[l + 1]; 
-				}
-				else
-				{
-					calZ = zArr[l];
-				}
-	
-				calDX = pt.x - calX;
-				calDY = pt.y - calY;
-				calDZ = z - calZ;
-				calD = calDX * calDX + calDY * calDY + calDZ * calDZ;
-				if (calD < dist)
-				{
-					dist = calD;
-					calPtX = calX;
-					calPtY = calY;
-					calPtZ = calZ;
-				}
-			}
-		}
-		k = this.pointArr.length;
-		while (k-- > 0)
-		{
-			calDX = pt.x - points[k].x;
-			calDY = pt.y - points[k].y;
-			calDZ = z - zArr[k];
-			calD = calDX * calDX + calDY * calDY + calDZ * calDZ;
-			if (calD < dist)
-			{
-				dist = calD;
-				calPtX = points[k].x;
-				calPtY = points[k].y;
-				calPtZ = zArr[k];
-			}
-		}
-		if (nearPt != null)
-		{
-			nearPt.x = calPtX;
-			nearPt.y = calPtY;
-		}
-		if (nearZ != null)
-		{
-			nearZ.value = calPtZ;
-		}
-		return dist;
-	}
-
 	public boolean joinVector(Vector2D vec)
 	{
 		if (vec.getVectorType() != VectorType.Polyline || this.hasZ() != vec.hasZ() || this.hasM() != vec.hasM())
@@ -325,273 +70,205 @@ public class Polyline extends PointOfstCollection
 			return false;
 		}
 		Polyline pl = (Polyline)vec;
-		int []newPtOfsts = new int[this.ptOfstArr.length + pl.ptOfstArr.length];
-		ByteTool.copyArray(newPtOfsts, 0, this.ptOfstArr, 0, this.ptOfstArr.length);
-		int i = pl.ptOfstArr.length;
-		while (i-- > 0)
+		Iterator<LineString> it = pl.iterator();
+		while (it.hasNext())
 		{
-			newPtOfsts[this.ptOfstArr.length + i] = pl.ptOfstArr[i] + this.pointArr.length;
+			this.addGeometry((LineString)it.next().clone());
 		}
-		this.ptOfstArr = newPtOfsts;
+		return true;
+	}
 
-		Coord2DDbl []newPoints = new Coord2DDbl[this.pointArr.length + pl.pointArr.length];
-		ByteTool.copyArray(newPoints, 0, this.pointArr, 0, this.pointArr.length);
-		ByteTool.copyArray(newPoints, this.pointArr.length, pl.pointArr, 0, pl.pointArr.length);
-		this.pointArr = newPoints;
+	public void addFromPtOfst(int[] ptOfstList, Coord2DDbl[] pointList, double[] zList, double[] mList)
+	{
+		LineString lineString;
+		int i = 0;
+		int j;
+		int k;
+		Coord2DDbl[] ptArr;
+		double[] zArr;
+		double[] mArr;
+		int nPtOfst = ptOfstList.length;
+		int nPoint = pointList.length;
+		while (i < nPtOfst)
+		{
+			j = ptOfstList[i];
+			if (i + 1 >= nPtOfst)
+				k = nPoint;
+			else
+				k = ptOfstList[i + 1];
+			lineString = new LineString(this.srid, k - j, zList != null, mList != null);
+			ptArr = lineString.getPointList();
+			zArr = lineString.getZList();
+			mArr = lineString.getMList();
+			ByteTool.copyArray(ptArr, 0, pointList, j, (k - j));
+			if (zList != null)
+			{
+				ByteTool.copyArray(zArr, 0, zList, j, (k - j));
+			}
+			if (mList != null)
+			{
+				ByteTool.copyArray(mArr, 0, mList, j, (k - j));
+			}
+			this.addGeometry(lineString);
+			i++;
+		}
+	}
 
-		if (this.zArr != null)
+	public double calcLength()
+	{
+		double dist = 0;
+		Iterator<LineString> it = this.iterator();
+		while (it.hasNext())
 		{
-			double []newZ = new double[this.zArr.length + pl.zArr.length];
-			ByteTool.copyArray(newZ, 0, this.zArr, 0, this.zArr.length);
-			ByteTool.copyArray(newZ, this.zArr.length, pl.zArr, 0, pl.zArr.length);
-			this.zArr = newZ;
+			dist += it.next().calcLength();
 		}
-	
-		if (this.mArr != null)
+		return dist;
+	}
+
+	public int fillPointOfstList(Coord2DDbl[] pointList, int[] ptOfstList, double[] zList, double[] mList)
+	{
+		int totalCnt = 0;
+		int nPoint;
+		LineString lineString;
+		Coord2DDbl[] thisPtList;
+		double[] dList;
+		Iterator<LineString> it = this.geometries.iterator();
+		int i = 0;
+		while (it.hasNext())
 		{
-			double []newM = new double[this.mArr.length + pl.mArr.length];
-			ByteTool.copyArray(newM, 0, this.mArr, 0, this.mArr.length);
-			ByteTool.copyArray(newM, this.mArr.length, pl.mArr, 0, pl.mArr.length);
-			this.mArr = newM;
+			ptOfstList[i] = totalCnt;
+			lineString = it.next();
+			thisPtList = lineString.getPointList();
+			nPoint = thisPtList.length;
+			ByteTool.copyArray(pointList, totalCnt, thisPtList, 0, nPoint);
+			if (zList != null)
+			{
+				dList = lineString.getZList();
+				if (dList != null)
+				{
+					ByteTool.copyArray(zList, totalCnt, dList, 0, dList.length);
+				}
+			}
+			if (mList != null)
+			{
+				dList = lineString.getMList();
+				if (dList != null)
+				{
+					ByteTool.copyArray(mList, totalCnt, dList, 0, dList.length);
+				}
+			}
+			totalCnt += nPoint;
+			i++;
 		}
-	
-		this.optimizePolyline();
-		return true;	
+		return totalCnt;
+	}
+
+	public Coord2DDbl calcPosAtDistance(double dist)
+	{
+		LineString lineString;
+		Coord2DDbl[] points;
+		Coord2DDbl lastPt = new Coord2DDbl(0, 0);
+		Iterator<LineString> it = this.geometries.iterator();
+		int k;
+		int nPoint;
+		Coord2DDbl diff;
+		double thisDist;
+		while (it.hasNext())
+		{
+			lineString = it.next();
+			points = lineString.getPointList();
+			nPoint = points.length;
+			if (dist <= 0)
+			{
+				return points[0];
+			}
+			else
+			{
+				lastPt = points[nPoint - 1];
+				k = 1;
+				while (k < nPoint)
+				{
+					diff = points[k - 1].subtract(points[k]);
+					thisDist = Math.sqrt(diff.x * diff.x + diff.y * diff.y);
+					if (thisDist > dist)
+					{
+						return points[k - 1].add(points[k].subtract(points[k - 1]).multiply(dist / thisDist));
+					}
+					else
+					{
+						dist -= thisDist;
+					}
+					k++;
+				}
+			}
+		}
+		return lastPt;
 	}
 
 	public Polyline splitByPoint(Coord2DDbl pt)
 	{
-		int k;
-		int l;
-		int []ptOfsts;
+		Coord2DDbl calPt = new Coord2DDbl();
+		SharedDouble calZ = new SharedDouble();
+		SharedDouble calM = new SharedDouble();
+		SharedBool isPoint = new SharedBool();
+		int minId = this.getPointNo(pt, isPoint, calPt, calZ, calM);
 	
-		ptOfsts = this.ptOfstArr;
-	
-		k = this.ptOfstArr.length;
-		l = this.pointArr.length;
-	
-		double calPtX;
-		double calPtY;
-		double calZ;
-		double calM;
-		boolean isPoint;
-		SharedDouble tmpX = new SharedDouble();
-		SharedDouble tmpY = new SharedDouble();
-		SharedDouble tmpZ = new SharedDouble();
-		SharedDouble tmpM = new SharedDouble();
-		SharedBool tmpBool = new SharedBool();
-		int minId = this.getPointNo(pt, tmpBool, tmpX, tmpY, tmpZ, tmpM);
-		isPoint = tmpBool.value;
-		calPtX = tmpX.value;
-		calPtY = tmpY.value;
-		calZ = tmpZ.value;
-		calM = tmpM.value;
-		int []oldPtOfsts;
-		int []newPtOfsts;
-		Coord2DDbl []oldPoints;
-		Coord2DDbl []newPoints;
-		double []oldZ;
-		double []newZ;
-		double []oldM;
-		double []newM;
+		LineString lineString;
 		Polyline newPL;
-		int nPtOfst = this.ptOfstArr.length;
-		int nPoint = this.pointArr.length;
-		if (isPoint)
-		{
-			if (minId == this.pointArr.length - 1 || minId == 0 || minId == -1)
-			{
-				return null;
-			}
-			k = this.ptOfstArr.length;
-			while (k-- > 1)
-			{
-				if (this.ptOfstArr[k] == minId || (this.ptOfstArr[k] - 1) == minId)
-				{
-					return null;
-				}
-			}
-			
-			oldPtOfsts = this.ptOfstArr;
-			oldPoints = this.pointArr;
-			oldZ = this.zArr;
-			oldM = this.mArr;
-	
-			k = this.ptOfstArr.length;
-			while (k-- > 0)
-			{
-				if (oldPtOfsts[k] < minId)
-				{
-					break;
-				}
-			}
-			newPtOfsts = new int[k + 1];
-			newPoints = new Coord2DDbl[minId + 1];
-			if (oldZ != null)
-			{
-				newZ = new double[minId + 1];
-				ByteTool.copyArray(newZ, 0, oldZ, 0, minId + 1);
-			}
-			else
-			{
-				newZ = null;
-			}
-			if (oldM != null)
-			{
-				newM = new double[minId + 1];
-				ByteTool.copyArray(newM, 0, oldM, 0, minId + 1);
-			}
-			else
-			{
-				newM = null;
-			}
-			l = minId + 1;
-			while (l-- > 0)
-			{
-				newPoints[l] = oldPoints[l].clone();
-			}
-			l = k + 1;
-			while (l-- > 0)
-			{
-				newPtOfsts[l] = oldPtOfsts[l];
-			}
-	
-			this.ptOfstArr = newPtOfsts;
-			this.pointArr = newPoints;
-			this.zArr = newZ;
-			this.mArr = newM;
-			newPL = new Polyline(this.srid, nPtOfst - k, nPoint - minId, this.zArr != null, this.mArr != null);
-			newPtOfsts = newPL.getPtOfstList();
-			l = this.ptOfstArr.length;
-			while (--l > k)
-			{
-				newPtOfsts[l - k] = ptOfsts[l] - minId;
-			}
-			newPtOfsts[0] = 0;
-			newPoints = newPL.getPointList();
-			l = nPoint;
-			while (l-- > minId)
-			{
-				newPoints[l - minId] = oldPoints[l].clone();
-			}
-			if (oldZ != null)
-			{
-				l = nPoint;
-				newZ = newPL.getZList();
-				while (l-- > minId)
-				{
-					newZ[l - minId] = oldZ[l];
-				}
-			}
-			if (oldM != null)
-			{
-				l = nPoint;
-				newM = newPL.getMList();
-				while (l-- > minId)
-				{
-					newM[l - minId] = oldM[l];
-				}
-			}
-			return newPL;
-		}
-		else
-		{
-			oldPtOfsts = this.ptOfstArr;
-			oldPoints = this.pointArr;
-			oldZ = this.zArr;
-			oldM = this.mArr;
 		
-			k = nPtOfst;
-			while (k-- > 0)
+		if (minId == -1)
+			return null;
+		Iterator<LineString> it = this.geometries.iterator();
+		int i = 0;
+		while (it.hasNext())
+		{
+			lineString = it.next();
+			int nPoint = lineString.getPointCount();
+			if (minId == 0 && isPoint.value)
 			{
-				if (oldPtOfsts[k] <= minId)
+				if (i == 0)
+					return null;
+				newPL = new Polyline(this.srid);
+				while ((lineString = this.geometries.remove(i)) != null)
 				{
-					break;
+					newPL.addGeometry(lineString);
 				}
+				return newPL;
 			}
-			newPtOfsts = new int[k + 1];
-			newPoints = new Coord2DDbl[minId + 2];
-			if (oldZ != null)
+			else if (minId == nPoint - 1)
 			{
-				newZ = new double[minId + 2];
-				ByteTool.copyArray(newZ, 0, oldZ, 0, minId + 1);
-				newZ[minId + 1] = calZ;
+				if (i + 1 == this.geometries.size())
+					return null;
+				newPL = new Polyline(this.srid);
+				while ((lineString = this.geometries.remove(i + 1)) != null)
+				{
+					newPL.addGeometry(lineString);
+				}
+				return newPL;
+			}
+			else if (minId < nPoint)
+			{
+				newPL = new Polyline(this.srid);
+				if ((lineString = lineString.splitByPoint(pt)) != null)
+				{
+					newPL.addGeometry(lineString);
+				}
+				while ((lineString = this.geometries.remove(i + 1)) != null)
+				{
+					newPL.addGeometry(lineString);
+				}
+				return newPL;
 			}
 			else
 			{
-				newZ = null;
+				minId -= nPoint;
 			}
-			if (oldM != null)
-			{
-				newM = new double[minId + 2];
-				ByteTool.copyArray(newM, 0, oldM, 0, minId + 1);
-				newM[minId + 1] = calM;
-			}
-			else
-			{
-				newM = null;
-			}
-			l = minId + 1;
-			while (l-- > 0)
-			{
-				newPoints[l] = oldPoints[l].clone();
-			}
-			newPoints[minId + 1] = new Coord2DDbl(calPtX, calPtY);
-	
-			l = k + 1;
-			while (l-- > 0)
-			{
-				newPtOfsts[l] = oldPtOfsts[l];
-			}
-	
-			this.ptOfstArr = newPtOfsts;
-			this.pointArr = newPoints;
-			this.zArr = newZ;
-			this.mArr = newM;
-			newPL = new Polyline(this.srid, nPtOfst - k, nPoint - minId, oldZ != null, oldM != null);
-
-			newPtOfsts = newPL.getPtOfstList();
-			l = this.ptOfstArr.length;
-			while (--l > k)
-			{
-				newPtOfsts[l - k] = ptOfsts[l] - minId;
-			}
-			newPtOfsts[0] = 0;
-
-			newPoints = newPL.getPointList();
-			l = nPoint;
-			while (--l > minId)
-			{
-				newPoints[l - minId] = oldPoints[l].clone();
-			}
-			newPoints[0] = new Coord2DDbl(calPtX, calPtY);
-
-			if (oldZ != null)
-			{
-				newZ = newPL.getZList();
-				l = nPoint;
-				while (--l > minId)
-				{
-					newZ[l - minId] = oldZ[l];
-				}
-				newZ[0] = calZ;
-			}
-
-			if (oldM != null)
-			{
-				newM = newPL.getMList();
-				l = nPoint;
-				while (--l > minId)
-				{
-					newM[l - minId] = oldM[l];
-				}
-				newM[0] = calM;
-			}
-			return newPL;
+			i++;
 		}
+		return null;
 	}
 
-	public void optimizePolyline()
+/* 	public void optimizePolyline()
 	{
 		if (this.zArr != null || this.mArr != null)
 			return;
@@ -777,208 +454,172 @@ public class Polyline extends PointOfstCollection
 		{
 			this.ptOfstArr = Arrays.copyOf(this.ptOfstArr, nPtOfst);
 		}	
-	}
+	}*/
 
-	public int getPointNo(Coord2DDbl pt, SharedBool isPoint, SharedDouble calPtXOut, SharedDouble calPtYOut, SharedDouble calPtZOut, SharedDouble calPtMOut)
+	public int getPointNo(Coord2DDbl pt, SharedBool isPoint, Coord2DDbl calPtOutPtr, SharedDouble calZOutPtr, SharedDouble calMOutPtr)
 	{
 		int k;
 		int l;
-		int m;
-		int []ptOfsts;
-		Coord2DDbl []points;
-		double []zArr;
-		double []mArr;
-	
-		ptOfsts = this.ptOfstArr;
-		points = this.pointArr;
-		zArr = this.zArr;
-		mArr = this.mArr;
-	
-		k = this.ptOfstArr.length;
-		l = this.pointArr.length;
-	
+		Coord2DDbl[] points;
+		double[] zArr;
+		double[] mArr;
 		double calBase;
-		double calH;
-		double calW;
-		double calX;
-		double calY;
+		Coord2DDbl calDiff;
+		Coord2DDbl calSqDiff;
+		Coord2DDbl calPt = new Coord2DDbl();
+		Coord2DDbl calPtOut = new Coord2DDbl(0, 0);
+		double calZOut = 0;
+		double calMOut = 0;
 		double calZ = 0;
 		double calM = 0;
 		double calD;
 		double dist = 0x7fffffff;
-		double calPtX = 0;
-		double calPtY = 0;
-		double calPtZ = 0;
-		double calPtM = 0;
 		int minId = -1;
 		boolean isPointI = false;
 	
-		while (k-- > 0)
+		LineString lineString;
+		int currId = 0;
+		Iterator<LineString> it = this.geometries.iterator();
+		while (it.hasNext())
 		{
-			m = ptOfsts[k];
-			l--;
-			while (l-- > m)
+			lineString = it.next();
+			k = 0;
+			zArr = lineString.getZList();
+			mArr = lineString.getMList();
+			points = lineString.getPointList();
+			l = points.length;
+			while (k < l)
 			{
-				calH = points[l].y - points[l + 1].y;
-				calW = points[l].x - points[l + 1].x;
-	
-				if (calH == 0 && calW == 0)
-				{
-					calX = pt.x;
-					calY = pt.y;
-					if (zArr != null)
-					{
-						calZ = zArr[l];
-					}
-					else
-					{
-						calZ = 0;
-					}
-					if (mArr != null)
-					{
-						calM = mArr[l];
-					}
-					else
-					{
-						calM = 0;
-					}
-				}
-				else
-				{
-					if (calH == 0)
-					{
-						calX = pt.x;
-					}
-					else
-					{
-						calX = (calBase = (calW * calW)) * pt.x;
-						calBase += calH * calH;
-						calX += calH * calH * points[l].x;
-						calX += (pt.y - points[l].y) * calH * calW;
-						calX /= calBase;
-
-						if (calW == 0)
-						{
-							////////////////////////////////
-							calZ = 0;
-							calM = 0;
-						}
-					}
-		
-					if (calW == 0)
-					{
-						calY = pt.y;
-					}
-					else
-					{
-						double ratio = (calX - (points[l].x)) / calW;
-						calY = (ratio * calH) + points[l].y;
-						if (zArr != null)
-						{
-							calZ = (ratio * (zArr[l] - zArr[l + 1])) + zArr[l];
-						}
-						else
-						{
-							calZ = 0;
-						}
-						if (mArr != null)
-						{
-							calM = (ratio * (mArr[l] - mArr[l + 1])) + mArr[l];
-						}
-						else
-						{
-							calM = 0;
-						}
-					}
-				}
-	
-				if (calW < 0)
-				{
-					if (points[l + 0].x > calX)
-						continue;
-					if (points[l + 1].x < calX)
-						continue;
-				}
-				else
-				{
-					if (points[l + 0].x < calX)
-						continue;
-					if (points[l + 1].x > calX)
-						continue;
-				}
-	
-				if (calH < 0)
-				{
-					if (points[l + 0].y > calY)
-						continue;
-					if (points[l + 1].y < calY)
-						continue;
-				}
-				else
-				{
-					if (points[l + 0].y < calY)
-						continue;
-					if (points[l + 1].y > calY)
-						continue;
-				}
-	
-				calH = pt.y - calY;
-				calW = pt.x - calX;
-				calD = calW * calW + calH * calH;
+				calDiff = pt.subtract(points[k]);
+				calSqDiff = calDiff.multiply(calDiff);
+				calD = calSqDiff.x + calSqDiff.y;
 				if (calD < dist)
 				{
 					dist = calD;
-					calPtX = calX;
-					calPtY = calY;
-					calPtZ = calZ;
-					calPtM = calM;
-					isPointI = false;
-					minId = l;
+					calPtOut = points[k];
+					calZOut = (zArr != null)?zArr[k]:0;
+					calMOut = (mArr != null)?mArr[k]:0;
+					minId = (currId + k);
+					isPointI = true;
+				}
+	
+				k++;
+				if (k < l)
+				{
+					calDiff = points[k - 1].subtract(points[k]);
+	
+					if (calDiff.x == 0 && calDiff.y == 0)
+					{
+						calPt.x = pt.x;
+						calPt.y = pt.y;
+						calZ = (zArr != null)?zArr[k - 1]:0;
+						calM = (mArr != null)?mArr[k - 1]:0;
+					}
+					else
+					{
+						if (calDiff.y == 0)
+						{
+							calPt.x = pt.x;
+						}
+						else
+						{
+							calSqDiff = calDiff.multiply(calDiff);
+							calBase = calSqDiff.x + calSqDiff.y;
+							calPt.x = calSqDiff.x * pt.x;
+							calPt.x += calSqDiff.y * points[k - 1].x;
+							calPt.x += (pt.y - points[k - 1].y) * calDiff.x * calDiff.y;
+							calPt.x /= calBase;
+	
+							if (calDiff.x == 0)
+							{
+								////////////////////////////////
+								calZ = 0;
+								calM = 0;
+							}
+						}
+	
+						if (calDiff.x == 0)
+						{
+							calPt.y = pt.y;
+						}
+						else
+						{
+							Double ratio = (calPt.x - (points[k - 1].x)) / calDiff.x;
+							calPt.y = (ratio * calDiff.y) + points[k - 1].y;
+							if (zArr != null)
+							{
+								calZ = (ratio * (zArr[k - 1] - zArr[k])) + zArr[k - 1];
+							}
+							else
+							{
+								calZ = 0;
+							}
+							if (mArr != null)
+							{
+								calM = (ratio * (mArr[k - 1] - mArr[k])) + mArr[k - 1];
+							}
+							else
+							{
+								calM = 0;
+							}
+						}
+					}
+	
+					if (calDiff.x < 0)
+					{
+						if (points[k - 1].x > calPt.x)
+							continue;
+						if (points[k].x < calPt.x)
+							continue;
+					}
+					else
+					{
+						if (points[k - 1].x < calPt.x)
+							continue;
+						if (points[k].x > calPt.x)
+							continue;
+					}
+	
+					if (calDiff.y < 0)
+					{
+						if (points[k - 1].y > calPt.y)
+							continue;
+						if (points[k].y < calPt.y)
+							continue;
+					}
+					else
+					{
+						if (points[k - 1].y < calPt.y)
+							continue;
+						if (points[k].y > calPt.y)
+							continue;
+					}
+	
+					calDiff = pt.subtract(calPt);
+					calSqDiff = calDiff.multiply(calDiff);
+					calD = calSqDiff.x + calSqDiff.y;
+					if (calD < dist)
+					{
+						dist = calD;
+						calPtOut = calPt;
+						calZOut = calZ;
+						calMOut = calM;
+						isPointI = false;
+						minId = (currId + k - 1);
+					}
 				}
 			}
-		}
-		k = this.pointArr.length;
-		while (k-- > 0)
-		{
-			calH = pt.y - points[k].y;
-			calW = pt.x - points[k].x;
-			calD = calW * calW + calH * calH;
-			if (calD < dist)
-			{
-				dist = calD;
-				calPtX = points[k].x;
-				calPtY = points[k].y;
-				calPtZ = (zArr != null)?zArr[k]:0;
-				calPtM = (mArr != null)?mArr[k]:0;
-				minId = k;
-				isPointI = true;
-			}
+			currId += l;
 		}
 	
-		if (isPoint != null)
-		{
-			isPoint.value = isPointI;
-		}
-		if (calPtXOut != null)
-		{
-			calPtXOut.value = calPtX;
-		}
-		if (calPtYOut != null)
-		{
-			calPtYOut.value = calPtY;
-		}
-		if (calPtZOut != null)
-		{
-			calPtZOut.value = calPtZ;
-		}
-		if (calPtMOut != null)
-		{
-			calPtMOut.value = calPtM;
-		}
+		isPoint.value = isPointI;
+		calPtOutPtr.set(calPtOut);
+		calZOutPtr.value = calZOut;
+		calMOutPtr.value = calMOut;
 		return minId;
 	}
 
-	public Polygon createPolygonByDist(double dist)
+/* 	public Polygon createPolygonByDist(double dist)
 	{
 		int nPoint = this.pointArr.length;
 		if (nPoint < 2)
@@ -1117,7 +758,7 @@ public class Polyline extends PointOfstCollection
 			i++;
 		}
 		return pg;
-	}
+	}*/
 
 	public boolean hasColor()
 	{

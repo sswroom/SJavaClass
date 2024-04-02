@@ -36,6 +36,12 @@ public class Coord2DDbl
 		return new Coord2DDbl(this.x, this.y);
 	}
 
+	public void set(Coord2DDbl coord)
+	{
+		this.x = coord.x;
+		this.y = coord.y;
+	}
+	
 	public Coord2DDbl setMin(Coord2DDbl coord)
 	{
 		if (coord.x < this.x)
@@ -59,6 +65,11 @@ public class Coord2DDbl
 		return new Coord2DDbl(this.x + val, this.y + val);
 	}
 
+	public Coord2DDbl add(Coord2DDbl val)
+	{
+		return new Coord2DDbl(this.x + val.x, this.y + val.y);
+	}
+
 	public Coord2DDbl subtract(double val)
 	{
 		return new Coord2DDbl(this.x - val, this.y - val);
@@ -72,6 +83,11 @@ public class Coord2DDbl
 	public Coord2DDbl multiply(double val)
 	{
 		return new Coord2DDbl(this.x * val, this.y * val);
+	}
+
+	public Coord2DDbl multiply(Coord2DDbl val)
+	{
+		return new Coord2DDbl(this.x * val.x, this.y * val.y);
 	}
 
 	public boolean equals(Coord2DDbl coord)

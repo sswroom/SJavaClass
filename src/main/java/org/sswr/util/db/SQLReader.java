@@ -18,10 +18,12 @@ public class SQLReader extends DBReader
 {
 	private DBType dbType;
 	private ResultSet rs;
+	private boolean arcGIS;
 
-	public SQLReader(DBType dbType, ResultSet rs)
+	public SQLReader(DBType dbType, boolean arcGIS, ResultSet rs)
 	{
 		this.dbType = dbType;
+		this.arcGIS = arcGIS;
 		this.rs = rs;
 	}
 
@@ -169,6 +171,7 @@ public class SQLReader extends DBReader
 			byte bytes[] = rs.getBytes(colIndex + 1);
 			if (bytes == null)
 				return null;
+			System.out.println("SQLReader DBType: "+this.dbType);
 			if (this.dbType == DBType.MSSQL)
 			{
 				return MSGeography.parseBinary(bytes);
