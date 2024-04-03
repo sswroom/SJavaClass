@@ -473,13 +473,22 @@ public class DBUtil {
 		}
 		int i = 0;
 		int j = allCols.size();
+		DBColumnInfo col;
 		while (i < j)
 		{
 			if (i > 0)
 			{
 				sb.append(", ");
 			}
-			sb.append(dbCol(dbType, allCols.get(i).colName));
+			col = allCols.get(i);
+			if (dbType == DBType.PostgreSQL && col.field.getType().equals(Geometry.class) && "sde".equals(tableAnn.schema()))
+			{
+				sb.append("sde.st_asbinary("+dbCol(dbType, col.colName)+")");
+			}
+			else
+			{
+				sb.append(dbCol(dbType, col.colName));
+			}
 			i++;
 		}
 		sb.append(" from ");
@@ -1095,6 +1104,7 @@ public class DBUtil {
 		{
 			throw new IllegalArgumentException("Class annotation is not valid");
 		}
+		boolean arcGISSDE = "sde".equals(tableAnn.schema());
 
 		Constructor<T> constr;
 		try
@@ -1131,7 +1141,7 @@ public class DBUtil {
 		sb.append(" where ");
 		sb.append(idCol.colName);
 		sb.append(" = ");
-		sb.append(dbVal(dbType, idCol, id, null));
+		sb.append(dbVal(dbType, idCol, id, arcGISSDE));
 		try
 		{
 			sqlLogger.logMessage(sb.toString(), LogLevel.COMMAND);
@@ -1941,7 +1951,7 @@ public class DBUtil {
 		}
 	}
 
-	public static String dbGeometry(DBType dbType, Geometry geometry, DBOptions options)
+	public static String dbGeometry(DBType dbType, Geometry geometry, boolean arcGISSDE)
 	{
 		if (geometry == null)
 		{
@@ -1957,7 +1967,7 @@ public class DBUtil {
 		}
 		else if (dbType == DBType.PostgreSQL)
 		{
-			if (options != null && options.arcGISSDE)
+			if (arcGISSDE)
 			{
 				return "sde.st_geometry('"+GeometryUtil.toWKT(geometry)+"', "+geometry.getSRID()+")";
 			}
@@ -1973,7 +1983,7 @@ public class DBUtil {
 		}
 	}
 
-	public static String dbVal(DBType dbType, DBColumnInfo col, Object val, DBOptions options)
+	public static String dbVal(DBType dbType, DBColumnInfo col, Object val, boolean arcGISSDE)
 	{
 		if (val == null)
 		{
@@ -2028,7 +2038,7 @@ public class DBUtil {
 		{
 			if (val instanceof Geometry)
 			{
-				return dbGeometry(dbType, (Geometry)val, options);
+				return dbGeometry(dbType, (Geometry)val, arcGISSDE);
 			}
 		}
 		if (fieldType.equals(String.class) && val.getClass().equals(String.class))
@@ -2056,7 +2066,7 @@ public class DBUtil {
 				col = idCols.get(0);
 				try
 				{
-					return dbVal(dbType, col, col.getter.get(val), options);
+					return dbVal(dbType, col, col.getter.get(val), arcGISSDE);
 				}
 				catch (IllegalAccessException ex)
 				{
@@ -2153,6 +2163,7 @@ public class DBUtil {
 
 	private static <T> boolean update(Connection conn, TableInfo table, T oriObj, T newObj, DBOptions options)
 	{
+		boolean arcGISSDE = (table.tableAnn != null) && "sde".equals(table.tableAnn.schema());
 		DBType dbType = connGetDBType(conn);
 		StringBuilder sb;
 		DBColumnInfo col;
@@ -2181,7 +2192,7 @@ public class DBUtil {
 					}
 					dbCol(sb, dbType, col.colName);
 					sb.append(" = ");
-					sb.append(dbVal(dbType, col, col.getter.get(oriObj), options));
+					sb.append(dbVal(dbType, col, col.getter.get(oriObj), arcGISSDE));
 					i++;
 				}
 				boolean ret = executeNonQuery(conn, sb.toString(), options);
@@ -2238,7 +2249,7 @@ public class DBUtil {
 							sb.append(", ");
 						}
 						found = true;
-						sb.append(dbVal(dbType, col, col.getter.get(newObj), options));
+						sb.append(dbVal(dbType, col, col.getter.get(newObj), arcGISSDE));
 					}
 					i++;
 				}
@@ -2296,7 +2307,7 @@ public class DBUtil {
 						}
 						sb.append(dbCol(dbType, col.colName));
 						sb.append(" = ");
-						sb.append(dbVal(dbType, col, o2, options));
+						sb.append(dbVal(dbType, col, o2, arcGISSDE));
 						found = true;
 					}
 					i++;
@@ -2317,7 +2328,7 @@ public class DBUtil {
 					}
 					sb.append(dbCol(dbType, col.colName));
 					sb.append(" = ");
-					sb.append(dbVal(dbType, col, col.getter.get(oriObj), options));
+					sb.append(dbVal(dbType, col, col.getter.get(oriObj), arcGISSDE));
 					i++;
 				}
 				if (executeNonQuery(conn, sb.toString(), options))
@@ -2392,6 +2403,7 @@ public class DBUtil {
 		{
 			return false;
 		}
+		boolean arcGISSDE = (table.tableAnn != null) && "sde".equals(table.tableAnn.schema());
 		DBType dbType = connGetDBType(conn);
 		DBColumnInfo col;
 		StringBuilder sb = new StringBuilder();
@@ -2445,7 +2457,7 @@ public class DBUtil {
 							sb.append(", ");
 						}
 						found = true;
-						sb.append(dbVal(dbType, col, col.getter.get(newObj), options));
+						sb.append(dbVal(dbType, col, col.getter.get(newObj), arcGISSDE));
 					}
 					i++;
 				}

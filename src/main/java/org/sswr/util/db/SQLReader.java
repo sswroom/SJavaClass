@@ -218,7 +218,10 @@ public class SQLReader extends DBReader
 			}
 			else if (dbType == DBType.PostgreSQL)
 			{
-				bytes = StringUtil.hex2Bytes(new String(bytes));
+				if (!arcGIS)
+				{
+					bytes = StringUtil.hex2Bytes(new String(bytes));
+				}
 				WKBReader reader = new WKBReader();
 				try
 				{

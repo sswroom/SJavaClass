@@ -7,6 +7,7 @@ import org.sswr.util.data.ByteTool;
 import org.sswr.util.data.SharedDouble;
 import org.sswr.util.data.StringUtil;
 import org.sswr.util.math.geometry.LineString;
+import org.sswr.util.math.geometry.LinearRing;
 import org.sswr.util.math.geometry.MultiPolygon;
 import org.sswr.util.math.geometry.Point2D;
 import org.sswr.util.math.geometry.PointZ;
@@ -311,19 +312,56 @@ public class WKTReader
 				return null;
 			}
 			Polygon pg;
-			pg = new Polygon(this.srid, ptOfstList.size(), ptList.size() >> 1, zList.size() == (ptList.size() >> 1), false);
-			int []ptOfstArr = pg.getPtOfstList();
-			ByteTool.copyArray(ptOfstArr, 0, ptOfstList, 0, ptOfstList.size());
-			Coord2DDbl []ptArr = pg.getPointList();
-			ByteTool.copyArray(ptArr, 0, ptList, 0, ptList.size() >> 1);
-			if (pg.hasZ())
+			LinearRing lr;
+			boolean hasM = false;
+			boolean hasZ = false;
+			if (zList.size() == ptList.size())
 			{
-				double []zArr = pg.getZList();
-				int i = zArr.length;
-				while (i-- > 0)
+				hasM = true;
+				hasZ = true;
+			}
+			else if (zList.size() == (ptList.size() >> 1))
+			{
+				hasZ = true;
+			}
+			pg = new Polygon(this.srid);
+			int i = 0;
+			int j = ptOfstList.size();
+			int k = 0;
+			int l;
+			int m;
+			while (i < j)
+			{
+				i++;
+				if (i >= j)
+					l = ptList.size();
+				else
+					l = ptOfstList.get(i) << 1;
+				lr = new LinearRing(srid, (l - k) >> 1, hasZ, hasM);
+				Coord2DDbl[] ptArr = lr.getPointList();
+				ByteTool.copyArray(ptArr, 0, ptList, k, (l - k) >> 1);
+				if (hasM)
 				{
-					zArr[i] = zList.get(i);
+					double[] zArr = lr.getZList();
+					double[] mArr = lr.getMList();
+					m = mArr.length;
+					while (m-- > 0)
+					{
+						zArr[m] = zList.get(((k >> 1) + m) << 1);
+						mArr[m] = zList.get((((k >> 1) + m) << 1) + 1);
+					}
 				}
+				else if (hasZ)
+				{
+					double[] zArr = lr.getZList();
+					m = zArr.length;
+					while (m-- > 0)
+					{
+						zArr[m] = zList.get((k >> 1) + m);
+					}
+				}
+				pg.addGeometry(lr);
+				k = l;
 			}
 			return pg;
 		}
@@ -332,10 +370,11 @@ public class WKTReader
 			int ofst = 0;
 			ArrayList<Double> ptList = new ArrayList<Double>();
 			ArrayList<Double> zList = new ArrayList<Double>();
-			ArrayList<Integer> ptOfstList = new ArrayList<Integer>();
 			SharedDouble x = new SharedDouble();
 			SharedDouble y = new SharedDouble();
 			SharedDouble z = new SharedDouble();
+			Polyline pl;
+			LineString lineString;
 			ofst += 15;
 			while (wkt[ofst] == ' ')
 			{
@@ -345,6 +384,7 @@ public class WKTReader
 			{
 				return null;
 			}
+			pl = new Polyline(this.srid);
 			while (true)
 			{
 				while (wkt[++ofst] == ' ');
@@ -352,7 +392,8 @@ public class WKTReader
 				{
 					return null;
 				}
-				ptOfstList.add((ptList.size() >> 1));
+				ptList.clear();
+				zList.clear();
 				while (true)
 				{
 					while (wkt[++ofst] == ' ');
@@ -411,7 +452,7 @@ public class WKTReader
 			{
 				return null;
 			}
-			Polyline pl;
+
 			boolean hasZ = false;
 			boolean hasM = false;
 			if (zList.size() == ptList.size())
@@ -423,16 +464,14 @@ public class WKTReader
 			{
 				hasZ = true;
 			}
-			pl = new Polyline(this.srid, ptOfstList.size(), ptList.size() >> 1, hasZ, hasM);
+			lineString = new LineString(this.srid, ptList.size() >> 1, hasZ, hasM);
 			int i;
-			int[] ptOfstArr = pl.getPtOfstList();
-			ByteTool.copyArray(ptOfstArr, 0, ptOfstList, 0, ptOfstList.size());
-			Coord2DDbl []ptArr = pl.getPointList();
+			Coord2DDbl[] ptArr = lineString.getPointList();
 			ByteTool.copyArray(ptArr, 0, ptList, 0, ptList.size() >> 1);
 			if (hasM)
 			{
-				double []zArr = pl.getZList();
-				double []mArr = pl.getMList();
+				double []zArr = lineString.getZList();
+				double []mArr = lineString.getMList();
 				i = zArr.length;
 				while (i-- > 0)
 				{
@@ -442,7 +481,7 @@ public class WKTReader
 			}
 			else if (hasZ)
 			{
-				double []zArr = pl.getZList();
+				double []zArr = lineString.getZList();
 				i = zArr.length;
 				while (i-- > 0)
 				{
@@ -543,24 +582,60 @@ public class WKTReader
 					}
 				}
 				Polygon pg;
-				pg = new Polygon(this.srid, ptOfstList.size(), ptList.size() >> 1, zList.size() == (ptList.size() >> 1), false);
-				int i;
-				int []ptOfstArr = pg.getPtOfstList();
-				ByteTool.copyArray(ptOfstArr, 0, ptOfstList, 0, ptOfstList.size());
-				Coord2DDbl []ptArr = pg.getPointList();
-				ByteTool.copyArray(ptArr, 0, ptList, 0, ptList.size() >> 1);
-				if (pg.hasZ())
+				LinearRing lr;
+				boolean hasM = false;
+				boolean hasZ = false;
+				if (zList.size() == ptList.size())
 				{
-					double []zArr = pg.getZList();
-					i = zArr.length;
-					while (i-- > 0)
+					hasM = true;
+					hasZ = true;
+				}
+				else if (zList.size() == (ptList.size() >> 1))
+				{
+					hasZ = true;
+				}
+				pg = new Polygon(this.srid);
+				int i = 0;
+				int j = ptOfstList.size();
+				int k = 0;
+				int l;
+				int m;
+				while (i < j)
+				{
+					i++;
+					if (i >= j)
+						l = ptList.size();
+					else
+						l = ptOfstList.get(i) << 1;
+					lr = new LinearRing(srid, (l - k) >> 1, hasZ, hasM);
+					Coord2DDbl[] ptArr = lr.getPointList();
+					ByteTool.copyArray(ptArr, 0, ptList, k, (l - k) >> 1);
+					if (hasM)
 					{
-						zArr[i] = zList.get(i);
+						double[] zArr = lr.getZList();
+						double[] mArr = lr.getMList();
+						m = mArr.length;
+						while (m-- > 0)
+						{
+							zArr[m] = zList.get(((k >> 1) + m) << 1);
+							mArr[m] = zList.get((((k >> 1) + m) << 1) + 1);
+						}
 					}
+					else if (hasZ)
+					{
+						double[] zArr = lr.getZList();
+						m = zArr.length;
+						while (m-- > 0)
+						{
+							zArr[m] = zList.get((k >> 1) + m);
+						}
+					}
+					pg.addGeometry(lr);
+					k = l;
 				}
 				if (mpg == null)
 				{
-					mpg = new MultiPolygon(this.srid, pg.hasZ(), pg.hasM());
+					mpg = new MultiPolygon(this.srid);
 				}
 				mpg.addGeometry(pg);
 	

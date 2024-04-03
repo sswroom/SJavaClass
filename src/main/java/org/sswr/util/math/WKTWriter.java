@@ -1,8 +1,12 @@
 package org.sswr.util.math;
 
+import java.util.Iterator;
+
 import org.sswr.util.math.geometry.CompoundCurve;
 import org.sswr.util.math.geometry.CurvePolygon;
+import org.sswr.util.math.geometry.GeometryCollection;
 import org.sswr.util.math.geometry.LineString;
+import org.sswr.util.math.geometry.LinearRing;
 import org.sswr.util.math.geometry.MultiPolygon;
 import org.sswr.util.math.geometry.MultiSurface;
 import org.sswr.util.math.geometry.Point2D;
@@ -17,8 +21,9 @@ import org.sswr.util.math.geometry.Vector2D.VectorType;
 public class WKTWriter implements VectorTextWriter
 {
 	private String lastError;
+	private boolean reverseAxis;
 	
-	private void appendLineString(StringBuilder sb, LineString pl)
+	private static void appendLineString(StringBuilder sb, LineString pl, boolean reverseAxis)
 	{
 		sb.append('(');
 		int nPoint;
@@ -35,9 +40,18 @@ public class WKTWriter implements VectorTextWriter
 				while (i < nPoint)
 				{
 					if (i > 0) sb.append(',');
-					sb.append(pointList[i].x);
-					sb.append(' ');
-					sb.append(pointList[i].y);
+					if (reverseAxis)
+					{
+						sb.append(pointList[i].y);
+						sb.append(' ');
+						sb.append(pointList[i].x);
+					}
+					else
+					{
+						sb.append(pointList[i].x);
+						sb.append(' ');
+						sb.append(pointList[i].y);
+					}
 					sb.append(' ');
 					sb.append(zArr[i]);
 					sb.append(' ');
@@ -51,11 +65,58 @@ public class WKTWriter implements VectorTextWriter
 				while (i < nPoint)
 				{
 					if (i > 0) sb.append(',');
-					sb.append(pointList[i].x);
-					sb.append(' ');
-					sb.append(pointList[i].y);
+					if (reverseAxis)
+					{
+						sb.append(pointList[i].y);
+						sb.append(' ');
+						sb.append(pointList[i].x);
+					}
+					else
+					{
+						sb.append(pointList[i].x);
+						sb.append(' ');
+						sb.append(pointList[i].y);
+					}
 					sb.append(" NaN ");
 					sb.append(mArr[i]);
+					i++;
+				}
+			}
+			else
+			{
+				i = 0;
+				while (i < nPoint)
+				{
+					if (i > 0) sb.append(',');
+					if (reverseAxis)
+					{
+						sb.append(pointList[i].y);
+						sb.append(' ');
+						sb.append(pointList[i].x);
+					}
+					else
+					{
+						sb.append(pointList[i].x);
+						sb.append(' ');
+						sb.append(pointList[i].y);
+					}
+					sb.append(' ');
+					sb.append(zArr[i]);
+					i++;
+				}
+			}
+		}
+		else
+		{
+			if (reverseAxis)
+			{
+				i = 0;
+				while (i < nPoint)
+				{
+					if (i > 0) sb.append(',');
+					sb.append(pointList[i].y);
+					sb.append(' ');
+					sb.append(pointList[i].x);
 					i++;
 				}
 			}
@@ -68,293 +129,43 @@ public class WKTWriter implements VectorTextWriter
 					sb.append(pointList[i].x);
 					sb.append(' ');
 					sb.append(pointList[i].y);
-					sb.append(' ');
-					sb.append(zArr[i]);
 					i++;
 				}
 			}
 		}
-		else
-		{
-			i = 0;
-			while (i < nPoint)
-			{
-				if (i > 0) sb.append(',');
-				sb.append(pointList[i].x);
-				sb.append(' ');
-				sb.append(pointList[i].y);
-				i++;
-			}
-		}
 		sb.append(')');
 	}
 
-	private void appendPolygon(StringBuilder sb, Polygon pg)
+	private static void appendPolygon(StringBuilder sb, Polygon pg, boolean reverseAxis)
 	{
-		int nPtOfst;
-		int nPoint;
-		int []ptOfstList = pg.getPtOfstList();
-		Coord2DDbl []pointList = pg.getPointList();
-		nPtOfst = ptOfstList.length;
-		nPoint = pointList.length;
-		int i;
-		int j;
-		int k;
-		k = 0;
-		i = 0;
-		j = nPtOfst - 1;
+		Iterator<LinearRing> it = pg.iterator();
+		boolean found = false;
 		sb.append('(');
-		while (i < j)
+		while (it.hasNext())
 		{
-			sb.append('(');
-			while (k < ptOfstList[i + 1])
-			{
-				sb.append(pointList[k].x);
-				sb.append(' ');
-				sb.append(pointList[k].y);
-				k++;
-				if (k < ptOfstList[i + 1])
-				{
-					sb.append(',');
-				}
-			}
-			sb.append(')');
-			sb.append(',');
-			i++;
-		}
-		sb.append('(');
-		while (k < nPoint)
-		{
-			sb.append(pointList[k].x);
-			sb.append(' ');
-			sb.append(pointList[k].y);
-			k++;
-			if (k < nPoint)
-			{
+			if (found)
 				sb.append(',');
-			}
+			appendLineString(sb, it.next(), reverseAxis);
+			found = true;
 		}
-		sb.append(')');
 		sb.append(')');
 	}
 
-	private void appendPolygonZ(StringBuilder sb, Polygon pg)
-	{
-		int nPtOfst;
-		int nPoint;
-		int []ptOfstList = pg.getPtOfstList();
-		Coord2DDbl []pointList = pg.getPointList();
-		double []zList = pg.getZList();
-		nPtOfst = ptOfstList.length;
-		nPoint = pointList.length;
-		int i;
-		int j;
-		int k;
-		k = 0;
-		i = 0;
-		j = nPtOfst - 1;
-		sb.append('(');
-		while (i < j)
-		{
-			sb.append('(');
-			while (k < ptOfstList[i + 1])
-			{
-				sb.append(pointList[k].x);
-				sb.append(' ');
-				sb.append(pointList[k].y);
-				sb.append(' ');
-				sb.append(zList[k]);
-				k++;
-				if (k < ptOfstList[i + 1])
-				{
-					sb.append(',');
-				}
-			}
-			sb.append(')');
-			sb.append(',');
-			i++;
-		}
-		sb.append('(');
-		while (k < nPoint)
-		{
-			sb.append(pointList[k].x);
-			sb.append(' ');
-			sb.append(pointList[k].y);
-			sb.append(' ');
-			sb.append(zList[k]);
-			k++;
-			if (k < nPoint)
-			{
-				sb.append(',');
-			}
-		}
-		sb.append(')');
-		sb.append(')');
-	}
-
-	private void appendPolyline(StringBuilder sb, Polyline pl)
+	private static void appendPolyline(StringBuilder sb, Polyline pl, boolean reverseAxis)
 	{
 		sb.append('(');
-		int nPtOfst;
-		int nPoint;
-		int []ptOfstList = pl.getPtOfstList();
-		Coord2DDbl []pointList = pl.getPointList();
-		nPtOfst = ptOfstList.length;
-		nPoint = pointList.length;
-		int i;
-		int j;
-		int k;
-		k = 0;
-		i = 0;
-		j = nPtOfst - 1;
-		while (i < j)
+		Iterator<LineString> it = pl.iterator();
+		boolean found = false;
+		while (it.hasNext())
 		{
-			sb.append('(');
-			while (k < ptOfstList[i + 1])
-			{
-				sb.append(pointList[k].x);
-				sb.append(' ');
-				sb.append(pointList[k].y);
-				k++;
-				if (k < ptOfstList[i + 1])
-				{
-					sb.append(',');
-				}
-			}
-			sb.append(')');
-			sb.append(',');
-			i++;
+			if (found) sb.append(',');
+			appendLineString(sb, it.next(), reverseAxis);
+			found = true;
 		}
-		sb.append('(');
-		while (k < nPoint)
-		{
-			sb.append(pointList[k].x);
-			sb.append(' ');
-			sb.append(pointList[k].y);
-			k++;
-			if (k < nPoint)
-			{
-				sb.append(',');
-			}
-		}
-		sb.append(')');
 		sb.append(')');
 	}
 
-	private void appendPolylineZ(StringBuilder sb, Polyline pl)
-	{
-		sb.append('(');
-		int nPtOfst;
-		int nPoint;
-		int []ptOfstList = pl.getPtOfstList();
-		Coord2DDbl []pointList = pl.getPointList();
-		double []zList = pl.getZList();
-		nPtOfst = ptOfstList.length;
-		nPoint = pointList.length;
-		int i;
-		int j;
-		int k;
-		k = 0;
-		i = 0;
-		j = nPtOfst - 1;
-		while (i < j)
-		{
-			sb.append('(');
-			while (k < ptOfstList[i + 1])
-			{
-				sb.append(pointList[k].x);
-				sb.append(' ');
-				sb.append(pointList[k].y);
-				sb.append(' ');
-				sb.append(zList[k]);
-				k++;
-				if (k < ptOfstList[i + 1])
-				{
-					sb.append(',');
-				}
-			}
-			sb.append(')');
-			sb.append(',');
-			i++;
-		}
-		sb.append('(');
-		while (k < nPoint)
-		{
-			sb.append(pointList[k].x);
-			sb.append(' ');
-			sb.append(pointList[k].y);
-			sb.append(' ');
-			sb.append(zList[k]);
-			k++;
-			if (k < nPoint)
-			{
-				sb.append(',');
-			}
-		}
-		sb.append(')');
-		sb.append(')');
-	}
-
-	private void appendPolylineZM(StringBuilder sb, Polyline pl)
-	{
-		sb.append('(');
-		int nPtOfst;
-		int nPoint;
-		int []ptOfstList = pl.getPtOfstList();
-		Coord2DDbl []pointList = pl.getPointList();
-		double []zList = pl.getZList();
-		double []mList = pl.getMList();
-		nPtOfst = ptOfstList.length;
-		nPoint = pointList.length;
-		int i;
-		int j;
-		int k;
-		k = 0;
-		i = 0;
-		j = nPtOfst - 1;
-		while (i < j)
-		{
-			sb.append('(');
-			while (k < ptOfstList[i + 1])
-			{
-				sb.append(pointList[k].x);
-				sb.append(' ');
-				sb.append(pointList[k].y);
-				sb.append(' ');
-				sb.append(zList[k]);
-				sb.append(' ');
-				sb.append(mList[k]);
-				k++;
-				if (k < ptOfstList[i + 1])
-				{
-					sb.append(',');
-				}
-			}
-			sb.append(')');
-			sb.append(',');
-			i++;
-		}
-		sb.append('(');
-		while (k < nPoint)
-		{
-			sb.append(pointList[k].x);
-			sb.append(' ');
-			sb.append(pointList[k].y);
-			sb.append(' ');
-			sb.append(zList[k]);
-			sb.append(' ');
-			sb.append(mList[k]);
-			k++;
-			if (k < nPoint)
-			{
-				sb.append(',');
-			}
-		}
-		sb.append(')');
-		sb.append(')');
-	}
-
-	private void appendCompoundCurve(StringBuilder sb, CompoundCurve cc)
+	private static void appendCompoundCurve(StringBuilder sb, CompoundCurve cc, boolean reverseAxis)
 	{
 		sb.append('(');
 		LineString pl;
@@ -368,13 +179,13 @@ public class WKTWriter implements VectorTextWriter
 			{
 				sb.append("CIRCULARSTRING");
 			}
-			appendLineString(sb, pl);
+			appendLineString(sb, pl, reverseAxis);
 			i++;
 		}
 		sb.append(')');
 	}
 
-	void appendCurvePolygon(StringBuilder sb, CurvePolygon cpg)
+	private static void appendCurvePolygon(StringBuilder sb, CurvePolygon cpg, boolean reverseAxis)
 	{
 		sb.append('(');
 		Vector2D geometry;
@@ -387,24 +198,38 @@ public class WKTWriter implements VectorTextWriter
 			VectorType t = geometry.getVectorType();
 			if (t == VectorType.LineString)
 			{
-				appendLineString(sb, (LineString)geometry);
+				appendLineString(sb, (LineString)geometry, reverseAxis);
 			}
 			else if (t == VectorType.CircularString)
 			{
 				sb.append("CIRCULARSTRING");
-				appendLineString(sb, (LineString)geometry);
+				appendLineString(sb, (LineString)geometry, reverseAxis);
 			}
 			else if (t == VectorType.CompoundCurve)
 			{
 				sb.append("COMPOUNDCURVE");
-				appendCompoundCurve(sb, (CompoundCurve)geometry);
+				appendCompoundCurve(sb, (CompoundCurve)geometry, reverseAxis);
 			}
 			i++;
 		}
 		sb.append(')');
 	}
 
-	void appendMultiSurface(StringBuilder sb, MultiSurface ms)
+	private static void appendMultiPolygon(StringBuilder sb, MultiPolygon mpg, boolean reverseAxis)
+	{
+		Iterator<Polygon> it = mpg.iterator();
+		boolean found = false;
+		sb.append('(');
+		while (it.hasNext())
+		{
+			if (found) sb.append(',');
+			appendPolygon(sb, it.next(), reverseAxis);
+			found = true;
+		}
+		sb.append(')');
+	}
+
+	private static void appendMultiSurface(StringBuilder sb, MultiSurface ms, boolean reverseAxis)
 	{
 		sb.append('(');
 		Vector2D geometry;
@@ -418,28 +243,44 @@ public class WKTWriter implements VectorTextWriter
 			if (t == VectorType.CurvePolygon)
 			{
 				sb.append("CURVEPOLYGON");
-				appendCurvePolygon(sb, (CurvePolygon)geometry);
+				appendCurvePolygon(sb, (CurvePolygon)geometry, reverseAxis);
 			}
 			else if (t == VectorType.Polygon)
 			{
 				sb.append("POLYGON");
-				if (geometry.hasZ())
-				{
-					appendPolygonZ(sb, (Polygon)geometry);
-				}
-				else
-				{
-					appendPolygon(sb, (Polygon)geometry);
-				}
+				appendPolygon(sb, (Polygon)geometry, reverseAxis);
+			}
+			else
+			{
+				System.out.println("Unknown type in multisurface: "+t);
 			}
 			i++;
 		}
 		sb.append(')');
 	}
+	
+	private boolean appendGeometryCollection(StringBuilder sb, GeometryCollection geoColl)
+	{
+		sb.append('(');
+		Vector2D geometry;
+		Iterator<Vector2D> it = geoColl.iterator();
+		boolean found = false;
+		while (it.hasNext())
+		{
+			if (found) sb.append(',');
+			geometry = it.next();
+			if (!toText(sb, geometry))
+				return false;
+			found = true;
+		}
+		sb.append(')');
+		return true;
+	}
 
 	public WKTWriter()
 	{
 		this.lastError = null;
+		this.reverseAxis = false;
 	}
 
 	public String getWriterName()
@@ -462,9 +303,18 @@ public class WKTWriter implements VectorTextWriter
 			{
 				PointZ pt = (PointZ)vec;
 				Coord2DDbl center = pt.getCenter();
-				sb.append(center.x);
-				sb.append(' ');
-				sb.append(center.y);
+				if (this.reverseAxis)
+				{
+					sb.append(center.y);
+					sb.append(' ');
+					sb.append(center.x);
+				}
+				else
+				{
+					sb.append(center.x);
+					sb.append(' ');
+					sb.append(center.y);
+				}
 				sb.append(' ');
 				sb.append(pt.getZ());
 				if (vec.hasM())
@@ -478,12 +328,21 @@ public class WKTWriter implements VectorTextWriter
 				Point2D pt = (Point2D)vec;
 				Coord2DDbl coord;
 				coord = pt.getCenter();
-				sb.append(coord.x);
-				sb.append(' ');
-				sb.append(coord.y);
+				if (this.reverseAxis)
+				{
+					sb.append(coord.y);
+					sb.append(' ');
+					sb.append(coord.x);
+				}
+				else
+				{
+					sb.append(coord.x);
+					sb.append(' ');
+					sb.append(coord.y);
+				}
 				if (vec.hasM())
 				{
-					sb.append(" NULL ");
+					sb.append(" NAN ");
 					sb.append(((PointM)pt).getM());
 				}
 			}
@@ -491,84 +350,40 @@ public class WKTWriter implements VectorTextWriter
 			return true;
 		case Polygon:
 			sb.append("POLYGON");
-			if (vec.hasZ())
-			{
-				appendPolygonZ(sb, (Polygon)vec);
-			}
-			else
-			{
-				appendPolygon(sb, (Polygon)vec);
-			}
+			appendPolygon(sb, (Polygon)vec, this.reverseAxis);
 			return true;
 		case Polyline:
 			sb.append("MULTILINESTRING");
-			{
-				Polyline pl = (Polyline)vec;
-				if (pl.hasZ())
-				{
-					if (pl.hasM())
-					{
-						appendPolylineZM(sb, pl);
-					}
-					else
-					{
-						appendPolylineZ(sb, pl);
-					}
-				}
-				else
-				{
-					appendPolyline(sb, pl);
-				}
-			}
+			appendPolyline(sb, (Polyline)vec, this.reverseAxis);
 			return true;
 		case MultiPolygon:
 			sb.append("MULTIPOLYGON");
-			{
-				MultiPolygon mpg = (MultiPolygon)vec;
-				int i = 0;
-				int j = mpg.getCount();
-				sb.append('(');
-				while (i < j)
-				{
-					if (i > 0)
-					{
-						sb.append(',');
-					}
-					if (mpg.hasZ())
-					{
-						appendPolygonZ(sb, mpg.getItem(i));
-					}
-					else
-					{
-						appendPolygon(sb, mpg.getItem(i));
-					}
-					i++;
-				}
-				sb.append(')');
-			}
+			appendMultiPolygon(sb, (MultiPolygon)vec, this.reverseAxis);
 			return true;
 		case LineString:
 			sb.append("LINESTRING");
-			appendLineString(sb, (LineString)vec);
+			appendLineString(sb, (LineString)vec, this.reverseAxis);
 			return true;
 		case CircularString:
 			sb.append("CIRCULARSTRING");
-			appendLineString(sb, (LineString)vec);
+			appendLineString(sb, (LineString)vec, this.reverseAxis);
 			return true;
 		case CompoundCurve:
 			sb.append("COMPOUNDCURVE");
-			appendCompoundCurve(sb, (CompoundCurve)vec);
+			appendCompoundCurve(sb, (CompoundCurve)vec, this.reverseAxis);
 			return true;
 		case CurvePolygon:
 			sb.append("CURVEPOLYGON");
-			appendCurvePolygon(sb, (CurvePolygon)vec);
+			appendCurvePolygon(sb, (CurvePolygon)vec, this.reverseAxis);
 			return true;
 		case MultiSurface:
 			sb.append("MULTISURFACE");
-			appendMultiSurface(sb, (MultiSurface)vec);
+			appendMultiSurface(sb, (MultiSurface)vec, this.reverseAxis);
 			return true;
-		case MultiPoint:
 		case GeometryCollection:
+			sb.append("GEOMETRYCOLLECTION");
+			return appendGeometryCollection(sb, (GeometryCollection)vec);
+		case MultiPoint:
 		case MultiCurve:
 		case Curve:
 		case Surface:
@@ -600,5 +415,10 @@ public class WKTWriter implements VectorTextWriter
 	public String getLastError()
 	{
 		return this.lastError;
+	}
+
+	public void setReverseAxis(boolean reverseAxis)
+	{
+		this.reverseAxis = reverseAxis;
 	}
 }
