@@ -1,6 +1,7 @@
 # SJavaClass
 
 # Changes:
+0.3.20240405
 - Vector3.java added value constructors
 - ByteTool.java added listAddArray
 - GeometryUtil.java added arcToLine
