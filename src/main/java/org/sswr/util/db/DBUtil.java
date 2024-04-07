@@ -355,13 +355,22 @@ public class DBUtil {
 
 	public static String uncol(String name)
 	{
-		if (name.startsWith("[") && name.endsWith("]"))
+		if (name == null)
+			return null;
+		if (name.length() >= 2)
 		{
-			return name.substring(1, name.length() - 1);
-		}
-		if (name.startsWith("`") && name.endsWith("`"))
-		{
-			return name.substring(1, name.length() - 1);
+			if (name.startsWith("[") && name.endsWith("]"))
+			{
+				return name.substring(1, name.length() - 1);
+			}
+			if (name.startsWith("`") && name.endsWith("`"))
+			{
+				return name.substring(1, name.length() - 1);
+			}
+			if (name.startsWith("\"") && name.endsWith("\""))
+			{
+				return name.substring(1, name.length() - 1);
+			}
 		}
 		return name;
 	}

@@ -1,6 +1,10 @@
 # SJavaClass
 
 # Changes:
+0.3.20240408
+- ArcGISTools.java support Entity without catalog
+- DBUtil.java support PostgreSQL style name quotes
+
 0.3.20240405
 - Vector3.java added value constructors
 - ByteTool.java added listAddArray

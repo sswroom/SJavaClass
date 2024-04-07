@@ -19,7 +19,16 @@ public class ArcGISTools {
 		{
 			try
 			{
-				PreparedStatement stmt = conn.prepareStatement("DECLARE @myval int;EXEC "+DBUtil.dbCol(dbType, dbName)+".dbo.next_rowid 'dbo', ?, @myval OUTPUT;SELECT @myval 'Next RowID';");
+				String sql;
+				if (dbName == null || dbName.length() == 0)
+				{
+					sql = "DECLARE @myval int;EXEC dbo.next_rowid 'dbo', ?, @myval OUTPUT;SELECT @myval 'Next RowID';";
+				}
+				else
+				{
+					sql = "DECLARE @myval int;EXEC "+DBUtil.dbCol(dbType, dbName)+".dbo.next_rowid 'dbo', ?, @myval OUTPUT;SELECT @myval 'Next RowID';";
+				}
+				PreparedStatement stmt = conn.prepareStatement(sql);
 				stmt.setString(1, tableName);
 				ResultSet rs = stmt.executeQuery();
 				Integer id = null;
@@ -40,7 +49,7 @@ public class ArcGISTools {
 		{
 			try
 			{
-				PreparedStatement stmt = conn.prepareStatement("select "+DBUtil.dbCol(dbType, dbName)+".sde.next_rowid(?, ?);");
+				PreparedStatement stmt = conn.prepareStatement("select sde.next_rowid(?, ?);");
 				stmt.setString(1, "sde");
 				stmt.setString(2, tableName);
 				ResultSet rs = stmt.executeQuery();
@@ -119,7 +128,16 @@ public class ArcGISTools {
 		{
 			try
 			{
-				PreparedStatement stmt = conn.prepareStatement("DECLARE @myval bigint;EXEC "+DBUtil.dbCol(dbType, dbName)+".dbo.next_rowid64 'dbo', ?, @myval OUTPUT;SELECT @myval 'Next RowID';");
+				String sql;
+				if (dbName == null || dbName.length() == 0)
+				{
+					sql = "DECLARE @myval bigint;EXEC dbo.next_rowid64 'dbo', ?, @myval OUTPUT;SELECT @myval 'Next RowID';";
+				}
+				else
+				{
+					sql = "DECLARE @myval bigint;EXEC "+DBUtil.dbCol(dbType, dbName)+".dbo.next_rowid64 'dbo', ?, @myval OUTPUT;SELECT @myval 'Next RowID';";
+				}
+				PreparedStatement stmt = conn.prepareStatement(sql);
 				stmt.setString(1, tableName);
 				ResultSet rs = stmt.executeQuery();
 				Long id = null;
@@ -140,7 +158,7 @@ public class ArcGISTools {
 		{
 			try
 			{
-				PreparedStatement stmt = conn.prepareStatement("select "+DBUtil.dbCol(dbType, dbName)+".sde.next_rowid64(?, ?);");
+				PreparedStatement stmt = conn.prepareStatement("select sde.next_rowid64(?, ?);");
 				stmt.setString(1, "sde");
 				stmt.setString(2, tableName);
 				ResultSet rs = stmt.executeQuery();
