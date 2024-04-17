@@ -82,7 +82,7 @@ public class DBControl
 			return getNVarcharLen(s);
 		case Unknown:
 		default:
-			return getVarcharLen(s);
+			return s.length();
 		}
 	}
 

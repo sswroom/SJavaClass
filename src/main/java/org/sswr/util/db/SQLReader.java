@@ -18,12 +18,10 @@ public class SQLReader extends DBReader
 {
 	private DBType dbType;
 	private ResultSet rs;
-	private boolean arcGIS;
 
-	public SQLReader(DBType dbType, boolean arcGIS, ResultSet rs)
+	public SQLReader(DBType dbType, ResultSet rs)
 	{
 		this.dbType = dbType;
-		this.arcGIS = arcGIS;
 		this.rs = rs;
 	}
 
@@ -176,7 +174,7 @@ public class SQLReader extends DBReader
 			{
 				return MSGeography.parseBinary(bytes);
 			}
-			else if (this.dbType == DBType.PostgreSQL)
+			else if (this.dbType == DBType.PostgreSQL || this.dbType == DBType.PostgreSQLESRI)
 			{
 				return null;
 			}
@@ -216,9 +214,9 @@ public class SQLReader extends DBReader
 			{
 				return GeometryUtil.fromVector2D(MSGeography.parseBinary(bytes));
 			}
-			else if (dbType == DBType.PostgreSQL)
+			else if (dbType == DBType.PostgreSQL || dbType == DBType.PostgreSQLESRI)
 			{
-				if (!arcGIS)
+				if (dbType == DBType.PostgreSQL)
 				{
 					bytes = StringUtil.hex2Bytes(new String(bytes));
 				}

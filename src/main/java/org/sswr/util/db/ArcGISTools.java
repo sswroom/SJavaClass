@@ -36,7 +36,7 @@ public class ArcGISTools {
 				return null;
 			}
 		}
-		else if (dbType == DBType.PostgreSQL)
+		else if (dbType == DBType.PostgreSQL || dbType == DBType.PostgreSQLESRI)
 		{
 			try
 			{
@@ -136,7 +136,7 @@ public class ArcGISTools {
 				return null;
 			}
 		}
-		else if (dbType == DBType.PostgreSQL)
+		else if (dbType == DBType.PostgreSQL || dbType == DBType.PostgreSQLESRI)
 		{
 			try
 			{

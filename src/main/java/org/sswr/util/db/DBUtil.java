@@ -70,7 +70,8 @@ public class DBUtil {
 		SQLite,
 		Access,
 		Oracle,
-		PostgreSQL
+		PostgreSQL,
+		PostgreSQLESRI
 	}
 
 	public static final int MAX_SQL_ITEMS = 100;
@@ -481,7 +482,7 @@ public class DBUtil {
 				sb.append(", ");
 			}
 			col = allCols.get(i);
-			if (dbType == DBType.PostgreSQL && col.field.getType().equals(Geometry.class) && "sde".equals(tableAnn.schema()))
+			if ((dbType == DBType.PostgreSQLESRI || (dbType == DBType.PostgreSQL && "sde".equals(tableAnn.schema()))) && col.field.getType().equals(Geometry.class))
 			{
 				sb.append("sde.st_asbinary("+dbCol(dbType, col.colName)+")");
 			}
@@ -680,7 +681,7 @@ public class DBUtil {
 					{
 						col.setter.set(o, GeometryUtil.fromVector2D(MSGeography.parseBinary(bytes)));
 					}
-					else if (dbType == DBType.PostgreSQL)
+					else if (dbType == DBType.PostgreSQL || dbType == DBType.PostgreSQLESRI)
 					{
 						bytes = StringUtil.hex2Bytes(new String(bytes));
 						WKBReader reader = new WKBReader();
@@ -1104,7 +1105,10 @@ public class DBUtil {
 		{
 			throw new IllegalArgumentException("Class annotation is not valid");
 		}
-		boolean arcGISSDE = "sde".equals(tableAnn.schema());
+		if (dbType == DBType.PostgreSQL && "sde".equals(tableAnn.schema()))
+		{
+			dbType = DBType.PostgreSQLESRI;
+		}
 
 		Constructor<T> constr;
 		try
@@ -1141,7 +1145,7 @@ public class DBUtil {
 		sb.append(" where ");
 		sb.append(idCol.colName);
 		sb.append(" = ");
-		sb.append(dbVal(dbType, idCol, id, arcGISSDE));
+		sb.append(dbVal(dbType, idCol, id));
 		try
 		{
 			sqlLogger.logMessage(sb.toString(), LogLevel.COMMAND);
@@ -1805,7 +1809,7 @@ public class DBUtil {
 			val = val.replace("\'", "\'\'");
 			return "'"+val+"'";
 		}
-		else if (dbType == DBType.PostgreSQL)
+		else if (dbType == DBType.PostgreSQL || dbType == DBType.PostgreSQLESRI)
 		{
 			val = val.replace("\'", "\'\'");
 			return "'"+val+"'";
@@ -1849,7 +1853,7 @@ public class DBUtil {
 		{
 			return "'"+new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSSSS").format(val)+"'";
 		}
-		else if (dbType == DBType.PostgreSQL)
+		else if (dbType == DBType.PostgreSQL || dbType == DBType.PostgreSQLESRI)
 		{
 			return "'"+new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSSSS").format(val)+"'";
 		}
@@ -1885,7 +1889,7 @@ public class DBUtil {
 		{
 			return "'"+new SimpleDateFormat("yyyy-MM-dd").format(val)+"'";
 		}
-		else if (dbType == DBType.PostgreSQL)
+		else if (dbType == DBType.PostgreSQL || dbType == DBType.PostgreSQLESRI)
 		{
 			return "'"+new SimpleDateFormat("yyyy-MM-dd").format(val)+"'";
 		}
@@ -1921,7 +1925,7 @@ public class DBUtil {
 		{
 			return "'"+new SimpleDateFormat("HH:mm:ss.SSSSSS").format(val)+"'";
 		}
-		else if (dbType == DBType.PostgreSQL)
+		else if (dbType == DBType.PostgreSQL || dbType == DBType.PostgreSQLESRI)
 		{
 			return "'"+new SimpleDateFormat("HH:mm:ss.SSSSSS").format(val)+"'";
 		}
@@ -1951,7 +1955,7 @@ public class DBUtil {
 		}
 	}
 
-	public static String dbGeometry(DBType dbType, Geometry geometry, boolean arcGISSDE)
+	public static String dbGeometry(DBType dbType, Geometry geometry)
 	{
 		if (geometry == null)
 		{
@@ -1967,14 +1971,11 @@ public class DBUtil {
 		}
 		else if (dbType == DBType.PostgreSQL)
 		{
-			if (arcGISSDE)
-			{
-				return "sde.st_geometry('"+GeometryUtil.toWKT(geometry)+"', "+geometry.getSRID()+")";
-			}
-			else
-			{
-				return "ST_GeomFromText('"+GeometryUtil.toWKT(geometry)+"', "+geometry.getSRID()+")";
-			}
+			return "ST_GeomFromText('"+GeometryUtil.toWKT(geometry)+"', "+geometry.getSRID()+")";
+		}
+		else if (dbType == DBType.PostgreSQLESRI)
+		{
+			return "sde.st_geometry('"+GeometryUtil.toWKT(geometry)+"', "+geometry.getSRID()+")";
 		}
 		else
 		{
@@ -1983,7 +1984,7 @@ public class DBUtil {
 		}
 	}
 
-	public static String dbVal(DBType dbType, DBColumnInfo col, Object val, boolean arcGISSDE)
+	public static String dbVal(DBType dbType, DBColumnInfo col, Object val)
 	{
 		if (val == null)
 		{
@@ -2038,7 +2039,7 @@ public class DBUtil {
 		{
 			if (val instanceof Geometry)
 			{
-				return dbGeometry(dbType, (Geometry)val, arcGISSDE);
+				return dbGeometry(dbType, (Geometry)val);
 			}
 		}
 		if (fieldType.equals(String.class) && val.getClass().equals(String.class))
@@ -2066,7 +2067,7 @@ public class DBUtil {
 				col = idCols.get(0);
 				try
 				{
-					return dbVal(dbType, col, col.getter.get(val), arcGISSDE);
+					return dbVal(dbType, col, col.getter.get(val));
 				}
 				catch (IllegalAccessException ex)
 				{
@@ -2094,7 +2095,7 @@ public class DBUtil {
 		{
 			return "["+val+"]";
 		}
-		else if (dbType == DBType.PostgreSQL)
+		else if (dbType == DBType.PostgreSQL || dbType == DBType.PostgreSQLESRI)
 		{
 			return "\""+val+"\"";
 		}
@@ -2118,7 +2119,7 @@ public class DBUtil {
 			sb.append(val);
 			sb.append(']');
 		}
-		else if (dbType == DBType.PostgreSQL)
+		else if (dbType == DBType.PostgreSQL || dbType == DBType.PostgreSQLESRI)
 		{
 			sb.append('\"');
 			sb.append(val);
@@ -2163,8 +2164,11 @@ public class DBUtil {
 
 	private static <T> boolean update(Connection conn, TableInfo table, T oriObj, T newObj, DBOptions options)
 	{
-		boolean arcGISSDE = (table.tableAnn != null) && "sde".equals(table.tableAnn.schema());
 		DBType dbType = connGetDBType(conn);
+		if (dbType == DBType.PostgreSQL && (table.tableAnn != null) && "sde".equals(table.tableAnn.schema()))
+		{
+			dbType = DBType.PostgreSQLESRI;
+		}
 		StringBuilder sb;
 		DBColumnInfo col;
 		int i;
@@ -2192,7 +2196,7 @@ public class DBUtil {
 					}
 					dbCol(sb, dbType, col.colName);
 					sb.append(" = ");
-					sb.append(dbVal(dbType, col, col.getter.get(oriObj), arcGISSDE));
+					sb.append(dbVal(dbType, col, col.getter.get(oriObj)));
 					i++;
 				}
 				boolean ret = executeNonQuery(conn, sb.toString(), options);
@@ -2249,7 +2253,7 @@ public class DBUtil {
 							sb.append(", ");
 						}
 						found = true;
-						sb.append(dbVal(dbType, col, col.getter.get(newObj), arcGISSDE));
+						sb.append(dbVal(dbType, col, col.getter.get(newObj)));
 					}
 					i++;
 				}
@@ -2307,7 +2311,7 @@ public class DBUtil {
 						}
 						sb.append(dbCol(dbType, col.colName));
 						sb.append(" = ");
-						sb.append(dbVal(dbType, col, o2, arcGISSDE));
+						sb.append(dbVal(dbType, col, o2));
 						found = true;
 					}
 					i++;
@@ -2328,7 +2332,7 @@ public class DBUtil {
 					}
 					sb.append(dbCol(dbType, col.colName));
 					sb.append(" = ");
-					sb.append(dbVal(dbType, col, col.getter.get(oriObj), arcGISSDE));
+					sb.append(dbVal(dbType, col, col.getter.get(oriObj)));
 					i++;
 				}
 				if (executeNonQuery(conn, sb.toString(), options))
@@ -2403,8 +2407,11 @@ public class DBUtil {
 		{
 			return false;
 		}
-		boolean arcGISSDE = (table.tableAnn != null) && "sde".equals(table.tableAnn.schema());
 		DBType dbType = connGetDBType(conn);
+		if (dbType == DBType.PostgreSQL && (table.tableAnn != null) && "sde".equals(table.tableAnn.schema()))
+		{
+			dbType = DBType.PostgreSQLESRI;
+		}
 		DBColumnInfo col;
 		StringBuilder sb = new StringBuilder();
 		sb.append("insert into ");
@@ -2457,7 +2464,7 @@ public class DBUtil {
 							sb.append(", ");
 						}
 						found = true;
-						sb.append(dbVal(dbType, col, col.getter.get(newObj), arcGISSDE));
+						sb.append(dbVal(dbType, col, col.getter.get(newObj)));
 					}
 					i++;
 				}

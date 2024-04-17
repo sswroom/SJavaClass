@@ -79,6 +79,11 @@ public class SQLConnection extends ReadingConnection
 		{
 			throw new IllegalArgumentException("Class annotation is not valid");
 		}
+		DBType dbType = this.dbType;
+		if (dbType == DBType.PostgreSQL && "sde".equals(tableAnn.schema()))
+		{
+			dbType = DBType.PostgreSQLESRI;
+		}
 
 		Constructor<T> constr = getConstructor(cls, parent);
 		FieldComparator<T> fieldComp;
@@ -110,7 +115,7 @@ public class SQLConnection extends ReadingConnection
 
 		Map<String, DBColumnInfo> colsMap = dbCols2Map(cols);
 		sb = new StringBuilder();
-		PageStatus status = DBUtil.appendSelect(sb, cols, tableAnn, this.dbType, dataOfst, dataCnt);
+		PageStatus status = DBUtil.appendSelect(sb, cols, tableAnn, dbType, dataOfst, dataCnt);
 
 		List<QueryConditions<T>.Condition> clientConditions = new ArrayList<QueryConditions<T>.Condition>();
 		if (conditions != null)
@@ -149,13 +154,27 @@ public class SQLConnection extends ReadingConnection
 					status = PageStatus.SUCC;
 				}
 			}
+			else if (dbType == DBType.PostgreSQL || dbType == DBType.PostgreSQLESRI)
+			{
+				if (dataCnt != 0)
+				{
+					sb.append(" LIMIT ");
+					sb.append(dataCnt);
+				}
+				if (dataOfst != 0)
+				{
+					sb.append(" OFFSET ");
+					sb.append(dataOfst);
+				}
+				status = PageStatus.SUCC;
+			}
 		}
 		try
 		{
 			if (this.logger != null) this.logger.logMessage(sb.toString(), LogLevel.COMMAND);
 
 			PreparedStatement stmt = conn.prepareStatement(sb.toString());
-			DBReader r = new SQLReader(this.dbType, "sde".equals(tableAnn.schema()), stmt.executeQuery());
+			DBReader r = new SQLReader(dbType, stmt.executeQuery());
 			List<T> retList = this.readAsList(r, status, dataOfst, dataCnt, parent, constr, cols, clientConditions);
 			r.close();
 			return retList;
@@ -174,6 +193,11 @@ public class SQLConnection extends ReadingConnection
 		if (tableAnn == null)
 		{
 			throw new IllegalArgumentException("Class annotation is not valid");
+		}
+		DBType dbType = this.dbType;
+		if (dbType == DBType.PostgreSQL && "sde".equals(tableAnn.schema()))
+		{
+			dbType = DBType.PostgreSQLESRI;
 		}
 
 		Constructor<T> constr = getConstructor(cls, parent);
@@ -196,7 +220,7 @@ public class SQLConnection extends ReadingConnection
 		}
 
 		sb = new StringBuilder();
-		DBUtil.appendSelect(sb, cols, tableAnn, this.dbType, 0, 0);
+		DBUtil.appendSelect(sb, cols, tableAnn, dbType, 0, 0);
 
 		List<QueryConditions<T>.Condition> clientConditions = new ArrayList<QueryConditions<T>.Condition>();
 		if (conditions != null)
@@ -214,7 +238,7 @@ public class SQLConnection extends ReadingConnection
 			if (this.logger != null) this.logger.logMessage(sb.toString(), LogLevel.COMMAND);
 
 			PreparedStatement stmt = conn.prepareStatement(sb.toString());
-			DBReader r = new SQLReader(this.dbType, "sde".equals(tableAnn.schema()), stmt.executeQuery());
+			DBReader r = new SQLReader(dbType, stmt.executeQuery());
 			Map<Integer, T> retMap = this.readAsMap(r, parent, constr, cols, clientConditions);
 			r.close();
 			return retMap;
