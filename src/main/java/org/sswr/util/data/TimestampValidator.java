@@ -1,15 +1,14 @@
 package org.sswr.util.data;
 
 import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
 
 public class TimestampValidator
 {
-	private SimpleDateFormat fmt;
+	private String fmt;
 
 	public TimestampValidator(String format)
 	{
-		this.fmt = new SimpleDateFormat(format);
+		this.fmt = format;
 	}
 
 	public boolean isValid(Timestamp ts, String s)
@@ -18,6 +17,6 @@ public class TimestampValidator
 		{
 			return StringUtil.isNullOrEmpty(s);
 		}
-		return fmt.format(ts).equals(s);
+		return DateTimeUtil.toString(ts, fmt).equals(s);
 	}
 }

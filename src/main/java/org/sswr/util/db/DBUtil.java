@@ -18,7 +18,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -51,6 +50,7 @@ import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKBReader;
 import org.locationtech.jts.io.WKBWriter;
 import org.sswr.util.data.DataTools;
+import org.sswr.util.data.DateTimeUtil;
 import org.sswr.util.data.FieldGetter;
 import org.sswr.util.data.FieldSetter;
 import org.sswr.util.data.GeometryUtil;
@@ -1848,27 +1848,27 @@ public class DBUtil {
 		}
 		else if (dbType == DBType.MSSQL)
 		{
-			return "CAST('"+new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSSSSS").format(val)+"' as datetime2(7))";
+			return "CAST('"+DateTimeUtil.toString(val, "yyyy-MM-dd HH:mm:ss.fffffff")+"' as datetime2(7))";
 		}
 		else if (dbType == DBType.SQLite)
 		{
-			return "'"+new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(val)+"'";
+			return "'"+DateTimeUtil.toString(val, "yyyy-MM-dd HH:mm:ss.fff")+"'";
 		}
 		else if (dbType == DBType.Oracle)
 		{
-			return "TIMESTAMP '"+new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSSSSSSS").format(val)+"'";
+			return "TIMESTAMP '"+DateTimeUtil.toString(val, "yyyy-MM-dd HH:mm:ss.fffffffff")+"'";
 		}
 		else if (dbType == DBType.MySQL)
 		{
-			return "'"+new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSSSS").format(val)+"'";
+			return "'"+DateTimeUtil.toString(val, "yyyy-MM-dd HH:mm:ss.ffffff")+"'";
 		}
 		else if (dbType == DBType.PostgreSQL || dbType == DBType.PostgreSQLESRI)
 		{
-			return "'"+new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSSSS").format(val)+"'";
+			return "'"+DateTimeUtil.toString(val, "yyyy-MM-dd HH:mm:ss.ffffff")+"'";
 		}
 		else
 		{
-			return "'"+new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(val)+"'";
+			return "'"+DateTimeUtil.toString(val, "yyyy-MM-dd HH:mm:ss")+"'";
 		}
 	}
 
@@ -1884,27 +1884,27 @@ public class DBUtil {
 		}
 		else if (dbType == DBType.MSSQL)
 		{
-			return "'"+new SimpleDateFormat("yyyy-MM-dd").format(val)+"'";
+			return "'"+DateTimeUtil.toString(val, "yyyy-MM-dd")+"'";
 		}
 		else if (dbType == DBType.SQLite)
 		{
-			return "'"+new SimpleDateFormat("yyyy-MM-dd").format(val)+"'";
+			return "'"+DateTimeUtil.toString(val, "yyyy-MM-dd")+"'";
 		}
 		else if (dbType == DBType.Oracle)
 		{
-			return "DATE '"+new SimpleDateFormat("yyyy-MM-dd").format(val)+"'";
+			return "DATE '"+DateTimeUtil.toString(val, "yyyy-MM-dd")+"'";
 		}
 		else if (dbType == DBType.MySQL)
 		{
-			return "'"+new SimpleDateFormat("yyyy-MM-dd").format(val)+"'";
+			return "'"+DateTimeUtil.toString(val, "yyyy-MM-dd")+"'";
 		}
 		else if (dbType == DBType.PostgreSQL || dbType == DBType.PostgreSQLESRI)
 		{
-			return "'"+new SimpleDateFormat("yyyy-MM-dd").format(val)+"'";
+			return "'"+DateTimeUtil.toString(val, "yyyy-MM-dd")+"'";
 		}
 		else
 		{
-			return "'"+new SimpleDateFormat("yyyy-MM-dd").format(val)+"'";
+			return "'"+DateTimeUtil.toString(val, "yyyy-MM-dd")+"'";
 		}
 	}
 
@@ -1920,27 +1920,27 @@ public class DBUtil {
 		}
 		else if (dbType == DBType.MSSQL)
 		{
-			return "'"+new SimpleDateFormat("HH:mm:ss.SSSSSSS").format(val)+"'";
+			return "'"+DateTimeUtil.toString(val, "HH:mm:ss.fffffff")+"'";
 		}
 		else if (dbType == DBType.SQLite)
 		{
-			return "'"+new SimpleDateFormat("HH:mm:ss.SSS").format(val)+"'";
+			return "'"+DateTimeUtil.toString(val, "HH:mm:ss.fff")+"'";
 		}
 		else if (dbType == DBType.Oracle)
 		{
-			return "TIMESTAMP '"+new SimpleDateFormat("HH:mm:ss.SSSSSSSSS").format(val)+"'";
+			return "TIMESTAMP '"+DateTimeUtil.toString(val, "HH:mm:ss.fffffffff")+"'";
 		}
 		else if (dbType == DBType.MySQL)
 		{
-			return "'"+new SimpleDateFormat("HH:mm:ss.SSSSSS").format(val)+"'";
+			return "'"+DateTimeUtil.toString(val, "HH:mm:ss.ffffff")+"'";
 		}
 		else if (dbType == DBType.PostgreSQL || dbType == DBType.PostgreSQLESRI)
 		{
-			return "'"+new SimpleDateFormat("HH:mm:ss.SSSSSS").format(val)+"'";
+			return "'"+DateTimeUtil.toString(val, "HH:mm:ss.ffffff")+"'";
 		}
 		else
 		{
-			return "'"+new SimpleDateFormat("HH:mm:ss").format(val)+"'";
+			return "'"+DateTimeUtil.toString(val, "HH:mm:ss")+"'";
 		}
 	}
 
