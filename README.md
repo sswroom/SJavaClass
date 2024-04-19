@@ -1,6 +1,8 @@
 # SJavaClass
 
 # Changes:
+- DBUtil.java getLastIdentity32() support PostgreSQL
+
 0.3.20240408
 - ArcGISTools.java support Entity without catalog
 - DBUtil.java support PostgreSQL style name quotes
