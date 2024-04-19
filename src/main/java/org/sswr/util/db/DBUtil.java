@@ -2165,6 +2165,28 @@ public class DBUtil {
 			}
 			return id;
 		}
+		else if (dbType == DBType.PostgreSQL || dbType == DBType.PostgreSQLESRI)
+		{
+			int id = 0;
+			try
+			{
+				PreparedStatement stmt = conn.prepareStatement("select lastval()");
+				ResultSet rs = stmt.executeQuery();
+				if (rs != null)
+				{
+					if (rs.next())
+					{
+						id = rs.getInt(1);
+					}
+					rs.close();
+				}
+			}
+			catch (SQLException ex)
+			{
+				sqlLogger.logException(ex);
+			}
+			return id;
+		}
 		else
 		{
 			return 0;

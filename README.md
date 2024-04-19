@@ -1,6 +1,9 @@
 # SJavaClass
 
 # Changes:
+0.3.20240419
+- DBUtil.java getLastIdentity32() support PostgreSQL
+
 0.3.20240418
 - ArcGISTools.java support PostgreSQLESRI Type
 - DataTools.java toObjectString() enhance Class type display
