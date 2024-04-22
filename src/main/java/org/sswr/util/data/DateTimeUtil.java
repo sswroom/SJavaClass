@@ -1,5 +1,7 @@
 package org.sswr.util.data;
 
+import java.sql.Date;
+import java.sql.Time;
 import java.sql.Timestamp;
 import java.time.DayOfWeek;
 import java.time.Instant;
@@ -529,12 +531,17 @@ public class DateTimeUtil
 	public static ZonedDateTime newZonedDateTime(Timestamp ts)
 	{
 		if (ts == null) return null;
-		return newZonedDateTime(ts.getTime());
+		return newZonedDateTime(ts.toInstant());
 	}
 
 	public static ZonedDateTime newZonedDateTime(long t)
 	{
 		return ZonedDateTime.ofInstant(Instant.ofEpochMilli(t), ZoneId.systemDefault());
+	}
+
+	public static ZonedDateTime newZonedDateTime(Instant inst)
+	{
+		return ZonedDateTime.ofInstant(inst, ZoneId.systemDefault());
 	}
 
 	public static long getTimeMillis(ZonedDateTime t)
@@ -579,6 +586,16 @@ public class DateTimeUtil
 	public static String toString(Timestamp ts, String format)
 	{
 		return DateTimeFormatter.ofPattern(format.replace('f', 'n').replace('z', 'Z')).format(ZonedDateTime.ofInstant(ts.toInstant(), ZoneId.systemDefault()));
+	}
+
+	public static String toString(Date dat, String format)
+	{
+		return DateTimeFormatter.ofPattern(format.replace('f', 'n').replace('z', 'Z')).format(ZonedDateTime.ofInstant(dat.toInstant(), ZoneId.systemDefault()));
+	}
+
+	public static String toString(Time tim, String format)
+	{
+		return DateTimeFormatter.ofPattern(format.replace('f', 'n').replace('z', 'Z')).format(ZonedDateTime.ofInstant(tim.toInstant(), ZoneId.systemDefault()));
 	}
 
 	public static String toStringNoZone(ZonedDateTime t)

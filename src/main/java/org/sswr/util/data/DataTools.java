@@ -955,6 +955,10 @@ public class DataTools {
 		{
 			return "ZoneOffset{id='"+((ZoneOffset)o).getId()+"'}";
 		}
+		else if (o instanceof Class)
+		{
+			return "Class{name='"+((Class<?>)o).getName()+"'}";
+		}
 		else if (maxLevel <= 0)
 		{
 			return cls.getSimpleName();

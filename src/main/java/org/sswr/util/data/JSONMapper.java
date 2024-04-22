@@ -3,7 +3,6 @@ package org.sswr.util.data;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -127,7 +126,7 @@ public class JSONMapper
 		}
 		else if (obj instanceof Timestamp)
 		{
-			JSText.toJSTextDQuote(sb, new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format((Timestamp)obj));
+			JSText.toJSTextDQuote(sb, DateTimeUtil.toStringNoZone((Timestamp)obj));
 		}
 		else
 		{

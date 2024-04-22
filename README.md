@@ -3,6 +3,21 @@
 # Changes:
 - DBUtil.java getLastIdentity32() support PostgreSQL
 
+0.3.20240418
+- ArcGISTools.java support PostgreSQLESRI Type
+- DataTools.java toObjectString() enhance Class type display
+- DateTimeUtil.java fixed missing nanosec digits on newZonedDateTime()
+- DateTimeUtil.java toString() support Date and Time
+- DBControl.java fixed wrong string length for non MSSQL type
+- DBUtil.java added PostgreSQLESRI Type
+- DBUtil.java remove arcGISSDE parameter in dbGeometry(), dbVal()
+- DBUtil.java fixed wrong nanosecs values
+- JSONMapper.java remove using SimpleDateFormat
+- SQLConnection.java support PostgreSQL paging
+- SQLReader.java remove arcGIS parameter
+- TimestampValidator.java remove using SimpleDateFormat
+
+
 0.3.20240408
 - ArcGISTools.java support Entity without catalog
 - DBUtil.java support PostgreSQL style name quotes
