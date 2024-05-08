@@ -1,6 +1,11 @@
 # SJavaClass
 
 # Changes:
+0.3.20240509
+-FormEncoding.java fix wrong function name to formDecode()
+-ArcGISRESTAPI.java added initial version
+-HTTPMyClient.java change setDoOutput to method supporting upload only
+
 0.3.20240419
 - DBUtil.java getLastIdentity32() support PostgreSQL
 

@@ -53,7 +53,7 @@ public class FormEncoding
 		return sb.toString();
 	}
 
-	public static String uriDecode(String uri)
+	public static String formDecode(String uri)
 	{
 		byte[] carr = uri.getBytes(StandardCharsets.UTF_8);
 		byte[] destBuff = new byte[carr.length];

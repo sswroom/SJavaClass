@@ -46,19 +46,21 @@ public class HTTPMyClient extends HTTPClient
 		HttpURLConnection.setFollowRedirects(false);
 		this.svrAddr = InetAddress.getByName(targetURL.getHost());
 		this.conn = (HttpURLConnection)targetURL.openConnection();
-		this.conn.setDoOutput(true);
 		this.respCode = 0;
 		switch (this.method)
 		{
 		case HTTP_POST:
+			this.conn.setDoOutput(true);
 			this.conn.setRequestMethod("POST");
 			this.canWrite = true;
 			break;
 		case HTTP_PUT:
+			this.conn.setDoOutput(true);
 			this.conn.setRequestMethod("PUT");
 			this.canWrite = true;
 			break;
 		case HTTP_PATCH:
+			this.conn.setDoOutput(true);
 			this.conn.setRequestMethod("PATCH");
 			this.canWrite = true;
 			break;
@@ -71,6 +73,7 @@ public class HTTPMyClient extends HTTPClient
 			this.canWrite = false;
 			break;
 		case HTTP_DELETE:
+			this.conn.setDoOutput(true);
 			this.conn.setRequestMethod("DELETE");
 			this.canWrite = true;
 			break;
@@ -98,6 +101,7 @@ public class HTTPMyClient extends HTTPClient
 		{
 			this.hasContType = true;
 		}
+		System.out.println("add header: "+name+", "+value);
 		this.conn.addRequestProperty(name, value);
 	}
 
