@@ -1,10 +1,13 @@
 # SJavaClass
 
 # Changes:
+0.3.20240510
+- TaskMQTTManager.java Support multimachine task management
+
 0.3.20240509
--FormEncoding.java fix wrong function name to formDecode()
--ArcGISRESTAPI.java added initial version
--HTTPMyClient.java change setDoOutput to method supporting upload only
+- FormEncoding.java fix wrong function name to formDecode()
+- ArcGISRESTAPI.java added initial version
+- HTTPMyClient.java change setDoOutput to method supporting upload only
 
 0.3.20240419
 - DBUtil.java getLastIdentity32() support PostgreSQL
@@ -22,7 +25,6 @@
 - SQLConnection.java support PostgreSQL paging
 - SQLReader.java remove arcGIS parameter
 - TimestampValidator.java remove using SimpleDateFormat
-
 
 0.3.20240408
 - ArcGISTools.java support Entity without catalog
