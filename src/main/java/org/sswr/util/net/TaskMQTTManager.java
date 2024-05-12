@@ -19,7 +19,7 @@ public class TaskMQTTManager implements MQTTEventHdlr
 	private long checkTaskTime;
 	private boolean taskExists;
 
-	static enum TaskStatus
+	public static enum TaskStatus
 	{
 		TaskBegin,
 		TaskAlreadyRunnng,
