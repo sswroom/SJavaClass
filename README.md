@@ -1,6 +1,9 @@
 # SJavaClass
 
 # Changes:
+0.3.20240531
+- ArcGISTools.java Support non-default schema name
+
 0.3.20240510
 - TaskMQTTManager.java Support multimachine task management
 
