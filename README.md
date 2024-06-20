@@ -1,9 +1,15 @@
 # SJavaClass
 
 # Changes:
+0.3.20240621
+- Fixed compile error
+
 0.3.20240620
 - JSONBuilder.java Support more data types
 - ArcGISRESTAPI.java fixed non-public data fields
+
+0.3.20240531
+- ArcGISTools.java Support non-default schema name
 
 0.3.20240510
 - TaskMQTTManager.java Support multimachine task management
