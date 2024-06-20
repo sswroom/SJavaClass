@@ -86,6 +86,51 @@ public class JSONBuilder
 		return true;
 	}
 
+	public boolean arrayAddInt32(int val)
+	{
+		if (this.currType != ObjectType.OT_ARRAY)
+			return false;
+		if (this.isFirst)
+			this.isFirst = false;
+		else
+		{
+			this.sb.append(",");
+		}
+		this.sb.append(val);
+		return true;
+	}
+
+	public boolean arrayAddInt64(long val)
+	{
+		if (this.currType != ObjectType.OT_ARRAY)
+			return false;
+		if (this.isFirst)
+			this.isFirst = false;
+		else
+		{
+			this.sb.append(",");
+		}
+		this.sb.append(val);
+		return true;
+	}
+
+	public boolean arrayAddStr(String val)
+	{
+		if (this.currType != ObjectType.OT_ARRAY)
+			return false;
+		if (this.isFirst)
+			this.isFirst = false;
+		else
+		{
+			this.sb.append(",");
+		}
+		if (val == null)
+			this.sb.append("null");
+		else
+			this.appendStr(val);
+		return true;
+	}
+
 	public boolean arrayBeginObject()
 	{
 		if (this.currType != ObjectType.OT_ARRAY)
