@@ -180,9 +180,13 @@ public class SMTPMessage
 					k = 21 + strBuff.length;
 				}
 			}
-			stm.write("Content-ID: <".getBytes(StandardCharsets.UTF_8));
-			stm.write(att.contentId.getBytes(StandardCharsets.UTF_8));
-			stm.write(">\r\nContent-Transfer-Encoding: base64\r\n\r\n".getBytes(StandardCharsets.UTF_8));
+			if (att.contentId != null)
+			{
+				stm.write("Content-ID: <".getBytes(StandardCharsets.UTF_8));
+				stm.write(att.contentId.getBytes(StandardCharsets.UTF_8));
+				stm.write(">\r\n".getBytes(StandardCharsets.UTF_8));
+			}
+			stm.write("Content-Transfer-Encoding: base64\r\n\r\n".getBytes(StandardCharsets.UTF_8));
 			writeB64Data(stm, att.content);
 	
 			i++;

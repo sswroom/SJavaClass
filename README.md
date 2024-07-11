@@ -1,6 +1,9 @@
 # SJavaClass
 
 # Changes:
+0.3.20240711
+- Support null attachment contentId
+
 0.3.20240621
 - Fixed compile error
 
