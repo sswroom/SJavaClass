@@ -2,9 +2,9 @@ package org.sswr.util.db;
 
 import java.lang.reflect.Field;
 
-import javax.persistence.EnumType;
-import javax.persistence.GenerationType;
-import javax.persistence.JoinColumn;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.JoinColumn;
 
 import org.sswr.util.data.FieldGetter;
 import org.sswr.util.data.FieldSetter;

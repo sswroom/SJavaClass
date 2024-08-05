@@ -5,7 +5,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
-import javax.persistence.Table;
+import jakarta.persistence.Table;
 
 import org.sswr.util.db.DBUtil.DBType;
 

@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import javax.persistence.Table;
+import jakarta.persistence.Table;
 
 import org.sswr.util.data.FieldComparator;
 import org.sswr.util.data.StringUtil;

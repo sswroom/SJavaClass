@@ -1,6 +1,9 @@
 # SJavaClass
 
 # Changes:
+0.4.20240805
+- Migrate from javax.* to jakarta.*
+
 0.3.20240711
 - Support null attachment contentId
 

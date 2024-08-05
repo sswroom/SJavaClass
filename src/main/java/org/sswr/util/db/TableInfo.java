@@ -2,7 +2,7 @@ package org.sswr.util.db;
 
 import java.util.List;
 
-import javax.persistence.Table;
+import jakarta.persistence.Table;
 
 public class TableInfo
 {

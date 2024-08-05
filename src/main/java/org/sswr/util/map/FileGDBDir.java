@@ -7,7 +7,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import javax.persistence.Table;
+import jakarta.persistence.Table;
 
 import org.sswr.util.data.ArtificialQuickSort;
 import org.sswr.util.data.DataTools;
