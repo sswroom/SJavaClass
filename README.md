@@ -1,6 +1,10 @@
 # SJavaClass
 
 # Changes:
+- Added BrowserInfo
+- Enhance OSInfo
+- Added MemoryWebSessionManager
+
 0.4.20240805
 - Migrate from javax.* to jakarta.*
 

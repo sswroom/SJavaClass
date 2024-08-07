@@ -14,7 +14,7 @@ public class ResourceLoader
 {
 	public static String getResourcePath(Class<?> cls, String resourceName)
 	{
-		if (OSInfo.getOSType() == OSType.ANDROID)
+		if (OSInfo.getOSType() == OSType.Android)
 		{
 			return cls.getClassLoader().getResource(resourceName).getPath();
 		}
@@ -29,7 +29,7 @@ public class ResourceLoader
 
 	public static InputStream load(Class<?> cls, String resourceName, SharedLong lastModified)
 	{
-		if (OSInfo.getOSType() == OSType.ANDROID)
+		if (OSInfo.getOSType() == OSType.Android)
 		{
 			if (lastModified != null)
 			{

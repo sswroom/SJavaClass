@@ -18,8 +18,9 @@ public class IcmpUtil
 	{
 		switch (OSInfo.getOSType())
 		{
-		case ANDROID:
-		case LINUX:
+		case Android:
+		case Linux_i686:
+		case Linux_X86_64:
 			{
 				String cmd;
 				if (addr instanceof Inet6Address)
@@ -65,7 +66,9 @@ public class IcmpUtil
 				}
 			}
 			return false;
-		case WINDOWS:
+		case WindowsNT:
+		case WindowsNT64:
+		case WindowsSvr:
 			{
 				String cmd;
 				if (addr instanceof Inet6Address)
@@ -149,7 +152,7 @@ public class IcmpUtil
 				}
 				return false;
 			}
-		case UNKNOWN:
+		case Unknown:
 		default:
 			return false;
 		}

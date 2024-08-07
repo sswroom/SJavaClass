@@ -8,22 +8,23 @@ public class OSInfo
 	{
 		if (System.getProperty("java.vm.name").equalsIgnoreCase("Dalvik"))
 		{
-			return OSType.ANDROID;
+			return OSType.Android;
 		}
 		else
 		{
 			String osName = System.getProperty("os.name").toUpperCase();
 			if (osName.equals("LINUX"))
 			{
-				return OSType.LINUX;
+
+				return OSType.Linux_X86_64;
 			}
 			else if (osName.startsWith("WINDOWS"))
 			{
-				return OSType.WINDOWS;
+				return OSType.WindowsNT64;
 			}
 			else
 			{
-				return OSType.UNKNOWN;
+				return OSType.Unknown;
 			}
 		}
 	}

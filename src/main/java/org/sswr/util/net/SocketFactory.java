@@ -12,11 +12,14 @@ public interface SocketFactory
 	{
 		switch (OSInfo.getOSType())
 		{
-		case WINDOWS:
+		case WindowsNT:
+		case WindowsNT64:
+		case WindowsSvr:
 			return new WindowsSocketFactory();
-		case ANDROID:
-		case LINUX:
-		case UNKNOWN:
+		case Android:
+		case Linux_X86_64:
+		case Linux_i686:
+		case Unknown:
 		default:
 			return new LinuxSocketFactory();
 		}

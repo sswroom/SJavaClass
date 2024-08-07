@@ -182,7 +182,8 @@ public class SystemInfoUtil
 	public static List<ProcessStatus> getProcessStatus(List<String> processNames)
 	{
 		List<ProcessStatus> ret = new ArrayList<ProcessStatus>();
-		if (OSInfo.getOSType() == OSType.WINDOWS)
+		OSType os = OSInfo.getOSType();
+		if (os == OSType.WindowsNT || os == OSType.WindowsNT64 || os == OSType.WindowsSvr)
 		{
 			ProcessBuilder pb = new ProcessBuilder("wmic", "process", "get", "CommandLine,CreationDate,HandleCount,ParentProcessId,ProcessId,ThreadCount,WorkingSetSize", "/format:csv");
 			try
@@ -370,7 +371,8 @@ public class SystemInfoUtil
 		status.freeSwapMemory = 0;
 		switch (OSInfo.getOSType())
 		{
-		case LINUX:
+		case Linux_X86_64:
+		case Linux_i686:
 			try
 			{
 				BufferedReader reader = new BufferedReader(new FileReader(new File("/proc/meminfo")));
@@ -402,7 +404,9 @@ public class SystemInfoUtil
 			{
 			}
 			break;
-		case WINDOWS:
+		case WindowsNT:
+		case WindowsNT64:
+		case WindowsSvr:
 			status.totalPhysicalMemory = executeWmic("wmic ComputerSystem get TotalPhysicalMemory");
 			status.freePhysicalMemory = executeWmic("wmic OS get FreePhysicalMemory") * 1024;
 			status.totalSwapMemory = executeWmic("wmic OS get TotalVirtualMemorySize") * 1024;
@@ -420,7 +424,8 @@ public class SystemInfoUtil
 	{
 		switch (OSInfo.getOSType())
 		{
-		case LINUX:
+		case Linux_i686:
+		case Linux_X86_64:
 			try
 			{
 				BufferedReader reader = new BufferedReader(new FileReader(new File("/proc/"+procStatus.pid+"/status")));
@@ -446,7 +451,9 @@ public class SystemInfoUtil
 			{
 				return false;
 			}
-		case WINDOWS:
+		case WindowsNT:
+		case WindowsNT64:
+		case WindowsSvr:
 			try
 			{
 				ProcessBuilder pb = new ProcessBuilder("tasklist", "/FI", "PID eq "+procStatus.pid, "/FO", "LIST");
