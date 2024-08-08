@@ -9,6 +9,9 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
 
+import javax.crypto.Cipher;
+import javax.crypto.NoSuchPaddingException;
+
 import org.sswr.util.data.LineBreakType;
 import org.sswr.util.data.SharedInt;
 import org.sswr.util.data.StringUtil;
@@ -387,6 +390,45 @@ public class MyX509Key extends MyX509File
 		return ECName.Unknown;
 	}
 
+	public Cipher createCipher(CipherPadding padding)
+	{
+		try
+		{
+			if (keyType == KeyType.RSA)
+			{
+				if (padding == CipherPadding.OAEP)
+				{
+					return Cipher.getInstance("RSA");
+				}
+				else
+				{
+					return Cipher.getInstance("RSA/None/OAEPWithSHA-256AndMGF1Padding");
+				}
+			}
+			else if (keyType == KeyType.DSA)
+			{
+				return Cipher.getInstance("DSA");
+			}
+			else if (keyType == KeyType.ECDSA)
+			{
+				return Cipher.getInstance("ECDSA");
+			}
+			else if (keyType == KeyType.ED25519)
+			{
+				return Cipher.getInstance("ED25519");
+			}
+			else
+			{
+				return null;
+			}
+		}
+		catch (NoSuchAlgorithmException|NoSuchPaddingException ex)
+		{
+			ex.printStackTrace();
+			return null;
+		}
+	}
+
 	public PrivateKey createJPrivateKey()
 	{
 		MyX509PrivKey privKey = MyX509PrivKey.createFromKey(this);
@@ -488,6 +530,26 @@ public class MyX509Key extends MyX509File
 		if (key == null)
 			return false;
 		return CertUtil.verifySign(buff, ofst, len, sign, signOfst, signSize, key, hashType, null, "temp");
+	}
+
+	public byte[] decrypt(byte[] buff, int ofst, int len, CipherPadding padding)
+	{
+		try
+		{
+			PrivateKey key = createJPrivateKey();
+			if (key == null)
+				return null;
+			Cipher cipher = createCipher(padding);
+			if (cipher == null)
+				return null;
+			cipher.init(Cipher.DECRYPT_MODE, key);
+			return cipher.doFinal(buff, ofst, len);
+		}
+		catch (Exception ex)
+		{
+			ex.printStackTrace();
+			return null;
+		}
 	}
 
 	public static MyX509Key fromECPublicKey(byte[] buff, int buffOfst, int buffSize, byte[] paramOID, int oidOfst, int oidLen)

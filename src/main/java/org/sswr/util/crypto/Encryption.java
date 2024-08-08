@@ -1,10 +1,19 @@
 package org.sswr.util.crypto;
 
-public interface Encryption
+public abstract class Encryption
 {
-	public byte []encrypt(byte inBuff[], int inOfst, int inSize, Object encParam);
-	public byte []decrypt(byte inBuff[], int inOfst, int inSize, Object decParam);
+	public abstract byte []encrypt(byte inBuff[], int inOfst, int inSize);
+	public abstract byte []decrypt(byte inBuff[], int inOfst, int inSize);
+	public byte[] encrypt(byte[] inBuff)
+	{
+		return encrypt(inBuff, 0, inBuff.length);
+	}
 
-	public int getEncBlockSize();
-	public int getDecBlockSize();
+	public byte[] decrypt(byte[] inBuff)
+	{
+		return decrypt(inBuff, 0, inBuff.length);
+	}
+
+	public abstract int getEncBlockSize();
+	public abstract int getDecBlockSize();
 }

@@ -4,6 +4,26 @@
 - Added BrowserInfo
 - Enhance OSInfo
 - Added MemoryWebSessionManager
+- Remove Encryption encParam
+- Change Encryption to abstract class
+- Added AES256GCM
+- Added Bcrypt.genHash
+- Added CipherPadding
+- Change Hash to abstract class
+- MyX509File.isPublicKeyInfo change to public
+- Added MyX509Key.createCipher
+- Added MyX509Key.decrypt
+- Added MyX509PrivKey.getKeyType
+- Added MyX509PrivKey.createKey
+- Added MyX509PrivKey.getKeyId
+- Added MyX509PubKey.getKeyId
+- Added CharUtil.isAlphaNumeric, isDigit, isAlphabet, isUpperCase, isLowerCase
+- Added JSONBuilder.objectAddArrayStr
+- Added StringUtil.utf16CharCnt
+- Added StringUtil.isUInteger
+- Added StringUtil.isHKID
+- Added StringUtil.orEmpty
+- Added IAMSmartAPI
 
 0.4.20240805
 - Migrate from javax.* to jakarta.*

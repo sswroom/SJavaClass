@@ -2,7 +2,7 @@ package org.sswr.util.crypto;
 
 import org.sswr.util.data.ByteTool;
 
-public abstract class BlockCipher
+public abstract class BlockCipher extends Encryption
 {
 	public enum ChainMode
 	{
@@ -25,7 +25,7 @@ public abstract class BlockCipher
 		ByteTool.clearArray(this.iv, 0, blockSize);
 	}
 
-	public byte []encrypt(byte []inBuff, int inOfst, int inSize, Object encParam)
+	public byte []encrypt(byte []inBuff, int inOfst, int inSize)
 	{
 		byte outBuff[];
 		byte blk[];
@@ -42,7 +42,7 @@ public abstract class BlockCipher
 		case ECB:
 			while (inSize >= this.blockSize)
 			{
-				this.encryptBlock(inBuff, inOfst, outBuff, outOfst, encParam);
+				this.encryptBlock(inBuff, inOfst, outBuff, outOfst);
 				inOfst += this.blockSize;
 				outOfst += this.blockSize;
 				inSize -= this.blockSize;
@@ -52,7 +52,7 @@ public abstract class BlockCipher
 				blk = new byte[this.blockSize];
 				ByteTool.clearArray(blk, 0, this.blockSize);
 				ByteTool.copyArray(blk, 0, inBuff, inOfst, inSize);
-				this.encryptBlock(blk, 0, outBuff, outOfst, encParam);
+				this.encryptBlock(blk, 0, outBuff, outOfst);
 				outOfst += this.blockSize;
 			}
 			return outBuff;
@@ -62,7 +62,7 @@ public abstract class BlockCipher
 			while (inSize >= blockSize)
 			{
 				ByteTool.arrayXOR(blk, 0, inBuff, inOfst, blk, 0, this.blockSize);
-				this.encryptBlock(blk, 0, outBuff, outOfst, encParam);
+				this.encryptBlock(blk, 0, outBuff, outOfst);
 				ByteTool.copyArray(blk, 0, outBuff, outOfst, this.blockSize);
 				inOfst += this.blockSize;
 				outOfst += this.blockSize;
@@ -71,7 +71,7 @@ public abstract class BlockCipher
 			if (inSize > 0)
 			{
 				ByteTool.arrayXOR(blk, 0, inBuff, inOfst, blk, 0, inSize);
-				this.encryptBlock(blk, 0, outBuff, outOfst, encParam);
+				this.encryptBlock(blk, 0, outBuff, outOfst);
 				outOfst += this.blockSize;
 			}
 			return outBuff;
@@ -81,7 +81,7 @@ public abstract class BlockCipher
 			while (inSize >= blockSize)
 			{
 				ByteTool.arrayXOR(blk, 0, inBuff, inOfst, blk, 0, this.blockSize);
-				this.encryptBlock(inBuff, inOfst, outBuff, outOfst, encParam);
+				this.encryptBlock(inBuff, inOfst, outBuff, outOfst);
 				ByteTool.arrayXOR(inBuff, inOfst, outBuff, outOfst, blk, 0, this.blockSize);
 				inOfst += this.blockSize;
 				outOfst += this.blockSize;
@@ -90,7 +90,7 @@ public abstract class BlockCipher
 			if (inSize > 0)
 			{
 				ByteTool.arrayXOR(blk, 0, inBuff, inOfst, blk, 0, inSize);
-				this.encryptBlock(inBuff, inOfst, outBuff, outOfst, encParam);
+				this.encryptBlock(inBuff, inOfst, outBuff, outOfst);
 				outOfst += this.blockSize;
 			}
 			return outBuff;
@@ -99,7 +99,7 @@ public abstract class BlockCipher
 			ByteTool.copyArray(blk, 0, this.iv, 0, this.blockSize);
 			while (inSize >= blockSize)
 			{
-				this.encryptBlock(blk, 0, outBuff, outOfst, encParam);
+				this.encryptBlock(blk, 0, outBuff, outOfst);
 				ByteTool.arrayXOR(outBuff, outOfst, inBuff, inOfst, outBuff, outOfst, this.blockSize);
 				ByteTool.copyArray(blk, 0, outBuff, outOfst, this.blockSize);
 				inOfst += this.blockSize;
@@ -108,7 +108,7 @@ public abstract class BlockCipher
 			}
 			if (inSize > 0)
 			{
-				this.encryptBlock(blk, 0, outBuff, outOfst, encParam);
+				this.encryptBlock(blk, 0, outBuff, outOfst);
 				ByteTool.arrayXOR(outBuff, outOfst, inBuff, inOfst, outBuff, outOfst, inSize);
 				outOfst += this.blockSize;
 			}
@@ -118,7 +118,7 @@ public abstract class BlockCipher
 			ByteTool.copyArray(blk, 0, this.iv, 0, this.blockSize);
 			while (inSize >= blockSize)
 			{
-				this.encryptBlock(blk, 0, outBuff, outOfst, encParam);
+				this.encryptBlock(blk, 0, outBuff, outOfst);
 				ByteTool.copyArray(blk, 0, outBuff, outOfst, this.blockSize);
 				ByteTool.arrayXOR(outBuff, outOfst, inBuff, inOfst, outBuff, outOfst, this.blockSize);
 				inOfst += this.blockSize;
@@ -127,7 +127,7 @@ public abstract class BlockCipher
 			}
 			if (inSize > 0)
 			{
-				this.encryptBlock(blk, 0, outBuff, outOfst, encParam);
+				this.encryptBlock(blk, 0, outBuff, outOfst);
 				ByteTool.arrayXOR(outBuff, outOfst, inBuff, inOfst, outBuff, outOfst, inSize);
 				outOfst += this.blockSize;
 			}
@@ -137,7 +137,7 @@ public abstract class BlockCipher
 		}
 	}
 
-	public byte []decrypt(byte []inBuff, int inOfst, int inSize, Object decParam)
+	public byte []decrypt(byte []inBuff, int inOfst, int inSize)
 	{
 		byte outBuff[];
 		byte blk[];
@@ -155,7 +155,7 @@ public abstract class BlockCipher
 		case ECB:
 			while (inSize >= this.blockSize)
 			{
-				this.decryptBlock(inBuff, inOfst, outBuff, outOfst, decParam);
+				this.decryptBlock(inBuff, inOfst, outBuff, outOfst);
 				inOfst += this.blockSize;
 				outOfst += this.blockSize;
 				inSize = inSize - this.blockSize;
@@ -165,7 +165,7 @@ public abstract class BlockCipher
 				blk = new byte[this.blockSize];
 				ByteTool.clearArray(blk, 0, this.blockSize);
 				ByteTool.copyArray(blk, 0, inBuff, inOfst, inSize);
-				this.decryptBlock(blk, 0, outBuff, outOfst, decParam);
+				this.decryptBlock(blk, 0, outBuff, outOfst);
 				outOfst += this.blockSize;
 			}
 			return outBuff;
@@ -174,7 +174,7 @@ public abstract class BlockCipher
 			ByteTool.copyArray(blk, 0, this.iv, 0, this.blockSize);
 			while (inSize >= this.blockSize)
 			{
-				this.decryptBlock(inBuff, inOfst, outBuff, outOfst, decParam);
+				this.decryptBlock(inBuff, inOfst, outBuff, outOfst);
 				ByteTool.arrayXOR(outBuff, outOfst, blk, 0, outBuff, outOfst, this.blockSize);
 				ByteTool.copyArray(blk, 0, inBuff, inOfst, this.blockSize);
 				inOfst += this.blockSize;
@@ -186,7 +186,7 @@ public abstract class BlockCipher
 				blk2 = new byte[this.blockSize];
 				ByteTool.clearArray(blk2, 0, this.blockSize);
 				ByteTool.copyArray(blk2, 0, inBuff, inOfst, inSize);
-				this.decryptBlock(blk2, 0, outBuff, outOfst, decParam);
+				this.decryptBlock(blk2, 0, outBuff, outOfst);
 				ByteTool.arrayXOR(outBuff, outOfst, blk, 0, outBuff, outOfst, this.blockSize);
 				ByteTool.copyArray(blk, 0, inBuff, inOfst, this.blockSize);
 				outOfst += this.blockSize;
@@ -197,7 +197,7 @@ public abstract class BlockCipher
 			ByteTool.copyArray(blk, 0, this.iv, 0, this.blockSize);
 			while (inSize >= this.blockSize)
 			{
-				this.decryptBlock(inBuff, inOfst, outBuff, outOfst, decParam);
+				this.decryptBlock(inBuff, inOfst, outBuff, outOfst);
 				ByteTool.arrayXOR(outBuff, outOfst, blk, 0, outBuff, outOfst, this.blockSize);
 				ByteTool.arrayXOR(inBuff, inOfst, outBuff, outOfst, blk, 0, this.blockSize);
 				inOfst += this.blockSize;
@@ -209,7 +209,7 @@ public abstract class BlockCipher
 				blk2 = new byte[this.blockSize];
 				ByteTool.clearArray(blk2, 0, this.blockSize);
 				ByteTool.copyArray(blk2, 0, inBuff, inOfst, inSize);
-				this.decryptBlock(blk2, 0, outBuff, outOfst, decParam);
+				this.decryptBlock(blk2, 0, outBuff, outOfst);
 				ByteTool.arrayXOR(outBuff, outOfst, blk, 0, outBuff, outOfst, this.blockSize);
 				ByteTool.arrayXOR(inBuff, inOfst, outBuff, outOfst, blk, 0, this.blockSize);
 				outOfst += this.blockSize;
@@ -220,7 +220,7 @@ public abstract class BlockCipher
 			ByteTool.copyArray(blk, 0, this.iv, 0, this.blockSize);
 			while (inSize >= this.blockSize)
 			{
-				this.encryptBlock(blk, 0, outBuff, outOfst, decParam);
+				this.encryptBlock(blk, 0, outBuff, outOfst);
 				ByteTool.arrayXOR(outBuff, outOfst, inBuff, inOfst, outBuff, outOfst, this.blockSize);
 				ByteTool.copyArray(blk, 0, inBuff, inOfst, this.blockSize);
 				inOfst += this.blockSize;
@@ -233,7 +233,7 @@ public abstract class BlockCipher
 			ByteTool.copyArray(blk, 0, this.iv, 0, this.blockSize);
 			while (inSize >= this.blockSize)
 			{
-				this.encryptBlock(blk, 0, outBuff, outOfst, decParam);
+				this.encryptBlock(blk, 0, outBuff, outOfst);
 				ByteTool.copyArray(blk, 0, outBuff, outOfst, this.blockSize);
 				ByteTool.arrayXOR(outBuff, outOfst, inBuff, inOfst, outBuff, outOfst, this.blockSize);
 				inOfst += this.blockSize;
@@ -256,8 +256,8 @@ public abstract class BlockCipher
 		return this.blockSize;
 	}
 
-	public abstract int encryptBlock(byte []inBlock, int inOfst, byte []outBlock, int outOfst, Object encParam);
-	public abstract int decryptBlock(byte []inBlock, int inOfst, byte []outBlock, int outOfst, Object decParam);
+	public abstract int encryptBlock(byte []inBlock, int inOfst, byte []outBlock, int outOfst);
+	public abstract int decryptBlock(byte []inBlock, int inOfst, byte []outBlock, int outOfst);
 
 	public void setChainMode(ChainMode cm)
 	{

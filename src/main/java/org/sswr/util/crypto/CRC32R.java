@@ -2,7 +2,7 @@ package org.sswr.util.crypto;
 
 import org.sswr.util.data.ByteTool;
 
-public class CRC32R implements Hash
+public class CRC32R extends Hash
 {
 	private int[] crctab;
 	private int currVal;

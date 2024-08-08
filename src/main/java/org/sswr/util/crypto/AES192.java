@@ -2,7 +2,7 @@ package org.sswr.util.crypto;
 
 import org.sswr.util.data.ByteTool;
 
-public class AES192 extends BlockCipher implements Encryption
+public class AES192 extends BlockCipher
 {
 	private int encRK[];
 	private int decRK[];
@@ -16,7 +16,7 @@ public class AES192 extends BlockCipher implements Encryption
 	}
 
 
-	public int encryptBlock(byte []inBlock, int inOfst, byte []outBlock, int outOfst, Object encParam)
+	public int encryptBlock(byte []inBlock, int inOfst, byte []outBlock, int outOfst)
 	{
 		int s0;
 		int s1;
@@ -117,7 +117,7 @@ public class AES192 extends BlockCipher implements Encryption
 		return 16;
 	}
 	
-	public int decryptBlock(byte []inBlock, int inOfst, byte []outBlock, int outOfst, Object decParam)
+	public int decryptBlock(byte []inBlock, int inOfst, byte []outBlock, int outOfst)
 	{
 		int s0;
 		int s1;

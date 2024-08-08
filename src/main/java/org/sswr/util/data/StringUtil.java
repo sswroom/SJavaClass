@@ -12,6 +12,7 @@ import java.util.Set;
 
 public class StringUtil
 {
+	private static final boolean VERBOSE = false;
 	public static final char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
 	public static final char[] hex_array = "0123456789abcdef".toCharArray();
 
@@ -1672,5 +1673,182 @@ public class StringUtil
 			startIndex++;
 		}
 		return -1;
+	}
+
+	/**
+	 * Count number of char in UTF-16
+	 * 
+	 * @param s string to count
+	 * @return 	number of UTF-16 char
+	 * 			0 if s is null
+	 */
+	public static int utf16CharCnt(String s)
+	{
+		if (s == null)
+			return 0;
+		return s.getBytes(StandardCharsets.UTF_16).length / 2;
+	}
+
+	/**
+	 * Check whether the string is unsigned integer
+	 * 
+	 * @param s string to check
+	 * @return true if the string is unsigned integer
+	 */
+	public static boolean isUInteger(String s)
+	{
+		int i = 0;
+		int j = s.length();
+		while (i < j)
+		{
+			if (!CharUtil.isDigit(s.charAt(i)))
+				return false;
+			i++;
+		}
+		return true;
+
+	}
+
+	/**
+	 * Check whether the string is valid hkid
+	 * 
+	 * @param hkid the string to check
+	 * @return true if the string is valid hkid
+	 */
+	public static boolean isHKID(String hkid)
+	{
+		String sbuff;
+		char chk;
+		int ichk;
+		if (hkid.endsWith(")"))
+		{
+			if (hkid.length() == 10)
+			{
+				if (hkid.charAt(7) == '(')
+				{
+					sbuff = hkid.substring(0, 7);
+					chk = hkid.charAt(8);
+				}
+				else
+				{
+					return false;
+				}
+			}
+			else if (hkid.length() == 11)
+			{
+				if (hkid.charAt(8) == '(')
+				{
+					sbuff = hkid.substring(0, 8);
+					chk = hkid.charAt(9);
+				}
+				else
+				{
+					return false;
+				}
+			}
+			else
+			{
+				return false;
+			}
+		}
+		else
+		{
+			if (hkid.length() == 8)
+			{
+				sbuff = hkid.substring(0, 7);
+				chk = hkid.charAt(7);
+			}
+			else if (hkid.length() == 9)
+			{
+				sbuff = hkid.substring(0, 8);
+				chk = hkid.charAt(8);
+			}
+			else
+			{
+				return false;
+			}
+		}
+
+		if (CharUtil.isDigit(chk))
+			ichk = (int)chk - 0x30;
+		else if (chk == 'A')
+			ichk = 10;
+		else
+			return false;
+
+		int thisChk;
+		if (sbuff.length() == 8)
+		{
+			if (!CharUtil.isUpperCase(sbuff.charAt(0)) ||
+				!CharUtil.isUpperCase(sbuff.charAt(1)) ||
+				!CharUtil.isDigit(sbuff.charAt(2)) ||
+				!CharUtil.isDigit(sbuff.charAt(3)) ||
+				!CharUtil.isDigit(sbuff.charAt(4)) ||
+				!CharUtil.isDigit(sbuff.charAt(5)) ||
+				!CharUtil.isDigit(sbuff.charAt(6)) ||
+				!CharUtil.isDigit(sbuff.charAt(7)))
+					return false;
+			
+			thisChk = 0;
+			thisChk += (sbuff.charAt(0) - 'A' + 10) * 9;
+			thisChk += (sbuff.charAt(1) - 'A' + 10) * 8;
+			thisChk += (sbuff.charAt(2) - '0') * 7;
+			thisChk += (sbuff.charAt(3) - '0') * 6;
+			thisChk += (sbuff.charAt(4) - '0') * 5;
+			thisChk += (sbuff.charAt(5) - '0') * 4;
+			thisChk += (sbuff.charAt(6) - '0') * 3;
+			thisChk += (sbuff.charAt(7) - '0') * 2;
+			thisChk += ichk;
+			if ((thisChk % 11) != 0)
+				return false;
+			return true;
+		}
+		else
+		{
+			if (!CharUtil.isUpperCase(sbuff.charAt(0)) ||
+				!CharUtil.isDigit(sbuff.charAt(1)) ||
+				!CharUtil.isDigit(sbuff.charAt(2)) ||
+				!CharUtil.isDigit(sbuff.charAt(3)) ||
+				!CharUtil.isDigit(sbuff.charAt(4)) ||
+				!CharUtil.isDigit(sbuff.charAt(5)) ||
+				!CharUtil.isDigit(sbuff.charAt(6)))
+					return false;
+
+			thisChk = 36 * 9;
+			thisChk += (sbuff.charAt(0) - 'A' + 10) * 8;
+			thisChk += (sbuff.charAt(1) - '0') * 7;
+			thisChk += (sbuff.charAt(2) - '0') * 6;
+			thisChk += (sbuff.charAt(3) - '0') * 5;
+			thisChk += (sbuff.charAt(4) - '0') * 4;
+			thisChk += (sbuff.charAt(5) - '0') * 3;
+			thisChk += (sbuff.charAt(6) - '0') * 2;
+			if (VERBOSE)
+			{
+				System.out.println(" : 36 * 9 = "+(36 * 9));
+				System.out.println(sbuff.charAt(0)+": "+((int)sbuff.charAt(0) - 'A' + 10)+" * 8 = "+(((int)sbuff.charAt(0) - 'A' + 10) * 8));
+				System.out.println(sbuff.charAt(1)+": "+((int)sbuff.charAt(1) - '0')+" * 7 = "+(((int)sbuff.charAt(1) - '0') * 7));
+				System.out.println(sbuff.charAt(2)+": "+((int)sbuff.charAt(2) - '0')+" * 6 = "+(((int)sbuff.charAt(2) - '0') * 6));
+				System.out.println(sbuff.charAt(3)+": "+((int)sbuff.charAt(3) - '0')+" * 5 = "+(((int)sbuff.charAt(3) - '0') * 5));
+				System.out.println(sbuff.charAt(4)+": "+((int)sbuff.charAt(4) - '0')+" * 4 = "+(((int)sbuff.charAt(4) - '0') * 4));
+				System.out.println(sbuff.charAt(5)+": "+((int)sbuff.charAt(5) - '0')+" * 3 = "+(((int)sbuff.charAt(5) - '0') * 3));
+				System.out.println(sbuff.charAt(6)+": "+((int)sbuff.charAt(6) - '0')+" * 2 = "+(((int)sbuff.charAt(6) - '0') * 2));
+				System.out.println("Total = "+thisChk+", Mod = "+(thisChk % 11)+", Check = "+ichk);
+			}
+			thisChk += ichk;
+			if ((thisChk % 11) != 0)
+				return false;
+			return true;
+		}
+	}
+
+	/**
+	 * Output non-null string
+	 * 
+	 * @param s string or null string
+	 * @return non-null string
+	 */
+	public static String orEmpty(String s)
+	{
+		return (s == null)?"":s;
 	}
 }

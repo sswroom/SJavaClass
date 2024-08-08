@@ -80,4 +80,29 @@ public class CharUtil
 	{
 		return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z');
 	}
+
+	public static boolean isAlphaNumeric(char c)
+	{
+		return (c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z');
+	}
+	
+	public static boolean isDigit(char c)
+	{
+		return (c >= '0' && c <= '9');
+	}
+
+	public static boolean isAlphabet(char c)
+	{
+		return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z');
+	}	
+
+	public static boolean isUpperCase(char c)
+	{
+		return c >= 'A' && c <= 'Z';
+	}
+	
+	public static boolean isLowerCase(char c)
+	{
+		return c >= 'a' && c <= 'z';
+	}
 }

@@ -53,6 +53,16 @@ public class MyX509PubKey extends MyX509File
 		return null;
 	}
 
+	public byte[] getKeyId()
+	{
+		MyX509Key key = this.createKey();
+		if (key != null)
+		{
+			return key.getKeyId();
+		}
+		return null;
+	}
+
 	public static MyX509PubKey createFromKeyBuff(KeyType keyType, byte[] buff, int ofst, int buffSize, String sourceName)
 	{
 		ASN1PDUBuilder keyPDU = new ASN1PDUBuilder();

@@ -2,7 +2,7 @@ package org.sswr.util.crypto;
 
 import org.sswr.util.data.ByteTool;
 
-public class HMAC implements Hash
+public class HMAC extends Hash
 {
 	private Hash hashInner;
 	private Hash hashOuter;

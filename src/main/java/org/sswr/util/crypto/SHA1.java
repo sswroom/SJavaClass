@@ -2,7 +2,7 @@ package org.sswr.util.crypto;
 
 import org.sswr.util.data.ByteTool;
 
-public class SHA1 implements Hash
+public class SHA1 extends Hash
 {
 	private int intermediateHash[];
 	private byte messageBlock[];

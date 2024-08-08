@@ -1,7 +1,9 @@
 package org.sswr.util.crypto;
 
 import org.sswr.util.net.ASN1Data;
+import org.sswr.util.net.ASN1Item;
 import org.sswr.util.net.ASN1PDUBuilder;
+import org.sswr.util.net.ASN1Util;
 
 public class MyX509PrivKey extends MyX509File
 {
@@ -31,6 +33,41 @@ public class MyX509PrivKey extends MyX509File
 			appendPrivateKeyInfo(this.buff, 0, this.buff.length, "1", sb);
 		}
 		return sb.toString();
+	}
+
+	public KeyType getKeyType()
+	{
+		ASN1Item item = ASN1Util.pduGetItem(this.buff, 0, this.buff.length, "1.2.1");
+		if (item != null)
+		{
+			return keyTypeFromOID(this.buff, item.ofst, item.len, false);
+		}
+		return KeyType.Unknown;
+	}
+
+	public MyX509Key createKey()
+	{
+		KeyType keyType = this.getKeyType();
+		if (keyType == KeyType.Unknown)
+		{
+			return null;
+		}
+		ASN1Item item = ASN1Util.pduGetItem(this.buff, 0, this.buff.length, "1.3");
+		if (item != null)
+		{
+			return new MyX509Key(this.sourceName, this.buff, item.ofst, item.len, keyType);
+		}
+		return null;
+	}
+
+	public byte[] getKeyId()
+	{
+		MyX509Key key = createKey();
+		if (key != null)
+		{
+			return key.getKeyId();
+		}
+		return null;
 	}
 
 	public static MyX509PrivKey createFromKeyBuff(KeyType keyType, byte[] buff, int ofst, int buffSize, String sourceName)

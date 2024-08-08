@@ -1,6 +1,7 @@
 package org.sswr.util.crypto;
 
 import org.sswr.util.crypto.BlockCipher.ChainMode;
+import org.sswr.util.data.RandomBytesGenerator;
 import org.sswr.util.data.StringUtil;
 import org.sswr.util.data.textbinenc.Radix64Enc;
 
@@ -16,7 +17,7 @@ public class Bcrypt
 		int i = 64;
 		while (i-- > 0)
 		{
-			hashBuff = bf.encrypt(hashBuff, 0, 24, null);
+			hashBuff = bf.encrypt(hashBuff, 0, 24);
 		}
 		return hashBuff;
 	}
@@ -57,4 +58,38 @@ public class Bcrypt
 		}
 	}
 
+	public String genHash(int cost, String password)
+	{
+		if (cost < 4 || cost > 31)
+		{
+			return null;
+		}
+		RandomBytesGenerator rand = new RandomBytesGenerator();
+		return this.genHash(cost, rand.nextBytes(16), password);
+	}
+
+	public String genHash(int cost, byte[] salt, String password)
+	{
+		if (salt == null || salt.length != 16)
+		{
+			return null;
+		}
+		if (cost < 4 || cost > 31)
+		{
+			return null;
+		}
+		StringBuilder sb = new StringBuilder();
+		sb.append("$2a$");
+		if (cost < 10)
+		{
+			sb.append('0');
+		}
+		sb.append(cost);
+		sb.append('$');
+		
+		sb.append(this.radix64.encodeBin(salt, 0, 16));
+		byte[] hashCTxt = this.calcHash(cost, salt, password);
+		sb.append(this.radix64.encodeBin(hashCTxt, 0, 23));
+		return sb.toString();
+	}
 }

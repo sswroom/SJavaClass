@@ -154,7 +154,7 @@ public class JasyptEncryptor
 		buff = decGetIV(iv, buff);
 		byte keyBuff[] = getEncKey(salt);
 		Encryption enc = getEnc(iv, keyBuff);
-		return enc.decrypt(buff, 0, buff.length, null);
+		return enc.decrypt(buff, 0, buff.length);
 	}
 
 	public String getString(byte[] decBuff)
@@ -224,7 +224,7 @@ public class JasyptEncryptor
 		}
 		byte key[] = this.getEncKey(salt);
 		Encryption enc = this.getEnc(iv, key);
-		byte encBuff[] = enc.encrypt(srcBuff, 0, destLen - destOfst, null);
+		byte encBuff[] = enc.encrypt(srcBuff, 0, destLen - destOfst);
 		ByteTool.copyArray(destBuff, destOfst, encBuff, 0, encBuff.length);
 	
 		return Base64.getEncoder().encodeToString(destBuff);

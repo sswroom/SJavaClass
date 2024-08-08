@@ -682,7 +682,7 @@ public abstract class MyX509File extends ASN1Data
 		appendSigned(pdu, beginOfst, endOfst, path, sb, null);
 	}
 
-	protected static boolean isPublicKeyInfo(byte[] pdu, int beginOfst, int endOfst, String path)
+	public static boolean isPublicKeyInfo(byte[] pdu, int beginOfst, int endOfst, String path)
 	{
 		int cnt = ASN1Util.pduCountItem(pdu, beginOfst, endOfst, path);
 		if (cnt < 2)

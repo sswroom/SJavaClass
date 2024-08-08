@@ -473,7 +473,7 @@ public class Blowfish extends BlockCipher
 		this.setKey(key);
 	}
 	
-	public int encryptBlock(byte []inBlock, int inOfst, byte []outBlock, int outOfst, Object encParam)
+	public int encryptBlock(byte []inBlock, int inOfst, byte []outBlock, int outOfst)
 	{
 		this.xl = ByteTool.readMInt32(inBlock, inOfst + 0);
 		this.xr = ByteTool.readMInt32(inBlock, inOfst + 4);
@@ -483,7 +483,7 @@ public class Blowfish extends BlockCipher
 		return 8;
 	}
 	
-	public int decryptBlock(byte[] inBlock, int inOfst, byte[] outBlock, int outOfst, Object decParam)
+	public int decryptBlock(byte[] inBlock, int inOfst, byte[] outBlock, int outOfst)
 	{
 		this.xl = ByteTool.readMInt32(inBlock, inOfst + 0);
 		this.xr = ByteTool.readMInt32(inBlock, inOfst + 4);

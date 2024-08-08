@@ -252,6 +252,36 @@ public class JSONBuilder
 		return true;
 	}
 
+	public boolean objectAddArrayStr(String name, String value, String splitChar)
+	{
+		if (this.currType != ObjectType.OT_OBJECT)
+			return false;
+		if (this.isFirst)
+			this.isFirst = false;
+		else
+		{
+			this.sb.append(",");
+		}
+		this.appendStr(name);
+		this.sb.append(':');
+		this.sb.append('[');
+		if (value.length() > 0)
+		{
+			String[] strs = StringUtil.split(value, splitChar);
+			int i = 0;
+			int j = strs.length;
+			while (i < j)
+			{
+				if (i > 0)
+					this.sb.append(",");
+				this.appendStr(strs[i]);
+				i++;
+			}
+		}
+		this.sb.append(']');
+		return true;
+	}
+
 	public boolean objectBeginArray(String name)
 	{
 		if (this.currType != ObjectType.OT_OBJECT)
