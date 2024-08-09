@@ -104,4 +104,14 @@ public class Coord2DDbl
 	{
 		return this.x == 0 && this.y == 0;
 	}
+
+	public double getLat()
+	{
+		return this.y;
+	}
+
+	public double getLon()
+	{
+		return this.x;
+	}
 }

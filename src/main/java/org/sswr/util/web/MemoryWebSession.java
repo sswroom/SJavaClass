@@ -2,7 +2,6 @@ package org.sswr.util.web;
 
 import java.util.HashMap;
 
-import org.sswr.util.basic.MyThread;
 import org.sswr.util.io.OSType;
 import org.sswr.util.net.BrowserInfo.BrowserType;
 
@@ -12,8 +11,6 @@ public class MemoryWebSession implements WebSession
 	private OSType os;
 	private HashMap<String, Object> items;
 	private long sessId;
-	private long threadId;
-	private long threadUseCnt;
 
 	public MemoryWebSession(long sessId, BrowserType browser, OSType os)
 	{
@@ -21,8 +18,6 @@ public class MemoryWebSession implements WebSession
 		this.browser = browser;
 		this.os = os;
 		this.items = new HashMap<String, Object>();
-		this.threadId = 0;
-		this.threadUseCnt = 0;
 	}
 	
 	public boolean requestValid(BrowserType browser, OSType os)
@@ -32,40 +27,6 @@ public class MemoryWebSession implements WebSession
 		if (this.os != OSType.Unknown && this.os != os)
 			return false;
 		return true;
-	}
-
-	public void beginUse()
-	{
-		long threadId = Thread.currentThread().getId();
-		while (true)
-		{
-			synchronized(this)
-			{
-				if (this.threadId == 0)
-				{
-					this.threadId = threadId;
-					this.threadUseCnt = 1;
-					break;
-				}
-				else if (this.threadId == threadId)
-				{
-					this.threadUseCnt++;
-					break;
-				}
-			}
-			MyThread.sleep(10);
-		}
-	}
-
-	public void endUse()
-	{
-		synchronized(this)
-		{
-			if ((--this.threadUseCnt) == 0)
-			{
-				this.threadId = 0;
-			}
-		}
 	}
 
 	public long getSessId()

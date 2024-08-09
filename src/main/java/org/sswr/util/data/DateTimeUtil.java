@@ -598,6 +598,53 @@ public class DateTimeUtil
 		return DateTimeFormatter.ofPattern(format.replace('f', 'n').replace('z', 'Z')).format(ZonedDateTime.ofInstant(tim.toInstant(), ZoneId.systemDefault()));
 	}
 
+	public static String toString(ZonedDateTime t)
+	{
+		int nano = t.getNano();
+		if (nano == 0)
+		{
+			return toString(t, "yyyy-MM-dd HH:mm:ss zzzz");
+		}
+		else if ((nano % 1000000) == 0)
+		{
+			return toString(t, "yyyy-MM-dd HH:mm:ss.fff zzzz");
+		}
+		else if ((nano % 1000) == 0)
+		{
+			return toString(t, "yyyy-MM-dd HH:mm:ss.ffffff zzzz");
+		}
+		else
+		{
+			return toString(t, "yyyy-MM-dd HH:mm:ss.fffffffff zzzz");
+		}
+	}
+
+	public static String toString(Timestamp ts)
+	{
+		int nano = ts.getNanos();
+		if (nano == 0)
+		{
+			return toString(ts, "yyyy-MM-dd HH:mm:ss zzzz");
+		}
+		else if ((nano % 1000000) == 0)
+		{
+			return toString(ts, "yyyy-MM-dd HH:mm:ss.fff zzzz");
+		}
+		else if ((nano % 1000) == 0)
+		{
+			return toString(ts, "yyyy-MM-dd HH:mm:ss.ffffff zzzz");
+		}
+		else
+		{
+			return toString(ts, "yyyy-MM-dd HH:mm:ss.fffffffff zzzz");
+		}
+	}
+
+	public static String toString(Date dat)
+	{
+		return toString(dat, "yyyy-MM-dd");
+	}
+
 	public static String toStringNoZone(ZonedDateTime t)
 	{
 		int nano = t.getNano();

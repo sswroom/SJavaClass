@@ -1,5 +1,7 @@
 package org.sswr.util.data;
 
+import java.sql.Date;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -56,7 +58,43 @@ public class JSONBuilder
 		this.sb.append('\"');
 	}
 
-	public JSONBuilder(ObjectType rootType)
+	private void appendDouble(double val)
+	{
+		if (Double.isNaN(val))
+		{
+			this.sb.append("null");
+		}
+		else
+		{
+			this.sb.append(val);
+		}
+	}
+
+	private void appendTSStr(Timestamp ts)
+	{
+		if (ts == null)
+		{
+			this.sb.append("null");
+		}
+		else
+		{
+			this.appendStr(DateTimeUtil.toString(ts));
+		}
+	}
+
+	private void appendDateStr(Date dat)
+	{
+		if (dat == null)
+		{
+			this.sb.append("null");
+		}
+		else
+		{
+			this.appendStr(DateTimeUtil.toString(dat));
+		}
+	}
+
+		public JSONBuilder(ObjectType rootType)
 	{
 		this.objTypes = new ArrayList<ObjectType>();
 		this.sb = new StringBuilder();
@@ -82,7 +120,7 @@ public class JSONBuilder
 		{
 			this.sb.append(",");
 		}
-		this.sb.append(val);
+		this.appendDouble(val);
 		return true;
 	}
 
@@ -193,7 +231,26 @@ public class JSONBuilder
 		}
 		this.appendStr(name);
 		this.sb.append(":");
-		this.sb.append(val);
+		this.appendDouble(val);
+		return true;
+	}
+
+	public boolean objectAddNFloat64(String name, Double val)
+	{
+		if (this.currType != ObjectType.OT_OBJECT)
+			return false;
+		if (this.isFirst)
+			this.isFirst = false;
+		else
+		{
+			this.sb.append(",");
+		}
+		this.appendStr(name);
+		this.sb.append(":");
+		if (val == null)
+			this.sb.append("null");
+		else
+			this.appendDouble(val.doubleValue());
 		return true;
 	}
 
@@ -213,6 +270,25 @@ public class JSONBuilder
 		return true;
 	}
 
+	public boolean objectAddNInt32(String name, Integer val)
+	{
+		if (this.currType != ObjectType.OT_OBJECT)
+			return false;
+		if (this.isFirst)
+			this.isFirst = false;
+		else
+		{
+			this.sb.append(",");
+		}
+		this.appendStr(name);
+		this.sb.append(":");
+		if (val == null)
+			this.sb.append("null");
+		else
+			this.sb.append(val.intValue());
+		return true;
+	}
+
 	public boolean objectAddInt64(String name, long val)
 	{
 		if (this.currType != ObjectType.OT_OBJECT)
@@ -226,6 +302,22 @@ public class JSONBuilder
 		this.appendStr(name);
 		this.sb.append(":");
 		this.sb.append(val);
+		return true;
+	}
+
+	public boolean objectAddBool(String name, boolean val)
+	{
+		if (this.currType != ObjectType.OT_OBJECT)
+			return false;
+		if (this.isFirst)
+			this.isFirst = false;
+		else
+		{
+			this.sb.append(",");
+		}
+		this.appendStr(name);
+		this.sb.append(":");
+		this.sb.append(val?"true":"false");
 		return true;
 	}
 
@@ -279,6 +371,77 @@ public class JSONBuilder
 			}
 		}
 		this.sb.append(']');
+		return true;
+	}
+
+	public boolean objectAddChar(String name, char val)
+	{
+		if (this.currType != ObjectType.OT_OBJECT)
+			return false;
+		if (this.isFirst)
+			this.isFirst = false;
+		else
+		{
+			this.sb.append(",");
+		}
+		this.appendStr(name);
+		this.sb.append(":");
+		if (val == 0)
+		{
+			this.sb.append("null");
+		}
+		else
+		{
+			this.appendStr(val+"");
+		}
+		return true;
+	}
+
+
+	public boolean objectAddTSStr(String name, Timestamp ts)
+	{
+		if (this.currType != ObjectType.OT_OBJECT)
+			return false;
+		if (this.isFirst)
+			this.isFirst = false;
+		else
+		{
+			this.sb.append(",");
+		}
+		this.appendStr(name);
+		this.sb.append(':');
+		this.appendTSStr(ts);
+		return true;
+	}
+
+	public boolean objectAddDateStr(String name, Date dat)
+	{
+		if (this.currType != ObjectType.OT_OBJECT)
+			return false;
+		if (this.isFirst)
+			this.isFirst = false;
+		else
+		{
+			this.sb.append(",");
+		}
+		this.appendStr(name);
+		this.sb.append(':');
+		this.appendDateStr(dat);
+		return true;
+	}
+
+	public boolean objectAddNull(String name)
+	{
+		if (this.currType != ObjectType.OT_OBJECT)
+			return false;
+		if (this.isFirst)
+			this.isFirst = false;
+		else
+		{
+			this.sb.append(",");
+		}
+		this.appendStr(name);
+		this.sb.append(":null");
 		return true;
 	}
 

@@ -6,8 +6,6 @@ import org.sswr.util.net.BrowserInfo.BrowserType;
 public interface WebSession
 {
 	public boolean requestValid(BrowserType browser, OSType os);
-	public void beginUse();
-	public void endUse();
 	public long getSessId();
 
 	public void setValuePtr(String name, Object val);

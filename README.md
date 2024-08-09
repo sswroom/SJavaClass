@@ -18,12 +18,16 @@
 - Added MyX509PrivKey.getKeyId
 - Added MyX509PubKey.getKeyId
 - Added CharUtil.isAlphaNumeric, isDigit, isAlphabet, isUpperCase, isLowerCase
-- Added JSONBuilder.objectAddArrayStr
+- Added JSONBuilder.objectAddArrayStr, objectAddNFloat64, objectAddNInt32, objectAddBool, objectAddChar, objectAddTSStr, objectAddDateStr, objectAddNull
 - Added StringUtil.utf16CharCnt
 - Added StringUtil.isUInteger
 - Added StringUtil.isHKID
 - Added StringUtil.orEmpty
 - Added IAMSmartAPI
+- Added DateTimeUtil.toString(Timestamp/ZonedDateTime/Date)
+- Added Coord2DDbl.getLat, getLon
+- Added HTTPServerUtil
+- Added StatusCode
 
 0.4.20240805
 - Migrate from javax.* to jakarta.*

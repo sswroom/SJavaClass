@@ -61,9 +61,10 @@ public class MemoryWebSessionManager extends WebSessionManager implements Runnab
 						if (sess != null)
 						{
 							boolean toDel;
-							sess.beginUse();;
-							toDel = this.hdlr.onSessionCheck(sess);
-							sess.endUse();
+							synchronized(sess)
+							{
+								toDel = this.hdlr.onSessionCheck(sess);
+							}
 							if (toDel)
 							{
 								synchronized(this)
@@ -73,9 +74,10 @@ public class MemoryWebSessionManager extends WebSessionManager implements Runnab
 									sess = this.sesses.remove(j);
 								}
 	
-								sess.beginUse();
-								this.hdlr.onSessionDeleted(sess);
-								sess.endUse();
+								synchronized(sess)
+								{
+									this.hdlr.onSessionDeleted(sess);
+								}
 							}
 						}
 					}
@@ -158,7 +160,6 @@ public class MemoryWebSessionManager extends WebSessionManager implements Runnab
 			UserAgentInfo ua = BrowserInfo.parseReq(req);
 			if (!sess.requestValid(ua.browser, ua.os))
 			{
-				sess.endUse();
 				return null;
 			}
 			return sess;
@@ -187,7 +188,6 @@ public class MemoryWebSessionManager extends WebSessionManager implements Runnab
 			i = this.sessIds.sortedInsert(sessId);
 			this.sesses.add(i, (MemoryWebSession)sess);
 		}
-		sess.beginUse();
 		return sess;
 	}
 
@@ -210,9 +210,10 @@ public class MemoryWebSessionManager extends WebSessionManager implements Runnab
 			}
 			if (sess != null)
 			{
-				sess.beginUse();
-				this.hdlr.onSessionDeleted(sess);
-				sess.endUse();;
+				synchronized(sess)
+				{
+					this.hdlr.onSessionDeleted(sess);
+				}
 			}
 			Cookie cookie = new Cookie(this.cookieName, String.valueOf(sessId));
 			cookie.setPath(this.path);
@@ -267,7 +268,6 @@ public class MemoryWebSessionManager extends WebSessionManager implements Runnab
 				this.sesses.add(i, (MemoryWebSession)sess);
 			}
 		}
-		sess.beginUse();
 		return sess;
 	}
 
@@ -283,10 +283,6 @@ public class MemoryWebSessionManager extends WebSessionManager implements Runnab
 			{
 				sess = this.sesses.get(i);
 			}
-		}
-		if (sess != null)
-		{
-			sess.beginUse();
 		}
 		return sess;
 	}
@@ -307,9 +303,10 @@ public class MemoryWebSessionManager extends WebSessionManager implements Runnab
 		}
 		if (sess != null)
 		{
-			sess.beginUse();
-			this.hdlr.onSessionDeleted(sess);
-			sess.endUse();
+			synchronized(sess)
+			{
+				this.hdlr.onSessionDeleted(sess);
+			}
 		}
 	}
 

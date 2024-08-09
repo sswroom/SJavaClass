@@ -508,10 +508,12 @@ public class IAMSmartAPI {
 		return succ;
 	}
 
-	public boolean getToken(String code, CEKInfo cek, TokenInfo token)
+	public boolean getToken(String code, boolean directLogin, CEKInfo cek, TokenInfo token)
 	{
 		JSONBuilder jsonMsg = new JSONBuilder(ObjectType.OT_OBJECT);
 		jsonMsg.objectAddStr("code", code);
+		if (directLogin)
+			jsonMsg.objectAddStr("isDirectLoginV2", "true");
 		jsonMsg.objectAddStr("grantType", "authorization_code");
 		StringBuilder sbURL = new StringBuilder();
 		sbURL.append("https://");
