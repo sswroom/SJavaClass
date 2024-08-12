@@ -11,7 +11,7 @@ import java.util.Arrays;
 import org.sswr.util.data.ByteTool;
 import org.sswr.util.data.SharedInt;
 import org.sswr.util.data.SharedLong;
-import org.sswr.util.math.CoordinateSystemManager;
+import org.sswr.util.math.ArcGISPRJParser;
 
 public class FileGDBUtil
 {
@@ -88,7 +88,7 @@ public class FileGDBUtil
 				byte[] csysBuff = new String(fieldDesc, ofst + 2, srsLen, StandardCharsets.UTF_16LE).getBytes(StandardCharsets.UTF_8);
 				SharedInt csysLen = new SharedInt();
 				csysLen.value = csysBuff.length;
-				table.setCsys(CoordinateSystemManager.parsePRJBuff("FileGDB", csysBuff, 0, csysLen));
+				table.setCsys(ArcGISPRJParser.parsePRJBuff("FileGDB", csysBuff, 0, csysLen));
 				ofst += 2 + srsLen;
 				byte flags = fieldDesc[ofst];
 				ofst += 1;

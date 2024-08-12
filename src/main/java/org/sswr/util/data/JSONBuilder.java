@@ -3,7 +3,20 @@ package org.sswr.util.data;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+
+import org.locationtech.jts.geom.Geometry;
+import org.sswr.util.math.Coord2DDbl;
+import org.sswr.util.math.geometry.CurvePolygon;
+import org.sswr.util.math.geometry.LineString;
+import org.sswr.util.math.geometry.LinearRing;
+import org.sswr.util.math.geometry.MultiPolygon;
+import org.sswr.util.math.geometry.Point2D;
+import org.sswr.util.math.geometry.Polygon;
+import org.sswr.util.math.geometry.Polyline;
+import org.sswr.util.math.geometry.Vector2D;
+import org.sswr.util.math.geometry.Vector2D.VectorType;
 
 public class JSONBuilder
 {
@@ -94,7 +107,143 @@ public class JSONBuilder
 		}
 	}
 
-		public JSONBuilder(ObjectType rootType)
+	private void appendCoord2D(Coord2DDbl coord)
+	{
+		this.sb.append('[');
+		this.appendDouble(coord.x);
+		this.sb.append(',');
+		this.appendDouble(coord.y);
+		this.sb.append(']');
+	}
+
+	private void appendCoord2DArray(Coord2DDbl[] coordList)
+	{
+		this.sb.append('[');
+		if (coordList != null && coordList.length > 0)
+		{
+			this.appendCoord2D(coordList[0]);
+			int i = 1;
+			while (i < coordList.length)
+			{
+				this.sb.append(',');
+				this.appendCoord2D(coordList[i]);
+				i++;
+			}
+		}
+		this.sb.append(']');
+	}
+
+	private void appendCoordPL(Polyline pl)
+	{
+		Iterator<LineString> it = pl.iterator();
+		this.sb.append('[');
+		LineString ls;
+		if (it.hasNext())
+		{
+			ls = it.next();
+			Coord2DDbl[] ptList = ls.getPointList();
+			this.appendCoord2DArray(ptList);
+			while (it.hasNext())
+			{
+				ls = it.next();
+				ptList = ls.getPointList();
+				this.sb.append(',');
+				this.appendCoord2DArray(ptList);
+			}
+		}
+		this.sb.append(']');
+	}
+
+	private void appendCoordPG(Polygon pg)
+	{
+		Iterator<LinearRing> it = pg.iterator();
+		this.sb.append('[');
+		LinearRing lr;
+		if (it.hasNext())
+		{
+			lr = it.next();
+			Coord2DDbl[] ptList = lr.getPointList();
+			this.appendCoord2DArray(ptList);
+			while (it.hasNext())
+			{
+				lr = it.next();
+				ptList = lr.getPointList();
+				this.sb.append(',');
+				this.appendCoord2DArray(ptList);
+			}
+		}
+		this.sb.append(']');
+	}
+
+	private void appendGeometry(Vector2D vec)
+	{
+		VectorType vecType = vec.getVectorType();
+		if (vecType == VectorType.Point)
+		{
+			Point2D pt = (Point2D)vec;
+			this.sb.append("{\"type\":\"Point\",\"coordinates\":");
+			this.appendCoord2D(pt.getCenter());
+			this.sb.append('}');
+		}
+		else if (vecType == VectorType.LineString)
+		{
+			LineString ls = (LineString)vec;
+			this.sb.append("{\"type\":\"LineString\",\"coordinates\":");
+			Coord2DDbl[] ptList = ls.getPointList();
+			this.appendCoord2DArray(ptList);
+			this.sb.append('}');
+		}
+		else if (vecType == VectorType.Polyline)
+		{
+			Polyline pl = (Polyline)vec;
+			this.sb.append("{\"type\":\"MultiLineString\",\"coordinates\":");
+			this.appendCoordPL(pl);
+			this.sb.append('}');
+		}
+		else if (vecType == VectorType.Polygon)
+		{
+			Polygon pg = (Polygon)vec;
+			this.sb.append("{\"type\":\"Polygon\",\"coordinates\":");
+			this.appendCoordPG(pg);
+			this.sb.append('}');
+		}
+		else if (vecType == VectorType.MultiPolygon)
+		{
+			MultiPolygon mpg = (MultiPolygon)vec;
+			this.sb.append("{\"type\":\"MultiPolygon\",\"coordinates\":");
+			Iterator<Polygon> it = mpg.iterator();
+			this.sb.append('[');
+			Polygon pg;
+			if (it.hasNext())
+			{
+				pg = it.next();
+				this.appendCoordPG(pg);
+				while (it.hasNext())
+				{
+					pg = it.next();
+					this.sb.append(',');
+					this.appendCoordPG(pg);
+				}
+			}
+			this.sb.append(']');
+			this.sb.append('}');
+		}
+		else if (vecType == VectorType.CurvePolygon)
+		{
+			CurvePolygon cpg = (CurvePolygon)vec;
+			Polygon pg = (Polygon)cpg.curveToLine();
+			this.sb.append("{\"type\":\"Polygon\",\"coordinates\":");
+			this.appendCoordPG(pg);
+			this.sb.append('}');
+		}
+		else
+		{
+			this.sb.append("null");
+			System.out.println("JSONBuilder: Unsupport Geometry Type: "+vecType.toString());
+		}
+	}
+
+	public JSONBuilder(ObjectType rootType)
 	{
 		this.objTypes = new ArrayList<ObjectType>();
 		this.sb = new StringBuilder();
@@ -442,6 +591,34 @@ public class JSONBuilder
 		}
 		this.appendStr(name);
 		this.sb.append(":null");
+		return true;
+	}
+
+	public boolean objectAddGeometry(String name, Geometry geom)
+	{
+		return objectAddGeometry(name, GeometryUtil.toVector2D(geom));
+	}
+	
+	public boolean objectAddGeometry(String name, Vector2D vec)
+	{
+		if (this.currType != ObjectType.OT_OBJECT)
+			return false;
+		if (this.isFirst)
+			this.isFirst = false;
+		else
+		{
+			this.sb.append(",");
+		}
+		this.appendStr(name);
+		this.sb.append(':');
+		if (vec != null)
+		{
+			this.appendGeometry(vec);
+		}
+		else
+		{
+			this.sb.append("null");
+		}
 		return true;
 	}
 

@@ -18,7 +18,7 @@
 - Added MyX509PrivKey.getKeyId
 - Added MyX509PubKey.getKeyId
 - Added CharUtil.isAlphaNumeric, isDigit, isAlphabet, isUpperCase, isLowerCase
-- Added JSONBuilder.objectAddArrayStr, objectAddNFloat64, objectAddNInt32, objectAddBool, objectAddChar, objectAddTSStr, objectAddDateStr, objectAddNull
+- Added JSONBuilder.objectAddArrayStr, objectAddNFloat64, objectAddNInt32, objectAddBool, objectAddChar, objectAddTSStr, objectAddDateStr, objectAddNull, objectAddGeometry
 - Added StringUtil.utf16CharCnt
 - Added StringUtil.isUInteger
 - Added StringUtil.isHKID
@@ -28,6 +28,8 @@
 - Added Coord2DDbl.getLat, getLon
 - Added HTTPServerUtil
 - Added StatusCode
+- Split CoordinateSystemManager to ArcGISPRJParser
+- Added CoordinateSystemManager.createWGS84Csys
 
 0.4.20240805
 - Migrate from javax.* to jakarta.*
