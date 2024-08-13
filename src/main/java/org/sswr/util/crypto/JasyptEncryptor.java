@@ -170,6 +170,10 @@ public class JasyptEncryptor
 		return new String(decBuff, 0, i + 1, StandardCharsets.UTF_8);
 	}
 
+	public String encryptAsB64(byte srcBuff[])
+	{
+		return encryptAsB64(srcBuff, 0, srcBuff.length);
+	}
 
 	public String encryptAsB64(byte srcBuff[], int srcOfst, int srcLen)
 	{

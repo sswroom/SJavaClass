@@ -30,6 +30,9 @@
 - Added StatusCode
 - Split CoordinateSystemManager to ArcGISPRJParser
 - Added CoordinateSystemManager.createWGS84Csys
+- Added MD5
+- Added StaticImage.getExif
+- Added JasyptEncrypter.encryptAsB64
 
 0.4.20240805
 - Migrate from javax.* to jakarta.*

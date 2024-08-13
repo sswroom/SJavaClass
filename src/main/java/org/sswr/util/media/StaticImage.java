@@ -277,6 +277,16 @@ public class StaticImage
 		}
 	}
 
+	public EXIFData getExif()
+	{
+		if (this.metadata != null)
+		{
+			this.parseMetadata();
+			return this.exif;
+		}
+		return this.exif;
+	}
+
 	public void toString(StringBuilder sb)
 	{
 		toBufferedImageString(this.img, sb);
