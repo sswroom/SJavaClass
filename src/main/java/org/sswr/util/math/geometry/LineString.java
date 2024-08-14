@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import org.sswr.util.basic.Vector3;
 import org.sswr.util.data.ByteTool;
 import org.sswr.util.data.SharedBool;
 import org.sswr.util.data.SharedDouble;
@@ -490,16 +491,14 @@ public class LineString extends Vector2D
 	{
 		if (this.zArr != null)
 		{
-			SharedDouble tmpX = new SharedDouble();
-			SharedDouble tmpY = new SharedDouble();
-			SharedDouble tmpZ = new SharedDouble();
+			Vector3 tmpPos;
 			int i = this.pointArr.length;
 			while (i-- > 0)
 			{
-				CoordinateSystem.convertXYZ(srcCSys, destCSys, this.pointArr[i].x, this.pointArr[i].y, this.zArr[i], tmpX, tmpY, tmpZ);
-				this.pointArr[i].x = tmpX.value;
-				this.pointArr[i].y = tmpY.value;
-				this.zArr[i] = tmpZ.value;
+				tmpPos = CoordinateSystem.convert3D(srcCSys, destCSys, new Vector3(this.pointArr[i].x, this.pointArr[i].y, this.zArr[i]));
+				this.pointArr[i].x = tmpPos.getX();
+				this.pointArr[i].y = tmpPos.getY();
+				this.zArr[i] = tmpPos.getZ();
 			}
 			this.srid = destCSys.getSRID();
 		}

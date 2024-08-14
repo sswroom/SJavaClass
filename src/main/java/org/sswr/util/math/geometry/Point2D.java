@@ -3,7 +3,6 @@ package org.sswr.util.math.geometry;
 import java.util.Objects;
 
 import org.sswr.util.data.DataTools;
-import org.sswr.util.data.SharedDouble;
 import org.sswr.util.math.Coord2DDbl;
 import org.sswr.util.math.CoordinateSystem;
 import org.sswr.util.math.RectAreaDbl;
@@ -74,11 +73,7 @@ public class Point2D extends Vector2D
 
 	public void convCSys(CoordinateSystem srcCSys, CoordinateSystem destCSys)
 	{
-		SharedDouble tmpX = new SharedDouble();
-		SharedDouble tmpY = new SharedDouble();
-		CoordinateSystem.convertXYZ(srcCSys, destCSys, this.pos.x, this.pos.y, 0, tmpX, tmpY, null);
-		this.pos.x = tmpX.value;
-		this.pos.y = tmpY.value;
+		this.pos = CoordinateSystem.convert(srcCSys, destCSys, this.pos);
 		this.srid = destCSys.getSRID();
 	}
 

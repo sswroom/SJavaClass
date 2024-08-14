@@ -1,6 +1,6 @@
 package org.sswr.util.math;
 
-import org.sswr.util.data.SharedDouble;
+import org.sswr.util.basic.Vector3;
 import org.sswr.util.io.ParsedObject;
 import org.sswr.util.io.ParserType;
 import org.sswr.util.math.geometry.LineString;
@@ -97,62 +97,44 @@ public abstract class CoordinateSystem extends ParsedObject
 		return this.srid;
 	}
 
-	public static void convertXYZ(CoordinateSystem srcCoord, CoordinateSystem destCoord, double srcX, double srcY, double srcZ, SharedDouble destX, SharedDouble destY, SharedDouble destZ)
+	public static Coord2DDbl convert(CoordinateSystem srcCoord, CoordinateSystem destCoord, Coord2DDbl coord)
 	{
-		SharedDouble tmpX;
-		SharedDouble tmpY;
-		SharedDouble tmpZ;
+		return convert3D(srcCoord, destCoord, new Vector3(coord, 0)).getXY();
+	}
+
+	public static Vector3 convert3D(CoordinateSystem srcCoord, CoordinateSystem destCoord, Vector3 srcPos)
+	{
+		Vector3 destPos = srcPos.clone();
 		if (srcCoord.isProjected())
 		{
 			ProjectedCoordinateSystem pcs = (ProjectedCoordinateSystem)srcCoord;
-			tmpX = new SharedDouble();
-			tmpY = new SharedDouble();
-			pcs.toGeographicCoordinateDeg(srcX, srcY, tmpX, tmpY);
+			destPos = new Vector3(pcs.toGeographicCoordinateDeg(destPos.toCoord2D()), destPos.getZ());
 			srcCoord = pcs.getGeographicCoordinateSystem();
-			srcX = tmpX.value;
-			srcY = tmpY.value;
 		}
 		if (srcCoord.equals(destCoord))
 		{
-			destX.value = srcX;
-			destY.value = srcY;
-			if (destZ != null)
-				destZ.value = srcZ;
-			return;
+			return destPos;
 		}
-		tmpX = new SharedDouble();
-		tmpY = new SharedDouble();
-		tmpZ = new SharedDouble();
-		((GeographicCoordinateSystem)srcCoord).toCartesianCoordDeg(srcY, srcX, srcZ, tmpX, tmpY, tmpZ);
-		srcX = tmpX.value;
-		srcY = tmpY.value;
-		srcZ = tmpZ.value;
+		destPos = ((GeographicCoordinateSystem)srcCoord).toCartesianCoordDeg(destPos);
 	
 		if (destCoord.isProjected())
 		{
 			ProjectedCoordinateSystem pcs = (ProjectedCoordinateSystem)destCoord;
 			GeographicCoordinateSystem gcs = pcs.getGeographicCoordinateSystem();
-			gcs.fromCartesianCoordRad(srcX, srcY, srcZ, tmpY, tmpX, tmpZ);
-			pcs.fromGeographicCoordinateRad(tmpX.value, tmpY.value, destX, destY);
-			if (destZ != null)
-				destZ.value = tmpZ.value;
+			destPos = gcs.fromCartesianCoordRad(destPos);
+			destPos = new Vector3(pcs.fromGeographicCoordinateRad(destPos.getXY()), destPos.getZ());
 		}
 		else
 		{
 			GeographicCoordinateSystem gcs = (GeographicCoordinateSystem)destCoord;;
-			gcs.fromCartesianCoordDeg(srcX, srcY, srcZ, destY, destX, tmpZ);
-			if (destZ != null)
-				destZ.value = tmpZ.value;
+			destPos = gcs.fromCartesianCoordDeg(destPos);
 		}
+		return destPos;
 	}
-
 	
 	public static void convertXYArray(CoordinateSystem srcCoord, CoordinateSystem destCoord, Coord2DDbl []srcArr, Coord2DDbl []destArr)
 	{
 		int i;
-		SharedDouble tmpX = new SharedDouble();
-		SharedDouble tmpY = new SharedDouble();
-		SharedDouble tmpZ = new SharedDouble();
 		boolean srcRad = false;
 		if (srcCoord.isProjected())
 		{
@@ -160,9 +142,7 @@ public abstract class CoordinateSystem extends ParsedObject
 			i = srcArr.length;
 			while (i-- > 0)
 			{
-				pcs.toGeographicCoordinateRad(srcArr[i].x, srcArr[i].y, tmpX, tmpY);
-				destArr[i].x = tmpX.value;
-				destArr[i].y = tmpY.value;
+				destArr[i] = pcs.toGeographicCoordinateRad(srcArr[i]);
 			}
 			srcCoord = pcs.getGeographicCoordinateSystem();
 			srcArr = destArr;
@@ -189,6 +169,7 @@ public abstract class CoordinateSystem extends ParsedObject
 			}
 			return;
 		}
+		Vector3 tmpPos;
 		if (destCoord.isProjected())
 		{
 			ProjectedCoordinateSystem pcs = (ProjectedCoordinateSystem)destCoord;
@@ -198,11 +179,9 @@ public abstract class CoordinateSystem extends ParsedObject
 				i = srcArr.length;
 				while (i-- > 0)
 				{
-					((GeographicCoordinateSystem)srcCoord).toCartesianCoordRad(srcArr[i].y, srcArr[i].x, 0, tmpX, tmpY, tmpZ);
-					gcs.fromCartesianCoordRad(tmpX.value, tmpY.value, tmpZ.value, tmpY, tmpX, tmpZ);
-					pcs.fromGeographicCoordinateRad(tmpX.value, tmpY.value, tmpX, tmpY);
-					destArr[i].x = tmpX.value;
-					destArr[i].y = tmpY.value;
+					tmpPos = ((GeographicCoordinateSystem)srcCoord).toCartesianCoordRad(new Vector3(srcArr[i], 0));
+					tmpPos = gcs.fromCartesianCoordRad(tmpPos);
+					destArr[i] = pcs.fromGeographicCoordinateRad(tmpPos.getXY());
 				}
 			}
 			else
@@ -210,11 +189,9 @@ public abstract class CoordinateSystem extends ParsedObject
 				i = srcArr.length;
 				while (i-- > 0)
 				{
-					((GeographicCoordinateSystem)srcCoord).toCartesianCoordDeg(srcArr[i].y, srcArr[i].x, 0, tmpX, tmpY, tmpZ);
-					gcs.fromCartesianCoordRad(tmpX.value, tmpY.value, tmpZ.value, tmpY, tmpX, tmpZ);
-					pcs.fromGeographicCoordinateRad(tmpX.value, tmpY.value, tmpX, tmpY);
-					destArr[i].x = tmpX.value;
-					destArr[i].y = tmpY.value;
+					tmpPos = ((GeographicCoordinateSystem)srcCoord).toCartesianCoordDeg(new Vector3(srcArr[i], 0));
+					tmpPos = gcs.fromCartesianCoordRad(tmpPos);
+					destArr[i] = pcs.fromGeographicCoordinateRad(tmpPos.getXY());
 				}
 			}
 		}
@@ -226,10 +203,8 @@ public abstract class CoordinateSystem extends ParsedObject
 				i = srcArr.length;
 				while (i-- > 0)
 				{
-					((GeographicCoordinateSystem)srcCoord).toCartesianCoordRad(srcArr[i].y, srcArr[i].x, 0, tmpX, tmpY, tmpZ);
-					gcs.fromCartesianCoordDeg(tmpX.value, tmpY.value, tmpZ.value, tmpY, tmpX, tmpZ);
-					destArr[i].x = tmpX.value;
-					destArr[i].y = tmpY.value;
+					tmpPos = ((GeographicCoordinateSystem)srcCoord).toCartesianCoordRad(new Vector3(srcArr[i], 0));
+					destArr[i] = gcs.fromCartesianCoordDeg(tmpPos).getXY();
 				}
 			}
 			else
@@ -237,10 +212,8 @@ public abstract class CoordinateSystem extends ParsedObject
 				i = srcArr.length;
 				while (i-- > 0)
 				{
-					((GeographicCoordinateSystem)srcCoord).toCartesianCoordDeg(srcArr[i].y, srcArr[i].x, 0, tmpX, tmpY, tmpZ);
-					gcs.fromCartesianCoordDeg(tmpX.value, tmpY.value, tmpZ.value, tmpY, tmpX, tmpZ);
-					destArr[i].x = tmpX.value;
-					destArr[i].y = tmpY.value;
+					tmpPos = ((GeographicCoordinateSystem)srcCoord).toCartesianCoordDeg(new Vector3(srcArr[i], 0));
+					destArr[i] = gcs.fromCartesianCoordDeg(tmpPos).getXY();
 				}
 			}
 		}

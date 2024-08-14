@@ -1,6 +1,5 @@
 package org.sswr.util.math;
 
-import org.sswr.util.data.SharedDouble;
 import org.sswr.util.math.geometry.LineString;
 import org.sswr.util.math.geometry.Vector2D.VectorType;
 import org.sswr.util.math.unit.Distance;
@@ -130,18 +129,19 @@ public abstract class ProjectedCoordinateSystem extends CoordinateSystem
 		return this.gcs;
 	}
 
-	public abstract void toGeographicCoordinateRad(double projX, double projY, SharedDouble geoX, SharedDouble geoY);
-	public abstract void fromGeographicCoordinateRad(double geoX, double geoY, SharedDouble projX, SharedDouble projY);
-	public void toGeographicCoordinateDeg(double projX, double projY, SharedDouble geoX, SharedDouble geoY)
+	public abstract Coord2DDbl toGeographicCoordinateRad(Coord2DDbl projPos);
+	public abstract Coord2DDbl fromGeographicCoordinateRad(Coord2DDbl geoPos);
+	public Coord2DDbl toGeographicCoordinateDeg(Coord2DDbl projPos)
 	{
-		this.toGeographicCoordinateRad(projX, projY, geoX, geoY);
-		geoX.value = geoX.value * 180 / Math.PI;
-		geoY.value = geoY.value * 180 / Math.PI;
+		Coord2DDbl geoPos = this.toGeographicCoordinateRad(projPos);
+		geoPos.x = geoPos.x * 180 / Math.PI;
+		geoPos.y = geoPos.y * 180 / Math.PI;
+		return geoPos;
 	}
 
-	public void fromGeographicCoordinateDeg(double geoX, double geoY, SharedDouble projX, SharedDouble projY)
+	public Coord2DDbl fromGeographicCoordinateDeg(Coord2DDbl geoPos)
 	{
-		this.fromGeographicCoordinateRad(geoX * Math.PI / 180.0, geoY * Math.PI / 180.0, projX, projY);
+		return this.fromGeographicCoordinateRad(new Coord2DDbl(geoPos.x * Math.PI / 180.0, geoPos.y * Math.PI / 180.0));
 	}
 
 	public boolean sameProjection(ProjectedCoordinateSystem csys)

@@ -49,14 +49,14 @@ public class ImageUtil
 		return "dat";
 	}
 
-	public static ImageList load(InputStream stm)
+	public static ImageList load(InputStream stm, String fileName)
 	{
 		String fmt = "jpg";
 		try
 		{
 			ImageReader reader = ImageIO.getImageReadersBySuffix(fmt).next();
 			reader.setInput(ImageIO.createImageInputStream(stm));
-			ImageList imgList = new ImageList();
+			ImageList imgList = new ImageList(fileName);
 			int i = 0;
 			int j = reader.getNumImages(true);
 			while (i < j)

@@ -24,7 +24,7 @@
 - Added StringUtil.isHKID
 - Added StringUtil.orEmpty
 - Added IAMSmartAPI
-- Added DateTimeUtil.toString(Timestamp/ZonedDateTime/Date)
+- Added DateTimeUtil.toString(Timestamp/ZonedDateTime/Date), toYMD
 - Added Coord2DDbl.getLat, getLon
 - Added HTTPServerUtil
 - Added StatusCode
@@ -33,6 +33,20 @@
 - Added MD5
 - Added StaticImage.getExif
 - Added JasyptEncrypter.encryptAsB64
+- Move X509Parser to parser package
+- Added Vector3 get functions
+- Added Vector3.toCoord2D, getXY, clone
+- FileStream fixed some bugs
+- Added OSMCacheHandler
+- CoordinateSystem change to use Vector3/Coord2DDbl
+- Added CoordinateSystemManager.srCreateCSysOrDef
+- EarthEllipsoid change to use Vector3/Coord2DDbl
+- ImageList extends ParsedObject
+- ImageUtil load with filename
+- Added HTTPClient.getContentType
+- Added IAMSmartClient
+- Added FullParserList
+- Added ImageParser
 
 0.4.20240805
 - Migrate from javax.* to jakarta.*

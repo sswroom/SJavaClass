@@ -439,10 +439,7 @@ public class GeometryUtil
 	{
 		CoordinateSystem csys4326 = CoordinateSystemManager.srCreateCSys(4326);
 		CoordinateSystem csys3857 = CoordinateSystemManager.srCreateCSys(3857);
-		SharedDouble outX = new SharedDouble();
-		SharedDouble outY = new SharedDouble();
-		SharedDouble outZ = new SharedDouble();
-		CoordinateSystem.convertXYZ(csys4326, csys3857, lon, lat, 0, outX, outY, outZ);
+		Coord2DDbl outPos = CoordinateSystem.convert(csys4326, csys3857, new Coord2DDbl(lon, lat));
 		Polygon pg = new Polygon(3857);
 		LinearRing lr = new LinearRing(3857, nPoints + 1, false, false);
 		pg.addGeometry(lr);
@@ -453,8 +450,8 @@ public class GeometryUtil
 		while (i < nPoints)
 		{
 			angle = i * pi2 / nPoints;
-			ptArr[i].x = outX.value + Math.sin(angle) * radiusMeter;
-			ptArr[i].y = outY.value + Math.cos(angle) * radiusMeter;
+			ptArr[i].x = outPos.x + Math.sin(angle) * radiusMeter;
+			ptArr[i].y = outPos.y + Math.cos(angle) * radiusMeter;
 			i++;
 		}
 		ptArr[nPoints] = ptArr[0].clone();

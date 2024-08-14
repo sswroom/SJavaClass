@@ -27,9 +27,54 @@ public class Vector3
 		this.val[2] = z;
 	}
 
+	public double getLat()
+	{
+		return this.val[1];
+	}
+
+	public double getLon()
+	{
+		return this.val[0];
+	}
+
+	public double getH()
+	{
+		return this.val[2];
+	}
+
+	public double getX()
+	{
+		return this.val[0];
+	}
+
+	public double getY()
+	{
+		return this.val[1];
+	}
+
+	public double getZ()
+	{
+		return this.val[2];
+	}
+
+	public Coord2DDbl toCoord2D()
+	{
+		return new Coord2DDbl(this.val[0], this.val[1]);
+	}
+
+	public Coord2DDbl getXY()
+	{
+		return new Coord2DDbl(this.val[0], this.val[1]);
+	}
+	
 	public double multiply(Vector3 val)
 	{
 		return this.val[0] * val.val[0] + this.val[1] * val.val[1] + this.val[2] * val.val[2];
+	}
+
+	public Vector3 clone()
+	{
+		return new Vector3(this.val[0], this.val[1], this.val[2]);
 	}
 
 	public void set(double val1, double val2, double val3)

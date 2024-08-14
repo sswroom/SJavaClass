@@ -1,5 +1,6 @@
 package org.sswr.util.math;
 
+import org.sswr.util.basic.Vector3;
 import org.sswr.util.data.SharedDouble;
 import org.sswr.util.math.geometry.LineString;
 import org.sswr.util.math.unit.Angle;
@@ -122,63 +123,63 @@ public class GeographicCoordinateSystem extends CoordinateSystem
 		return this.unit;
 	}
 
-	public void toCartesianCoordRad(double lat, double lon, double h, SharedDouble x, SharedDouble y, SharedDouble z)
+	public Vector3 toCartesianCoordRad(Vector3 lonLatH)
 	{
-		SharedDouble tmpX = new SharedDouble();
-		SharedDouble tmpY = new SharedDouble();
-		SharedDouble tmpZ = new SharedDouble();
-		this.datum.getSpheroid().getEllipsoid().toCartesianCoordRad(lat, lon, h, tmpX, tmpY, tmpZ);
+		Vector3 tmpPos = this.datum.getSpheroid().getEllipsoid().toCartesianCoordRad(lonLatH);
 		if (this.datum.getScale() == 0 && this.datum.getXAngle() == 0 && this.datum.getYAngle() == 0 && this.datum.getZAngle() == 0)
 		{
-			x.value = tmpX.value + datum.getCX();
-			y.value = tmpY.value + datum.getCY();
-			z.value = tmpZ.value + datum.getCZ();
+			return new Vector3(tmpPos.val[0] + datum.getCX(),
+				tmpPos.val[1] + datum.getCY(),
+				tmpPos.val[2] + datum.getCZ());
 		}
 		else
 		{
-			tmpX.value -= this.datum.getX0();
-			tmpY.value -= this.datum.getY0();
-			tmpZ.value -= this.datum.getZ0();
+			tmpPos.val[0] -= this.datum.getX0();
+			tmpPos.val[1] -= this.datum.getY0();
+			tmpPos.val[2] -= this.datum.getZ0();
 			double s = 1 + this.datum.getScale() * 0.000001;
-			x.value = s * (                     tmpX.value - datum.getZAngle() * tmpY.value + datum.getYAngle() * tmpZ.value) + datum.getCX() + this.datum.getX0();
-			y.value = s * ( datum.getZAngle() * tmpX.value +                     tmpY.value - datum.getXAngle() * tmpZ.value) + datum.getCY() + this.datum.getY0();
-			z.value = s * (-datum.getYAngle() * tmpX.value + datum.getXAngle() * tmpY.value +                     tmpZ.value) + datum.getCZ() + this.datum.getZ0();
+			return new Vector3(
+				s * (                     tmpPos.val[0] - datum.getZAngle() * tmpPos.val[1] + datum.getYAngle() * tmpPos.val[2]) + datum.getCX() + this.datum.getX0(),
+				s * ( datum.getZAngle() * tmpPos.val[0] +                     tmpPos.val[1] - datum.getXAngle() * tmpPos.val[2]) + datum.getCY() + this.datum.getY0(),
+				s * (-datum.getYAngle() * tmpPos.val[0] + datum.getXAngle() * tmpPos.val[1] +                     tmpPos.val[2]) + datum.getCZ() + this.datum.getZ0());
 		}
 	}
 
-	public void fromCartesianCoordRad(double x, double y, double z, SharedDouble lat, SharedDouble lon, SharedDouble h)
+	public Vector3 fromCartesianCoordRad(Vector3 coord)
 	{
-		double tmpX;
-		double tmpY;
-		double tmpZ;
+		Vector3 tmpPos;
 		if (this.datum.getScale() == 0 && this.datum.getXAngle() == 0 && this.datum.getYAngle() == 0 && this.datum.getZAngle() == 0)
 		{
-			tmpX = x - this.datum.getCX();
-			tmpY = y - this.datum.getCY();
-			tmpZ = z - this.datum.getCZ();
+			tmpPos = new Vector3(
+				coord.val[0] - this.datum.getCX(),
+				coord.val[1] - this.datum.getCY(),
+				coord.val[2] - this.datum.getCZ());
 		}
 		else
 		{
-			x = x - this.datum.getX0() - datum.getCX();
-			y = y - this.datum.getY0() - datum.getCY();
-			z = z - this.datum.getZ0() - datum.getCZ();
+			tmpPos = new Vector3(
+				coord.val[0] - this.datum.getX0() - datum.getCX(),
+				coord.val[1] - this.datum.getY0() - datum.getCY(),
+				coord.val[2] - this.datum.getZ0() - datum.getCZ());
 			double s = 1 / (1 + this.datum.getScale() * 0.000001);
-			tmpX = s * (                          x + this.datum.getZAngle() * y - this.datum.getYAngle() * z) + this.datum.getX0();
-			tmpY = s * (-this.datum.getZAngle() * x +                          y + this.datum.getXAngle() * z) + this.datum.getY0();
-			tmpZ = s * ( this.datum.getYAngle() * x - this.datum.getXAngle() * y +                          z) + this.datum.getZ0();
+			tmpPos = new Vector3(
+				s * (                          tmpPos.val[0] + this.datum.getZAngle() * tmpPos.val[1] - this.datum.getYAngle() * tmpPos.val[2]) + this.datum.getX0(),
+				s * (-this.datum.getZAngle() * tmpPos.val[0] +                          tmpPos.val[1] + this.datum.getXAngle() * tmpPos.val[2]) + this.datum.getY0(),
+				s * ( this.datum.getYAngle() * tmpPos.val[0] - this.datum.getXAngle() * tmpPos.val[1] +                          tmpPos.val[2]) + this.datum.getZ0());
 		}
-		this.datum.getSpheroid().getEllipsoid().fromCartesianCoordRad(tmpX, tmpY, tmpZ, lat, lon, h);
+		return this.datum.getSpheroid().getEllipsoid().fromCartesianCoordRad(tmpPos);
 	}
 
-	public void toCartesianCoordDeg(double dlat, double dlon, double h, SharedDouble x, SharedDouble y, SharedDouble z)
+	public Vector3 toCartesianCoordDeg(Vector3 lonLatH)
 	{
-		this.toCartesianCoordRad(dlat * Math.PI / 180.0, dlon * Math.PI / 180.0, h, x, y, z);
+		return this.toCartesianCoordRad(new Vector3(lonLatH.val[0] * Math.PI / 180.0, lonLatH.val[1] * Math.PI / 180.0, lonLatH.val[2]));
 	}
 
-	public void fromCartesianCoordDeg(double x, double y, double z, SharedDouble dlat, SharedDouble dlon, SharedDouble h)
+	public Vector3 fromCartesianCoordDeg(Vector3 coord)
 	{
-		this.fromCartesianCoordRad(x, y, z, dlat, dlon, h);
-		dlat.value = dlat.value * 180.0 / Math.PI;
-		dlon.value = dlon.value * 180.0 / Math.PI;
+		Vector3 lonLatH = this.fromCartesianCoordRad(coord);
+		lonLatH.val[0] = lonLatH.val[0] * 180.0 / Math.PI;
+		lonLatH.val[1] = lonLatH.val[1] * 180.0 / Math.PI;
+		return lonLatH;
 	}
 }

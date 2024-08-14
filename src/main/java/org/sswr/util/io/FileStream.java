@@ -75,29 +75,39 @@ public class FileStream extends SeekableStream
 				throw new IllegalArgumentException("Mode is not valid");
 		}
 		File f = new File(fileName);
-		try
+		this.path = f.toPath();
+		boolean exist = f.exists();
+		if (!exist && mode == FileMode.ReadOnly)
 		{
-			this.path = f.toPath();
-			this.file = FileChannel.open(this.path, options);
-			if (mode == FileMode.Append)
-			{
-				this.seekFromEnd(0);
-			}
-		}
-		catch (IOException ex)
-		{
-			ex.printStackTrace();
 			this.file = null;
+		}
+		else
+		{
+			try
+			{
+				this.file = FileChannel.open(this.path, options);
+				if (mode == FileMode.Append)
+				{
+					this.seekFromEnd(0);
+				}
+			}
+			catch (IOException ex)
+			{
+				ex.printStackTrace();
+				this.file = null;
+			}
 		}
 	}
 
 	public boolean isDown()
 	{
-		return !this.file.isOpen();
+		return this.file == null || !this.file.isOpen();
 	}
 
 	public int read(byte []buff, int ofst, int size)
 	{
+		if (this.file == null)
+			return 0;
 		try
 		{
 			int ret = this.file.read(ByteBuffer.wrap(buff, ofst, size));
@@ -121,6 +131,8 @@ public class FileStream extends SeekableStream
 
 	public int write(byte []buff, int ofst , int size)
 	{
+		if (this.file == null)
+			return 0;
 		try
 		{
 			return this.file.write(ByteBuffer.wrap(buff, ofst, size));
@@ -144,13 +156,17 @@ public class FileStream extends SeekableStream
 
 	public void close()
 	{
-		try
+		if (this.file != null)
 		{
-			this.file.close();
-		}
-		catch (IOException ex)
-		{
-			ex.printStackTrace();
+			try
+			{
+				this.file.close();
+				this.file = null;
+			}
+			catch (IOException ex)
+			{
+				ex.printStackTrace();
+			}
 		}
 	}
 

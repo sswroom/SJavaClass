@@ -1,6 +1,6 @@
 package org.sswr.util.math;
 
-import org.sswr.util.data.SharedDouble;
+import org.sswr.util.basic.Vector3;
 import org.sswr.util.math.geometry.LineString;
 import org.sswr.util.math.geometry.Polyline;
 import org.sswr.util.math.geometry.Vector2D.VectorType;
@@ -355,25 +355,25 @@ public class EarthEllipsoid
 		return new EarthEllipsoid(this.semiMajorAxis, this.inverseFlattening, this.eet);
 	}
 
-	public void toCartesianCoordRad(double rLat, double rLon, double h, SharedDouble x, SharedDouble y, SharedDouble z)
+	public Vector3 toCartesianCoordRad(Vector3 lonLatH)
 	{
-		double cLat = Math.cos(rLat);
-		double sLat = Math.sin(rLat);
-		double cLon = Math.cos(rLon);
-		double sLon = Math.sin(rLon);
+		double cLat = Math.cos(lonLatH.getLat());
+		double sLat = Math.sin(lonLatH.getLat());
+		double cLon = Math.cos(lonLatH.getLon());
+		double sLon = Math.sin(lonLatH.getLon());
 		double e2 = this.eccentricity * this.eccentricity;
 		double v = this.semiMajorAxis / Math.sqrt(1 - e2 * sLat * sLat);
-		x.value = (v + h) * cLat * cLon;
-		y.value = (v + h) * cLat * sLon;
-		z.value = ((1 - e2) * v + h) * sLat;
+		return new Vector3((v + lonLatH.getH()) * cLat * cLon,
+			(v + lonLatH.getH()) * cLat * sLon,
+			((1 - e2) * v + lonLatH.getH()) * sLat);
 	}
 
-	public void fromCartesianCoordRad(double x, double y, double z, SharedDouble outLat, SharedDouble outLon, SharedDouble h)
+	public Vector3 fromCartesianCoordRad(Vector3 coord)
 	{
 		double e2 = this.eccentricity * this.eccentricity;
-		double rLon = Math.atan2(y, x);
-		double p = Math.sqrt(x * x + y * y);
-		double rLat = Math.atan2(z, p * (1 - e2));
+		double rLon = Math.atan2(coord.getY(), coord.getX());
+		double p = Math.sqrt(coord.getX() * coord.getX() + coord.getY() * coord.getY());
+		double rLat = Math.atan2(coord.getZ(), p * (1 - e2));
 		double sLat;
 		double thisLat;
 		double v = 0;
@@ -382,25 +382,24 @@ public class EarthEllipsoid
 		{
 			sLat = Math.sin(rLat);
 			v = this.semiMajorAxis / Math.sqrt(1 - e2 * sLat * sLat);
-			thisLat = Math.atan2(z + e2 * v * sLat, p);
+			thisLat = Math.atan2(coord.getZ() + e2 * v * sLat, p);
 			if (thisLat == rLat)
 				break;
 			rLat = thisLat;
 		}
-		outLat.value = rLat;
-		outLon.value = rLon;
-		h.value = p / Math.cos(rLat) - v;
+		return new Vector3(rLon, rLat, p / Math.cos(rLat) - v);
 	}
 
-	public void toCartesianCoordDeg(double dLat, double dLon, double h, SharedDouble x, SharedDouble y, SharedDouble z)
+	public Vector3 toCartesianCoordDeg(Vector3 lonLatH)
 	{
-		this.toCartesianCoordRad(dLat * Math.PI / 180.0, dLon * Math.PI / 180.0, h, x, y, z);
+		return this.toCartesianCoordRad(new Vector3(lonLatH.getLon() * Math.PI / 180.0, lonLatH.getLat() * Math.PI / 180.0, lonLatH.getH()));
 	}
 
-	public void tromCartesianCoordDeg(double x, double y, double z, SharedDouble dLat, SharedDouble dLon, SharedDouble h)
+	public Vector3 tromCartesianCoordDeg(Vector3 coord)
 	{
-		this.fromCartesianCoordRad(x, y, z, dLat, dLon, h);
-		dLat.value = dLat.value * 180.0 / Math.PI;
-		dLon.value = dLon.value * 180.0 / Math.PI;
+		Vector3 lonLatH = this.fromCartesianCoordRad(coord);
+		lonLatH.val[0] = lonLatH.val[0] * 180.0 / Math.PI;
+		lonLatH.val[1] = lonLatH.val[1] * 180.0 / Math.PI;
+		return lonLatH;
 	}
 }

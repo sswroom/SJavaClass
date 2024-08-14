@@ -189,6 +189,17 @@ public abstract class HTTPClient extends IOStream
 	public abstract String getContentEncoding();
 	public abstract ZonedDateTime getLastModified();
 
+	public String getContentType()
+	{
+		String contType = getRespHeader("Content-Type");
+		if (contType == null)
+			return null;
+		int i = contType.indexOf(":");
+		if (i < 0)
+			return null;
+		return contType.substring(i + 1).trim();
+	}
+
 	public String getURL()
 	{
 		return this.url;

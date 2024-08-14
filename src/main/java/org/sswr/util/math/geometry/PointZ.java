@@ -3,7 +3,6 @@ package org.sswr.util.math.geometry;
 import java.util.Objects;
 
 import org.sswr.util.basic.Vector3;
-import org.sswr.util.data.SharedDouble;
 import org.sswr.util.math.CoordinateSystem;
 import org.sswr.util.math.MathUtil;
 
@@ -39,13 +38,9 @@ public class PointZ extends Point2D
 
 	public void convCSys(CoordinateSystem srcCSys, CoordinateSystem destCSys)
 	{
-		SharedDouble tmpX = new SharedDouble();
-		SharedDouble tmpY = new SharedDouble();
-		SharedDouble tmpZ = new SharedDouble();
-		CoordinateSystem.convertXYZ(srcCSys, destCSys, this.pos.x, this.pos.y, this.z, tmpX, tmpY, tmpZ);
-		this.pos.x = tmpX.value;
-		this.pos.y = tmpY.value;
-		this.z = tmpZ.value;
+		Vector3 tmpPos = CoordinateSystem.convert3D(srcCSys, destCSys, new Vector3(this.pos, this.z));
+		this.pos = tmpPos.getXY();
+		this.z = tmpPos.getZ();
 		this.srid = destCSys.getSRID();
 	}
 

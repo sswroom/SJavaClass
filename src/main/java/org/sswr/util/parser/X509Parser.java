@@ -1,10 +1,25 @@
-package org.sswr.util.crypto;
+package org.sswr.util.parser;
 
+import org.sswr.util.crypto.MyX509CRL;
+import org.sswr.util.crypto.MyX509Cert;
+import org.sswr.util.crypto.MyX509CertReq;
+import org.sswr.util.crypto.MyX509File;
+import org.sswr.util.crypto.MyX509Key;
+import org.sswr.util.crypto.MyX509PKCS12;
+import org.sswr.util.crypto.MyX509PKCS7;
+import org.sswr.util.crypto.MyX509PrivKey;
+import org.sswr.util.crypto.MyX509PubKey;
 import org.sswr.util.crypto.MyX509File.KeyType;
 import org.sswr.util.data.StringUtil;
 import org.sswr.util.data.textbinenc.Base64Enc;
+import org.sswr.util.io.FileParser;
+import org.sswr.util.io.FileSelector;
+import org.sswr.util.io.PackageFile;
+import org.sswr.util.io.ParsedObject;
+import org.sswr.util.io.ParserType;
+import org.sswr.util.io.StreamData;
 
-public class X509Parser
+public class X509Parser extends FileParser
 {
 	public static MyX509File parseBuff(byte[] buff, int ofst, int buffSize, String fileName)
 	{
@@ -126,5 +141,61 @@ public class X509Parser
 			}
 		}
 		return ret;
+	}
+
+	@Override
+	public ParsedObject parseFileHdr(StreamData fd, PackageFile pkgFile, ParserType targetType, byte[] hdr, int hdrOfst, int hdrSize) {
+		byte[] buff;
+		long len = fd.getDataSize();
+		if (targetType != ParserType.Unknown && targetType != ParserType.ASN1Data)
+		{
+			return null;
+		}
+		String fileName = fd.getFullFileName();
+		if (len > 10240)
+		{
+			if (fileName.toUpperCase().endsWith(".CRL") && len <= 10485760)
+			{
+				buff = new byte[(int)len];
+				if (fd.getRealData(0, (int)len, buff, 0) != len)
+					return null;
+				return parseBuff(buff, 0, buff.length, fileName);
+			}
+			else
+			{
+				return null;
+			}
+		}
+		buff = new byte[(int)len];
+		fd.getRealData(0, (int)len, buff, 0);
+		return parseBuff(buff, 0, buff.length, fileName);
+	}
+
+	@Override
+	public String getName() {
+		return "X509";
+	}
+
+	@Override
+	public void prepareSelector(FileSelector selector, ParserType t) {
+		if (t == ParserType.Unknown || t == ParserType.ASN1Data)
+		{
+			selector.addFilter("*.crt", "X.509 Certification File");
+			selector.addFilter("*.csr", "X.509 Certification Request");
+			selector.addFilter("*.p7b", "PKCS 7 Certification File");
+			selector.addFilter("*.p7s", "PKCS 7 Signature File");
+			selector.addFilter("*.p12", "PKCS 12 KeyStore File");
+			selector.addFilter("*.pfx", "PKCS 12 KeyStore File");
+			selector.addFilter("*.pem", "PEM File");
+			selector.addFilter("*.der", "DER File");
+			selector.addFilter("*.cer", "CER File");
+			selector.addFilter("*.req", "PKCS 10 Request File");
+			selector.addFilter("*.crl", "Certification Revocation List");
+		}
+	}
+
+	@Override
+	public ParserType getParserType() {
+		return ParserType.ASN1Data;
 	}
 }

@@ -687,6 +687,16 @@ public class DateTimeUtil
 		}
 	}
 
+	public static int toYMD(ZonedDateTime dt)
+	{
+		return dt.getYear() * 10000 + dt.getMonthValue() * 100 + dt.getDayOfMonth();
+	}
+
+	public static int toYMD(Timestamp ts)
+	{
+		return toYMD(newZonedDateTime(ts));
+	}
+
 	public static Timestamp timestampNow()
 	{
 		return Timestamp.from(Instant.now());

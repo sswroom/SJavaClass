@@ -90,6 +90,15 @@ public class CoordinateSystemManager
 		return null;
 	}
 
+	public static CoordinateSystem srCreateCSysOrDef(int epsgId)
+	{
+		CoordinateSystem csys;
+		if ((csys = srCreateCSys(epsgId)) != null)
+			return csys;
+		else
+			return createWGS84Csys();
+	}
+
 	public static ProjectedCoordinateSystem srCreateProjCSys(int epsgId)
 	{
 		switch (epsgId)

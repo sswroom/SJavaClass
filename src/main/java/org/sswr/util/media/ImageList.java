@@ -5,8 +5,10 @@ import java.util.Comparator;
 import java.util.List;
 
 import org.sswr.util.data.ArtificialQuickSort;
+import org.sswr.util.io.ParsedObject;
+import org.sswr.util.io.ParserType;
 
-public class ImageList
+public class ImageList extends ParsedObject
 {
 	class ImageInfo
 	{
@@ -16,8 +18,9 @@ public class ImageList
 
 	private List<ImageInfo> imgList;
 
-	public ImageList()
+	public ImageList(String sourceName)
 	{
+		super(sourceName);
 		this.imgList = new ArrayList<ImageInfo>();
 	}
 
@@ -80,5 +83,10 @@ public class ImageList
 				}
 			}
 		});
+	}
+
+	@Override
+	public ParserType getParserType() {
+		return ParserType.ImageList;
 	}
 }

@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.sswr.util.crypto.MyX509File.FileType;
 import org.sswr.util.net.HTTPMyClient;
+import org.sswr.util.parser.X509Parser;
 
 public class MyX509Env
 {

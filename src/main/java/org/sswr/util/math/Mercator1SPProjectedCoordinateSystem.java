@@ -1,7 +1,5 @@
 package org.sswr.util.math;
 
-import org.sswr.util.data.SharedDouble;
-
 public class Mercator1SPProjectedCoordinateSystem extends ProjectedCoordinateSystem
 {
 	public Mercator1SPProjectedCoordinateSystem(String sourceName, int srid, String projName, double falseEasting, double falseNorthing, double centralMeridian, double latitudeOfOrigin, double scaleFactor, GeographicCoordinateSystem gcs, UnitType unit)
@@ -19,24 +17,24 @@ public class Mercator1SPProjectedCoordinateSystem extends ProjectedCoordinateSys
 		return CoordinateSystemType.Mercator1SPProjected;
 	}
 
-	public void toGeographicCoordinateRad(double projX, double projY, SharedDouble geoX, SharedDouble geoY)
+	public Coord2DDbl toGeographicCoordinateRad(Coord2DDbl projPos)
 	{
 		EarthEllipsoid ellipsoid = this.gcs.getEllipsoid();
 		double rLon0 = this.rcentralMeridian;
 		double a = ellipsoid.getSemiMajorAxis();
-		geoX.value = ((projX - this.falseEasting) / a + rLon0) * 180.0 / Math.PI;
-		geoY.value = (Math.atan(Math.exp((projY - this.falseNorthing) / a)) - Math.PI * 0.25) * 2;
+		return new Coord2DDbl(((projPos.x - this.falseEasting) / a + rLon0) * 180.0 / Math.PI,
+			(Math.atan(Math.exp((projPos.y - this.falseNorthing) / a)) - Math.PI * 0.25) * 2);
 	}
 
-	public void fromGeographicCoordinateRad(double geoX, double geoY, SharedDouble projX, SharedDouble projY)
+	public Coord2DDbl fromGeographicCoordinateRad(Coord2DDbl geoPos)
 	{
 		EarthEllipsoid ellipsoid = this.gcs.getEllipsoid();
-		double rLat = geoY;
-		double rLon = geoX;
+		double rLat = geoPos.getLat();
+		double rLon = geoPos.getLon();
 		double rLon0 = this.rcentralMeridian;
 		double a = ellipsoid.getSemiMajorAxis();
 		double dlon = rLon - rLon0;
-		projX.value = this.falseEasting + dlon * a;
-		projY.value = this.falseNorthing + a * Math.log(Math.tan(Math.PI * 0.25 + rLat * 0.5));
+		return new Coord2DDbl(this.falseEasting + dlon * a,
+			this.falseNorthing + a * Math.log(Math.tan(Math.PI * 0.25 + rLat * 0.5)));
 	}
 }

@@ -44,6 +44,7 @@ import org.sswr.util.crypto.MyX509File.KeyType;
 import org.sswr.util.data.ByteTool;
 import org.sswr.util.net.ASN1Item;
 import org.sswr.util.net.ASN1Util;
+import org.sswr.util.parser.X509Parser;
 
 public class CertUtil
 {
