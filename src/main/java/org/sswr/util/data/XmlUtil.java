@@ -22,15 +22,16 @@ public class XmlUtil {
 		return v;
 	}
 
-	public static String toHTMLText(String v)
+	public static String toHTMLBodyText(String v)
 	{
-		v = v.replace("&", "&amp;");
+		v = v.replace("&", "&#38;");
 		v = v.replace("<", "&lt;");
 		v = v.replace(">", "&gt;");
-		v = v.replace("'", "&apos;");
+		v = v.replace("'", "&#39;");
 		v = v.replace("\"", "&quot;");
 		v = v.replace("\r", "");
 		v = v.replace("\n", "<br/>");
+		v = v.replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;");
 		return v;
 	}
 }

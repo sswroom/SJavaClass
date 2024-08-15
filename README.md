@@ -47,6 +47,15 @@
 - Added IAMSmartClient
 - Added FullParserList
 - Added ImageParser
+- Rename HTTPMyClient to HTTPOSClient
+- Rename XmlUtil.toHTMLText to toHTMLBodyText
+- Fixed FileStream.getLength exception
+- Added UTF8Reader.isLineBreak
+- Fully implement HTTPClient.createClient and createConnect
+- HTTPOSClient support userAgent
+- EmailMessage change to abstract class
+- Added EmailMessage.setSentDate, setMessageId, generateMessageID
+- Added EmailTemplate2.java
 
 0.4.20240805
 - Migrate from javax.* to jakarta.*

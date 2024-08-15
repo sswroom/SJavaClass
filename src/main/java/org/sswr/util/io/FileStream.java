@@ -226,6 +226,8 @@ public class FileStream extends SeekableStream
 
 	public long getLength()
 	{
+		if (this.file == null)
+			return 0;
 		try
 		{
 			return this.file.size();

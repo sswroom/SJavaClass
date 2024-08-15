@@ -100,7 +100,7 @@ public class ArcGISRESTAPI
 	{
 		String url = this.url+"/community/users/"+userName+"?token="+token+"&f=json";
 		SharedInt statusCode = new SharedInt();
-		String ret = HTTPMyClient.getAsString(url, statusCode);
+		String ret = HTTPOSClient.getAsString(url, statusCode);
 		if (statusCode.value != 200)
 			return null;
 		JSONBase json = JSONBase.parseJSONStr(ret);

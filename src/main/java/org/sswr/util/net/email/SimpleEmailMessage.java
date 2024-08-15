@@ -3,7 +3,7 @@ package org.sswr.util.net.email;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SimpleEmailMessage implements EmailMessage
+public class SimpleEmailMessage extends EmailMessage
 {
 	private String content;
 	private boolean contentHTML;

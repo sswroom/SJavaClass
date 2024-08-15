@@ -5,7 +5,7 @@ import java.security.cert.Certificate;
 import java.util.Map;
 
 import org.sswr.util.crypto.MyX509File.FileType;
-import org.sswr.util.net.HTTPMyClient;
+import org.sswr.util.net.HTTPOSClient;
 import org.sswr.util.parser.X509Parser;
 
 public class MyX509Env
@@ -32,7 +32,7 @@ public class MyX509Env
 
 	public MyX509CRL getCRL(String url)
 	{
-		byte[] crlBytes = HTTPMyClient.getAsBytes(url, 200);
+		byte[] crlBytes = HTTPOSClient.getAsBytes(url, 200);
 		if (crlBytes == null)
 		{
 			return null;

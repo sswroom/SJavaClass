@@ -1,7 +1,6 @@
 package org.sswr.util.math;
 
 import org.sswr.util.basic.Vector3;
-import org.sswr.util.data.SharedDouble;
 import org.sswr.util.math.geometry.LineString;
 import org.sswr.util.math.unit.Angle;
 import org.sswr.util.math.unit.Distance;

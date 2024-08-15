@@ -21,7 +21,7 @@ import org.sswr.util.data.textenc.FormEncoding;
  * [xxxx]  Subject Text
  * [[ output [ character
  */
-public class EmailTemplate implements EmailMessage
+public class EmailTemplate extends EmailMessage
 {
 	public class TemplateFormatException extends Exception
 	{
@@ -268,7 +268,7 @@ public class EmailTemplate implements EmailMessage
 					}
 					else if (paramName.startsWith("#"))
 					{
-						param = XmlUtil.toHTMLText(param);
+						param = XmlUtil.toHTMLBodyText(param);
 						paramName = paramName.substring(1);
 					}
 					else if (paramName.startsWith("^"))

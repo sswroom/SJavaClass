@@ -51,9 +51,12 @@ public abstract class HTTPClient extends IOStream
 		return this.isError();
 	}
 
+	public abstract boolean connect(String url, RequestMethod method, boolean defHeaders);
+
 	public abstract void addHeader(String name, String value);
 	public abstract void addHeaders(Map<String, String> headers);
 	public abstract void endRequest();
+	public abstract void setReadTimeout(int timeoutMS);
 	
 	public abstract boolean isSecureConn();
 	public abstract List<MyX509Cert> getServerCerts();
@@ -218,20 +221,14 @@ public abstract class HTTPClient extends IOStream
 
 	public static HTTPClient createClient(SocketFactory sockf, SSLEngine ssl, String userAgent, boolean kaConn, boolean isSecure)
 	{
-		return null;
+		return new HTTPOSClient(sockf, userAgent, kaConn);
 	}
 
 	public static HTTPClient createConnect(SocketFactory sockf, SSLEngine ssl, String url, RequestMethod method, boolean kaConn)
 	{
-		try
-		{
-			return new HTTPMyClient(url, method);
-		}
-		catch (IOException ex)
-		{
-			ex.printStackTrace();
-			return null;
-		}
+		HTTPClient cli = createClient(sockf, ssl, null, kaConn, url.toUpperCase().startsWith("HTTPS://"));
+		cli.connect(url, method, true);
+		return cli;
 	}
 	
 	public static boolean isHTTPURL(String url)

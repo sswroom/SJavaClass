@@ -20,68 +20,86 @@ import org.sswr.util.crypto.MyX509Cert;
 import org.sswr.util.data.DateTimeUtil;
 import org.sswr.util.data.SharedInt;
 
-public class HTTPMyClient extends HTTPClient
+public class HTTPOSClient extends HTTPClient
 {
 	private static final boolean debug = false;
 	private HttpURLConnection conn;
 	private RequestMethod method;
 	private boolean hasContType;
+	private String userAgent;
 
-	public HTTPMyClient(String url, RequestMethod method) throws IOException
+	public HTTPOSClient(SocketFactory sockf, String userAgent, boolean kaConn)
 	{
-		this(null, url, method);
+		super(sockf, kaConn);
+		this.userAgent = userAgent;
 	}
 
-	public HTTPMyClient(SocketFactory sockf, String url, RequestMethod method) throws IOException
+	@Override
+	public boolean connect(String url, RequestMethod method, boolean defHeaders)
 	{
-		super(sockf, true);
 		if (!url.startsWith("http://") && !url.startsWith("https://"))
 		{
-			throw new IOException("Not http/https request");
+			return false;
 		}
 		this.hasContType = false;
 		this.url = url;
 		this.method = method;
-		URL targetURL = new URL(url);
-		HttpURLConnection.setFollowRedirects(false);
-		this.svrAddr = InetAddress.getByName(targetURL.getHost());
-		this.conn = (HttpURLConnection)targetURL.openConnection();
-		this.respCode = 0;
-		switch (this.method)
+		try
 		{
-		case HTTP_POST:
-			this.conn.setDoOutput(true);
-			this.conn.setRequestMethod("POST");
-			this.canWrite = true;
-			break;
-		case HTTP_PUT:
-			this.conn.setDoOutput(true);
-			this.conn.setRequestMethod("PUT");
-			this.canWrite = true;
-			break;
-		case HTTP_PATCH:
-			this.conn.setDoOutput(true);
-			this.conn.setRequestMethod("PATCH");
-			this.canWrite = true;
-			break;
-		case HTTP_GET:
-			this.conn.setRequestMethod("GET");
-			this.canWrite = false;
-			break;
-		case HTTP_CONNECT:
-			this.conn.setRequestMethod("CONNECT");
-			this.canWrite = false;
-			break;
-		case HTTP_DELETE:
-			this.conn.setDoOutput(true);
-			this.conn.setRequestMethod("DELETE");
-			this.canWrite = true;
-			break;
-		case Unknown:
-		default:
-			this.conn.setRequestMethod("GET");
-			this.canWrite = false;
-			break;
+			URL targetURL = new URL(url);
+			HttpURLConnection.setFollowRedirects(false);
+			this.svrAddr = InetAddress.getByName(targetURL.getHost());
+			this.conn = (HttpURLConnection)targetURL.openConnection();
+			this.respCode = 0;
+			switch (this.method)
+			{
+			case HTTP_POST:
+				this.conn.setDoOutput(true);
+				this.conn.setRequestMethod("POST");
+				this.canWrite = true;
+				break;
+			case HTTP_PUT:
+				this.conn.setDoOutput(true);
+				this.conn.setRequestMethod("PUT");
+				this.canWrite = true;
+				break;
+			case HTTP_PATCH:
+				this.conn.setDoOutput(true);
+				this.conn.setRequestMethod("PATCH");
+				this.canWrite = true;
+				break;
+			case HTTP_GET:
+				this.conn.setRequestMethod("GET");
+				this.canWrite = false;
+				break;
+			case HTTP_CONNECT:
+				this.conn.setRequestMethod("CONNECT");
+				this.canWrite = false;
+				break;
+			case HTTP_DELETE:
+				this.conn.setDoOutput(true);
+				this.conn.setRequestMethod("DELETE");
+				this.canWrite = true;
+				break;
+			case Unknown:
+			default:
+				this.conn.setRequestMethod("GET");
+				this.canWrite = false;
+				break;
+			}
+			if (this.userAgent != null)
+			{
+				this.conn.setRequestProperty("User-Agent", this.userAgent);
+			}
+			return true;
+		}
+		catch (IOException ex)
+		{
+			if (debug)
+			{
+				ex.printStackTrace();
+			}
+			return false;
 		}
 	}
 
@@ -332,26 +350,16 @@ public class HTTPMyClient extends HTTPClient
 
 	public static byte[] getAsBytes(String url, int expectedStatusCode)
 	{
-		try
+		HTTPOSClient cli = new HTTPOSClient(null, null, false);
+		cli.connect(url, RequestMethod.HTTP_GET, false);
+		if (cli.getRespStatus() != expectedStatusCode)
 		{
-			HTTPMyClient cli = new HTTPMyClient(url, RequestMethod.HTTP_GET);
-			if (cli.getRespStatus() != expectedStatusCode)
-			{
-				cli.close();
-				return null;
-			}
-			byte[] buff = cli.readToEnd();
 			cli.close();
-			return buff;
-		}
-		catch (IOException ex)
-		{
-			if (debug)
-			{
-				ex.printStackTrace();
-			}
 			return null;
 		}
+		byte[] buff = cli.readToEnd();
+		cli.close();
+		return buff;
 	}
 
 	public static String getAsString(String url, int expectedStatusCode)
@@ -371,31 +379,21 @@ public class HTTPMyClient extends HTTPClient
 
 	public static byte[] getAsBytes(String url, Map<String, String> customHeaders, SharedInt statusCode)
 	{
-		try
+		HTTPOSClient cli = new HTTPOSClient(null, null, false);
+		cli.connect(url, RequestMethod.HTTP_GET, true);
+		cli.addHeaders(customHeaders);
+		if (cli.getRespStatus() <= 0)
 		{
-			HTTPMyClient cli = new HTTPMyClient(url, RequestMethod.HTTP_GET);
-			cli.addHeaders(customHeaders);
-			if (cli.getRespStatus() <= 0)
-			{
-				cli.close();
-				return null;
-			}
-			if (statusCode != null)
-			{
-				statusCode.value = cli.getRespStatus();
-			}
-			byte[] buff = cli.readToEnd();
 			cli.close();
-			return buff;
-		}
-		catch (IOException ex)
-		{
-			if (debug)
-			{
-				ex.printStackTrace();
-			}
 			return null;
 		}
+		if (statusCode != null)
+		{
+			statusCode.value = cli.getRespStatus();
+		}
+		byte[] buff = cli.readToEnd();
+		cli.close();
+		return buff;
 	}
 
 	public static String getAsString(String url, SharedInt statusCode)
@@ -415,48 +413,38 @@ public class HTTPMyClient extends HTTPClient
 
 	public static byte[] formPostAsBytes(String url, Map<String, String> formParams, Map<String, String> customHeaders, SharedInt statusCode, int timeoutMS)
 	{
-		try
+		HTTPOSClient cli = new HTTPOSClient(null, null, false);
+		cli.connect(url, RequestMethod.HTTP_POST, true);
+		if (timeoutMS != 0)
+			cli.setReadTimeout(timeoutMS);
+		cli.addHeaders(customHeaders);
+		Iterator<String> names = formParams.keySet().iterator();
+		if (names != null && names.hasNext())
 		{
-			HTTPMyClient cli = new HTTPMyClient(url, RequestMethod.HTTP_POST);
-			if (timeoutMS != 0)
-				cli.setReadTimeout(timeoutMS);
-			cli.addHeaders(customHeaders);
-			Iterator<String> names = formParams.keySet().iterator();
-			if (names != null && names.hasNext())
+			cli.formBegin();
+			while (names.hasNext())
 			{
-				cli.formBegin();
-				while (names.hasNext())
-				{
-					String name = names.next();
-					cli.formAdd(name, formParams.get(name));
-				}
+				String name = names.next();
+				cli.formAdd(name, formParams.get(name));
 			}
-			if (statusCode != null)
-			{
-				statusCode.value = cli.getRespStatus();
-			}
-			if (debug)
-			{
-				int i = 0;
-				int j = cli.getRespHeaderCnt();
-				while (i < j)
-				{
-					System.out.println("Header "+i+" = "+cli.getRespHeader(i));
-					i++;
-				}
-			}
-			byte[] buff = cli.readToEnd();
-			cli.close();
-			return buff;
 		}
-		catch (IOException ex)
+		if (statusCode != null)
 		{
-			if (debug)
-			{
-				ex.printStackTrace();
-			}
-			return null;
+			statusCode.value = cli.getRespStatus();
 		}
+		if (debug)
+		{
+			int i = 0;
+			int j = cli.getRespHeaderCnt();
+			while (i < j)
+			{
+				System.out.println("Header "+i+" = "+cli.getRespHeader(i));
+				i++;
+			}
+		}
+		byte[] buff = cli.readToEnd();
+		cli.close();
+		return buff;
 	}
 
 	public static String formPostAsString(String url, Map<String, String> formParams, SharedInt statusCode, int timeoutMS)

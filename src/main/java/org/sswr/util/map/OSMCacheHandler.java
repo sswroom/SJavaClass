@@ -25,7 +25,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 public class OSMCacheHandler {
-	private static final boolean VERBOSE = true;
+	private static final boolean VERBOSE = false;
 	public static class CacheStatus
 	{
 		public int reqCnt;
@@ -57,6 +57,10 @@ public class OSMCacheHandler {
 		FileStream fs = new FileStream(path, FileMode.ReadOnly, FileShare.DenyNone, BufferType.Normal);
 		if (!fs.isError())
 		{
+			if (VERBOSE)
+			{
+				System.out.println("OSMCacheHandler: load from file cache");
+			}
 			synchronized(this.status)
 			{
 				this.status.localCnt++;
@@ -74,6 +78,7 @@ public class OSMCacheHandler {
 			return fs;
 		}
 		fs.close();
+		fs = null;
 
 		String thisUrl;
 		synchronized(this.urls)
@@ -89,8 +94,13 @@ public class OSMCacheHandler {
 			this.urlNext = (this.urlNext + 1) % this.urls.size();
 		}
 		String osmURL = thisUrl + lev + "/" + xTile + "/" + yTile + ".png";
-		HTTPClient cli = HTTPClient.createConnect(this.sockf, this.ssl, osmURL, RequestMethod.HTTP_GET, true);
-
+		if (VERBOSE)
+		{
+			System.out.println("OSMCacheHandler: load from url: "+osmURL);
+		}
+		HTTPClient cli = HTTPClient.createClient(this.sockf, this.ssl, "OSMTileMap/1.0 SSWR/1.0", true, osmURL.startsWith("https://"));
+		cli.connect(osmURL, RequestMethod.HTTP_GET, true);
+	
 		if (cli.getRespStatus() == 304)
 		{
 			FileStream imgFS = new FileStream(path, FileMode.Append, FileShare.DenyNone, BufferType.Normal);
@@ -99,8 +109,9 @@ public class OSMCacheHandler {
 			{
 				System.out.println("OSMCacheHandler: Server response 304: "+osmURL);
 			}
+			fs = imgFS;
 		}
-		else
+		else if (cli.getRespStatus() == 200)
 		{
 			long contLeng = cli.getContentLength();
 			int currPos = 0;
@@ -155,6 +166,13 @@ public class OSMCacheHandler {
 				}
 			}
 		}
+		else
+		{
+			if (VERBOSE)
+			{
+				System.out.println("OSMCacheHandler: Server response "+cli.getRespStatus()+": "+osmURL);
+			}
+		}
 		cli.close();
 		return fs;
 	}
@@ -194,6 +212,10 @@ public class OSMCacheHandler {
 
 	public boolean processRequest(HttpServletRequest req, HttpServletResponse resp, String subReq) throws IOException
 	{
+		if (VERBOSE)
+		{
+			System.out.println("OSMCacheHandler: subReq = "+subReq);
+		}
 		String[] sarr;
 		sarr = StringUtil.split(subReq, "/");
 

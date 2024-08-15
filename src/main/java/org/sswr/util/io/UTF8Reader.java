@@ -582,6 +582,11 @@ public class UTF8Reader
 		return true;
 	}
 
+	public boolean isLineBreak()
+	{
+		return this.lineBreak != LineBreakType.NONE;
+	}
+
 	public boolean readToEnd(StringBuilder sb)
 	{
 		boolean succ = false;
