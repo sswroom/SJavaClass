@@ -1,6 +1,10 @@
 # SJavaClass
 
 # Changes:
+- Fixed MyX509Key fix cipher creation
+- Fixed Radix64Enc.encodeBin
+- Fixed IAMSmartAPI.initHTTPClient
+
 0.4.20240816
 - Added BrowserInfo
 - Enhance OSInfo

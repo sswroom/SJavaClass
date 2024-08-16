@@ -396,13 +396,13 @@ public class MyX509Key extends MyX509File
 		{
 			if (keyType == KeyType.RSA)
 			{
-				if (padding == CipherPadding.OAEP)
+				if (padding != CipherPadding.OAEP)
 				{
 					return Cipher.getInstance("RSA");
 				}
 				else
 				{
-					return Cipher.getInstance("RSA/None/OAEPWithSHA-256AndMGF1Padding");
+					return Cipher.getInstance("RSA/ECB/OAEPWithSHA-256AndMGF1Padding");
 				}
 			}
 			else if (keyType == KeyType.DSA)

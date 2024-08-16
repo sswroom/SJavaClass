@@ -49,22 +49,22 @@ public class Radix64Enc
 		sb.ensureCapacity(outSize);
 		while (tmp2-- > 0)
 		{
-			sb.append(encArr[ByteTool.shr8(dataBuff[dataOfst + 0], 2)]);
-			sb.append(encArr[((dataBuff[dataOfst + 0] << 4) | ByteTool.shr8(dataBuff[dataOfst + 1], 4)) & 0x3f]);
-			sb.append(encArr[((dataBuff[dataOfst + 1] << 2) | ByteTool.shr8(dataBuff[dataOfst + 2], 6)) & 0x3f]);
-			sb.append(encArr[dataBuff[dataOfst + 2] & 0x3f]);
+			sb.append((char)encArr[ByteTool.shr8(dataBuff[dataOfst + 0], 2)]);
+			sb.append((char)encArr[((dataBuff[dataOfst + 0] << 4) | ByteTool.shr8(dataBuff[dataOfst + 1], 4)) & 0x3f]);
+			sb.append((char)encArr[((dataBuff[dataOfst + 1] << 2) | ByteTool.shr8(dataBuff[dataOfst + 2], 6)) & 0x3f]);
+			sb.append((char)encArr[dataBuff[dataOfst + 2] & 0x3f]);
 			dataOfst += 3;
 		}
 		if (tmp1 == 1)
 		{
-			sb.append(encArr[ByteTool.shr8(dataBuff[dataOfst + 0], 2)]);
-			sb.append(encArr[(dataBuff[dataOfst + 0] << 4) & 0x3f]);
+			sb.append((char)encArr[ByteTool.shr8(dataBuff[dataOfst + 0], 2)]);
+			sb.append((char)encArr[(dataBuff[dataOfst + 0] << 4) & 0x3f]);
 		}
 		else if (tmp1 == 2)
 		{
-			sb.append(encArr[ByteTool.shr8(dataBuff[dataOfst + 0], 2)]);
-			sb.append(encArr[((dataBuff[dataOfst + 0] << 4) | ByteTool.shr8(dataBuff[dataOfst + 1], 4)) & 0x3f]);
-			sb.append(encArr[(dataBuff[dataOfst + 1] << 2) & 0x3f]);
+			sb.append((char)encArr[ByteTool.shr8(dataBuff[dataOfst + 0], 2)]);
+			sb.append((char)encArr[((dataBuff[dataOfst + 0] << 4) | ByteTool.shr8(dataBuff[dataOfst + 1], 4)) & 0x3f]);
+			sb.append((char)encArr[(dataBuff[dataOfst + 1] << 2) & 0x3f]);
 		}
 		return sb.toString();
 	}

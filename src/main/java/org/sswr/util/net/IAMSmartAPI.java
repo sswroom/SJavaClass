@@ -97,7 +97,7 @@ public class IAMSmartAPI {
 		buff = hmac.getValue();
 		Base64Enc b64 = new Base64Enc();
 		String s = b64.encodeBin(buff);
-		cli.addHeader("signature", FormEncoding.formDecode(s));
+		cli.addHeader("signature", FormEncoding.formEncode(s));
 		cli.addContentLength(content.length());
 		if (content.length() > 0)
 		{
@@ -340,15 +340,6 @@ public class IAMSmartAPI {
 
 	public boolean getKey(MyX509PrivKey privKey, CEKInfo cek)
 	{
-		SSLEngine ssl = this.ssl;
-		if (ssl == null)
-		{
-			if (VERBOSE)
-			{
-				System.out.println("SSLEngine not found");
-			}
-			return false;
-		}
 		StringBuilder sbURL = new StringBuilder();
 		sbURL.append("https://");
 		sbURL.append(this.domain);

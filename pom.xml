@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.github.sswroom</groupId>
 	<artifactId>util</artifactId>
-	<version>0.4.20240816</version>
+	<version>0.4.20240816.5</version>
 	
 	<name>sswr-util</name>
 	<packaging>jar</packaging>
