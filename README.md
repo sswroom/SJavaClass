@@ -1,6 +1,7 @@
 # SJavaClass
 
 # Changes:
+0.4.20240816
 - Added BrowserInfo
 - Enhance OSInfo
 - Added MemoryWebSessionManager
