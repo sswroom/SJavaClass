@@ -590,7 +590,7 @@ public class DateTimeUtil
 
 	public static String toString(Date dat, String format)
 	{
-		return DateTimeFormatter.ofPattern(format.replace('f', 'n').replace('z', 'Z')).format(ZonedDateTime.ofInstant(dat.toInstant(), ZoneId.systemDefault()));
+		return DateTimeFormatter.ofPattern(format.replace('f', 'n').replace('z', 'Z')).format(ZonedDateTime.of(dat.toLocalDate().atStartOfDay(), ZoneId.systemDefault()));
 	}
 
 	public static String toString(Time tim, String format)

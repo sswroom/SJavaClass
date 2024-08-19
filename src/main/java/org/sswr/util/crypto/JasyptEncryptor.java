@@ -154,7 +154,18 @@ public class JasyptEncryptor
 		buff = decGetIV(iv, buff);
 		byte keyBuff[] = getEncKey(salt);
 		Encryption enc = getEnc(iv, keyBuff);
-		return enc.decrypt(buff, 0, buff.length);
+		byte[] paddedResult = enc.decrypt(buff, 0, buff.length);
+		if (paddedResult.length > 0)
+		{
+			byte tail = paddedResult[paddedResult.length - 1];
+			if ((tail & 0xff) > 0 && (tail & 0xff) <= enc.getDecBlockSize())
+			{
+				byte[] unpaddedResult = new byte[paddedResult.length - (tail & 0xff)];
+				ByteTool.copyArray(unpaddedResult, 0, paddedResult, 0, paddedResult.length - (tail & 0xff));
+				return unpaddedResult;
+			}
+		}
+		return paddedResult;
 	}
 
 	public String getString(byte[] decBuff)

@@ -1,9 +1,11 @@
 # SJavaClass
 
 # Changes:
+- Fixed DateTimeUtil.toString(Date) problem
 - Fixed MyX509Key fix cipher creation
 - Fixed Radix64Enc.encodeBin
 - Fixed IAMSmartAPI.initHTTPClient
+- Fixed JasyptEncryptor.decrypt padding problem
 
 0.4.20240816
 - Added BrowserInfo
