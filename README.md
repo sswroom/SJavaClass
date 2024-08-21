@@ -7,6 +7,7 @@
 - Fixed Radix64Enc.encodeBin
 - Fixed IAMSmartAPI.initHTTPClient
 - Fixed JasyptEncryptor.decrypt padding problem
+- Fixed IAMSmart.parseAddress
 
 0.4.20240816
 - Added BrowserInfo

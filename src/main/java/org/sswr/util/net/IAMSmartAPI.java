@@ -225,26 +225,26 @@ public class IAMSmartAPI {
 		String s;
 		if ((json = addr.getValue("ChiPremisesAddress")) != null)
 		{
-			sb.append(json.getValueString("Region"));
-			sb.append(json.getValueString("ChiDistrict.Sub-district"));
-			sb.append(json.getValueString("ChiStreet.StreetName"));
-			sb.append(json.getValueString("ChiStreet.BuildingNoFrom"));
+			sb.append(StringUtil.orEmpty(json.getValueString("Region")));
+			sb.append(StringUtil.orEmpty(json.getValueString("ChiDistrict.Sub-district")));
+			sb.append(StringUtil.orEmpty(json.getValueString("ChiStreet.StreetName")));
+			sb.append(StringUtil.orEmpty(json.getValueString("ChiStreet.BuildingNoFrom")));
 			sb.append("號");
-			sb.append(json.getValueString("BuildingName"));
-			sb.append(json.getValueString("ChiBlock.BlockNo"));
-			sb.append(json.getValueString("ChiBlock.BlockDescriptor"));
-			sb.append(json.getValueString("Chi3dAddress.ChiFloor.FloorNum"));
-			sb.append(json.getValueString("Chi3dAddress.ChiUnit.UnitNo"));
-			sb.append(json.getValueString("Chi3dAddress.ChiUnit.UnitDescriptor"));
+			sb.append(StringUtil.orEmpty(json.getValueString("BuildingName")));
+			sb.append(StringUtil.orEmpty(json.getValueString("ChiBlock.BlockNo")));
+			sb.append(StringUtil.orEmpty(json.getValueString("ChiBlock.BlockDescriptor")));
+			sb.append(StringUtil.orEmpty(json.getValueString("Chi3dAddress.ChiFloor.FloorNum")));
+			sb.append(StringUtil.orEmpty(json.getValueString("Chi3dAddress.ChiUnit.UnitNo")));
+			sb.append(StringUtil.orEmpty(json.getValueString("Chi3dAddress.ChiUnit.UnitDescriptor")));
 			return sb.toString();
 		}
 		else if ((json = addr.getValue("EngPremisesAddress")) != null)
 		{
 			if (json.getValue("Eng3dAddress.EngUnit") != null)
 			{
-				sb.append(json.getValueString("Eng3dAddress.EngUnit.UnitDescriptor"));
+				sb.append(StringUtil.orEmpty(json.getValueString("Eng3dAddress.EngUnit.UnitDescriptor")));
 				sb.append(' ');
-				sb.append(json.getValueString("Eng3dAddress.EngUnit.UnitNo"));
+				sb.append(StringUtil.orEmpty(json.getValueString("Eng3dAddress.EngUnit.UnitNo")));
 				sb.append(", ");
 			}
 			if ((s = json.getValueString("Eng3dAddress.EngFloor.FloorNum")) != null)
@@ -254,12 +254,12 @@ public class IAMSmartAPI {
 			}
 			if (json.getValue("EngBlock") != null)
 			{
-				sb.append(json.getValueString("EngBlock.BlockDescriptor"));
+				sb.append(StringUtil.orEmpty(json.getValueString("EngBlock.BlockDescriptor")));
 				sb.append(' ');
-				sb.append(json.getValueString("EngBlock.BlockNo"));
+				sb.append(StringUtil.orEmpty(json.getValueString("EngBlock.BlockNo")));
 				sb.append(", ");
 			}
-			sb.append(json.getValueString("BuildingName"));
+			sb.append(StringUtil.orEmpty(json.getValueString("BuildingName")));
 			if (json.getValue("EngStreet") != null)
 			{
 				if (sb.length() > 0)
@@ -297,28 +297,28 @@ public class IAMSmartAPI {
 		}
 		else if ((json = addr.getValue("FreeFormatAddress")) != null)
 		{
-			sb.append(json.getValueString("AddressLine1"));
+			sb.append(StringUtil.orEmpty(json.getValueString("AddressLine1")));
 			sb.append(", ");
-			sb.append(json.getValueString("AddressLine2"));
+			sb.append(StringUtil.orEmpty(json.getValueString("AddressLine2")));
 			sb.append(", ");
-			sb.append(json.getValueString("AddressLine3"));
+			sb.append(StringUtil.orEmpty(json.getValueString("AddressLine3")));
 			return sb.toString();
 		}
 		else if ((json = addr.getValue("PostBoxAddress")) != null)
 		{
 			if ((addr = json.getValue("EngPostBox")) != null)
 			{
-				sb.append(addr.getValueString("PostOffice"));
+				sb.append(StringUtil.orEmpty(addr.getValueString("PostOffice")));
 				sb.append(" Box ");
 				sb.append(addr.getValueAsInt32("PoBoxNo"));
 				sb.append(", ");
-				sb.append(addr.getValueString("PostOfficeRegion"));
+				sb.append(StringUtil.orEmpty(addr.getValueString("PostOfficeRegion")));
 				return sb.toString();
 			}
 			else if ((addr = json.getValue("ChiPostBox")) != null)
 			{
-				sb.append(addr.getValueString("PostOfficeRegion"));
-				sb.append(addr.getValueString("PostOffice"));
+				sb.append(StringUtil.orEmpty(addr.getValueString("PostOfficeRegion")));
+				sb.append(StringUtil.orEmpty(addr.getValueString("PostOffice")));
 				sb.append("信箱");
 				sb.append(addr.getValueAsInt32("PoBoxNo"));
 				sb.append("號");
