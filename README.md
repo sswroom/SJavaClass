@@ -1,6 +1,7 @@
 # SJavaClass
 
 # Changes:
+- Fixed DateTimeUtil.toString timezone problem
 - Fixed DateTimeUtil.toString(Date) problem
 - Fixed MyX509Key fix cipher creation
 - Fixed Radix64Enc.encodeBin

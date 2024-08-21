@@ -5,6 +5,7 @@ import java.sql.Time;
 import java.sql.Timestamp;
 import java.time.DayOfWeek;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.time.ZoneId;
@@ -580,22 +581,42 @@ public class DateTimeUtil
 
 	public static String toString(ZonedDateTime t, String format)
 	{
-		return DateTimeFormatter.ofPattern(format.replace('f', 'n').replace('z', 'Z')).format(t);
+		int i = 0;
+		int j;
+		while ((j = format.indexOf('z', i)) >= 0)
+		{
+			if (j + 1 >= format.length())
+				break;
+			if (format.charAt(j + 1) == 'z')
+			{
+				format = format.substring(0, j) + format.substring(j + 1);
+				i = j;
+				while (i < format.length() && format.charAt(i) == 'z')
+				{
+					i++;
+				}
+			}
+			else
+			{
+				i = j + 1;
+			}
+		}
+		return DateTimeFormatter.ofPattern(format.replace('f', 'n').replace('z', 'x')).format(t);
 	}
 
 	public static String toString(Timestamp ts, String format)
 	{
-		return DateTimeFormatter.ofPattern(format.replace('f', 'n').replace('z', 'Z')).format(ZonedDateTime.ofInstant(ts.toInstant(), ZoneId.systemDefault()));
+		return toString(ZonedDateTime.ofInstant(ts.toInstant(), ZoneId.systemDefault()), format);
 	}
 
 	public static String toString(Date dat, String format)
 	{
-		return DateTimeFormatter.ofPattern(format.replace('f', 'n').replace('z', 'Z')).format(ZonedDateTime.of(dat.toLocalDate().atStartOfDay(), ZoneId.systemDefault()));
+		return toString(ZonedDateTime.of(dat.toLocalDate().atStartOfDay(), ZoneId.systemDefault()), format);
 	}
 
 	public static String toString(Time tim, String format)
 	{
-		return DateTimeFormatter.ofPattern(format.replace('f', 'n').replace('z', 'Z')).format(ZonedDateTime.ofInstant(tim.toInstant(), ZoneId.systemDefault()));
+		return toString(ZonedDateTime.of(tim.toLocalTime().atDate(LocalDate.now()), ZoneId.systemDefault()), format);
 	}
 
 	public static String toString(ZonedDateTime t)
