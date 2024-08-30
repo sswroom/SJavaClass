@@ -162,6 +162,16 @@ public class DateTimeUtil
 		throw new IllegalArgumentException("Unknown tz: "+tzStr);
 	}
 
+	public static LocalDateTime clearDayOfMonth(LocalDateTime dt)
+	{
+		return LocalDateTime.of(dt.getYear(), dt.getMonthValue(), 1, 0, 0);
+	}
+
+	public static Timestamp clearDayOfMonth(Timestamp ts)
+	{
+		return Timestamp.valueOf(clearDayOfMonth(ts.toLocalDateTime()));
+	}
+
 	public static ZonedDateTime clearTime(ZonedDateTime dt)
 	{
 		return dt.truncatedTo(ChronoUnit.DAYS);
@@ -504,6 +514,11 @@ public class DateTimeUtil
 		return Timestamp.valueOf(t.toLocalDateTime().plusDays(dayDiff));
 	}
 
+	public static Timestamp addMonth(Timestamp t, int monthDiff)
+	{
+		return Timestamp.valueOf(t.toLocalDateTime().plusMonths(monthDiff));
+	}
+
 	public static Timestamp toWeekdayBefore(Timestamp t, DayOfWeek weekday)
 	{
 		return Timestamp.valueOf(toWeekdayBefore(t.toLocalDateTime(), weekday));
@@ -577,6 +592,20 @@ public class DateTimeUtil
 			t2 = t2.withZoneSameInstant(t1.getZone());
 		}
 		return isSameMonth(t1, t2) && t1.getDayOfMonth() == t2.getDayOfMonth();
+	}
+
+	public static boolean isSameHour(ZonedDateTime t1, ZonedDateTime t2)
+	{
+		if (!t2.getZone().equals((t1.getZone())))
+		{
+			t2 = t2.withZoneSameInstant(t1.getZone());
+		}
+		return t1.getYear() == t2.getYear() && t1.getMonthValue() == t2.getMonthValue() && t1.getDayOfMonth() == t2.getDayOfMonth() && t1.getHour() == t2.getHour();
+	}
+
+	public static boolean isSameHour(Timestamp t1, Timestamp t2)
+	{
+		return isSameHour(newZonedDateTime(t1), newZonedDateTime(t2));
 	}
 
 	public static String toString(ZonedDateTime t, String format)

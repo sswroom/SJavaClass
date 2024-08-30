@@ -8,6 +8,11 @@
 - Fixed IAMSmartAPI.initHTTPClient
 - Fixed JasyptEncryptor.decrypt padding problem
 - Fixed IAMSmart.parseAddress
+- Added DateTimeUtil.clearDayOfMonth
+- Added DateTimeUtil.addMonth
+- Added DateTimeUtil.isSameHour
+- Added StringUtil.fixedSplit
+- Added EmailMessage.addAttachment
 
 0.4.20240816
 - Added BrowserInfo

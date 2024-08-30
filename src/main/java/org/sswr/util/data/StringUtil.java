@@ -1851,4 +1851,26 @@ public class StringUtil
 	{
 		return (s == null)?"":s;
 	}
+
+	/**
+	 * Split string with fixed char length
+	 * @param s string to split
+	 * @param charLength length in char to split
+	 * @return List of splitted string
+	 */
+	public static List<String> fixedSplit(String s, int charLength)
+	{
+		int i;
+		int l;
+		List<String> ret = new ArrayList<String>();
+		i = 0;
+		l = s.length();
+		while (l - i > charLength)
+		{
+			ret.add(s.substring(i, i + charLength));
+			i += charLength;
+		}
+		ret.add(s.substring(i));
+		return ret;
+	}
 }

@@ -372,6 +372,17 @@ public class EmailTemplate extends EmailMessage
 	}
 
 	@Override
+	public boolean addAttachment(byte[] bytes, String contentType, String fileName) {
+		EmailAttachment att = new EmailAttachment();
+		att.content = bytes;
+		att.contentId = "attach"+(this.attachments.size() + 1);
+		att.contentType = contentType;
+		att.fileName = fileName;
+		this.attachments.add(att);
+		return true;
+	}
+
+	@Override
 	public int getAttachmentCount()
 	{
 		return this.attachments.size();

@@ -23,6 +23,7 @@ public abstract class EmailMessage
 	public abstract EmailAttachment getAttachment(int index);
 	public abstract List<EmailAttachment> getAttachments();
 	public abstract boolean addAttachmentFile(String attachmentPath);
+	public abstract boolean addAttachment(byte[] bytes, String contentType, String fileName);
 
 	public void setSentDate(ZonedDateTime dt)
 	{
