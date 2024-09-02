@@ -1,11 +1,11 @@
 package org.sswr.util.crypto;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 
 import org.sswr.util.crypto.BlockCipher.ChainMode;
 import org.sswr.util.data.ByteTool;
 import org.sswr.util.data.RandomMT19937;
+import org.sswr.util.data.textbinenc.Base64Enc;
 
 public class JasyptEncryptor
 {
@@ -138,7 +138,7 @@ public class JasyptEncryptor
 
 	public byte []decrypt(String b64String)
 	{
-		return decrypt(Base64.getDecoder().decode(b64String));
+		return decrypt(new Base64Enc().decodeBin(b64String));
 	}
 
 	public String decryptToString(String b64String)
@@ -160,8 +160,15 @@ public class JasyptEncryptor
 			byte tail = paddedResult[paddedResult.length - 1];
 			if ((tail & 0xff) > 0 && (tail & 0xff) <= enc.getDecBlockSize())
 			{
-				byte[] unpaddedResult = new byte[paddedResult.length - (tail & 0xff)];
-				ByteTool.copyArray(unpaddedResult, 0, paddedResult, 0, paddedResult.length - (tail & 0xff));
+				int i = paddedResult.length - 1;
+				while (i > 0)
+				{
+					if (paddedResult[i - 1] >= 32)
+						break;
+					i--;
+				}
+				byte[] unpaddedResult = new byte[i];
+				ByteTool.copyArray(unpaddedResult, 0, paddedResult, 0, i);
 				return unpaddedResult;
 			}
 		}
@@ -173,7 +180,7 @@ public class JasyptEncryptor
 		int i = decBuff.length;
 		while (i-- > 0)
 		{
-			if (decBuff[i] != 8)
+			if (decBuff[i] >= 32)
 			{
 				break;
 			}
@@ -196,7 +203,7 @@ public class JasyptEncryptor
 			destLen = (nBlock + 1) * this.ivSize;
 			srcTmpBuff = new byte[destLen];
 			ByteTool.copyArray(srcTmpBuff, 0, srcBuff, 0, srcLen);
-			ByteTool.arrayFill(srcTmpBuff, srcLen, destLen - srcLen, (byte)8);
+			ByteTool.arrayFill(srcTmpBuff, srcLen, destLen - srcLen, (byte)(destLen - srcLen));
 			srcBuff = srcTmpBuff;
 		}
 		else
@@ -242,6 +249,6 @@ public class JasyptEncryptor
 		byte encBuff[] = enc.encrypt(srcBuff, 0, destLen - destOfst);
 		ByteTool.copyArray(destBuff, destOfst, encBuff, 0, encBuff.length);
 	
-		return Base64.getEncoder().encodeToString(destBuff);
+		return new Base64Enc().encodeBin(destBuff);
 	}
 }

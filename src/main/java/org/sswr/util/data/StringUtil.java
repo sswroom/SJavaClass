@@ -1686,7 +1686,15 @@ public class StringUtil
 	{
 		if (s == null)
 			return 0;
-		return s.getBytes(StandardCharsets.UTF_16).length / 2;
+		byte[] bytes = s.getBytes(StandardCharsets.UTF_16);
+		if (bytes.length >= 2 && (bytes[0] & 0xff) == 0xfe && (bytes[1] & 0xff) == 0xff)
+		{
+			return bytes.length / 2 - 1;
+		}
+		else
+		{
+			return bytes.length / 2;
+		}
 	}
 
 	/**

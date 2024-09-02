@@ -6,8 +6,9 @@
 - Fixed MyX509Key fix cipher creation
 - Fixed Radix64Enc.encodeBin
 - Fixed IAMSmartAPI.initHTTPClient
-- Fixed JasyptEncryptor.decrypt padding problem
+- Fixed JasyptEncryptor.decrypt/encrypt padding problem
 - Fixed IAMSmart.parseAddress
+- Fixed StringUtil.utf16CharCnt
 - Added DateTimeUtil.clearDayOfMonth
 - Added DateTimeUtil.addMonth
 - Added DateTimeUtil.isSameHour
