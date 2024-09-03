@@ -594,6 +594,11 @@ public class DateTimeUtil
 		return isSameMonth(t1, t2) && t1.getDayOfMonth() == t2.getDayOfMonth();
 	}
 
+	public static boolean isSameDay(Timestamp t1, Timestamp t2)
+	{
+		return isSameDay(newZonedDateTime(t1), newZonedDateTime(t2));
+	}
+
 	public static boolean isSameHour(ZonedDateTime t1, ZonedDateTime t2)
 	{
 		if (t1 == t2)

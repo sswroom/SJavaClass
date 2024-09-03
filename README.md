@@ -12,6 +12,7 @@
 - Added DateTimeUtil.clearDayOfMonth
 - Added DateTimeUtil.addMonth
 - Added DateTimeUtil.isSameHour
+- Added DateTimeUtil.isSameDay(Timestamp, Timestamp)
 - Added StringUtil.fixedSplit
 - Added EmailMessage.addAttachment
 
