@@ -305,9 +305,9 @@ public class DateTimeUtil
 	public static ZonedDateTime parse(String dateStr)
 	{
 		if (dateStr == null)
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException("Cannot parse dateStr: null");
 		if (dateStr.length() < 5)
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException("Cannot parse dateStr: "+dateStr);
 		if (dateStr.charAt(3) == ',' && dateStr.indexOf(",", 4) == -1)
 		{
 			dateStr = dateStr.substring(4).trim();
@@ -335,7 +335,7 @@ public class DateTimeUtil
 			}
 			else
 			{
-				throw new IllegalArgumentException();
+				throw new IllegalArgumentException("Cannot parse dateStr: "+dateStr);
 			}
 			String tz = null;
 			int i = strs2[1].indexOf('+');
@@ -378,7 +378,7 @@ public class DateTimeUtil
 			}
 			else
 			{
-				throw new IllegalArgumentException();
+				throw new IllegalArgumentException("Cannot parse dateStr: "+dateStr);
 			}
 		}
 		else if (strs2.length == 1)
@@ -402,7 +402,7 @@ public class DateTimeUtil
 			}
 			else
 			{
-				throw new IllegalArgumentException();
+				throw new IllegalArgumentException("Cannot parse dateStr: "+dateStr);
 			}
 		}
 		else if (strs2.length == 4 || (strs2.length == 5 && (strs2[4].startsWith("-") || strs2[4].startsWith("+") || strs2[4].equals("GMT"))))
@@ -420,7 +420,7 @@ public class DateTimeUtil
 			}
 			else
 			{
-				throw new IllegalArgumentException();
+				throw new IllegalArgumentException("Cannot parse dateStr: "+dateStr);
 			}
 			strs = StringUtil.split(strs2[3], ":");
 			if (strs.length == 3)
@@ -433,7 +433,7 @@ public class DateTimeUtil
 			}
 			else
 			{
-				throw new IllegalArgumentException();
+				throw new IllegalArgumentException("Cannot parse dateStr: "+dateStr);
 			}
 			
 			if (strs2.length == 5)
@@ -451,7 +451,7 @@ public class DateTimeUtil
 					}
 					else
 					{
-						throw new IllegalArgumentException();
+						throw new IllegalArgumentException("Cannot parse dateStr: "+dateStr);
 					}
 					if (strs2[4].startsWith("-"))
 					{
@@ -464,14 +464,14 @@ public class DateTimeUtil
 				}
 				else
 				{
-					throw new IllegalArgumentException();
+					throw new IllegalArgumentException("Cannot parse dateStr: "+dateStr);
 				}
 			}
 			return dt;
 		}
 		else
 		{
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException("Cannot parse dateStr: "+dateStr);
 		}
 	}
 

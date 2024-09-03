@@ -119,7 +119,6 @@ public class HTTPOSClient extends HTTPClient
 		{
 			this.hasContType = true;
 		}
-		System.out.println("add header: "+name+", "+value);
 		this.conn.addRequestProperty(name, value);
 	}
 

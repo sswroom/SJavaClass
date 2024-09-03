@@ -15,6 +15,9 @@
 - Added DateTimeUtil.isSameDay(Timestamp, Timestamp)
 - Added StringUtil.fixedSplit
 - Added EmailMessage.addAttachment
+- Added StreamDataInputStream
+- Fixed ImageParser
+- Fixed EXIFData.parseIFD
 
 0.4.20240816
 - Added BrowserInfo

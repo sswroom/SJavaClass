@@ -1,13 +1,14 @@
 package org.sswr.util.parser;
 
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 import javax.imageio.IIOException;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.metadata.IIOMetadata;
+import javax.imageio.stream.ImageInputStream;
 
 import org.sswr.util.io.FileParser;
 import org.sswr.util.io.FileSelector;
@@ -15,6 +16,7 @@ import org.sswr.util.io.PackageFile;
 import org.sswr.util.io.ParsedObject;
 import org.sswr.util.io.ParserType;
 import org.sswr.util.io.StreamData;
+import org.sswr.util.io.StreamDataInputStream;
 import org.sswr.util.media.ImageList;
 import org.sswr.util.media.ImageUtil;
 import org.sswr.util.media.StaticImage;
@@ -29,7 +31,9 @@ public class ImageParser extends FileParser {
 		try
 		{
 			ImageReader reader = ImageIO.getImageReadersBySuffix(fmt).next();
-			reader.setInput(ImageIO.createImageInputStream(new ByteArrayInputStream(hdr, hdrOfst, hdrSize)));
+			InputStream is = new StreamDataInputStream(fd);
+			ImageInputStream iis = ImageIO.createImageInputStream(is);
+			reader.setInput(iis);
 			ImageList imgList = new ImageList(fd.getFullFileName());
 			int i = 0;
 			int j = reader.getNumImages(true);
@@ -51,6 +55,9 @@ public class ImageParser extends FileParser {
 				}
 				i++;
 			}
+			reader.dispose();
+			iis.close();
+			is.close();
 			if (imgList.size() == 0)
 			{
 				return null;

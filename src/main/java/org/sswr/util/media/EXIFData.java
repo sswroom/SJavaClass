@@ -3005,7 +3005,7 @@ public class EXIFData
 	public static EXIFData parseIFD(byte[] buff, int buffOfst, int buffSize, ByteIO byteIO, SharedInt nextOfst, EXIFMaker exifMaker, int readBase)
 	{
 		EXIFData exif;
-		byte[] ifdEntries;
+		int ifdEntries;
 		int ifdCnt;
 		int i;
 		int ifdOfst;
@@ -3014,7 +3014,7 @@ public class EXIFData
 		int fcnt;
 
 		ifdCnt = byteIO.readInt16(buff, buffOfst);
-		ifdEntries = buff;
+		ifdEntries = buffOfst + 2;
 
 		byte[] tmpBuff;
 		int j;
@@ -3023,13 +3023,13 @@ public class EXIFData
 		if (readBase == 0)
 		{
 			readBase = 0x7fffffff;
-			ifdOfst = buffOfst + 2;
+			ifdOfst = 0;
 			i = 0;
 			while (i < ifdCnt)
 			{
-				tag = byteIO.readInt16(ifdEntries, ifdOfst) & 0xffff;
-				ftype = byteIO.readInt16(ifdEntries, ifdOfst + 2);
-				fcnt = byteIO.readInt32(ifdEntries, ifdOfst + 4);
+				tag = byteIO.readInt16(buff, ifdEntries + ifdOfst) & 0xffff;
+				ftype = byteIO.readInt16(buff, ifdEntries + ifdOfst + 2);
+				fcnt = byteIO.readInt32(buff, ifdEntries + ifdOfst + 4);
 
 				if (ftype == 1)
 				{
@@ -3038,9 +3038,9 @@ public class EXIFData
 					}
 					else
 					{
-						if (readBase > byteIO.readInt32(ifdEntries, ifdOfst + 8))
+						if (readBase > byteIO.readInt32(buff, ifdEntries + ifdOfst + 8))
 						{
-							readBase = byteIO.readInt32(ifdEntries, ifdOfst + 8);
+							readBase = byteIO.readInt32(buff, ifdEntries + ifdOfst + 8);
 						}
 					}
 				}
@@ -3051,9 +3051,9 @@ public class EXIFData
 					}
 					else
 					{
-						if (readBase > byteIO.readInt32(ifdEntries, ifdOfst + 8))
+						if (readBase > byteIO.readInt32(buff, ifdEntries + ifdOfst + 8))
 						{
-							readBase = byteIO.readInt32(ifdEntries, ifdOfst + 8);
+							readBase = byteIO.readInt32(buff, ifdEntries + ifdOfst + 8);
 						}
 					}
 				}
@@ -3067,9 +3067,9 @@ public class EXIFData
 					}
 					else
 					{
-						if (readBase > byteIO.readInt32(ifdEntries, ifdOfst + 8))
+						if (readBase > byteIO.readInt32(buff, ifdEntries + ifdOfst + 8))
 						{
-							readBase = byteIO.readInt32(ifdEntries, ifdOfst + 8);
+							readBase = byteIO.readInt32(buff, ifdEntries + ifdOfst + 8);
 						}
 					}
 				}
@@ -3080,17 +3080,17 @@ public class EXIFData
 					}
 					else
 					{
-						if (readBase > byteIO.readInt32(ifdEntries, ifdOfst + 8))
+						if (readBase > byteIO.readInt32(buff, ifdEntries + ifdOfst + 8))
 						{
-							readBase = byteIO.readInt32(ifdEntries, ifdOfst + 8);
+							readBase = byteIO.readInt32(buff, ifdEntries + ifdOfst + 8);
 						}
 					}
 				}
 				else if (ftype == 5)
 				{
-					if (readBase > byteIO.readInt32(ifdEntries, ifdOfst + 8))
+					if (readBase > byteIO.readInt32(buff, ifdEntries + ifdOfst + 8))
 					{
-						readBase = byteIO.readInt32(ifdEntries, ifdOfst + 8);
+						readBase = byteIO.readInt32(buff, ifdEntries + ifdOfst + 8);
 					}
 				}
 				else if (ftype == 7)
@@ -3100,9 +3100,9 @@ public class EXIFData
 					}
 					else
 					{
-						if (readBase > byteIO.readInt32(ifdEntries, ifdOfst + 8))
+						if (readBase > byteIO.readInt32(buff, ifdEntries + ifdOfst + 8))
 						{
-							readBase = byteIO.readInt32(ifdEntries, ifdOfst + 8);
+							readBase = byteIO.readInt32(buff, ifdEntries + ifdOfst + 8);
 						}
 					}
 				}
@@ -3116,24 +3116,24 @@ public class EXIFData
 					}
 					else
 					{
-						if (readBase > byteIO.readInt32(ifdEntries, ifdOfst + 8))
+						if (readBase > byteIO.readInt32(buff, ifdEntries + ifdOfst + 8))
 						{
-							readBase = byteIO.readInt32(ifdEntries, ifdOfst + 8);
+							readBase = byteIO.readInt32(buff, ifdEntries + ifdOfst + 8);
 						}
 					}
 				}
 				else if (ftype == 12)
 				{
-					if (readBase > byteIO.readInt32(ifdEntries, ifdOfst + 8))
+					if (readBase > byteIO.readInt32(buff, ifdEntries + ifdOfst + 8))
 					{
-						readBase = byteIO.readInt32(ifdEntries, ifdOfst + 8);
+						readBase = byteIO.readInt32(buff, ifdEntries + ifdOfst + 8);
 					}
 				}
 				else if (ftype == 13)
 				{
-					if (readBase > byteIO.readInt32(ifdEntries, ifdOfst + 8))
+					if (readBase > byteIO.readInt32(buff, ifdEntries + ifdOfst + 8))
 					{
-						readBase = byteIO.readInt32(ifdEntries, ifdOfst + 8);
+						readBase = byteIO.readInt32(buff, ifdEntries + ifdOfst + 8);
 					}
 				}
 				else
@@ -3144,16 +3144,16 @@ public class EXIFData
 				ifdOfst += 12;
 				i++;
 			}
-			readBase = ifdCnt * 12 + 2 + 4 - readBase;
+			readBase = buffOfst + ifdCnt * 12 + 2 + 4 - readBase;
 		}
 
-		ifdOfst = buffOfst + 2;
+		ifdOfst = 0;
 		i = 0;
 		while (i < ifdCnt)
 		{
-			tag = byteIO.readInt16(ifdEntries, ifdOfst) & 0xffff;
-			ftype = byteIO.readInt16(ifdEntries, ifdOfst + 2);
-			fcnt = byteIO.readInt32(ifdEntries, ifdOfst + 4);
+			tag = byteIO.readInt16(buff, ifdEntries + ifdOfst) & 0xffff;
+			ftype = byteIO.readInt16(buff, ifdEntries + ifdOfst + 2);
+			fcnt = byteIO.readInt32(buff, ifdEntries + ifdOfst + 4);
 
 			if (tag == 34665)
 			{
@@ -3164,22 +3164,22 @@ public class EXIFData
 			{
 				if (fcnt <= 4)
 				{
-					exif.addBytes(tag, fcnt, ifdEntries, ifdOfst + 8);
+					exif.addBytes(tag, fcnt, buff, ifdEntries + ifdOfst + 8);
 				}
 				else
 				{
-					exif.addBytes(tag, fcnt, buff, buffOfst + byteIO.readInt32(ifdEntries, ifdOfst + 8) + readBase);
+					exif.addBytes(tag, fcnt, buff, byteIO.readInt32(buff, ifdEntries + ifdOfst + 8) + readBase);
 				}
 			}
 			else if (ftype == 2)
 			{
 				if (fcnt <= 4)
 				{
-					exif.addString(tag, fcnt, ifdEntries, ifdOfst + 8);
+					exif.addString(tag, fcnt, buff, ifdEntries + ifdOfst + 8);
 				}
 				else
 				{
-					exif.addString(tag, fcnt, buff, buffOfst + byteIO.readInt32(ifdEntries, ifdOfst + 8) + readBase);
+					exif.addString(tag, fcnt, buff, byteIO.readInt32(buff, ifdEntries + ifdOfst + 8) + readBase);
 				}
 			}
 			else if (ftype == 3)
@@ -3187,20 +3187,20 @@ public class EXIFData
 				if (fcnt == 1)
 				{
 					tmpBuff = new byte[2];
-					ByteTool.writeInt16(tmpBuff, 0, byteIO.readInt16(ifdEntries, ifdOfst + 8));
+					ByteTool.writeInt16(tmpBuff, 0, byteIO.readInt16(buff, ifdEntries + ifdOfst + 8));
 					exif.addUInt16(tag, fcnt, tmpBuff, 0);
 				}
 				else if (fcnt == 2)
 				{
 					tmpBuff = new byte[4];
-					ByteTool.writeInt16(tmpBuff, 0, byteIO.readInt16(ifdEntries, ifdOfst + 8));
-					ByteTool.writeInt16(tmpBuff, 2, byteIO.readInt16(ifdEntries, ifdOfst + 10));
+					ByteTool.writeInt16(tmpBuff, 0, byteIO.readInt16(buff, ifdEntries + ifdOfst + 8));
+					ByteTool.writeInt16(tmpBuff, 2, byteIO.readInt16(buff, ifdEntries + ifdOfst + 10));
 					exif.addUInt16(tag, fcnt, tmpBuff, 0);
 				}
 				else
 				{
 					tmpBuff = new byte[fcnt << 1];
-					ByteTool.copyArray(tmpBuff, 0, buff, buffOfst + byteIO.readInt32(ifdEntries,ifdOfst + 8) + readBase, fcnt << 1);
+					ByteTool.copyArray(tmpBuff, 0, buff, byteIO.readInt32(buff, ifdEntries + ifdOfst + 8) + readBase, fcnt << 1);
 					j = fcnt << 1;
 					while (j > 0)
 					{
@@ -3214,10 +3214,10 @@ public class EXIFData
 			{
 				if (fcnt == 1)
 				{
-					int tmp = byteIO.readInt32(ifdEntries, ifdOfst + 8);
+					int tmp = byteIO.readInt32(buff, ifdEntries + ifdOfst + 8);
 					if (tag == 34665 || tag == 34853)
 					{
-						EXIFData subexif = parseIFD(buff, buffOfst + tmp + readBase, buffSize - tmp - readBase, byteIO, null, EXIFMaker.STANDARD, readBase - buffOfst - 6);
+						EXIFData subexif = parseIFD(buff, tmp + readBase, buffSize - (readBase + tmp), byteIO, null, exifMaker, readBase);
 						if (subexif != null)
 						{
 							exif.addSubEXIF(tag, subexif);
@@ -3233,7 +3233,7 @@ public class EXIFData
 				else
 				{
 					tmpBuff = new byte[fcnt << 2];
-					ByteTool.copyArray(tmpBuff, 0, buff, buffOfst + byteIO.readInt32(ifdEntries, ifdOfst + 8) + readBase, fcnt << 2);
+					ByteTool.copyArray(tmpBuff, 0, buff, byteIO.readInt32(buff, ifdEntries + ifdOfst + 8) + readBase, fcnt << 2);
 					j = fcnt << 2;
 					while (j > 0)
 					{
@@ -3246,7 +3246,7 @@ public class EXIFData
 			else if (ftype == 5)
 			{
 				tmpBuff = new byte[fcnt << 3];
-				ByteTool.copyArray(tmpBuff, 0, buff, buffOfst + byteIO.readInt32(ifdEntries, ifdOfst + 8) + readBase, fcnt << 3);
+				ByteTool.copyArray(tmpBuff, 0, buff, byteIO.readInt32(buff, ifdEntries + ifdOfst + 8) + readBase, fcnt << 3);
 				j = fcnt << 3;
 				while (j > 0)
 				{
@@ -3260,16 +3260,16 @@ public class EXIFData
 			{
 				if (fcnt <= 4)
 				{
-					exif.addOther(tag, fcnt, ifdEntries, ifdOfst + 8);
+					exif.addOther(tag, fcnt, buff, ifdEntries + ifdOfst + 8);
 				}
 				else
 				{
-					int ofst = byteIO.readInt32(ifdEntries, ifdOfst + 8) + readBase;
+					int ofst = byteIO.readInt32(buff, ifdEntries + ifdOfst + 8);
 					if (ofst + fcnt > buffSize)
 					{
 						ofst = buffSize - fcnt;
 					}
-					exif.addOther(tag, fcnt, buff, ofst);
+					exif.addOther(tag, fcnt, buff, ofst + readBase);
 				}
 			}
 			else if (ftype == 8)
@@ -3277,20 +3277,20 @@ public class EXIFData
 				if (fcnt == 1)
 				{
 					tmpBuff = new byte[2];
-					ByteTool.writeInt16(tmpBuff, 0, byteIO.readInt16(ifdEntries, ifdOfst + 8));
+					ByteTool.writeInt16(tmpBuff, 0, byteIO.readInt16(buff, ifdEntries + ifdOfst + 8));
 					exif.addInt16(tag, fcnt, tmpBuff, 0);
 				}
 				else if (fcnt == 2)
 				{
 					tmpBuff = new byte[4];
-					ByteTool.writeInt16(tmpBuff, 0, byteIO.readInt16(ifdEntries, ifdOfst + 8));
-					ByteTool.writeInt16(tmpBuff, 2, byteIO.readInt16(ifdEntries, ifdOfst + 10));
+					ByteTool.writeInt16(tmpBuff, 0, byteIO.readInt16(buff, ifdEntries + ifdOfst + 8));
+					ByteTool.writeInt16(tmpBuff, 2, byteIO.readInt16(buff, ifdEntries + ifdOfst + 10));
 					exif.addInt16(tag, fcnt, tmpBuff, 0);
 				}
 				else
 				{
 					tmpBuff = new byte[fcnt << 1];
-					ByteTool.copyArray(tmpBuff, 0, buff, buffOfst + byteIO.readInt32(ifdEntries, ifdOfst + 8) + readBase, fcnt << 1);
+					ByteTool.copyArray(tmpBuff, 0, buff, byteIO.readInt32(buff, ifdEntries + ifdOfst + 8) + readBase, fcnt << 1);
 					j = fcnt << 1;
 					while (j > 0)
 					{
@@ -3302,11 +3302,11 @@ public class EXIFData
 			}
 			else if (ftype == 12)
 			{
-				exif.addDouble(tag, fcnt, buff, buffOfst + byteIO.readInt32(ifdEntries, ifdOfst + 8) + readBase);
+				exif.addDouble(tag, fcnt, buff, byteIO.readInt32(buff, ifdEntries + ifdOfst + 8) + readBase);
 			}
 			else if (ftype == 13) //Olympus innerIFD
 			{
-				EXIFData subexif = parseIFD(buff, buffOfst + byteIO.readInt32(ifdEntries, ifdOfst + 8) + readBase, buffSize - byteIO.readInt32(ifdEntries, ifdOfst + 8) - readBase, byteIO, null, exifMaker, -byteIO.readInt32(ifdEntries, ifdOfst + 8));
+				EXIFData subexif = parseIFD(buff, byteIO.readInt32(buff, ifdEntries + ifdOfst + 8) + readBase, buffSize - byteIO.readInt32(buff, ifdEntries + ifdOfst + 8) - readBase, byteIO, null, exifMaker, readBase);
 				if (subexif != null)
 				{
 					exif.addSubEXIF(tag, subexif);
@@ -3323,7 +3323,7 @@ public class EXIFData
 
 		if (nextOfst != null)
 		{
-			nextOfst.value = byteIO.readInt32(ifdEntries, ifdCnt * 12);
+			nextOfst.value = byteIO.readInt32(buff, ifdEntries + ifdCnt * 12);
 		}
 		return exif;
 	}

@@ -258,7 +258,7 @@ public class StaticImage
 									if (byteIO != null && byteIO.readInt16(barr, 8) == 42 && byteIO.readInt32(barr, 10) == 8)
 									{
 										SharedInt nextOfst = new SharedInt();
-										this.exif = EXIFData.parseIFD(barr, 14, barr.length - 14, byteIO, nextOfst, EXIFMaker.STANDARD, -8);
+										this.exif = EXIFData.parseIFD(barr, 14, barr.length - 14, byteIO, nextOfst, EXIFMaker.STANDARD, 6);
 									}
 								}
 							}
