@@ -587,6 +587,10 @@ public class DateTimeUtil
 
 	public static boolean isSameDay(ZonedDateTime t1, ZonedDateTime t2)
 	{
+		if (t1 == t2)
+			return true;
+		if (t1 == null || t2 == null)
+			return false;
 		if (!t2.getZone().equals(t1.getZone()))
 		{
 			t2 = t2.withZoneSameInstant(t1.getZone());

@@ -13,6 +13,7 @@
 - Added DateTimeUtil.addMonth
 - Added DateTimeUtil.isSameHour
 - Added DateTimeUtil.isSameDay(Timestamp, Timestamp)
+- DataTimeUtil.isSameDay allow null input
 - Added StringUtil.fixedSplit
 - Added EmailMessage.addAttachment
 - Added StreamDataInputStream
