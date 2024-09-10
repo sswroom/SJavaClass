@@ -4,7 +4,7 @@ import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.util.List;
 
-public class WindowsSocketFactory implements SocketFactory
+public class WindowsSocketFactory extends SocketFactory
 {
 	@Override
 	public InetAddress[] getDefDNS()
@@ -33,5 +33,4 @@ public class WindowsSocketFactory implements SocketFactory
 		}
 		return new InetAddress[0];
 	}
-	
 }

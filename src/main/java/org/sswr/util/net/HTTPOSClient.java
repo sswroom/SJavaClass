@@ -3,6 +3,7 @@ package org.sswr.util.net;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
+import java.net.Proxy;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.cert.Certificate;
@@ -46,10 +47,15 @@ public class HTTPOSClient extends HTTPClient
 		this.method = method;
 		try
 		{
+			Proxy proxy = null;
+			if (this.sockf != null)
+			{
+				proxy = this.sockf.getProxy();
+			}
 			URL targetURL = new URL(url);
 			HttpURLConnection.setFollowRedirects(false);
 			this.svrAddr = InetAddress.getByName(targetURL.getHost());
-			this.conn = (HttpURLConnection)targetURL.openConnection();
+			this.conn = (HttpURLConnection)targetURL.openConnection(proxy);
 			this.respCode = 0;
 			switch (this.method)
 			{

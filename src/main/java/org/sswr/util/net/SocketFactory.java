@@ -1,12 +1,24 @@
 package org.sswr.util.net;
 
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
+import java.net.Proxy.Type;
 
 import org.sswr.util.io.OSInfo;
 
-public interface SocketFactory
+public abstract class SocketFactory
 {
-	public InetAddress[] getDefDNS();
+	private String proxyHost;
+	private int proxyPort;
+
+	public SocketFactory()
+	{
+		this.proxyHost = null;
+		this.proxyPort = 0;
+	}
+
+	public abstract InetAddress[] getDefDNS();
 
 	public static SocketFactory create()
 	{
@@ -23,5 +35,21 @@ public interface SocketFactory
 		default:
 			return new LinuxSocketFactory();
 		}
+	}
+
+	public Proxy getProxy()
+	{
+		if (this.proxyHost == null || this.proxyPort == 0)
+		{
+			return null;
+		}
+		Proxy proxy = new Proxy(Type.HTTP, new InetSocketAddress(proxyHost, proxyPort));
+		return proxy;
+	}
+
+	public void setProxy(String host, int port)
+	{
+		this.proxyHost = host;
+		this.proxyPort = port;
 	}
 }

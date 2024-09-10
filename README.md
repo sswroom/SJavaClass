@@ -19,6 +19,8 @@
 - Added StreamDataInputStream
 - Fixed ImageParser
 - Fixed EXIFData.parseIFD
+- Added SocketFactory.setProxy, getProxy
+- HTTPOSClient support proxy
 
 0.4.20240816
 - Added BrowserInfo

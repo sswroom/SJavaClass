@@ -10,7 +10,7 @@ import java.util.List;
 import org.sswr.util.data.DataTools;
 import org.sswr.util.io.UTF8Reader;
 
-public class LinuxSocketFactory implements SocketFactory
+public class LinuxSocketFactory extends SocketFactory
 {
 	@Override
 	public InetAddress[] getDefDNS() {
