@@ -55,7 +55,14 @@ public class HTTPOSClient extends HTTPClient
 			URL targetURL = new URL(url);
 			HttpURLConnection.setFollowRedirects(false);
 			this.svrAddr = InetAddress.getByName(targetURL.getHost());
-			this.conn = (HttpURLConnection)targetURL.openConnection(proxy);
+			if (proxy == null)
+			{
+				this.conn = (HttpURLConnection)targetURL.openConnection();
+			}
+			else
+			{
+				this.conn = (HttpURLConnection)targetURL.openConnection(proxy);
+			}
 			this.respCode = 0;
 			switch (this.method)
 			{
@@ -379,12 +386,17 @@ public class HTTPOSClient extends HTTPClient
 
 	public static byte[] getAsBytes(String url, SharedInt statusCode)
 	{
-		return getAsBytes(url, null, statusCode);
+		return getAsBytes(null, url, null, statusCode);
 	}
 
 	public static byte[] getAsBytes(String url, Map<String, String> customHeaders, SharedInt statusCode)
 	{
-		HTTPOSClient cli = new HTTPOSClient(null, null, false);
+		return getAsBytes(null, url, customHeaders, statusCode);
+	}
+
+	public static byte[] getAsBytes(SocketFactory sockf, String url, Map<String, String> customHeaders, SharedInt statusCode)
+	{
+		HTTPOSClient cli = new HTTPOSClient(sockf, null, false);
 		cli.connect(url, RequestMethod.HTTP_GET, true);
 		cli.addHeaders(customHeaders);
 		if (cli.getRespStatus() <= 0)
@@ -403,7 +415,12 @@ public class HTTPOSClient extends HTTPClient
 
 	public static String getAsString(String url, SharedInt statusCode)
 	{
-		byte []ret = getAsBytes(url, statusCode);
+		return getAsString(null, url, statusCode);
+	}
+
+	public static String getAsString(SocketFactory sockf, String url, SharedInt statusCode)
+	{
+		byte []ret = getAsBytes(sockf, url, null, statusCode);
 		if (ret == null)
 		{
 			return null;

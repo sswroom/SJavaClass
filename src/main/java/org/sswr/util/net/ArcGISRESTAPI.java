@@ -1,5 +1,8 @@
 package org.sswr.util.net;
 
+import java.sql.Timestamp;
+
+import org.sswr.util.data.DateTimeUtil;
 import org.sswr.util.data.JSONArray;
 import org.sswr.util.data.JSONBase;
 import org.sswr.util.data.JSONObject;
@@ -9,6 +12,7 @@ import org.sswr.util.data.textenc.FormEncoding;
 public class ArcGISRESTAPI
 {
 	private String url;
+	private SocketFactory sockf;
 //	private String appSecret;
 
 	public static class Group
@@ -83,12 +87,43 @@ public class ArcGISRESTAPI
 		public Group[] groups;
 	}
 
+	public static class SimpleUser
+	{
+		public String username;
+		public String fullName;
+		public String memberType;
+		public String thumbnail;
+		public long joined;
+	}
+
+	public static class PageResult<T>
+	{
+		public int total;
+		public int start;
+		public int num;
+		public int nextStart;
+		public T[] results;
+	}
+
+	public static class TokenResult
+	{
+		public String accessToken;
+		public int expiresIn;
+		public Timestamp expireTime;
+	}
+
 	public ArcGISRESTAPI(String url)
 	{
 		if (url.endsWith("/"))
 			this.url = url.substring(0, url.length() - 1);
 		else
 			this.url = url;
+		this.sockf = null;
+	}
+
+	public void setSocketFactory(SocketFactory sockf)
+	{
+		this.sockf = sockf;
 	}
 
 	public String buildLoginUrl(String appId, String redirUrl)
@@ -96,11 +131,32 @@ public class ArcGISRESTAPI
 		return this.url+"/oauth2/authorize?client_id="+appId+"&response_type=token&redirect_uri="+FormEncoding.formEncode(redirUrl);
 	}
 
+	public TokenResult getClientToken(String clientId, String clientSecret)
+	{
+		String url = this.url+"/oauth2/token?grant_type=client_credentials&client_id="+clientId+"&client_secret="+clientSecret+"&f=json";
+		SharedInt statusCode = new SharedInt();
+		String ret = HTTPOSClient.getAsString(sockf, url, statusCode);
+		if (statusCode.value != 200)
+			return null;
+		JSONBase json = JSONBase.parseJSONStr(ret);
+		if (json == null)
+			return null;
+		if (!(json instanceof JSONObject))
+			return null;
+		TokenResult token = new TokenResult();
+		token.accessToken = json.getValueString("access_token");
+		token.expiresIn = json.getValueAsInt32("expires_in");
+		token.expireTime = DateTimeUtil.addSecond(DateTimeUtil.timestampNow(), token.expiresIn);
+		if (token.accessToken != null)
+			return token;
+		return null;
+	}
+
 	public User getUserInfo(String token, String userName)
 	{
 		String url = this.url+"/community/users/"+userName+"?token="+token+"&f=json";
 		SharedInt statusCode = new SharedInt();
-		String ret = HTTPOSClient.getAsString(url, statusCode);
+		String ret = HTTPOSClient.getAsString(sockf, url, statusCode);
 		if (statusCode.value != 200)
 			return null;
 		JSONBase json = JSONBase.parseJSONStr(ret);
@@ -109,6 +165,95 @@ public class ArcGISRESTAPI
 		if (!(json instanceof JSONObject))
 			return null;
 		return parseUser((JSONObject)json);
+	}
+
+/*	public PageResult<User> queryUsersByGroupId(String token, String groupId, Integer start, Integer num)
+	{
+		String url = this.url+"/community/users?filter="+FormEncoding.formEncode("group:\""+groupId+"\"")+"&token="+token+"&f=json";
+		if (start != null)
+		{
+			url += "&start="+start.intValue();
+		}
+		if (num != null)
+		{
+			url += "&num="+num.intValue();
+		}
+		SharedInt statusCode = new SharedInt();
+		String ret = HTTPOSClient.getAsString(sockf, url, statusCode);
+		if (statusCode.value != 200)
+			return null;
+		JSONBase json = JSONBase.parseJSONStr(ret);
+		if (json == null)
+			return null;
+		if (!(json instanceof JSONObject))
+			return null;
+		PageResult<User> res = parsePageResult((JSONObject)json);
+		if (res == null)
+			return null;
+		res.results = parseUserArray(json.getValueArray("results"));
+		return res;
+	}*/
+
+	public PageResult<Group> queryGroups(String token, String name, Integer start, Integer num)
+	{
+		String url = this.url+"/community/groups?token="+token;
+		if (name != null)
+		{
+			url += "&q="+FormEncoding.formEncode(name);
+		}
+		if (start != null)
+		{
+			url += "&start="+start.intValue();
+		}
+		if (num != null)
+		{
+			url += "&num="+num.intValue();
+		}
+		url += "&f=json";
+		SharedInt statusCode = new SharedInt();
+		String ret = HTTPOSClient.getAsString(sockf, url, statusCode);
+		if (statusCode.value != 200)
+			return null;
+		JSONBase json = JSONBase.parseJSONStr(ret);
+		if (json == null)
+			return null;
+		if (!(json instanceof JSONObject))
+			return null;
+		PageResult<Group> result = parsePageResult((JSONObject)json);
+		if (result != null)
+		{
+			result.results = parseGroupArray(json.getValueArray("results"));
+		}
+		return result;
+	}
+
+	public PageResult<SimpleUser> getGroupUserList(String token, String groupId, Integer start, Integer num)
+	{
+		String url = this.url+"/community/groups/"+groupId+"/userList?token="+token;
+		if (start != null)
+		{
+			url += "&start="+start.intValue();
+		}
+		if (num != null)
+		{
+			url += "&num="+num.intValue();
+		}
+		url += "&f=json";
+		SharedInt statusCode = new SharedInt();
+		String ret = HTTPOSClient.getAsString(sockf, url, statusCode);
+		if (statusCode.value != 200)
+			return null;
+		JSONBase json = JSONBase.parseJSONStr(ret);
+		if (json == null)
+			return null;
+		if (!(json instanceof JSONObject))
+			return null;
+		PageResult<SimpleUser> result = parsePageResult((JSONObject)json);
+		if (result != null)
+		{
+			result.results = parseSimpleUserArray(json.getValueArray("users"));
+		}
+		return result;
 	}
 
 	private static User parseUser(JSONObject obj)
@@ -202,6 +347,19 @@ public class ArcGISRESTAPI
 		return group;
 	}
 
+	private static SimpleUser parseSimpleUser(JSONObject obj)
+	{
+		if (obj == null)
+			return null;
+		SimpleUser user = new SimpleUser();
+		user.username = obj.getValueString("username");
+		user.fullName = obj.getValueString("fullName");
+		user.memberType = obj.getValueString("memberType");
+		user.thumbnail = obj.getValueString("thumbnail");
+		user.joined = obj.getValueAsInt64("joined");
+		return user;
+	}
+
 	private static String[] parseStrArr(JSONArray arr)
 	{
 		if (arr == null)
@@ -216,4 +374,61 @@ public class ArcGISRESTAPI
 		}
 		return retList;
 	}
+
+	private static <T> PageResult<T> parsePageResult(JSONObject obj)
+	{
+		if (obj == null)
+			return null;
+		PageResult<T> res = new PageResult<T>();
+		res.total = obj.getValueAsInt32("total");
+		res.start = obj.getValueAsInt32("start");
+		res.num = obj.getValueAsInt32("num");
+		res.nextStart = obj.getValueAsInt32("nextStart");
+		return res;
+	}
+
+	private static Group[] parseGroupArray(JSONArray arr)
+	{
+		if (arr == null)
+			return null;
+		int i = 0;
+		int j = arr.getArrayLength();
+		Group[] retList = new Group[arr.getArrayLength()];
+		while (i < j)
+		{
+			retList[i] = parseGroup(arr.getArrayObject(i));
+			i++;
+		}
+		return retList;
+	}
+
+	private static SimpleUser[] parseSimpleUserArray(JSONArray arr)
+	{
+		if (arr == null)
+			return null;
+		int i = 0;
+		int j = arr.getArrayLength();
+		SimpleUser[] retList = new SimpleUser[arr.getArrayLength()];
+		while (i < j)
+		{
+			retList[i] = parseSimpleUser(arr.getArrayObject(i));
+			i++;
+		}
+		return retList;
+	}
+
+/* 	private static User[] parseUserArray(JSONArray arr)
+	{
+		if (arr == null)
+			return null;
+		int i = 0;
+		int j = arr.getArrayLength();
+		User[] retList = new User[arr.getArrayLength()];
+		while (i < j)
+		{
+			retList[i] = parseUser(arr.getArrayObject(i));
+			i++;
+		}
+		return retList;
+	}*/
 }

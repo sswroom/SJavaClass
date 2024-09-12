@@ -1,6 +1,7 @@
 # SJavaClass
 
 # Changes:
+0.4.20240913
 - Fixed DateTimeUtil.toString timezone problem
 - Fixed DateTimeUtil.toString(Date) problem
 - Fixed MyX509Key fix cipher creation
@@ -21,6 +22,7 @@
 - Fixed EXIFData.parseIFD
 - Added SocketFactory.setProxy, getProxy
 - HTTPOSClient support proxy
+- Added ArcGISRESTAPI.setSocketFactory, getClientToken, queryGroups, getGroupUserList
 
 0.4.20240816
 - Added BrowserInfo
