@@ -1,6 +1,8 @@
 # SJavaClass
 
 # Changes:
+- Fixed GeometryUtil.toVector2D Polygon problem
+
 0.4.20240913
 - Fixed DateTimeUtil.toString timezone problem
 - Fixed DateTimeUtil.toString(Date) problem

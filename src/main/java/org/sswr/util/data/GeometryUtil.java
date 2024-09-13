@@ -309,13 +309,20 @@ public class GeometryUtil
 			Polygon dest = new Polygon(src.getSRID());
 			LinearRing lr;
 			int i = 0;
-			int j = src.getNumGeometries();
+			int j = src.getNumInteriorRing() + 1;
 			int m;
 			int n;
-			Geometry geom;
+			org.locationtech.jts.geom.LinearRing geom;
 			while (i < j)
 			{
-				geom = src.getGeometryN(i);
+				if (i == 0)
+				{
+					geom = src.getExteriorRing();
+				}
+				else
+				{
+					geom = src.getInteriorRingN(i - 1);
+				}
 				Coordinate[] coords = geom.getCoordinates();
 				lr = new LinearRing(src.getSRID(), coords.length, hasZ, hasM);
 				Coord2DDbl[] coordd = lr.getPointList();
