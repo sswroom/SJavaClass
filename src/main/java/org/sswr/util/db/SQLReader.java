@@ -169,17 +169,24 @@ public class SQLReader extends DBReader
 			byte bytes[] = rs.getBytes(colIndex + 1);
 			if (bytes == null)
 				return null;
-			System.out.println("SQLReader DBType: "+this.dbType);
 			if (this.dbType == DBType.MSSQL)
 			{
 				return MSGeography.parseBinary(bytes);
 			}
 			else if (this.dbType == DBType.PostgreSQL || this.dbType == DBType.PostgreSQLESRI)
 			{
+				if (dbType == DBType.PostgreSQL)
+				{
+					bytes = StringUtil.hex2Bytes(new String(bytes));
+				}
+				//WKBReader reader = new WKBReader();
+				System.out.println("SQLReader DBType: "+this.dbType);
+				//return reader.read(bytes);
 				return null;
 			}
 			else
 			{
+				System.out.println("SQLReader DBType: "+this.dbType);
 				WKBReader reader = new WKBReader();
 				try
 				{

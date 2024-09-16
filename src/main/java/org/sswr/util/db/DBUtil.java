@@ -60,6 +60,8 @@ import org.sswr.util.data.SharedInt;
 import org.sswr.util.data.StringUtil;
 import org.sswr.util.io.LogLevel;
 import org.sswr.util.io.LogTool;
+import org.sswr.util.math.WKTWriter;
+import org.sswr.util.math.geometry.Vector2D;
 
 public class DBUtil {
 	public enum DBType
@@ -1990,6 +1992,39 @@ public class DBUtil {
 		{
 			WKBWriter writer = new WKBWriter();
 			return dbBin(dbType, writer.write(geometry));
+		}
+	}
+
+	public static String dbVec(DBType dbType, Vector2D geometry)
+	{
+		if (geometry == null)
+		{
+			return "NULL";
+		}
+		if (dbType == DBType.MySQL)
+		{
+			WKTWriter writer = new WKTWriter();
+			return "GeomFromText('"+writer.generateWKT(geometry)+"', "+geometry.getSRID()+")";
+		}
+		else if (dbType == DBType.MSSQL)
+		{
+			WKTWriter writer = new WKTWriter();
+			return "geometry::STGeomFromText('"+writer.generateWKT(geometry)+"', "+geometry.getSRID()+")";
+		}
+		else if (dbType == DBType.PostgreSQL)
+		{
+			WKTWriter writer = new WKTWriter();
+			return "ST_GeomFromText('"+writer.generateWKT(geometry)+"', "+geometry.getSRID()+")";
+		}
+		else if (dbType == DBType.PostgreSQLESRI)
+		{
+			WKTWriter writer = new WKTWriter();
+			return "sde.st_geometry('"+writer.generateWKT(geometry)+"', "+geometry.getSRID()+")";
+		}
+		else
+		{
+			WKBWriter writer = new WKBWriter();
+			return dbBin(dbType, writer.write(GeometryUtil.fromVector2D(geometry)));
 		}
 	}
 

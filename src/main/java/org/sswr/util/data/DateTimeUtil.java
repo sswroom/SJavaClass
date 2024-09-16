@@ -775,4 +775,13 @@ public class DateTimeUtil
 		v += (t1.getNano() - t2.getNano()) * 0.000000001;
 		return v;
 	}
+	
+	public static boolean equals(Timestamp t1, Timestamp t2)
+	{
+		if (t1 == t2)
+			return true;
+		if (t1 == null || t2 == null)
+			return false;
+		return t1.equals(t2);
+	}
 }
