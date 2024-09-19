@@ -2023,8 +2023,8 @@ public class DBUtil {
 		}
 		else
 		{
-			WKBWriter writer = new WKBWriter();
-			return dbBin(dbType, writer.write(GeometryUtil.fromVector2D(geometry)));
+			org.sswr.util.math.WKBWriter writer = new org.sswr.util.math.WKBWriter(true);
+			return dbBin(dbType, writer.write(geometry));
 		}
 	}
 

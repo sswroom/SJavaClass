@@ -1,16 +1,22 @@
 package org.sswr.util.math;
 
-import org.sswr.util.basic.Point;
 import org.sswr.util.data.ByteTool;
 import org.sswr.util.data.LineBreakType;
 import org.sswr.util.data.SharedInt;
 import org.sswr.util.data.StringUtil;
+import org.sswr.util.math.geometry.CircularString;
+import org.sswr.util.math.geometry.CompoundCurve;
+import org.sswr.util.math.geometry.CurvePolygon;
+import org.sswr.util.math.geometry.GeometryCollection;
 import org.sswr.util.math.geometry.LineString;
 import org.sswr.util.math.geometry.LinearRing;
+import org.sswr.util.math.geometry.MultiPolygon;
+import org.sswr.util.math.geometry.MultiSurface;
 import org.sswr.util.math.geometry.Point2D;
 import org.sswr.util.math.geometry.PointZ;
 import org.sswr.util.math.geometry.Polygon;
 import org.sswr.util.math.geometry.Vector2D;
+import org.sswr.util.math.geometry.Vector2D.VectorType;
 
 public class WKBReader {
 	public static abstract class ByteReader
@@ -278,7 +284,7 @@ public class WKBReader {
 				i = 0;
 				while (i < numParts)
 				{
-					if (ofst + 4 > len)
+					if (ofst + 4 > endOfst)
 					{
 						return null;
 					}
@@ -288,7 +294,6 @@ public class WKBReader {
 					{
 						return null;
 					}
-					int tmp;
 					LinearRing lr = new LinearRing(srid, numPoints, false, false);
 					Coord2DDbl[] points = lr.getPointList();
 					j = 0;
@@ -306,7 +311,7 @@ public class WKBReader {
 			}
 		case 1003: //PolygonZ
 		case 0x80000003:
-			if (len < ofst + 4)
+			if (endOfst < ofst + 4)
 				return null;
 			else
 			{
@@ -357,55 +362,49 @@ public class WKBReader {
 			}
 		case 2003: //PolygonM
 		case 0x40000003:
-			if (len < ofst + 4)
+			if (endOfst < ofst + 4)
 				return null;
 			else
 			{
-				UInt32 numParts = readUInt32(&wkb[ofst]);
+				int numParts = reader.readInt32(wkb, ofst);
 				ofst += 4;
-				UOSInt i;
-				UOSInt j;
+				int i;
+				int j;
 				if (numParts < 1)
 				{
 					return null;
 				}
-				Math::Geometry::Polygon *pg;
-				NEW_CLASS(pg, Math::Geometry::Polygon(srid));
+				Polygon pg = new Polygon(srid);
 				i = 0;
 				while (i < numParts)
 				{
-					if (ofst + 4 > len)
+					if (ofst + 4 > endOfst)
 					{
-						DEL_CLASS(pg);
 						return null;
 					}
-					UInt32 numPoints = readUInt32(&wkb[ofst]);
+					int numPoints = reader.readInt32(wkb, ofst);
 					ofst += 4;
-					if (ofst + numPoints * 24 > len)
+					if (ofst + numPoints * 24 > endOfst)
 					{
-						DEL_CLASS(pg);
 						return null;
 					}
-					UOSInt tmp;
-					NN<Math::Geometry::LinearRing> lr;
-					NEW_CLASSNN(lr, Math::Geometry::LinearRing(srid, numPoints, false, true));
-					Coord2DDbl[] points = lr.GetPointList(tmp);
+					LinearRing lr = new LinearRing(srid, numPoints, false, true);
+					Coord2DDbl[] points = lr.getPointList();
 					double[] mList;
-					if (lr.GetMList(tmp).SetTo(mList))
+					if ((mList = lr.getMList()) != null)
 					{
 						j = 0;
 						while (j < numPoints)
 						{
-							points[j] = Math::Coord2DDbl(readDouble(&wkb[ofst]), readDouble(&wkb[ofst + 8]));
-							mList[j] = readDouble(&wkb[ofst + 16]);
+							points[j] = new Coord2DDbl(reader.readDouble(wkb, ofst), reader.readDouble(wkb, ofst + 8));
+							mList[j] = reader.readDouble(wkb, ofst + 16);
 							ofst += 24;
 							j++;
 						}
-						pg.AddGeometry(lr);
+						pg.addGeometry(lr);
 					}
 					else
 					{
-						lr.Delete();
 					}
 					i++;
 				}
@@ -414,57 +413,51 @@ public class WKBReader {
 			}
 		case 3003: //PolygonZM
 		case 0xC0000003:
-			if (len < ofst + 4)
+			if (endOfst < ofst + 4)
 				return null;
 			else
 			{
-				UInt32 numParts = readUInt32(&wkb[ofst]);
+				int numParts = reader.readInt32(wkb, ofst);
 				ofst += 4;
-				UOSInt i;
-				UOSInt j;
+				int i;
+				int j;
 				if (numParts < 1)
 				{
 					return null;
 				}
-				Math::Geometry::Polygon *pg;
-				NEW_CLASS(pg, Math::Geometry::Polygon(srid));
+				Polygon pg = new Polygon(srid);
 				i = 0;
 				while (i < numParts)
 				{
-					if (ofst + 4 > len)
+					if (ofst + 4 > endOfst)
 					{
-						DEL_CLASS(pg);
 						return null;
 					}
-					UInt32 numPoints = readUInt32(&wkb[ofst]);
+					int numPoints = reader.readInt32(wkb, ofst);
 					ofst += 4;
-					if (ofst + numPoints * 32 > len)
+					if (ofst + numPoints * 32 > endOfst)
 					{
-						DEL_CLASS(pg);
 						return null;
 					}
-					UOSInt tmp;
-					NN<Math::Geometry::LinearRing> lr;
-					NEW_CLASSNN(lr, Math::Geometry::LinearRing(srid, numPoints, true, true))
-					Coord2DDbl[] points = lr.GetPointList(tmp);
+					LinearRing lr = new LinearRing(srid, numPoints, true, true);
+					Coord2DDbl[] points = lr.getPointList();
 					double[] zList;
 					double[] mList;
-					if (lr.GetZList(tmp).SetTo(zList) && lr.GetMList(tmp).SetTo(mList))
+					if ((zList = lr.getZList()) != null && (mList = lr.getMList()) != null)
 					{
 						j = 0;
 						while (j < numPoints)
 						{
-							points[j] = Math::Coord2DDbl(readDouble(&wkb[ofst]), readDouble(&wkb[ofst + 8]));
-							zList[j] = readDouble(&wkb[ofst + 16]);
-							mList[j] = readDouble(&wkb[ofst + 24]);
+							points[j] = new Coord2DDbl(reader.readDouble(wkb, ofst), reader.readDouble(wkb, ofst + 8));
+							zList[j] = reader.readDouble(wkb, ofst + 16);
+							mList[j] = reader.readDouble(wkb, ofst + 24);
 							ofst += 32;
 							j++;
 						}
-						pg.AddGeometry(lr);
+						pg.addGeometry(lr);
 					}
 					else
 					{
-						lr.Delete();
 					}
 					i++;
 				}
@@ -478,16 +471,16 @@ public class WKBReader {
 		case 0x80000006:
 		case 0x40000006:
 		case 0xC0000006:
-			if (len < ofst + 4)
+			if (endOfst < ofst + 4)
 				return null;
 			else
 			{
-				UInt32 nPolygon = readUInt32(&wkb[ofst]);
+				int nPolygon = reader.readInt32(wkb, ofst);
 				ofst += 4;
-				UOSInt thisSize;
-				UOSInt i;
-				NN<Math::Geometry::Vector2D> vec;
-				Math::Geometry::MultiPolygon *mpg;
+				SharedInt thisSize = new SharedInt();
+				int i;
+				Vector2D vec;
+				MultiPolygon mpg;
 	/*			Bool hasZ;
 				Bool hasM;
 				if (geomType & 0xC0000000)
@@ -501,26 +494,23 @@ public class WKBReader {
 					hasZ = (t & 1) != 0;
 					hasM = (t & 2) != 0;
 				}*/
-				NEW_CLASS(mpg, Math::Geometry::MultiPolygon(srid));
+				mpg = new MultiPolygon(srid);
 				i = 0;
 				while (i < nPolygon)
 				{
-					if (!this.ParseWKB(&wkb[ofst], len - ofst, thisSize).SetTo(vec))
+					if ((vec = this.parseWKB(wkb, ofst, endOfst - ofst, thisSize)) == null)
 					{
-						DEL_CLASS(mpg);
 						return null;
 					}
-					else if (vec.GetVectorType() != Math::Geometry::Vector2D::VectorType::Polygon)
+					else if (vec.getVectorType() != VectorType.Polygon)
 					{
-						printf("WKBMultipolygon: wrong type: %d\r\n", (Int32)vec.GetVectorType());
-						vec.Delete();
-						DEL_CLASS(mpg);
+						System.out.println("WKBMultipolygon: wrong type: "+ vec.getVectorType());
 						return null;
 					}
 					else
 					{
-						mpg.AddGeometry(NN<Math::Geometry::Polygon>::ConvertFrom(vec));
-						ofst += thisSize;
+						mpg.addGeometry((Polygon)vec);
+						ofst += thisSize.value;
 					}
 					i++;
 				}
@@ -534,16 +524,16 @@ public class WKBReader {
 		case 0x80000007:
 		case 0x40000007:
 		case 0xC0000007:
-			if (len < ofst + 4)
+			if (endOfst < ofst + 4)
 				return null;
 			else
 			{
-				UInt32 nGeometry = readUInt32(&wkb[ofst]);
+				int nGeometry = reader.readInt32(wkb, ofst);
 				ofst += 4;
-				UOSInt thisSize;
-				UOSInt i;
-				NN<Math::Geometry::Vector2D> vec;
-				Math::Geometry::GeometryCollection *mpg;
+				SharedInt thisSize = new SharedInt();
+				int i;
+				Vector2D vec;
+				GeometryCollection mpg;
 	/*			Bool hasZ;
 				Bool hasM;
 				if (geomType & 0xC0000000)
@@ -557,19 +547,18 @@ public class WKBReader {
 					hasZ = (t & 1) != 0;
 					hasM = (t & 2) != 0;
 				}*/
-				NEW_CLASS(mpg, Math::Geometry::GeometryCollection(srid));
+				mpg = new GeometryCollection(srid);
 				i = 0;
 				while (i < nGeometry)
 				{
-					if (!this.ParseWKB(&wkb[ofst], len - ofst, thisSize).SetTo(vec))
+					if ((vec = this.parseWKB(wkb, ofst, endOfst - ofst, thisSize)) == null)
 					{
-						DEL_CLASS(mpg);
 						return null;
 					}
 					else
 					{
-						mpg.AddGeometry(vec);
-						ofst += thisSize;
+						mpg.addGeometry(vec);
+						ofst += thisSize.value;
 					}
 					i++;
 				}
@@ -577,22 +566,22 @@ public class WKBReader {
 				return mpg;
 			}
 		case 8: //CircularString
-			if (len < ofst + 4)
+			if (endOfst < ofst + 4)
 				return null;
 			else
 			{
-				UInt32 numPoints = readUInt32(&wkb[ofst]);
+				int numPoints = reader.readInt32(wkb, ofst);
 				ofst += 4;
-				if (numPoints < 2 || (ofst + numPoints * 16 > len))
+				if (numPoints < 2 || (ofst + numPoints * 16 > endOfst))
 					return null;
-				Math::Geometry::CircularString *pl;
-				UOSInt i;
-				NEW_CLASS(pl, Math::Geometry::CircularString(srid, numPoints, false, false));
-				Coord2DDbl[] points = pl.GetPointList(i);
+				CircularString pl;
+				int i;
+				pl = new CircularString(srid, numPoints, false, false);
+				Coord2DDbl[] points = pl.getPointList();
 				i = 0;
 				while (i < numPoints)
 				{
-					points[i] = Math::Coord2DDbl(readDouble(&wkb[ofst + 0]), readDouble(&wkb[ofst + 8]));
+					points[i] = new Coord2DDbl(reader.readDouble(wkb, ofst + 0), reader.readDouble(wkb, ofst + 8));
 					ofst += 16;
 					i++;
 				}
@@ -601,26 +590,26 @@ public class WKBReader {
 			}
 		case 1008: //CircularStringZ
 		case 0x80000008:
-			if (len < ofst + 4)
+			if (endOfst < ofst + 4)
 				return null;
 			else
 			{
-				UInt32 numPoints = readUInt32(&wkb[ofst]);
+				int numPoints = reader.readInt32(wkb, ofst);
 				ofst += 4;
-				if (numPoints < 2 || (ofst + numPoints * 24 > len))
+				if (numPoints < 2 || (ofst + numPoints * 24 > endOfst))
 					return null;
-				Math::Geometry::CircularString *pl;
-				UOSInt i;
-				NEW_CLASS(pl, Math::Geometry::CircularString(srid, numPoints, true, false));
-				Coord2DDbl[] points = pl.GetPointList(i);
+				CircularString pl;
+				int i;
+				pl = new CircularString(srid, numPoints, true, false);
+				Coord2DDbl[] points = pl.getPointList();
 				double[] zArr;
-				if (pl.GetZList(i).SetTo(zArr))
+				if ((zArr = pl.getZList()) != null)
 				{
 					i = 0;
 					while (i < numPoints)
 					{
-						points[i] = Math::Coord2DDbl(readDouble(&wkb[ofst + 0]), readDouble(&wkb[ofst + 8]));
-						zArr[i] = readDouble(&wkb[ofst + 16]);
+						points[i] = new Coord2DDbl(reader.readDouble(wkb, ofst + 0), reader.readDouble(wkb, ofst + 8));
+						zArr[i] = reader.readDouble(wkb, ofst + 16);
 						ofst += 24;
 						i++;
 					}
@@ -629,7 +618,6 @@ public class WKBReader {
 				}
 				else
 				{
-					DEL_CLASS(pl);
 					return null;
 				}
 			}
@@ -639,22 +627,22 @@ public class WKBReader {
 				return null;
 			else
 			{
-				UInt32 numPoints = readUInt32(&wkb[ofst]);
+				int numPoints = reader.readInt32(wkb, ofst);
 				ofst += 4;
-				if (numPoints < 2 || (ofst + numPoints * 24 > len))
+				if (numPoints < 2 || (ofst + numPoints * 24 > endOfst))
 					return null;
-				Math::Geometry::CircularString *pl;
-				UOSInt i;
-				NEW_CLASS(pl, Math::Geometry::CircularString(srid, numPoints, false, true));
-				Coord2DDbl[] points = pl.GetPointList(i);
+				CircularString pl;
+				int i;
+				pl = new CircularString(srid, numPoints, false, true);
+				Coord2DDbl[] points = pl.getPointList();
 				double[] mArr;
-				if (pl.GetMList(i).SetTo(mArr))
+				if ((mArr = pl.getMList()) != null)
 				{
 					i = 0;
 					while (i < numPoints)
 					{
-						points[i] = Math::Coord2DDbl(readDouble(&wkb[ofst + 0]), readDouble(&wkb[ofst + 8]));
-						mArr[i] = readDouble(&wkb[ofst + 16]);
+						points[i] = new Coord2DDbl(reader.readDouble(wkb, ofst + 0), reader.readDouble(wkb, ofst + 8));
+						mArr[i] = reader.readDouble(wkb, ofst + 16);
 						ofst += 24;
 						i++;
 					}
@@ -663,7 +651,6 @@ public class WKBReader {
 				}
 				else
 				{
-					DEL_CLASS(pl);
 					return null;
 				}
 			}
@@ -673,24 +660,24 @@ public class WKBReader {
 				return null;
 			else
 			{
-				UInt32 numPoints = readUInt32(&wkb[ofst]);
+				int numPoints = reader.readInt32(wkb, ofst);
 				ofst += 4;
-				if (numPoints < 2 || (ofst + numPoints * 32 > len))
+				if (numPoints < 2 || (ofst + numPoints * 32 > endOfst))
 					return null;
-				Math::Geometry::CircularString *pl;
-				UOSInt i;
-				NEW_CLASS(pl, Math::Geometry::CircularString(srid, numPoints, true, true));
-				Coord2DDbl[] points = pl.GetPointList(i);
+				CircularString pl;
+				int i;
+				pl = new CircularString(srid, numPoints, true, true);
+				Coord2DDbl[] points = pl.getPointList();
 				double[] zArr;
 				double[] mArr;
-				if (pl.GetZList(i).SetTo(zArr) && pl.GetMList(i).SetTo(mArr))
+				if ((zArr = pl.getZList()) != null && (mArr = pl.getMList()) != null)
 				{
 					i = 0;
 					while (i < numPoints)
 					{
-						points[i] = Math::Coord2DDbl(readDouble(&wkb[ofst + 0]), readDouble(&wkb[ofst + 8]));
-						zArr[i] = readDouble(&wkb[ofst + 16]);
-						mArr[i] = readDouble(&wkb[ofst + 24]);
+						points[i] = new Coord2DDbl(reader.readDouble(wkb, ofst + 0), reader.readDouble(wkb, ofst + 8));
+						zArr[i] = reader.readDouble(wkb, ofst + 16);
+						mArr[i] = reader.readDouble(wkb, ofst + 24);
 						ofst += 32;
 						i++;
 					}
@@ -699,7 +686,6 @@ public class WKBReader {
 				}
 				else
 				{
-					DEL_CLASS(pl);
 					return null;
 				}
 			}
@@ -710,16 +696,16 @@ public class WKBReader {
 		case 0x80000009:
 		case 0x40000009:
 		case 0xC0000009:
-			if (len < ofst + 4)
+			if (endOfst < ofst + 4)
 				return null;
 			else
 			{
-				UInt32 nPolyline = readUInt32(&wkb[ofst]);
+				int nPolyline = reader.readInt32(wkb, ofst);
 				ofst += 4;
-				UOSInt thisSize;
-				UOSInt i;
-				NN<Math::Geometry::Vector2D> vec;
-				Math::Geometry::CompoundCurve *cpl;
+				SharedInt thisSize = new SharedInt();
+				int i;
+				Vector2D vec;
+				CompoundCurve cpl;
 	/*			Bool hasZ;
 				Bool hasM;
 				if (geomType & 0xC0000000)
@@ -733,28 +719,25 @@ public class WKBReader {
 					hasZ = (t & 1) != 0;
 					hasM = (t & 2) != 0;
 				}*/
-				NEW_CLASS(cpl, Math::Geometry::CompoundCurve(srid));
+				cpl = new CompoundCurve(srid);
 				i = 0;
 				while (i < nPolyline)
 				{
-					if (!this.ParseWKB(&wkb[ofst], len - ofst, thisSize).SetTo(vec))
+					if ((vec = this.parseWKB(wkb, ofst, endOfst - ofst, thisSize)) == null)
 					{
-						DEL_CLASS(cpl);
 						return null;
 					}
 					else
 					{
-						Math::Geometry::Vector2D::VectorType t = vec.GetVectorType();
-						if (t == Math::Geometry::Vector2D::VectorType::CircularString || t == Math::Geometry::Vector2D::VectorType::LineString)
+						VectorType t = vec.getVectorType();
+						if (t == VectorType.CircularString || t == VectorType.LineString)
 						{
-							cpl.AddGeometry(NN<Math::Geometry::LineString>::ConvertFrom(vec));
-							ofst += thisSize;
+							cpl.addGeometry((LineString)vec);
+							ofst += thisSize.value;
 						}
 						else
 						{
-							printf("WKBCurvePolyline: wrong type: %d\r\n", (Int32)vec.GetVectorType());
-							vec.Delete();
-							DEL_CLASS(cpl);
+							System.out.println("WKBCurvePolyline: wrong type: "+vec.getVectorType());
 							return null;
 						}
 					}
@@ -770,16 +753,16 @@ public class WKBReader {
 		case 0x8000000A:
 		case 0x4000000A:
 		case 0xC000000A:
-			if (len < ofst + 4)
+			if (endOfst < ofst + 4)
 				return null;
 			else
 			{
-				UInt32 nCPolyline = readUInt32(&wkb[ofst]);
+				int nCPolyline = reader.readInt32(wkb, ofst);
 				ofst += 4;
-				UOSInt thisSize;
-				UOSInt i;
-				NN<Math::Geometry::Vector2D> vec;
-				Math::Geometry::CurvePolygon *cpg;
+				SharedInt thisSize = new SharedInt();
+				int i;
+				Vector2D vec;
+				CurvePolygon cpg;
 	/*			Bool hasZ;
 				Bool hasM;
 				if (geomType & 0xC0000000)
@@ -793,28 +776,25 @@ public class WKBReader {
 					hasZ = (t & 1) != 0;
 					hasM = (t & 2) != 0;
 				}*/
-				NEW_CLASS(cpg, Math::Geometry::CurvePolygon(srid));
+				cpg = new CurvePolygon(srid);
 				i = 0;
 				while (i < nCPolyline)
 				{
-					if (!this.ParseWKB(&wkb[ofst], len - ofst, thisSize).SetTo(vec))
+					if ((vec = this.parseWKB(wkb, ofst, endOfst - ofst, thisSize)) == null)
 					{
-						DEL_CLASS(cpg);
 						return null;
 					}
 					else
 					{
-						Math::Geometry::Vector2D::VectorType t = vec.GetVectorType();
-						if (t == Math::Geometry::Vector2D::VectorType::CircularString || t == Math::Geometry::Vector2D::VectorType::CompoundCurve || t == Math::Geometry::Vector2D::VectorType::LineString)
+						VectorType t = vec.getVectorType();
+						if (t == VectorType.CircularString || t == VectorType.CompoundCurve || t == VectorType.LineString)
 						{
-							cpg.AddGeometry(vec);
-							ofst += thisSize;
+							cpg.addGeometry(vec);
+							ofst += thisSize.value;
 						}
 						else
 						{
-							printf("WKBCurvePolygon: wrong type: %d\r\n", (Int32)vec.GetVectorType());
-							vec.Delete();
-							DEL_CLASS(cpg);
+							System.out.println("WKBCurvePolygon: wrong type: "+vec.getVectorType());
 							return null;
 						}
 					}
@@ -830,16 +810,16 @@ public class WKBReader {
 		case 0x8000000C:
 		case 0x4000000C:
 		case 0xC000000C:
-			if (len < ofst + 4)
+			if (endOfst < ofst + 4)
 				return null;
 			else
 			{
-				UInt32 nCPolyline = readUInt32(&wkb[ofst]);
+				int nCPolyline = reader.readInt32(wkb, ofst);
 				ofst += 4;
-				UOSInt thisSize;
-				UOSInt i;
-				NN<Math::Geometry::Vector2D> vec;
-				Math::Geometry::MultiSurface *cpg;
+				SharedInt thisSize = new SharedInt();
+				int i;
+				Vector2D vec;
+				MultiSurface cpg;
 	/*			Bool hasZ;
 				Bool hasM;
 				if (geomType & 0xC0000000)
@@ -853,28 +833,25 @@ public class WKBReader {
 					hasZ = (t & 1) != 0;
 					hasM = (t & 2) != 0;
 				}*/
-				NEW_CLASS(cpg, Math::Geometry::MultiSurface(srid));
+				cpg = new MultiSurface(srid);
 				i = 0;
 				while (i < nCPolyline)
 				{
-					if (!this.ParseWKB(&wkb[ofst], len - ofst, thisSize).SetTo(vec))
+					if ((vec = this.parseWKB(wkb, ofst, endOfst - ofst, thisSize)) == null)
 					{
-						DEL_CLASS(cpg);
 						return null;
 					}
 					else
 					{
-						Math::Geometry::Vector2D::VectorType t = vec.GetVectorType();
-						if (t == Math::Geometry::Vector2D::VectorType::CurvePolygon || t == Math::Geometry::Vector2D::VectorType::Polygon)
+						VectorType t = vec.getVectorType();
+						if (t == VectorType.CurvePolygon || t == VectorType.Polygon)
 						{
-							cpg.AddGeometry(vec);
-							ofst += thisSize;
+							cpg.addGeometry(vec);
+							ofst += thisSize.value;
 						}
 						else
 						{
-							printf("WKBMultiSurface: wrong type: %d\r\n", (Int32)vec.GetVectorType());
-							vec.Delete();
-							DEL_CLASS(cpg);
+							System.out.println("WKBMultiSurface: wrong type: " + vec.getVectorType());
 							return null;
 						}
 					}
@@ -886,7 +863,7 @@ public class WKBReader {
 		default:
 			{
 				StringBuilder sb = new StringBuilder();
-				StringUtil.appendHex(wkb, ofst, len, ' ', LineBreakType.CRLF);
+				StringUtil.appendHex(sb, wkb, initOfst, len, ' ', LineBreakType.CRLF);
 				System.out.println("WKBReader: Unsupported type: "+geomType);
 				System.out.println(sb.toString());
 			}

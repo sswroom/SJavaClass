@@ -179,24 +179,14 @@ public class SQLReader extends DBReader
 				{
 					bytes = StringUtil.hex2Bytes(new String(bytes));
 				}
-				//WKBReader reader = new WKBReader();
-				System.out.println("SQLReader DBType: "+this.dbType);
-				//return reader.read(bytes);
-				return null;
+				org.sswr.util.math.WKBReader reader = new org.sswr.util.math.WKBReader(0);
+				return reader.parseWKB(bytes, 0, bytes.length, null);
 			}
 			else
 			{
 				System.out.println("SQLReader DBType: "+this.dbType);
-				WKBReader reader = new WKBReader();
-				try
-				{
-					return GeometryUtil.toVector2D(reader.read(bytes));
-				}
-				catch (ParseException ex)
-				{
-					ex.printStackTrace();
-					return null;
-				}
+				org.sswr.util.math.WKBReader reader = new org.sswr.util.math.WKBReader(0);
+				return reader.parseWKB(bytes, 0, bytes.length, null);
 			}
 		}
 		catch (SQLException ex)

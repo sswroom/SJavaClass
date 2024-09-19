@@ -3,10 +3,10 @@
 # Changes:
 - Fixed GeometryUtil.toVector2D Polygon problem
 - Added DateTimeUtil.equals
-- Adding DBUtil.dbVec
+- Added DBUtil.dbVec
 - Enhancing SQLReader.getVector
-- Adding WKBReader.java
-- Adding WKBWriter.java
+- Added WKBReader.java
+- Added WKBWriter.java
 
 0.4.20240913
 - Fixed DateTimeUtil.toString timezone problem

@@ -613,4 +613,34 @@ public class ByteTool {
 			i++;
 		}
 	}
+
+	public static byte[] toByteArray(Coord2DDbl[] arr, boolean lsb)
+	{
+		return toByteArray(arr, 0, arr.length, lsb);
+	}
+
+	public static byte[] toByteArray(Coord2DDbl[] arr, int ofst, int len, boolean lsb)
+	{
+		byte[] ret = new byte[len * 16];
+		int i = 0;
+		if (lsb)
+		{
+			while (i < len)
+			{
+				writeDouble(ret, i * 16 + 0, arr[ofst + i].x);
+				writeDouble(ret, i * 16 + 8, arr[ofst + i].y);
+				i++;
+			}
+		}
+		else
+		{
+			while (i < len)
+			{
+				writeMDouble(ret, i * 16 + 0, arr[ofst + i].x);
+				writeMDouble(ret, i * 16 + 8, arr[ofst + i].y);
+				i++;
+			}
+		}
+		return ret;
+	}
 }
