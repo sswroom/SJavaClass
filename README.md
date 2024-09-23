@@ -1,6 +1,10 @@
 # SJavaClass
 
 # Changes:
+0.4.20240923
+- Update dependency version
+
+0.4.20240917
 - Fixed GeometryUtil.toVector2D Polygon problem
 - Added DateTimeUtil.equals
 - Added DBUtil.dbVec

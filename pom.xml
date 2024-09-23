@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.github.sswroom</groupId>
 	<artifactId>util</artifactId>
-	<version>0.4.20240917</version>
+	<version>0.4.20240923</version>
 	
 	<name>sswr-util</name>
 	<packaging>jar</packaging>
@@ -56,14 +56,14 @@
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-api</artifactId>
-			<version>5.10.3</version>
+			<version>5.11.0</version>
 			<scope>test</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>org.locationtech.jts</groupId>
 			<artifactId>jts-core</artifactId>
-			<version>1.19.0</version>
+			<version>1.20.0</version>
 		</dependency>
 	</dependencies>
 
