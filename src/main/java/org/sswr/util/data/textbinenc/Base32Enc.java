@@ -2,6 +2,9 @@ package org.sswr.util.data.textbinenc;
 
 import org.sswr.util.data.ByteTool;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class Base32Enc extends TextBinEnc
 {
 	private static byte decArr[] = {
@@ -23,7 +26,7 @@ public class Base32Enc extends TextBinEnc
 		(byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff
 	};
 
-	private static char []getEncArr()
+	private static @Nonnull char []getEncArr()
 	{
 		return "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567".toCharArray();
 	}
@@ -32,7 +35,7 @@ public class Base32Enc extends TextBinEnc
 	{
 	}
 
-	public String encodeBin(byte []dataBuff, int dataOfst, int buffSize)
+	public @Nullable String encodeBin(@Nonnull byte []dataBuff, int dataOfst, int buffSize)
 	{
 		StringBuilder sb = new StringBuilder();
 		char []encArr = getEncArr();
@@ -97,7 +100,7 @@ public class Base32Enc extends TextBinEnc
 		return sb.toString();
 	}
 
-	public byte []decodeBin(String s)
+	public @Nullable byte []decodeBin(@Nonnull String s)
 	{
 		char b64Str[] = s.toCharArray();
 		int i = 0;
@@ -177,7 +180,7 @@ public class Base32Enc extends TextBinEnc
 		}
 	}
 
-	public String getName()
+	public @Nonnull String getName()
 	{
 		return "Base32";
 	}	

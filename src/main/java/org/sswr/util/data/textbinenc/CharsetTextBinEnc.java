@@ -2,11 +2,14 @@ package org.sswr.util.data.textbinenc;
 
 import java.nio.charset.Charset;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class CharsetTextBinEnc extends TextBinEnc
 {
 	private Charset cs;
 
-	public CharsetTextBinEnc(Charset cs)
+	public CharsetTextBinEnc(@Nullable Charset cs)
 	{
 		if (cs == null)
 		{
@@ -18,17 +21,17 @@ public class CharsetTextBinEnc extends TextBinEnc
 		}
 	}
 
-	public String encodeBin(byte []dataBuff, int dataOfst, int buffSize)
+	public @Nullable String encodeBin(@Nonnull byte []dataBuff, int dataOfst, int buffSize)
 	{
 		return new String(dataBuff, dataOfst, buffSize, this.cs);
 	}
 
-	public byte []decodeBin(String s)
+	public @Nullable byte []decodeBin(@Nonnull String s)
 	{
 		return s.getBytes(this.cs);
 	}
 
-	public String getName()
+	public @Nonnull String getName()
 	{
 		return "Charset Encoding";
 	}	

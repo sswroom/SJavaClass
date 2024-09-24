@@ -4,12 +4,15 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class FieldGetter<T>
 {
 	private Field fields[];
 	private Method getters[];
 
-	public FieldGetter(Class<?> cls, String fieldName) throws NoSuchFieldException
+	public FieldGetter(@Nonnull Class<?> cls, @Nonnull String fieldName) throws NoSuchFieldException
 	{
 		String fieldNames[] = StringUtil.split(fieldName, ".");
 		int i = 0;
@@ -42,7 +45,7 @@ public class FieldGetter<T>
 		}
 	}
 
-	public FieldGetter(Field field)
+	public FieldGetter(@Nonnull Field field)
 	{
 		this.fields = new Field[]{field};
 		this.getters = new Method[1];
@@ -56,7 +59,7 @@ public class FieldGetter<T>
 		}
 	}
 
-	public Class<?> getFieldType()
+	public @Nonnull Class<?> getFieldType()
 	{
 		if (this.fields[this.fields.length - 1] != null)
 		{
@@ -68,7 +71,8 @@ public class FieldGetter<T>
 		}
 	}
 
-	public Object get(T o) throws IllegalAccessException, InvocationTargetException
+	@Nullable
+	public Object get(@Nullable T o) throws IllegalAccessException, InvocationTargetException
 	{
 		int i = 0;
 		int j = this.fields.length;
@@ -82,6 +86,31 @@ public class FieldGetter<T>
 			else
 			{
 				fieldObj = this.fields[i].get(fieldObj);
+			}
+			i++;
+		}
+		return fieldObj;
+	}
+
+	@Nonnull
+	public Object getNN(@Nonnull T o) throws IllegalAccessException, InvocationTargetException
+	{
+		int i = 0;
+		int j = this.fields.length;
+		Object fieldObj = o;
+		while (i < j)
+		{
+			if (this.getters[i] != null)
+			{
+				fieldObj = this.getters[i].invoke(fieldObj);
+			}
+			else
+			{
+				fieldObj = this.fields[i].get(fieldObj);
+			}
+			if (fieldObj == null)
+			{
+				throw new IllegalAccessException();
 			}
 			i++;
 		}

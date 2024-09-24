@@ -7,6 +7,8 @@ import java.util.Map;
 import org.sswr.util.basic.MyThread;
 import org.sswr.util.data.StringUtil;
 
+import jakarta.annotation.Nonnull;
+
 public class TaskMQTTManager implements MQTTEventHdlr
 {
 	private Map<String, Long> taskMap;
@@ -26,7 +28,7 @@ public class TaskMQTTManager implements MQTTEventHdlr
 		TaskStartedByOther
 	}
 
-	public TaskMQTTManager(MQTTClient client, String controlTopic, int machineId)
+	public TaskMQTTManager(@Nonnull MQTTClient client, @Nonnull String controlTopic, int machineId)
 	{
 		this.taskMap = new HashMap<String, Long>();
 		this.client = client;
@@ -37,7 +39,7 @@ public class TaskMQTTManager implements MQTTEventHdlr
 	}
 
 	@Override
-	public void onPublishMessage(String topic, byte[] buff, int buffOfst, int buffSize) {
+	public void onPublishMessage(@Nonnull String topic, @Nonnull byte[] buff, int buffOfst, int buffSize) {
 		if (topic.equals(this.controlTopic))
 		{
 			String content = new String(buff, buffOfst, buffSize, StandardCharsets.UTF_8);
@@ -100,17 +102,18 @@ public class TaskMQTTManager implements MQTTEventHdlr
 	public void onDisconnect() {
 	}
 
-	private void sendBeginTask(String taskId, long time)
+	private void sendBeginTask(@Nonnull String taskId, long time)
 	{
 		this.client.publish(this.controlTopic, this.machineId+"|0|"+time+"|"+taskId);
 	}
 
-	private void sendTaskRunning(String taskId)
+	private void sendTaskRunning(@Nonnull String taskId)
 	{
 		this.client.publish(this.controlTopic, this.machineId+"|1|"+taskId);
 	}
 
-	public synchronized TaskStatus beginTask(String taskId)
+	@Nonnull
+	public synchronized TaskStatus beginTask(@Nonnull String taskId)
 	{
 		synchronized(this.taskMap)
 		{
@@ -142,7 +145,7 @@ public class TaskMQTTManager implements MQTTEventHdlr
 		return TaskStatus.TaskBegin;
 	}
 
-	public void endTask(String taskId)
+	public void endTask(@Nonnull String taskId)
 	{
 		synchronized(this.taskMap)
 		{

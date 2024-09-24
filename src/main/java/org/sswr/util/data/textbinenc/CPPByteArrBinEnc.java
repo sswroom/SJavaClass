@@ -3,13 +3,16 @@ package org.sswr.util.data.textbinenc;
 import org.sswr.util.data.ByteTool;
 import org.sswr.util.data.StringUtil;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class CPPByteArrBinEnc extends TextBinEnc
 {
 	public CPPByteArrBinEnc()
 	{
 	}
 
-	public String encodeBin(byte []dataBuff, int dataOfst, int buffSize)
+	public @Nullable String encodeBin(@Nonnull byte []dataBuff, int dataOfst, int buffSize)
 	{
 		StringBuilder sb = new StringBuilder();
 		int i = 0;
@@ -26,7 +29,7 @@ public class CPPByteArrBinEnc extends TextBinEnc
 		return sb.toString();
 	}
 
-	public byte []decodeBin(String s)
+	public @Nullable byte []decodeBin(@Nonnull String s)
 	{
 		char carr[] = s.toCharArray();
 		byte destBuff[] = new byte[carr.length];
@@ -113,7 +116,7 @@ public class CPPByteArrBinEnc extends TextBinEnc
 		}
 	}
 
-	public String getName()
+	public @Nonnull String getName()
 	{
 		return "CPP Byte Arr";
 	}

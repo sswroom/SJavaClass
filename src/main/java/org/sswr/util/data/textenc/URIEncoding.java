@@ -4,6 +4,8 @@ import java.nio.charset.StandardCharsets;
 
 import org.sswr.util.data.StringUtil;
 
+import jakarta.annotation.Nonnull;
+
 public class URIEncoding
 {
 	private static final byte uriAllow[] = {
@@ -24,7 +26,7 @@ public class URIEncoding
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 	
-	public static String uriEncode(String uri)
+	public static @Nonnull String uriEncode(@Nonnull String uri)
 	{
 		byte[] carr = uri.getBytes(StandardCharsets.UTF_8);
 		StringBuilder sb = new StringBuilder();
@@ -49,7 +51,7 @@ public class URIEncoding
 		return sb.toString();
 	}
 
-	public static String uriDecode(String uri)
+	public static @Nonnull String uriDecode(@Nonnull String uri)
 	{
 		byte[] carr = uri.getBytes(StandardCharsets.UTF_8);
 		byte[] destBuff = new byte[carr.length];

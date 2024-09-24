@@ -4,20 +4,25 @@ import org.sswr.util.data.ByteTool;
 import org.sswr.util.data.LineBreakType;
 import org.sswr.util.data.StringUtil;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class HexTextBinEnc extends TextBinEnc
 {
 	public HexTextBinEnc()
 	{
 	}
 
-	public String encodeBin(byte []dataBuff, int dataOfst, int buffSize)
+	@Override
+	public @Nullable String encodeBin(@Nonnull byte []dataBuff, int dataOfst, int buffSize)
 	{
 		StringBuilder sb = new StringBuilder();
 		StringUtil.appendHex(sb, dataBuff, dataOfst, buffSize, ' ', LineBreakType.CRLF);
 		return sb.toString();
 	}
 
-	public byte []decodeBin(String s)
+	@Override
+	public @Nullable byte []decodeBin(@Nonnull String s)
 	{
 		char carr[] = s.toCharArray();
 		char c;
@@ -63,7 +68,7 @@ public class HexTextBinEnc extends TextBinEnc
 		return retBuff;
 	}
 
-	public String getName()
+	public @Nonnull String getName()
 	{
 		return "Hex";
 	}

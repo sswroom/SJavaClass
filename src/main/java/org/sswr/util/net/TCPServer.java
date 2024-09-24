@@ -174,7 +174,7 @@ public class TCPServer implements Runnable
 				svr.addLogMsg("Client connect error: " + ex.getMessage(), LogLevel.ERR_DETAIL);
 			}
 		}
-		if (sthreadCnt > 0)
+		if (sthreadCnt > 0 && sthreads != null)
 		{
 			i = sthreadCnt;
 			while (i-- > 0)
@@ -190,7 +190,7 @@ public class TCPServer implements Runnable
 		{
 
 		}
-		if (sthreadCnt > 0)
+		if (sthreadCnt > 0 && sthreads != null && threadEvt != null)
 		{
 			found = true;
 			while (true)

@@ -2,6 +2,8 @@ package org.sswr.util.data.textbinenc;
 
 import java.nio.charset.StandardCharsets;
 
+import jakarta.annotation.Nonnull;
+
 public class UCS2TextBinEnc extends CharsetTextBinEnc
 {
 	public UCS2TextBinEnc()
@@ -9,7 +11,7 @@ public class UCS2TextBinEnc extends CharsetTextBinEnc
 		super(StandardCharsets.UTF_16LE);
 	}
 
-	public String getName()
+	public @Nonnull String getName()
 	{
 		return "Unicode Text";
 	}

@@ -2,13 +2,15 @@ package org.sswr.util.basic;
 
 import java.util.ArrayList;
 
+import jakarta.annotation.Nullable;
+
 public abstract class SortableArrayList<T> extends ArrayList<T>
 {
 	private static final long serialVersionUID = -4816476556L;
 	
-	public abstract int compareItem(T obj1, T obj2);
+	public abstract int compareItem(@Nullable T obj1, @Nullable T obj2);
 
-	public int sortedInsert(T val)
+	public int sortedInsert(@Nullable T val)
 	{
 		int i;
 		int j;
@@ -39,7 +41,7 @@ public abstract class SortableArrayList<T> extends ArrayList<T>
 		return i;
 	}
 
-	public int sortedIndexOf(T val)
+	public int sortedIndexOf(@Nullable T val)
 	{
 		int i;
 		int j;

@@ -96,7 +96,7 @@ public class IAMSmartAPI {
 		cli.addHeader("nonce", StringUtil.toHex(buff));
 		buff = hmac.getValue();
 		Base64Enc b64 = new Base64Enc();
-		String s = b64.encodeBin(buff);
+		String s = b64.encodeBin(buff, 0, buff.length);
 		cli.addHeader("signature", FormEncoding.formEncode(s));
 		cli.addContentLength(content.length());
 		if (content.length() > 0)

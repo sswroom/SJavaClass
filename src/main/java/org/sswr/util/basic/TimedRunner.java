@@ -3,6 +3,8 @@ package org.sswr.util.basic;
 import java.util.ArrayList;
 import java.util.List;
 
+import jakarta.annotation.Nonnull;
+
 public class TimedRunner implements Runnable
 {
 	class RunnableInfo
@@ -24,7 +26,7 @@ public class TimedRunner implements Runnable
 		this.t.start();
 	}
 
-	public void addRunnable(Runnable runnable, int runIntervalMs)
+	public void addRunnable(@Nonnull Runnable runnable, int runIntervalMs)
 	{
 		synchronized(this.runnables)
 		{

@@ -82,7 +82,7 @@ public class WKTWriter implements VectorTextWriter
 					i++;
 				}
 			}
-			else
+			else if (zArr != null)
 			{
 				i = 0;
 				while (i < nPoint)

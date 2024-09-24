@@ -9,6 +9,9 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class ReflectTools {
 	public static String getFuncName(String fieldName, String action)
 	{
@@ -94,7 +97,8 @@ public class ReflectTools {
 		}
 	}
 
-	public static Method findSetter(Field field)
+	@Nullable
+	public static Method findSetter(@Nonnull Field field)
 	{
 		Class<?> cls = field.getDeclaringClass();
 		String fieldName = field.getName();

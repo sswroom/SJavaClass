@@ -8,6 +8,8 @@ import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
+import jakarta.annotation.Nonnull;
+
 public class FileLog implements LogHandler
 {
 	private LogType logStyle;
@@ -150,7 +152,7 @@ public class FileLog implements LogHandler
 		}
 	}
 
-	public synchronized void logAdded(ZonedDateTime logTime, String logMsg, LogLevel logLev)
+	public synchronized void logAdded(@Nonnull ZonedDateTime logTime, @Nonnull String logMsg, @Nonnull LogLevel logLev)
 	{
 		String newFile = null;
 		ZonedDateTime time = logTime;

@@ -390,11 +390,11 @@ public class TCPClientMgr implements Runnable
 								}
 							}
 						}
-						if (cliAction == 1)
+						if (cliAction == 1 && cliStat != null)
 						{
 							this.hdlr.onTCPClientEvent(cliStat.cli, cliStat.cliData, TCPEventType.Disconnect);
 						}
-						else if (cliAction == 2)
+						else if (cliAction == 2 && cliStat != null)
 						{
 							this.hdlr.onTCPClientEvent(cliStat.cli, cliStat.cliData, TCPEventType.HasData);
 							cliStat.buffSize = readSize;

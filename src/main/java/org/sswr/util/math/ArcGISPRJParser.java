@@ -133,11 +133,11 @@ public class ArcGISPRJParser {
 											{
 												if (spIndex == 1)
 												{
-													a = StringUtil.toDouble(new String(prjBuff, ofst + j, i - j));
+													a = StringUtil.toDoubleS(new String(prjBuff, ofst + j, i - j), Double.NaN);
 												}
 												else if (spIndex == 2)
 												{
-													f_1 = StringUtil.toDouble(new String(prjBuff, ofst + j, i - j));
+													f_1 = StringUtil.toDoubleS(new String(prjBuff, ofst + j, i - j), Double.NaN);
 												}
 												spIndex++;
 											}

@@ -714,7 +714,7 @@ public class FileGDBReader extends DBReader
 					points[i].y = y;
 					i++;
 				}
-				if ((this.tableInfo.getGeometryFlags() & 0x80) != 0)
+				if ((this.tableInfo.getGeometryFlags() & 0x80) != 0 && zArr != null)
 				{
 					dx = 0;
 					i = 0;
@@ -726,7 +726,7 @@ public class FileGDBReader extends DBReader
 						i++;
 					}
 				}
-				if ((this.tableInfo.getGeometryFlags() & 0x40) != 0)
+				if ((this.tableInfo.getGeometryFlags() & 0x40) != 0 && mArr != null)
 				{
 					dx = 0;
 					i = 0;

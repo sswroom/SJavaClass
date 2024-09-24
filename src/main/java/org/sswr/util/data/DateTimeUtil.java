@@ -14,9 +14,13 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
+//NN
 public class DateTimeUtil
 {
-	private static ZonedDateTime setDate(ZonedDateTime dt, int year, int month, int day)
+	private static @Nonnull ZonedDateTime setDate(@Nonnull ZonedDateTime dt, int year, int month, int day)
 	{
 		while (month <= 0)
 		{
@@ -57,7 +61,7 @@ public class DateTimeUtil
 		return dt.withDayOfMonth(1).withYear(year).withMonth(month).withDayOfMonth(day);
 	}
 
-	private static ZonedDateTime setDate(ZonedDateTime dt, String strs[])
+	private static @Nonnull ZonedDateTime setDate(@Nonnull ZonedDateTime dt, String strs[])
 	{
 		int vals[] = new int[3];
 		vals[0] = Integer.parseInt(strs[0]);
@@ -91,7 +95,7 @@ public class DateTimeUtil
 		}
 	}
 
-	private static ZonedDateTime setTime(ZonedDateTime dt, String strs[])
+	private static @Nonnull ZonedDateTime setTime(@Nonnull ZonedDateTime dt, String strs[])
 	{
 		int h;
 		int m;
@@ -131,7 +135,7 @@ public class DateTimeUtil
 		}
 	}
 
-	private static ZonedDateTime setTZ(ZonedDateTime dt, String tzStr)
+	private static @Nonnull ZonedDateTime setTZ(@Nonnull ZonedDateTime dt, @Nonnull String tzStr)
 	{
 		if (tzStr.length() == 6)
 		{
@@ -162,93 +166,93 @@ public class DateTimeUtil
 		throw new IllegalArgumentException("Unknown tz: "+tzStr);
 	}
 
-	public static LocalDateTime clearDayOfMonth(LocalDateTime dt)
+	public static @Nonnull LocalDateTime clearDayOfMonth(@Nonnull LocalDateTime dt)
 	{
 		return LocalDateTime.of(dt.getYear(), dt.getMonthValue(), 1, 0, 0);
 	}
 
-	public static Timestamp clearDayOfMonth(Timestamp ts)
+	public static @Nonnull Timestamp clearDayOfMonth(@Nonnull Timestamp ts)
 	{
 		return Timestamp.valueOf(clearDayOfMonth(ts.toLocalDateTime()));
 	}
 
-	public static ZonedDateTime clearTime(ZonedDateTime dt)
+	public static @Nonnull ZonedDateTime clearTime(@Nonnull ZonedDateTime dt)
 	{
 		return dt.truncatedTo(ChronoUnit.DAYS);
 	}
 
-	public static LocalDateTime clearTime(LocalDateTime dt)
+	public static @Nonnull LocalDateTime clearTime(@Nonnull LocalDateTime dt)
 	{
 		return dt.truncatedTo(ChronoUnit.DAYS);
 	}
 
-	public static Timestamp clearTime(Timestamp ts)
+	public static @Nonnull Timestamp clearTime(@Nonnull Timestamp ts)
 	{
 		return Timestamp.valueOf(clearTime(ts.toLocalDateTime()));
 	}
 
-	public static LocalDateTime clearMs(LocalDateTime dt)
+	public static @Nonnull LocalDateTime clearMs(@Nonnull LocalDateTime dt)
 	{
 		return dt.truncatedTo(ChronoUnit.SECONDS);
 	}
 
-	public static Timestamp clearMs(Timestamp ts)
+	public static @Nonnull Timestamp clearMs(@Nonnull Timestamp ts)
 	{
 		return Timestamp.valueOf(clearMs(ts.toLocalDateTime()));
 	}
 
-	public static Timestamp toDayStart(Timestamp ts)
+	public static @Nonnull Timestamp toDayStart(@Nonnull Timestamp ts)
 	{
 		return clearTime(ts);
 	}
 
-	public static LocalDateTime toDayStart(LocalDateTime dt)
+	public static @Nonnull LocalDateTime toDayStart(@Nonnull LocalDateTime dt)
 	{
 		return clearTime(dt);
 	}
 
-	public static ZonedDateTime toDayStart(ZonedDateTime dt)
+	public static @Nonnull ZonedDateTime toDayStart(@Nonnull ZonedDateTime dt)
 	{
 		return clearTime(dt);
 	}
 
-	public static Timestamp toDayEnd(Timestamp ts)
+	public static @Nonnull Timestamp toDayEnd(@Nonnull Timestamp ts)
 	{
 		return Timestamp.valueOf(toDayEnd(ts.toLocalDateTime()));
 	}
 
-	public static LocalDateTime toDayEnd(LocalDateTime dt)
+	public static @Nonnull LocalDateTime toDayEnd(@Nonnull LocalDateTime dt)
 	{
 		return clearTime(dt).plusDays(1).minusNanos(1);
 	}
 
-	public static ZonedDateTime toDayEnd(ZonedDateTime dt)
+	public static @Nonnull ZonedDateTime toDayEnd(@Nonnull ZonedDateTime dt)
 	{
 		return clearTime(dt).plusDays(1).minusNanos(1);
 	}
 
-	public static ZonedDateTime toMonthStart(ZonedDateTime dt)
+	public static @Nonnull ZonedDateTime toMonthStart(@Nonnull ZonedDateTime dt)
 	{
 		return clearTime(dt).withDayOfMonth(1);
 	}
 
-	public static ZonedDateTime toYearStart(ZonedDateTime dt)
+	public static @Nonnull ZonedDateTime toYearStart(@Nonnull ZonedDateTime dt)
 	{
 		return clearTime(dt).withDayOfYear(1);
 	}
 
-	public static Timestamp toTimestamp(ZonedDateTime dt)
+	public static @Nullable Timestamp toTimestamp(@Nullable ZonedDateTime dt)
 	{
 		if (dt == null) return null;
 		return Timestamp.from(dt.toInstant());
 	}
 
-	public static boolean isDayStart(Timestamp ts)
+	public static boolean isDayStart(@Nonnull Timestamp ts)
 	{
 		return ts.equals(clearTime(ts));
 	}
 
-	public static int parseMonthStr(String monStr)
+	public static int parseMonthStr(@Nonnull String monStr)
 	{
 		String umonStr = monStr.toUpperCase();
 		if (umonStr.startsWith("JAN"))
@@ -302,10 +306,8 @@ public class DateTimeUtil
 		throw new IllegalArgumentException();
 	}
 
-	public static ZonedDateTime parse(String dateStr)
+	public static @Nonnull ZonedDateTime parse(@Nonnull String dateStr)
 	{
-		if (dateStr == null)
-			throw new IllegalArgumentException("Cannot parse dateStr: null");
 		if (dateStr.length() < 5)
 			throw new IllegalArgumentException("Cannot parse dateStr: "+dateStr);
 		if (dateStr.charAt(3) == ',' && dateStr.indexOf(",", 4) == -1)
@@ -475,7 +477,7 @@ public class DateTimeUtil
 		}
 	}
 
-	public static double calcMonthDiff(LocalDateTime t1, LocalDateTime t2)
+	public static double calcMonthDiff(@Nonnull LocalDateTime t1, @Nonnull LocalDateTime t2)
 	{
 		int yDiff = t1.getYear() - t2.getYear();
 		int mDiff;
@@ -489,42 +491,42 @@ public class DateTimeUtil
 		return mDiff + dDiff / ym.lengthOfMonth();
 	}
 
-	public static double calcMonthDiff(Timestamp t1, Timestamp t2)
+	public static double calcMonthDiff(@Nonnull Timestamp t1, @Nonnull Timestamp t2)
 	{
 		return calcMonthDiff(t1.toLocalDateTime(), t2.toLocalDateTime());
 	}
 
-	public static double calcDayDiff(Timestamp t1, Timestamp t2)
+	public static double calcDayDiff(@Nonnull Timestamp t1, @Nonnull Timestamp t2)
 	{
 		return (t1.getTime() - t2.getTime()) / 86400000.0;
 	}
 
-	public static double calcDayDiff(ZonedDateTime t1, ZonedDateTime t2)
+	public static double calcDayDiff(@Nonnull ZonedDateTime t1, @Nonnull ZonedDateTime t2)
 	{
 		return (getTimeMillis(t1) - getTimeMillis(t2)) / 86400000.0;
 	}
 
-	public static Timestamp addSecond(Timestamp t, int secondDiff)
+	public static @Nonnull Timestamp addSecond(@Nonnull Timestamp t, int secondDiff)
 	{
 		return Timestamp.valueOf(t.toLocalDateTime().plusSeconds(secondDiff));
 	}
 
-	public static Timestamp addDay(Timestamp t, int dayDiff)
+	public static @Nonnull Timestamp addDay(@Nonnull Timestamp t, int dayDiff)
 	{
 		return Timestamp.valueOf(t.toLocalDateTime().plusDays(dayDiff));
 	}
 
-	public static Timestamp addMonth(Timestamp t, int monthDiff)
+	public static @Nonnull Timestamp addMonth(@Nonnull Timestamp t, int monthDiff)
 	{
 		return Timestamp.valueOf(t.toLocalDateTime().plusMonths(monthDiff));
 	}
 
-	public static Timestamp toWeekdayBefore(Timestamp t, DayOfWeek weekday)
+	public static @Nonnull Timestamp toWeekdayBefore(@Nonnull Timestamp t, @Nonnull DayOfWeek weekday)
 	{
 		return Timestamp.valueOf(toWeekdayBefore(t.toLocalDateTime(), weekday));
 	}
 
-	public static LocalDateTime toWeekdayBefore(LocalDateTime t, DayOfWeek weekday)
+	public static @Nonnull LocalDateTime toWeekdayBefore(@Nonnull LocalDateTime t, @Nonnull DayOfWeek weekday)
 	{
 		t = toDayStart(t);
 		while (t.getDayOfWeek() != weekday)
@@ -534,7 +536,7 @@ public class DateTimeUtil
 		return t;
 	}
 
-	public static ZonedDateTime toWeekdayBefore(ZonedDateTime t, DayOfWeek weekday)
+	public static @Nonnull ZonedDateTime toWeekdayBefore(@Nonnull ZonedDateTime t, @Nonnull DayOfWeek weekday)
 	{
 		t = toDayStart(t);
 		while (t.getDayOfWeek() != weekday)
@@ -544,28 +546,27 @@ public class DateTimeUtil
 		return t;
 	}
 
-	public static ZonedDateTime newZonedDateTime(Timestamp ts)
+	public static @Nonnull ZonedDateTime newZonedDateTime(@Nonnull Timestamp ts)
 	{
-		if (ts == null) return null;
 		return newZonedDateTime(ts.toInstant());
 	}
 
-	public static ZonedDateTime newZonedDateTime(long t)
+	public static @Nonnull ZonedDateTime newZonedDateTime(long t)
 	{
 		return ZonedDateTime.ofInstant(Instant.ofEpochMilli(t), ZoneId.systemDefault());
 	}
 
-	public static ZonedDateTime newZonedDateTime(Instant inst)
+	public static @Nonnull ZonedDateTime newZonedDateTime(@Nonnull Instant inst)
 	{
 		return ZonedDateTime.ofInstant(inst, ZoneId.systemDefault());
 	}
 
-	public static long getTimeMillis(ZonedDateTime t)
+	public static long getTimeMillis(@Nonnull ZonedDateTime t)
 	{
 		return t.toInstant().toEpochMilli();
 	}
 
-	public static boolean isSameMonth(ZonedDateTime t1, ZonedDateTime t2)
+	public static boolean isSameMonth(@Nonnull ZonedDateTime t1, @Nonnull ZonedDateTime t2)
 	{
 		if (!t2.getZone().equals(t1.getZone()))
 		{
@@ -574,7 +575,7 @@ public class DateTimeUtil
 		return t1.getYear() == t2.getYear() && t1.getMonthValue() == t2.getMonthValue();
 	}
 
-	public static boolean isSameWeek(ZonedDateTime t1, ZonedDateTime t2, DayOfWeek weekday)
+	public static boolean isSameWeek(@Nonnull ZonedDateTime t1, @Nonnull ZonedDateTime t2, @Nonnull DayOfWeek weekday)
 	{
 		if (!t2.getZone().equals(t1.getZone()))
 		{
@@ -585,7 +586,7 @@ public class DateTimeUtil
 		return diff >= 0 && diff < 7;
 	}
 
-	public static boolean isSameDay(ZonedDateTime t1, ZonedDateTime t2)
+	public static boolean isSameDay(@Nullable ZonedDateTime t1, @Nullable ZonedDateTime t2)
 	{
 		if (t1 == t2)
 			return true;
@@ -594,16 +595,18 @@ public class DateTimeUtil
 		if (!t2.getZone().equals(t1.getZone()))
 		{
 			t2 = t2.withZoneSameInstant(t1.getZone());
+			if (t2 == null)
+				return false;
 		}
 		return isSameMonth(t1, t2) && t1.getDayOfMonth() == t2.getDayOfMonth();
 	}
 
-	public static boolean isSameDay(Timestamp t1, Timestamp t2)
+	public static boolean isSameDay(@Nonnull Timestamp t1, @Nonnull Timestamp t2)
 	{
 		return isSameDay(newZonedDateTime(t1), newZonedDateTime(t2));
 	}
 
-	public static boolean isSameHour(ZonedDateTime t1, ZonedDateTime t2)
+	public static boolean isSameHour(@Nonnull ZonedDateTime t1, @Nonnull ZonedDateTime t2)
 	{
 		if (t1 == t2)
 		{
@@ -620,12 +623,12 @@ public class DateTimeUtil
 		return t1.getYear() == t2.getYear() && t1.getMonthValue() == t2.getMonthValue() && t1.getDayOfMonth() == t2.getDayOfMonth() && t1.getHour() == t2.getHour();
 	}
 
-	public static boolean isSameHour(Timestamp t1, Timestamp t2)
+	public static boolean isSameHour(@Nonnull Timestamp t1, @Nonnull Timestamp t2)
 	{
 		return isSameHour(newZonedDateTime(t1), newZonedDateTime(t2));
 	}
 
-	public static String toString(ZonedDateTime t, String format)
+	public static String toString(@Nonnull ZonedDateTime t, @Nonnull String format)
 	{
 		int i = 0;
 		int j;
@@ -650,22 +653,22 @@ public class DateTimeUtil
 		return DateTimeFormatter.ofPattern(format.replace('f', 'n').replace('z', 'x')).format(t);
 	}
 
-	public static String toString(Timestamp ts, String format)
+	public static @Nonnull String toString(@Nonnull Timestamp ts, @Nonnull String format)
 	{
 		return toString(ZonedDateTime.ofInstant(ts.toInstant(), ZoneId.systemDefault()), format);
 	}
 
-	public static String toString(Date dat, String format)
+	public static @Nonnull String toString(@Nonnull Date dat, @Nonnull String format)
 	{
 		return toString(ZonedDateTime.of(dat.toLocalDate().atStartOfDay(), ZoneId.systemDefault()), format);
 	}
 
-	public static String toString(Time tim, String format)
+	public static @Nonnull String toString(@Nonnull Time tim, @Nonnull String format)
 	{
 		return toString(ZonedDateTime.of(tim.toLocalTime().atDate(LocalDate.now()), ZoneId.systemDefault()), format);
 	}
 
-	public static String toString(ZonedDateTime t)
+	public static @Nonnull String toString(@Nonnull ZonedDateTime t)
 	{
 		int nano = t.getNano();
 		if (nano == 0)
@@ -686,7 +689,7 @@ public class DateTimeUtil
 		}
 	}
 
-	public static String toString(Timestamp ts)
+	public static @Nonnull String toString(@Nonnull Timestamp ts)
 	{
 		int nano = ts.getNanos();
 		if (nano == 0)
@@ -707,12 +710,12 @@ public class DateTimeUtil
 		}
 	}
 
-	public static String toString(Date dat)
+	public static @Nonnull String toString(@Nonnull Date dat)
 	{
 		return toString(dat, "yyyy-MM-dd");
 	}
 
-	public static String toStringNoZone(ZonedDateTime t)
+	public static @Nonnull String toStringNoZone(@Nonnull ZonedDateTime t)
 	{
 		int nano = t.getNano();
 		if (nano == 0)
@@ -733,7 +736,7 @@ public class DateTimeUtil
 		}
 	}
 
-	public static String toStringNoZone(Timestamp ts)
+	public static @Nonnull String toStringNoZone(@Nonnull Timestamp ts)
 	{
 		int nano = ts.getNanos();
 		if (nano == 0)
@@ -754,29 +757,29 @@ public class DateTimeUtil
 		}
 	}
 
-	public static int toYMD(ZonedDateTime dt)
+	public static int toYMD(@Nonnull ZonedDateTime dt)
 	{
 		return dt.getYear() * 10000 + dt.getMonthValue() * 100 + dt.getDayOfMonth();
 	}
 
-	public static int toYMD(Timestamp ts)
+	public static int toYMD(@Nonnull Timestamp ts)
 	{
 		return toYMD(newZonedDateTime(ts));
 	}
 
-	public static Timestamp timestampNow()
+	public static @Nonnull Timestamp timestampNow()
 	{
 		return Timestamp.from(Instant.now());
 	}
 
-	public static double timeDiffSec(Instant t1, Instant t2)
+	public static double timeDiffSec(@Nonnull Instant t1, @Nonnull Instant t2)
 	{
 		double v = (double)(t1.getEpochSecond() - t2.getEpochSecond());
 		v += (t1.getNano() - t2.getNano()) * 0.000000001;
 		return v;
 	}
 	
-	public static boolean equals(Timestamp t1, Timestamp t2)
+	public static boolean equals(@Nonnull Timestamp t1, @Nonnull Timestamp t2)
 	{
 		if (t1 == t2)
 			return true;

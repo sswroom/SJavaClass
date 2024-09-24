@@ -2,6 +2,8 @@ package org.sswr.util.basic;
 
 import org.sswr.util.math.Coord2DDbl;
 
+import jakarta.annotation.Nonnull;
+
 public class Vector3
 {
 	public double val[];
@@ -19,7 +21,7 @@ public class Vector3
 		this.val[2] = z;
 	}
 
-	public Vector3(Coord2DDbl xy, double z)
+	public Vector3(@Nonnull Coord2DDbl xy, double z)
 	{
 		this.val = new double[3];
 		this.val[0] = xy.x;
@@ -57,12 +59,12 @@ public class Vector3
 		return this.val[2];
 	}
 
-	public Coord2DDbl toCoord2D()
+	public @Nonnull Coord2DDbl toCoord2D()
 	{
 		return new Coord2DDbl(this.val[0], this.val[1]);
 	}
 
-	public Coord2DDbl getXY()
+	public @Nonnull Coord2DDbl getXY()
 	{
 		return new Coord2DDbl(this.val[0], this.val[1]);
 	}
@@ -72,7 +74,7 @@ public class Vector3
 		return this.val[0] * val.val[0] + this.val[1] * val.val[1] + this.val[2] * val.val[2];
 	}
 
-	public Vector3 clone()
+	public @Nonnull Vector3 clone()
 	{
 		return new Vector3(this.val[0], this.val[1], this.val[2]);
 	}
@@ -84,7 +86,7 @@ public class Vector3
 		this.val[2] = val3;
 	}
 
-	public void set(Vector3 val)
+	public void set(@Nonnull Vector3 val)
 	{
 		this.val[0] = val.val[0];
 		this.val[1] = val.val[1];

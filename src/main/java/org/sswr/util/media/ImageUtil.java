@@ -17,9 +17,13 @@ import javax.imageio.stream.ImageOutputStream;
 
 import org.sswr.util.data.RectangleArea;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class ImageUtil
 {
-	public static String getImageFmt(byte buff[])
+	@Nonnull
+	public static String getImageFmt(@Nonnull byte buff[])
 	{
 		if ((buff[0] & 0xff) == 0x89 && buff[1] == 0x50 && buff[2] == 0x4e && buff[3] == 0x47 && buff[4] == 0x0d && buff[5] == 0x0a && buff[6] == 0x1a && buff[7] == 0x0a)
 		{
@@ -49,7 +53,8 @@ public class ImageUtil
 		return "dat";
 	}
 
-	public static ImageList load(InputStream stm, String fileName)
+	@Nullable
+	public static ImageList load(@Nonnull InputStream stm, @Nonnull String fileName)
 	{
 		String fmt = "jpg";
 		try
@@ -97,7 +102,7 @@ public class ImageUtil
 		}
 	}
 
-	public static boolean saveAsFormat(StaticImage img, OutputStream output, String format)
+	public static boolean saveAsFormat(@Nonnull StaticImage img, @Nonnull OutputStream output, @Nonnull String format)
 	{
 		try
 		{
@@ -115,32 +120,32 @@ public class ImageUtil
 		}
 	}
 
-	public static boolean saveAsTiff(StaticImage img, OutputStream output)
+	public static boolean saveAsTiff(@Nonnull StaticImage img, @Nonnull OutputStream output)
 	{
 		return saveAsFormat(img, output, "tiff");
 	}
 
-	public static boolean saveAsGif(StaticImage img, OutputStream output)
+	public static boolean saveAsGif(@Nonnull StaticImage img, @Nonnull OutputStream output)
 	{
 		return saveAsFormat(img, output, "gif");
 	}
 
-	public static boolean saveAsPng(StaticImage img, OutputStream output)
+	public static boolean saveAsPng(@Nonnull StaticImage img, @Nonnull OutputStream output)
 	{
 		return saveAsFormat(img, output, "png");
 	}
 
-	public static boolean saveAsBmp(StaticImage img, OutputStream output)
+	public static boolean saveAsBmp(@Nonnull StaticImage img, @Nonnull OutputStream output)
 	{
 		return saveAsFormat(img, output, "bmp");
 	}
 
-	public static boolean saveAsWbmp(StaticImage img, OutputStream output)
+	public static boolean saveAsWbmp(@Nonnull StaticImage img, @Nonnull OutputStream output)
 	{
 		return saveAsFormat(img, output, "wbmp");
 	}
 
-	public static boolean saveAsJpg(StaticImage img, OutputStream output, float quality) //0-1
+	public static boolean saveAsJpg(@Nonnull StaticImage img, @Nonnull OutputStream output, float quality) //0-1
 	{
 		try
 		{
@@ -160,7 +165,7 @@ public class ImageUtil
 		}
 	}
 
-	public static boolean saveAsJpgBySize(StaticImage img, OutputStream output, int minSize, int maxSize)
+	public static boolean saveAsJpgBySize(@Nonnull StaticImage img, @Nonnull OutputStream output, int minSize, int maxSize)
 	{
 		try
 		{
@@ -240,7 +245,8 @@ public class ImageUtil
 		}
 	}
 
-	public static BufferedImage cropImageSquare(BufferedImage img) throws IOException
+	@Nonnull
+	public static BufferedImage cropImageSquare(@Nonnull BufferedImage img) throws IOException
 	{
 		int height = img.getHeight();
 		int width = img.getWidth();
@@ -259,7 +265,8 @@ public class ImageUtil
 		}
 	}
 
-	public static RectangleArea fitToArea(RectangleArea area, double w, double h)
+	@Nonnull
+	public static RectangleArea fitToArea(@Nonnull RectangleArea area, double w, double h)
 	{
 		double newW;
 		double newH;

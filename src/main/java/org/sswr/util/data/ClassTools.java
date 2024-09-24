@@ -8,10 +8,13 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.TypeVariable;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class ClassTools
 {
 
-	private static void appendTypeName(Class<?> t, StringBuilder sb)
+	private static void appendTypeName(@Nonnull Class<?> t, @Nonnull StringBuilder sb)
 	{
 		sb.append(t.getSimpleName());
 		TypeVariable<?>[] tparams = t.getTypeParameters();
@@ -29,7 +32,7 @@ public class ClassTools
 		}
 	}
 
-	private static void appendModifier(int modifier, StringBuilder sb)
+	private static void appendModifier(int modifier, @Nonnull StringBuilder sb)
 	{
 		if ((modifier & Modifier.PUBLIC) != 0)
 		{
@@ -61,13 +64,13 @@ public class ClassTools
 		}
 	}
 
-	private static void appendAnnotation(Annotation ann, int level, StringBuilder sb)
+	private static void appendAnnotation(@Nonnull Annotation ann, int level, @Nonnull StringBuilder sb)
 	{
 		appendLevel(level, sb);
 		sb.append("@?\r\n");
 	}
 
-	private static void appendAnnotations(Annotation[] anns, int level, StringBuilder sb)
+	private static void appendAnnotations(@Nullable Annotation[] anns, int level, @Nonnull StringBuilder sb)
 	{
 		if (anns == null)
 		{
@@ -82,7 +85,7 @@ public class ClassTools
 		}
 	}
 
-	private static void appendParamAnns(Annotation[] anns, StringBuilder sb)
+	private static void appendParamAnns(@Nullable Annotation[] anns, @Nonnull StringBuilder sb)
 	{
 		if (anns != null)
 		{
@@ -96,7 +99,7 @@ public class ClassTools
 		}
 	}
 
-	private static void appendLevel(int level, StringBuilder sb)
+	private static void appendLevel(int level, @Nonnull StringBuilder sb)
 	{
 		while (level-- > 0)
 		{
@@ -104,7 +107,7 @@ public class ClassTools
 		}
 	}
 
-	private static void appendParameters(Parameter[] params, StringBuilder sb)
+	private static void appendParameters(@Nullable Parameter[] params, @Nonnull StringBuilder sb)
 	{
 		sb.append("(");
 		if (params != null)
@@ -127,7 +130,7 @@ public class ClassTools
 		sb.append(")");
 	}
 
-	public static void appendClass(Class<?> cls, int level, StringBuilder sb)
+	public static void appendClass(@Nonnull Class<?> cls, int level, @Nonnull StringBuilder sb)
 	{
 		int i;
 		int j;
@@ -235,7 +238,7 @@ public class ClassTools
 		sb.append("}");
 	}
 
-	public static String toString(Class<?> cls)
+	public static @Nonnull String toString(@Nonnull Class<?> cls)
 	{
 		StringBuilder sb = new StringBuilder();
 		appendClass(cls, 0, sb);

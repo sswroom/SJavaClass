@@ -1,7 +1,10 @@
 package org.sswr.util.data;
 
+import jakarta.annotation.Nonnull;
+
 public class XmlUtil {
-	public static String toAttr(String v)
+	@Nonnull
+	public static String toAttr(@Nonnull String v)
 	{
 		v = v.replace("&", "&amp;");
 		v = v.replace("<", "&lt;");
@@ -12,7 +15,8 @@ public class XmlUtil {
 		return v;
 	}
 	
-	public static String toXMLText(String v)
+	@Nonnull
+	public static String toXMLText(@Nonnull String v)
 	{
 		v = v.replace("&", "&amp;");
 		v = v.replace("<", "&lt;");
@@ -22,7 +26,8 @@ public class XmlUtil {
 		return v;
 	}
 
-	public static String toHTMLBodyText(String v)
+	@Nonnull
+	public static String toHTMLBodyText(@Nonnull String v)
 	{
 		v = v.replace("&", "&#38;");
 		v = v.replace("<", "&lt;");

@@ -104,6 +104,8 @@ public class IcmpUtil
 						}
 					}
 				}
+				if (line == null)
+					return false;
 				if (addr instanceof Inet4Address)
 				{
 					i = line.indexOf("ms TTL=");

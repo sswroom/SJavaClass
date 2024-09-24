@@ -1,17 +1,30 @@
 package org.sswr.util.basic;
 
+import jakarta.annotation.Nullable;
+
+//NN
 public class ArrayListInt32 extends SortableArrayList<Integer>
 {
 	private static final long serialVersionUID = 6357929868L;
 	
 	@Override
-	public int compareItem(Integer obj1, Integer obj2)
+	public int compareItem(@Nullable Integer obj1, @Nullable Integer obj2)
 	{
-		if (obj1 > obj2)
+		int i1;
+		int i2;
+		if (obj1 == null)
+			i1 = 0;
+		else
+			i1 = obj1.intValue();
+		if (obj2 == null)
+			i2 = 0;
+		else
+			i2 = obj2.intValue();
+		if (i1 > i2)
 		{
 			return 1;
 		}
-		else if (obj1 < obj2)
+		else if (i1 < i2)
 		{
 			return -1;
 		}

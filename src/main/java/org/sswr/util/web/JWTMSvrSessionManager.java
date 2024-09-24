@@ -18,6 +18,8 @@ import org.sswr.util.data.StringUtil;
 import org.sswr.util.net.MQTTClient;
 import org.sswr.util.net.MQTTEventHdlr;
 
+import jakarta.annotation.Nonnull;
+
 public class JWTMSvrSessionManager extends JWTSessionManager implements MQTTEventHdlr
 {
 	class JWTRequest
@@ -382,7 +384,7 @@ public class JWTMSvrSessionManager extends JWTSessionManager implements MQTTEven
 	}
 
 	@Override
-	public void onPublishMessage(String topic, byte[] buff, int buffOfst, int buffSize)
+	public void onPublishMessage(@Nonnull String topic, @Nonnull byte[] buff, int buffOfst, int buffSize)
 	{
 		JWTSession sess;
 		Map<String, Object> reqMap;

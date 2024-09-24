@@ -26,7 +26,8 @@ public abstract class FileParser extends ParserBase
 		FileData fd = new FileData(filePath, false);
 		pobj = this.parseFile(fd, pkg, ParserType.Unknown);
 		fd.close();
-		pkg.dispose();
+		if (pkg != null)
+			pkg.dispose();
 		return pobj;
 	}
 

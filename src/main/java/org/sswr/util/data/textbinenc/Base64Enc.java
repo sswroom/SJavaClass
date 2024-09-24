@@ -4,6 +4,8 @@ import org.sswr.util.data.ByteTool;
 import org.sswr.util.data.LineBreakType;
 import org.sswr.util.data.StringUtil;
 
+import jakarta.annotation.Nonnull;
+
 public class Base64Enc extends TextBinEnc
 {
 	public enum B64Charset
@@ -32,7 +34,7 @@ public class Base64Enc extends TextBinEnc
 		(byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff
 	};
 
-	private static char []getEncArr(B64Charset cs)
+	private static @Nonnull char []getEncArr(@Nonnull B64Charset cs)
 	{
 		if (cs == B64Charset.URL)
 		{
@@ -50,30 +52,31 @@ public class Base64Enc extends TextBinEnc
 		this.noPadding = false;
 	}
 
-	public Base64Enc(B64Charset cs, boolean noPadding)
+	public Base64Enc(@Nonnull B64Charset cs, boolean noPadding)
 	{
 		this.cs = cs;
 		this.noPadding = noPadding;
 	}
 
-	public String encodeBin(byte []dataBuff, int dataOfst, int buffSize)
+	@Nonnull
+	public String encodeBin(@Nonnull byte []dataBuff, int dataOfst, int buffSize)
 	{
 		StringBuilder sb = new StringBuilder();
 		encodeBin(sb, dataBuff, dataOfst, buffSize);
 		return sb.toString();
 	}
 
-	public void encodeBin(StringBuilder sb, byte []dataBuff, int dataOfst, int buffSize)
+	public void encodeBin(@Nonnull StringBuilder sb, @Nonnull byte []dataBuff, int dataOfst, int buffSize)
 	{
 		encodeBin(sb, dataBuff, dataOfst, buffSize, LineBreakType.NONE, 0);
 	}
 
-	public void encodeBin(StringBuilder sb, byte []dataBuff)
+	public void encodeBin(@Nonnull StringBuilder sb, @Nonnull byte []dataBuff)
 	{
 		encodeBin(sb, dataBuff, 0, dataBuff.length, LineBreakType.NONE, 0);
 	}
 
-	public void encodeBin(StringBuilder sb, byte[] dataBuff, int dataOfst, int buffSize, LineBreakType lbt, int charsPerLine)
+	public void encodeBin(@Nonnull StringBuilder sb, @Nonnull byte[] dataBuff, int dataOfst, int buffSize, @Nonnull LineBreakType lbt, int charsPerLine)
 	{
 		char []encArr = getEncArr(this.cs);
 		int outSize;
@@ -243,7 +246,8 @@ public class Base64Enc extends TextBinEnc
 		}
 	}
 
-	public byte []decodeBin(String s)
+	@Nonnull
+	public byte []decodeBin(@Nonnull String s)
 	{
 		char b64Str[] = s.toCharArray();
 		int i = 0;
@@ -302,7 +306,8 @@ public class Base64Enc extends TextBinEnc
 		}
 	}
 
-	public byte []decodeBin(byte []dataBuff, int dataOfst, int buffSize)
+	@Nonnull
+	public byte []decodeBin(@Nonnull byte []dataBuff, int dataOfst, int buffSize)
 	{
 		int i = 0;
 		int j = buffSize;
@@ -360,7 +365,7 @@ public class Base64Enc extends TextBinEnc
 		}
 	}
 
-	public String getName()
+	public @Nonnull String getName()
 	{
 		return "Base64";
 	}

@@ -2,6 +2,8 @@ package org.sswr.util.basic;
 
 import org.sswr.util.data.ByteTool;
 
+import jakarta.annotation.Nullable;
+
 public class SyncCircularBuff<T>
 {
 	private Object[] buff;
@@ -44,7 +46,7 @@ public class SyncCircularBuff<T>
 		this.putIndex = (this.putIndex + 1) & (this.buff.length - 1);
 	}
 	
-	public synchronized T get()
+	public synchronized @Nullable T get()
 	{
 		if (this.getIndex == this.putIndex)
 		{
@@ -56,7 +58,7 @@ public class SyncCircularBuff<T>
 		return ret;
 	}
 	
-	public synchronized T getNoRemove()
+	public synchronized @Nullable T getNoRemove()
 	{
 		if (this.getIndex == this.putIndex)
 		{
@@ -67,7 +69,7 @@ public class SyncCircularBuff<T>
 		return ret;
 	}
 	
-	public synchronized T getLastNoRemove()
+	public synchronized @Nullable T getLastNoRemove()
 	{
 		if (this.getIndex == this.putIndex)
 		{

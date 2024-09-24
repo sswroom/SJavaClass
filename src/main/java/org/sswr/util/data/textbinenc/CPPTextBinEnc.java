@@ -2,6 +2,9 @@ package org.sswr.util.data.textbinenc;
 
 import org.sswr.util.data.ByteTool;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class CPPTextBinEnc extends TextBinEnc
 {
 	public CPPTextBinEnc()
@@ -9,7 +12,7 @@ public class CPPTextBinEnc extends TextBinEnc
 
 	}
 
-	public String encodeBin(byte []dataBuff, int dataOfst, int buffSize)
+	public @Nullable String encodeBin(@Nonnull byte []dataBuff, int dataOfst, int buffSize)
 	{
 		boolean lineStart = true;
 		byte b;
@@ -53,7 +56,7 @@ public class CPPTextBinEnc extends TextBinEnc
 		return sb.toString();
 	}
 
-	public byte []decodeBin(String s)
+	public @Nullable byte []decodeBin(@Nonnull String s)
 	{
 		char carr[] = s.toCharArray();
 		int i = 0;
@@ -129,7 +132,7 @@ public class CPPTextBinEnc extends TextBinEnc
 		return buff;
 	}
 
-	public String getName()
+	public @Nonnull String getName()
 	{
 		return "CPP String";		
 	}

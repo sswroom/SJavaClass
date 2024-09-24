@@ -1789,68 +1789,68 @@ public abstract class MyX509File extends ASN1Data
 						sb.append(')');
 					}
 					sb.append("\r\n");
-				}
-				if (valuePDU != null && valuePDU.itemType == ASN1Util.IT_SET)
-				{
-					if (ASN1Util.oidEqualsText(pdu, oidPDU.ofst, oidPDU.len, "1.2.840.113549.1.9.3")) //contentType
+
+					if (valuePDU != null && valuePDU.itemType == ASN1Util.IT_SET)
 					{
-						if ((itemPDU = ASN1Util.pduGetItem(pdu, valuePDU.ofst, valuePDU.ofst + valuePDU.len, "1")) != null && itemPDU.itemType == ASN1Util.IT_OID)
+						if (ASN1Util.oidEqualsText(pdu, oidPDU.ofst, oidPDU.len, "1.2.840.113549.1.9.3")) //contentType
 						{
-							sb.append(varName);
-							sb.append('.');
-							sb.append("contentType = ");
-							ASN1Util.oidToString(pdu, itemPDU.ofst, itemPDU.len, sb);
-							ASN1OIDInfo oid = ASN1OIDDB.oidGetEntry(pdu, itemPDU.ofst, itemPDU.len);
-							if (oid != null)
+							if ((itemPDU = ASN1Util.pduGetItem(pdu, valuePDU.ofst, valuePDU.ofst + valuePDU.len, "1")) != null && itemPDU.itemType == ASN1Util.IT_OID)
 							{
-								sb.append(" (");
-								sb.append(oid.getName());
-								sb.append(')');
+								sb.append(varName);
+								sb.append('.');
+								sb.append("contentType = ");
+								ASN1Util.oidToString(pdu, itemPDU.ofst, itemPDU.len, sb);
+								oid = ASN1OIDDB.oidGetEntry(pdu, itemPDU.ofst, itemPDU.len);
+								if (oid != null)
+								{
+									sb.append(" (");
+									sb.append(oid.getName());
+									sb.append(')');
+								}
+								sb.append("\r\n");
 							}
-							sb.append("\r\n");
 						}
-					}
-					else if (ASN1Util.oidEqualsText(pdu, oidPDU.ofst, oidPDU.len, "1.2.840.113549.1.9.4")) //messageDigest
-					{
-						if ((itemPDU = ASN1Util.pduGetItem(pdu, valuePDU.ofst, valuePDU.ofst + valuePDU.len, "1")) != null && itemPDU.itemType == ASN1Util.IT_OCTET_STRING)
+						else if (ASN1Util.oidEqualsText(pdu, oidPDU.ofst, oidPDU.len, "1.2.840.113549.1.9.4")) //messageDigest
 						{
-							sb.append(varName);
-							sb.append('.');
-							sb.append("messageDigest = ");
-							StringUtil.appendHex(sb, pdu, itemPDU.ofst, itemPDU.len, ':', LineBreakType.NONE);
-							sb.append("\r\n");
+							if ((itemPDU = ASN1Util.pduGetItem(pdu, valuePDU.ofst, valuePDU.ofst + valuePDU.len, "1")) != null && itemPDU.itemType == ASN1Util.IT_OCTET_STRING)
+							{
+								sb.append(varName);
+								sb.append('.');
+								sb.append("messageDigest = ");
+								StringUtil.appendHex(sb, pdu, itemPDU.ofst, itemPDU.len, ':', LineBreakType.NONE);
+								sb.append("\r\n");
+							}
 						}
-					}
-					else if (ASN1Util.oidEqualsText(pdu, oidPDU.ofst, oidPDU.len, "1.2.840.113549.1.9.5")) //signing-time
-					{
-						if ((itemPDU = ASN1Util.pduGetItem(pdu, valuePDU.ofst, valuePDU.ofst + valuePDU.len, "1")) != null && itemPDU.itemType == ASN1Util.IT_UTCTIME)
+						else if (ASN1Util.oidEqualsText(pdu, oidPDU.ofst, oidPDU.len, "1.2.840.113549.1.9.5")) //signing-time
 						{
-							sb.append(varName);
-							sb.append('.');
-							sb.append("signing-time = ");
-							ASN1Util.utcTimeToString(pdu, itemPDU.ofst, itemPDU.len, sb);
-							sb.append("\r\n");
+							if ((itemPDU = ASN1Util.pduGetItem(pdu, valuePDU.ofst, valuePDU.ofst + valuePDU.len, "1")) != null && itemPDU.itemType == ASN1Util.IT_UTCTIME)
+							{
+								sb.append(varName);
+								sb.append('.');
+								sb.append("signing-time = ");
+								ASN1Util.utcTimeToString(pdu, itemPDU.ofst, itemPDU.len, sb);
+								sb.append("\r\n");
+							}
 						}
-					}
-					else if (ASN1Util.oidEqualsText(pdu, oidPDU.ofst, oidPDU.len, "1.2.840.113549.1.9.15")) //smimeCapabilities
-					{
-						/////////////////////////////////////
-					}
-					else if (ASN1Util.oidEqualsText(pdu, oidPDU.ofst, oidPDU.len, "1.2.840.113549.1.9.16.2.11")) //id-aa-encrypKeyPref
-					{
-						if ((itemPDU = ASN1Util.pduGetItem(pdu, valuePDU.ofst, valuePDU.ofst + valuePDU.len, "1")) != null && itemPDU.itemType == ASN1Util.IT_CONTEXT_SPECIFIC_0)
+						else if (ASN1Util.oidEqualsText(pdu, oidPDU.ofst, oidPDU.len, "1.2.840.113549.1.9.15")) //smimeCapabilities
 						{
-							appendIssuerAndSerialNumber(pdu, itemPDU.ofst, itemPDU.ofst + itemPDU.len, sb, varName + ".encrypKeyPref");
+							/////////////////////////////////////
 						}
-					}
-					else if (ASN1Util.oidEqualsText(pdu, oidPDU.ofst, oidPDU.len, "1.3.6.1.4.1.311.16.4")) //outlookExpress
-					{
-						if ((itemPDU = ASN1Util.pduGetItem(pdu, valuePDU.ofst, valuePDU.ofst + valuePDU.len, "1")) != null && itemPDU.itemType == ASN1Util.IT_SEQUENCE)
+						else if (ASN1Util.oidEqualsText(pdu, oidPDU.ofst, oidPDU.len, "1.2.840.113549.1.9.16.2.11")) //id-aa-encrypKeyPref
 						{
-							appendIssuerAndSerialNumber(pdu, itemPDU.ofst, itemPDU.ofst + itemPDU.len, sb, varName + ".outlookExpress");
+							if ((itemPDU = ASN1Util.pduGetItem(pdu, valuePDU.ofst, valuePDU.ofst + valuePDU.len, "1")) != null && itemPDU.itemType == ASN1Util.IT_CONTEXT_SPECIFIC_0)
+							{
+								appendIssuerAndSerialNumber(pdu, itemPDU.ofst, itemPDU.ofst + itemPDU.len, sb, varName + ".encrypKeyPref");
+							}
+						}
+						else if (ASN1Util.oidEqualsText(pdu, oidPDU.ofst, oidPDU.len, "1.3.6.1.4.1.311.16.4")) //outlookExpress
+						{
+							if ((itemPDU = ASN1Util.pduGetItem(pdu, valuePDU.ofst, valuePDU.ofst + valuePDU.len, "1")) != null && itemPDU.itemType == ASN1Util.IT_SEQUENCE)
+							{
+								appendIssuerAndSerialNumber(pdu, itemPDU.ofst, itemPDU.ofst + itemPDU.len, sb, varName + ".outlookExpress");
+							}
 						}
 					}
-					
 				}
 			}
 			i++;

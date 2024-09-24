@@ -810,7 +810,7 @@ public class DBUtil {
 					T obj = constr.newInstance(new Object[0]);
 					Integer id = fillColVals(dbType, rs, obj, cols);
 
-					if (id != null && idSet.contains(id))
+					if (id != null && idSet != null && idSet.contains(id))
 					{
 						retMap.put(id, obj);
 					}
@@ -1270,6 +1270,8 @@ public class DBUtil {
 			if (fieldType.equals(Set.class))
 			{
 				Map<Integer, T> objMap = DataTools.createIntMap(items, idCols.get(0).field.getName(), null);
+				if (objMap == null)
+					throw new IllegalArgumentException("Unsupported Set type");
 				StringBuilder sb = new StringBuilder();
 				String idName = collTab.joinColumns()[0].name();
 				sb.append("select ");
@@ -1315,7 +1317,7 @@ public class DBUtil {
 							if (obj != null)
 							{
 								@SuppressWarnings("unchecked")
-								Set<Integer> set = (Set<Integer>)getter.get(obj);
+								Set<Integer> set = (Set<Integer>)getter.getNN(obj);
 								set.add(rs.getInt(2));
 							}
 						}
@@ -1418,6 +1420,8 @@ public class DBUtil {
 			{
 				tMap = DataTools.createValueMap(Integer.class, items, idCol.field.getName(), null);
 			}
+			if (tMap == null)
+				throw new IllegalArgumentException("Error in creating value map");
 			FieldGetter<Object> targetGetter = new FieldGetter<>(targetField);
 			@SuppressWarnings("unchecked")
 			Class<Object> tmpClass = (Class<Object>)targetClass;
@@ -1428,9 +1432,9 @@ public class DBUtil {
 				while (itTarget.hasNext())
 				{
 					Object targetObj = itTarget.next();
-					T tObj = tMap.get(idCol.getter.get(targetGetter.get(targetObj)));
+					T tObj = tMap.get(idCol.getter.getNN(targetGetter.getNN(targetObj)));
 					@SuppressWarnings("unchecked")
-					Collection<Object> targetSet = ((Collection<Object>)getter.get(tObj));
+					Collection<Object> targetSet = ((Collection<Object>)getter.getNN(tObj));
 					targetSet.add(targetObj);
 				}
 				return true;
@@ -1502,6 +1506,8 @@ public class DBUtil {
 			}
 
 			Set<Integer> idSet = DataTools.createIntSet(items, idCols.get(0).field.getName(), null);
+			if (idSet == null)
+				throw new IllegalArgumentException("Error in creating intSet");
 			StringBuilder sb = new StringBuilder();
 			String idName = mapJoinTable.inverseJoinColumns()[0].name();
 			sb.append("select ");
@@ -1561,6 +1567,8 @@ public class DBUtil {
 			}
 			Map<Integer, ? extends Object> targetMap = loadItemsById(targetClass, conn, DataTools.createIntSet(joinItemList, "joinId", null), null);
 			Map<Integer, T> itemMap = DataTools.createIntMap(items, idCols.get(0).field.getName(), null);
+			if (itemMap == null)
+				throw new IllegalArgumentException("Error in creating intMap");
 			it = items.iterator();
 			try
 			{
@@ -1577,7 +1585,7 @@ public class DBUtil {
 						joinItem = joinItemList.get(i);
 						obj = itemMap.get(joinItem.id);
 						@SuppressWarnings("unchecked")
-						Set<Object> itemSet = (Set<Object>)getter.get(obj);
+						Set<Object> itemSet = (Set<Object>)getter.getNN(obj);
 						Object o = targetMap.get(joinItem.joinId);
 						if (o != null)
 						{
@@ -1600,7 +1608,7 @@ public class DBUtil {
 						joinItem = joinItemList.get(i);
 						obj = itemMap.get(joinItem.id);
 						@SuppressWarnings("unchecked")
-						List<Object> itemSet = (List<Object>)getter.get(obj);
+						List<Object> itemSet = (List<Object>)getter.getNN(obj);
 						Object o = targetMap.get(joinItem.joinId);
 						if (o != null)
 						{
@@ -1653,6 +1661,8 @@ public class DBUtil {
 			}
 
 			Set<Integer> idSet = DataTools.createIntSet(items, idCols.get(0).field.getName(), null);
+			if (idSet == null)
+				throw new IllegalArgumentException("Error in creating int set");
 			StringBuilder sb = new StringBuilder();
 			String idName = joinTable.joinColumns()[0].name();
 			sb.append("select ");
@@ -1702,6 +1712,8 @@ public class DBUtil {
 			}
 			Map<Integer, ? extends Object> targetMap = loadItemsById(targetClass, conn, DataTools.createIntSet(joinItemList, "joinId", null), null);
 			Map<Integer, T> itemMap = DataTools.createIntMap(items, idCols.get(0).field.getName(), null);
+			if (itemMap == null)
+				throw new IllegalArgumentException("Error in creating int map");
 			it = items.iterator();
 			try
 			{
@@ -1718,7 +1730,7 @@ public class DBUtil {
 						joinItem = joinItemList.get(i);
 						obj = itemMap.get(joinItem.id);
 						@SuppressWarnings("unchecked")
-						Set<Object> itemSet = (Set<Object>)getter.get(obj);
+						Set<Object> itemSet = (Set<Object>)getter.getNN(obj);
 						Object o = targetMap.get(joinItem.joinId);
 						if (o != null)
 						{
@@ -1741,7 +1753,7 @@ public class DBUtil {
 						joinItem = joinItemList.get(i);
 						obj = itemMap.get(joinItem.id);
 						@SuppressWarnings("unchecked")
-						List<Object> itemSet = (List<Object>)getter.get(obj);
+						List<Object> itemSet = (List<Object>)getter.getNN(obj);
 						Object o = targetMap.get(joinItem.joinId);
 						if (o != null)
 						{

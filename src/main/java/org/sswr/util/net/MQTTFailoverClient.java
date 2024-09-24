@@ -3,6 +3,8 @@ package org.sswr.util.net;
 import java.util.ArrayList;
 import java.util.List;
 
+import jakarta.annotation.Nonnull;
+
 public class MQTTFailoverClient implements MQTTClient
 {
 	class TopicInfo
@@ -21,7 +23,7 @@ public class MQTTFailoverClient implements MQTTClient
 		}
 
 		@Override
-		public void onPublishMessage(String topic, byte[] buff, int buffOfst, int buffSize)
+		public void onPublishMessage(@Nonnull String topic, @Nonnull byte[] buff, int buffOfst, int buffSize)
 		{
 			onChannelPublishMessage(client, topic, buff, buffOfst, buffSize);
 		}
@@ -103,7 +105,7 @@ public class MQTTFailoverClient implements MQTTClient
 		}
 	}
 
-	public void onChannelPublishMessage(MQTTStaticClient client, String topic, byte[] buff, int buffOfst, int buffSize)
+	public void onChannelPublishMessage(@Nonnull MQTTStaticClient client, @Nonnull String topic, @Nonnull byte[] buff, int buffOfst, int buffSize)
 	{
 		if (client != this.foHdlr.getCurrChannel())
 		{

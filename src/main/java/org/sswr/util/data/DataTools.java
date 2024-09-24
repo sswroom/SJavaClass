@@ -25,8 +25,12 @@ import org.sswr.util.db.QueryConditions;
 import org.sswr.util.math.WKTWriter;
 import org.sswr.util.math.geometry.Vector2D;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class DataTools {
-	public static <T> Set<Integer> createIntSet(Iterable<T> objs, String fieldName, QueryConditions<T> cond)
+	@Nullable
+	public static <T> Set<Integer> createIntSet(@Nonnull Iterable<T> objs, @Nonnull String fieldName, @Nullable QueryConditions<T> cond)
 	{
 		Iterator<T> it = objs.iterator();
 		if (!it.hasNext())
@@ -95,7 +99,8 @@ public class DataTools {
 		}
 	}
 
-	public static <T> Set<String> createStringSet(Iterable<T> objs, String fieldName, QueryConditions<T> cond)
+	@Nullable
+	public static <T> Set<String> createStringSet(@Nonnull Iterable<T> objs, @Nonnull String fieldName, @Nullable QueryConditions<T> cond)
 	{
 		Iterator<T> it = objs.iterator();
 		if (!it.hasNext())
@@ -129,14 +134,14 @@ public class DataTools {
 			{
 				if (cond == null || cond.isValid(obj))
 				{
-					strSet.add(getter.get(obj).toString());
+					strSet.add(getter.getNN(obj).toString());
 				}
 				while (it.hasNext())
 				{
 					obj = it.next();
 					if (cond == null || cond.isValid(obj))
 					{
-						strSet.add(getter.get(obj).toString());
+						strSet.add(getter.getNN(obj).toString());
 					}
 				}
 				return strSet;
@@ -159,7 +164,8 @@ public class DataTools {
 		}
 	}
 
-	public static <T> Set<Timestamp> createTimestampSet(Iterable<T> objs, String fieldName, QueryConditions<T> cond)
+	@Nullable
+	public static <T> Set<Timestamp> createTimestampSet(@Nonnull Iterable<T> objs, @Nonnull String fieldName, @Nullable QueryConditions<T> cond)
 	{
 		Iterator<T> it = objs.iterator();
 		if (!it.hasNext())
@@ -211,7 +217,8 @@ public class DataTools {
 		}
 	}
 
-	public static <T> Map<Integer, T> createIntMap(Iterable<T> list, String fieldName, QueryConditions<T> cond)
+	@Nullable
+	public static <T> Map<Integer, T> createIntMap(@Nonnull Iterable<T> list, @Nonnull String fieldName, @Nullable QueryConditions<T> cond)
 	{
 		Iterator<T> it = list.iterator();
 		if (!it.hasNext())
@@ -270,7 +277,8 @@ public class DataTools {
 		}
 	}
 
-	public static <T> Map<String, T> createStringMap(Iterator<T> it, String fieldName, QueryConditions<T> cond)
+	@Nullable
+	public static <T> Map<String, T> createStringMap(@Nonnull Iterator<T> it, @Nonnull String fieldName, @Nullable QueryConditions<T> cond)
 	{
 		if (!it.hasNext())
 		{
@@ -305,7 +313,7 @@ public class DataTools {
 			{
 				if (cond == null || cond.isValid(o))
 				{
-					s = getter.get(o).toString();
+					s = getter.getNN(o).toString();
 					retMap.put(s, o);
 				}
 				while (it.hasNext())
@@ -313,7 +321,7 @@ public class DataTools {
 					o = it.next();
 					if (cond == null || cond.isValid(o))
 					{
-						s = getter.get(o).toString();
+						s = getter.getNN(o).toString();
 						retMap.put(s, o);
 					}
 				}
@@ -342,12 +350,14 @@ public class DataTools {
 		}
 	}
 
-	public static <T> Map<String, T> createStringMap(Iterable<T> list, String fieldName, QueryConditions<T> cond)
+	@Nullable
+	public static <T> Map<String, T> createStringMap(@Nonnull Iterable<T> list, @Nonnull String fieldName, @Nullable QueryConditions<T> cond)
 	{
 		return createStringMap(list.iterator(), fieldName, cond);
 	}
 
-	public static <T> Map<String, T> createUpperStringMap(Iterable<T> list, String fieldName, QueryConditions<T> cond)
+	@Nullable
+	public static <T> Map<String, T> createUpperStringMap(@Nonnull Iterable<T> list, @Nonnull String fieldName, @Nullable QueryConditions<T> cond)
 	{
 		Iterator<T> it = list.iterator();
 		if (!it.hasNext())
@@ -365,7 +375,7 @@ public class DataTools {
 			{
 				if (cond == null || cond.isValid(o))
 				{
-					s = (String)getter.get(o);
+					s = (String)getter.getNN(o);
 					retMap.put(s.toUpperCase(), o);
 				}
 				while (it.hasNext())
@@ -373,7 +383,7 @@ public class DataTools {
 					o = it.next();
 					if (cond == null || cond.isValid(o))
 					{
-						s = (String)getter.get(o);
+						s = (String)getter.getNN(o);
 						retMap.put(s.toUpperCase(), o);
 					}
 				}
@@ -383,7 +393,7 @@ public class DataTools {
 			{
 				if (cond == null || cond.isValid(o))
 				{
-					s = getter.get(o).toString();
+					s = getter.getNN(o).toString();
 					retMap.put(s.toUpperCase(), o);
 				}
 				while (it.hasNext())
@@ -391,7 +401,7 @@ public class DataTools {
 					o = it.next();
 					if (cond == null || cond.isValid(o))
 					{
-						s = getter.get(o).toString();
+						s = getter.getNN(o).toString();
 						retMap.put(s.toUpperCase(), o);
 					}
 				}
@@ -420,7 +430,8 @@ public class DataTools {
 		}
 	}
 	
-	public static <T, K> List<K> createValueList(Class<K> cls, Iterable<T> objs, String fieldName, QueryConditions<T> cond)
+	@Nullable
+	public static <T, K> List<K> createValueList(@Nonnull Class<K> cls, @Nonnull Iterable<T> objs, @Nonnull String fieldName, @Nullable QueryConditions<T> cond)
 	{
 		Iterator<T> it = objs.iterator();
 		if (!it.hasNext())
@@ -497,7 +508,8 @@ public class DataTools {
 		}
 	}
 
-	public static <T, K> Set<K> createValueSet(Class<K> cls, Iterable<T> objs, String fieldName, QueryConditions<T> cond)
+	@Nullable
+	public static <T, K> Set<K> createValueSet(@Nonnull Class<K> cls, @Nonnull Iterable<T> objs, @Nonnull String fieldName, @Nullable QueryConditions<T> cond)
 	{
 		Iterator<T> it = objs.iterator();
 		if (!it.hasNext())
@@ -574,7 +586,8 @@ public class DataTools {
 		}
 	}
 
-	public static <T, K> Map<K, T> createValueMap(Class<K> cls, Iterable<T> objs, String fieldName, QueryConditions<T> cond)
+	@Nullable
+	public static <T, K> Map<K, T> createValueMap(@Nonnull Class<K> cls, @Nonnull Iterable<T> objs, @Nonnull String fieldName, @Nullable QueryConditions<T> cond)
 	{
 		Iterator<T> it = objs.iterator();
 		if (!it.hasNext())
@@ -631,7 +644,8 @@ public class DataTools {
 		}
 	}
 
-	public static <T> List<T> filterToList(T[] arr, QueryConditions<T> cond)
+	@Nullable
+	public static <T> List<T> filterToList(@Nonnull T[] arr, @Nullable QueryConditions<T> cond)
 	{
 		ArrayList<T> list = new ArrayList<T>();
 		int i = 0;
@@ -656,7 +670,8 @@ public class DataTools {
 		}
 	}
 
-	public static <T> List<T> filterToList(Iterable<T> values, QueryConditions<T> cond)
+	@Nullable
+	public static <T> List<T> filterToList(@Nonnull Iterable<T> values, @Nullable QueryConditions<T> cond)
 	{
 		ArrayList<T> list = new ArrayList<T>();
 		Iterator<T> it = values.iterator();
@@ -681,7 +696,8 @@ public class DataTools {
 		}
 	}
 
-	public static <T> String objectJoin(Iterable<T> list, String fieldName, String seperator)
+	@Nonnull
+	public static <T> String objectJoin(@Nonnull Iterable<T> list, @Nonnull String fieldName, @Nonnull String seperator)
 	{
 		Iterator<T> it = list.iterator();
 		if (!it.hasNext())
@@ -723,7 +739,8 @@ public class DataTools {
 		}
 	}
 
-	public static String intJoin(Iterable<Integer> list, String seperator)
+	@Nonnull
+	public static String intJoin(@Nonnull Iterable<Integer> list, @Nonnull String seperator)
 	{
 		StringBuilder sb = new StringBuilder();
 		Iterator<Integer> it = list.iterator();
@@ -740,12 +757,9 @@ public class DataTools {
 		return sb.toString();
 	}
 
-	public static <T extends Enum<T>> T getEnum(Class<T> cls, String name)
+	@Nullable
+	public static <T extends Enum<T>> T getEnum(@Nonnull Class<T> cls, @Nonnull String name)
 	{
-		if (name == null)
-		{
-			return null;
-		}
 		T[] enums = cls.getEnumConstants();
 		if (enums == null)
 		{
@@ -764,7 +778,8 @@ public class DataTools {
 		return null;
 	}
 
-	public static <T extends Enum<T>> T[] string2Enums(Class<T> cls, String names[])
+	@Nonnull
+	public static <T extends Enum<T>> T[] string2Enums(@Nonnull Class<T> cls, @Nonnull String names[])
 	{
 		ArrayList<T> tList = new ArrayList<T>();
 		int i = 0;
@@ -781,7 +796,7 @@ public class DataTools {
 		return toArray(cls, tList);
 	}
 
-	public static <T> void copyList(List<T> list, int destIndex, int srcIndex, int count)
+	public static <T> void copyList(@Nonnull List<T> list, int destIndex, int srcIndex, int count)
 	{
 		if (destIndex > srcIndex)
 		{
@@ -801,7 +816,8 @@ public class DataTools {
 		}
 	}
 
-	public static <T> List<T> sortAsList(Iterable<T> objs, String sortStr) throws NoSuchFieldException
+	@Nonnull
+	public static <T> List<T> sortAsList(@Nonnull Iterable<T> objs, @Nonnull String sortStr) throws NoSuchFieldException
 	{
 		ArrayList<T> retList = new ArrayList<T>();
 		Iterator<T> it = objs.iterator();
@@ -818,7 +834,8 @@ public class DataTools {
 		return retList;
 	}
 	
-	public static <T> List<T> toList(Iterable<T> objs)
+	@Nonnull
+	public static <T> List<T> toList(@Nonnull Iterable<T> objs)
 	{
 		ArrayList<T> retList = new ArrayList<T>();
 		Iterator<T> it = objs.iterator();
@@ -829,7 +846,8 @@ public class DataTools {
 		return retList;
 	}
 
-	public static <T> T[] toArray(Class<T> cls, List<T> objs)
+	@Nonnull
+	public static <T> T[] toArray(@Nonnull Class<T> cls, @Nonnull List<T> objs)
 	{
 		@SuppressWarnings("unchecked")
 		T tArr[] = (T[])Array.newInstance(cls, objs.size());
@@ -843,7 +861,7 @@ public class DataTools {
 		return tArr;
 	}
 
-	public static int objectCompare(Object obj1, Object obj2)
+	public static int objectCompare(@Nullable Object obj1, @Nullable Object obj2)
 	{
 		if (obj1 == null)
 		{
@@ -884,7 +902,8 @@ public class DataTools {
 		throw new IllegalArgumentException("Object class is not supported: "+cls.toString());
 	}
 
-	private static String toObjectStringInner(Object o, int maxLevel, int thisLevel, boolean wellformat)
+	@Nonnull
+	private static String toObjectStringInner(@Nullable Object o, int maxLevel, int thisLevel, boolean wellformat)
 	{
 		if (o == null)
 		{
@@ -1198,17 +1217,20 @@ public class DataTools {
 		}
 	}
 
-	public static String toObjectString(Object o)
+	@Nonnull
+	public static String toObjectString(@Nullable Object o)
 	{
 		return toObjectStringInner(o, 5, 0, false);
 	}
 
-	public static String toObjectStringWF(Object o)
+	@Nonnull
+	public static String toObjectStringWF(@Nullable Object o)
 	{
 		return toObjectStringInner(o, 5, 0, true);
 	}
 
-	public static String toJSONStringInner(Object o, int maxLevel)
+	@Nonnull
+	public static String toJSONStringInner(@Nullable Object o, int maxLevel)
 	{
 		if (o == null)
 		{
@@ -1481,12 +1503,14 @@ public class DataTools {
 		}
 	}
 
-	public static String toJSONString(Object o)
+	@Nonnull
+	public static String toJSONString(@Nullable Object o)
 	{
 		return toJSONStringInner(o, 5);
 	}
 
-	public static <T> T cloneEntity(T o)
+	@Nullable
+	public static <T> T cloneEntity(@Nonnull T o)
 	{
 		try
 		{
@@ -1514,7 +1538,7 @@ public class DataTools {
 		}
 	}
 
-	public static <T> int getSize(Iterable<T> it)
+	public static <T> int getSize(@Nonnull Iterable<T> it)
 	{
 		if (it instanceof List)
 		{
@@ -1542,7 +1566,8 @@ public class DataTools {
 		}
 	}
 
-	public static List<String> createList(String []sarr)
+	@Nonnull
+	public static List<String> createList(@Nonnull String []sarr)
 	{
 		List<String> retList = new ArrayList<String>();
 		int i = 0;
@@ -1555,12 +1580,9 @@ public class DataTools {
 		return retList;
 	}
 
-	public static Map<String, String> toStringStringMap(Map<String, Object> map, String joinStr)
+	@Nullable
+	public static Map<String, String> toStringStringMap(@Nonnull Map<String, Object> map, @Nonnull String joinStr)
 	{
-		if (map == null)
-		{
-			return null;
-		}
 		Map<String, String> retMap = new HashMap<String, String>();
 		Iterator<String> itName = map.keySet().iterator();
 		String name;
@@ -1599,7 +1621,8 @@ public class DataTools {
 		}
 		return retMap;
 	}
-	public static <T> boolean hasNullField(T o, boolean checkEmpty)
+
+	public static <T> boolean hasNullField(@Nullable T o, boolean checkEmpty)
 	{
 		if (o == null)
 		{
@@ -1615,10 +1638,6 @@ public class DataTools {
 			{
 				FieldGetter<T> getter = new FieldGetter<T>(fields[i]);
 				Object val = getter.get(o);
-				if (val == null)
-				{
-					return true;
-				}
 				if (checkEmpty && (val instanceof String))
 				{
 					if (((String)val).length() == 0)
@@ -1641,6 +1660,10 @@ public class DataTools {
 				ex.printStackTrace();
 				return true;
 			}
+			catch (NullPointerException ex)
+			{
+				return true;
+			}
 			
 			i++;
 		}
@@ -1648,7 +1671,8 @@ public class DataTools {
 		return false;
 	}
 
-	public static <T> T or(T obj1, T obj2)
+	@Nullable
+	public static <T> T or(@Nullable T obj1, @Nullable T obj2)
 	{
 		if (obj1 != null)
 		{
@@ -1657,7 +1681,8 @@ public class DataTools {
 		return obj2;
 	}
 
-	public static <T> T or(T obj1, T obj2, T obj3)
+	@Nullable
+	public static <T> T or(@Nullable T obj1, @Nullable T obj2, @Nullable T obj3)
 	{
 		if (obj1 != null)
 		{
@@ -1670,7 +1695,8 @@ public class DataTools {
 		return obj3;
 	}
 
-	public static Object getObjValue(Object o, String fieldName)
+	@Nullable
+	public static Object getObjValue(@Nonnull Object o, @Nonnull String fieldName)
 	{
 		try
 		{
@@ -1691,7 +1717,8 @@ public class DataTools {
 		}
 	}
 
-	public static <T> T tryGetFirst(List<T> dataList)
+	@Nullable
+	public static <T> T tryGetFirst(@Nullable List<T> dataList)
 	{
 		if (dataList == null || dataList.size() == 0)
 		{
@@ -1700,7 +1727,7 @@ public class DataTools {
 		return dataList.get(0);
 	}
 
-	private static void printClassTreeInt(Class<?> cls, int level)
+	private static void printClassTreeInt(@Nonnull Class<?> cls, int level)
 	{
 		int i = level;
 		while (i-- > 0)
@@ -1731,7 +1758,7 @@ public class DataTools {
 		}
 	}
 
-	public static void printClassTree(Class<?> cls)
+	public static void printClassTree(@Nonnull Class<?> cls)
 	{
 		printClassTreeInt(cls, 0);
 	}

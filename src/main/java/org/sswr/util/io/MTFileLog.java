@@ -12,6 +12,9 @@ import java.util.List;
 import org.sswr.util.basic.ThreadEvent;
 import org.sswr.util.data.DateTimeUtil;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class MTFileLog implements Runnable, LogHandler
 {
 	private LogType logStyle;
@@ -89,7 +92,7 @@ public class MTFileLog implements Runnable, LogHandler
 		return sb.toString();
 	}
 
-	private void writeArr(List<String> msgArr, List<ZonedDateTime> dateArr)
+	private void writeArr(@Nonnull List<String> msgArr, @Nonnull List<ZonedDateTime> dateArr)
 	{
 		int i = 0;
 		int arrCnt;
@@ -190,7 +193,7 @@ public class MTFileLog implements Runnable, LogHandler
 		}
 	}
 
-	public MTFileLog(String fileName, LogType style, LogGroup groupStyle, String dateFormat)
+	public MTFileLog(@Nonnull String fileName, @Nonnull LogType style, @Nonnull LogGroup groupStyle, @Nullable String dateFormat)
 	{
 		this.evt = new ThreadEvent(true);
 		this.dateList = new ArrayList<ZonedDateTime>();
@@ -254,7 +257,7 @@ public class MTFileLog implements Runnable, LogHandler
 		}
 	}
 
-	public synchronized void logAdded(ZonedDateTime logTime, String logMsg, LogLevel logLev)
+	public synchronized void logAdded(@Nonnull ZonedDateTime logTime, @Nonnull String logMsg, @Nonnull LogLevel logLev)
 	{
 		if (this.closed)
 			return;
@@ -270,8 +273,8 @@ public class MTFileLog implements Runnable, LogHandler
 	@Override
 	public void run() {
 		int arrCnt;
-		List<String> msgArr = null;
-		List<ZonedDateTime> dateArr = null;
+		List<String> msgArr = new ArrayList<String>();
+		List<ZonedDateTime> dateArr = new ArrayList<ZonedDateTime>();
 		this.running = true;
 		while (!this.closed)
 		{

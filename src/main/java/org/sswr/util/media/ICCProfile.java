@@ -13,11 +13,13 @@ import org.sswr.util.media.cs.TransferFunc;
 import org.sswr.util.media.cs.TransferParam;
 import org.sswr.util.media.cs.TransferType;
 
+import jakarta.annotation.Nonnull;
+
 public class ICCProfile
 {
 	private byte iccBuff[];
 
-	public ICCProfile(byte iccBuff[])
+	public ICCProfile(@Nonnull byte iccBuff[])
 	{
 		int buffSize = ByteTool.readMInt32(iccBuff, 0);
 		if (buffSize != iccBuff.length)
@@ -595,7 +597,7 @@ public class ICCProfile
 			}
 			i++;
 		}
-		if (rxyz != null && gxyz != null && gxyz != null && wxyz != null)
+		if (rxyz != null && gxyz != null && bxyz != null && wxyz != null)
 		{
 			Matrix3 mat;
 			Matrix3 mat2;
@@ -735,7 +737,8 @@ public class ICCProfile
 		}
 	}
 
-	public static LocalDateTime readDateTimeNumber(byte buff[], int index)
+	@Nonnull
+	public static LocalDateTime readDateTimeNumber(@Nonnull byte buff[], int index)
 	{
 		return LocalDateTime.of(ByteTool.readMUInt16(buff, index),
 			ByteTool.readMUInt16(buff, index + 2),
@@ -745,7 +748,8 @@ public class ICCProfile
 			ByteTool.readMUInt16(buff, index + 10));
 	}
 	
-	public static Vector3 readXYZNumber(byte buff[], int index)
+	@Nonnull
+	public static Vector3 readXYZNumber(@Nonnull byte buff[], int index)
 	{
 		Vector3 vec = new Vector3();
 		vec.val[0] = readS15Fixed16Number(buff, index + 0);
@@ -754,21 +758,22 @@ public class ICCProfile
 		return vec;
 	}
 	
-	public static double readS15Fixed16Number(byte buff[], int index)
+	public static double readS15Fixed16Number(@Nonnull byte buff[], int index)
 	{
 		return ByteTool.readMInt32(buff, index) / 65536.0;
 	}
 	
-	public static double readU16Fixed16Number(byte buff[], int index)
+	public static double readU16Fixed16Number(@Nonnull byte buff[], int index)
 	{
 		return ByteTool.readMUInt16(buff, index) + ByteTool.readMUInt16(buff, index + 2) / 65536.0;
 	}
 	
-	public static double readU8Fixed8Number(byte buff[], int index)
+	public static double readU8Fixed8Number(@Nonnull byte buff[], int index)
 	{
 		return ByteTool.readMUInt16(buff, index) / 256.0;
 	}
 	
+	@Nonnull
 	public static String getNameCMMType(int val)
 	{
 		switch (val)

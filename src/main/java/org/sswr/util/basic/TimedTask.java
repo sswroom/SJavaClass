@@ -2,13 +2,16 @@ package org.sswr.util.basic;
 
 import org.sswr.util.io.LogTool;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public abstract class TimedTask implements Runnable
 {
 	private int intervalMS;
 	private Thread thread;
 	private LogTool logger;
 
-	protected TimedTask(String threadName, int intervalMS)
+	protected TimedTask(@Nonnull String threadName, int intervalMS)
 	{
 		this.intervalMS = intervalMS;
 		this.thread = new Thread(this, threadName);
@@ -16,7 +19,7 @@ public abstract class TimedTask implements Runnable
 		this.logger = null;
 	}
 
-	public void setLogger(LogTool logger)
+	public void setLogger(@Nullable LogTool logger)
 	{
 		this.logger = logger;
 	}

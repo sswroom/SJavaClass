@@ -2,6 +2,8 @@ package org.sswr.util.basic;
 
 import java.util.Objects;
 
+import jakarta.annotation.Nonnull;
+
 public class Point
 {
 	private double x;
@@ -31,17 +33,17 @@ public class Point
 		this.y = y;
 	}
 
-	public Point x(double x) {
+	public @Nonnull Point x(double x) {
 		setX(x);
 		return this;
 	}
 
-	public Point y(double y) {
+	public @Nonnull Point y(double y) {
 		setY(y);
 		return this;
 	}
 
-	public Point clone()
+	public @Nonnull Point clone()
 	{
 		return new Point(this.x, this.y);
 	}

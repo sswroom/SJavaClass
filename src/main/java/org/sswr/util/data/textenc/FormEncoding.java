@@ -4,6 +4,8 @@ import java.nio.charset.StandardCharsets;
 
 import org.sswr.util.data.StringUtil;
 
+import jakarta.annotation.Nonnull;
+
 public class FormEncoding
 {
 	private static final byte uriAllow[] = {
@@ -24,7 +26,7 @@ public class FormEncoding
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 	
-	public static String formEncode(String uri)
+	public static @Nonnull String formEncode(@Nonnull String uri)
 	{
 		byte[] carr = uri.getBytes(StandardCharsets.UTF_8);
 		StringBuilder sb = new StringBuilder();
@@ -53,7 +55,7 @@ public class FormEncoding
 		return sb.toString();
 	}
 
-	public static String formDecode(String uri)
+	public static @Nonnull String formDecode(@Nonnull String uri)
 	{
 		byte[] carr = uri.getBytes(StandardCharsets.UTF_8);
 		byte[] destBuff = new byte[carr.length];

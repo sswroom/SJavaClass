@@ -2,12 +2,15 @@ package org.sswr.util.data.textbinenc;
 
 import org.sswr.util.data.ByteTool;
 
-public class Radix64Enc
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
+public class Radix64Enc extends TextBinEnc
 {
 	private byte[] encArr;
 	private byte[] decArr;
 	
-	public Radix64Enc(String encArr)
+	public Radix64Enc(@Nonnull String encArr)
 	{
 		this.encArr = new byte[64];
 		this.decArr = new byte[256];
@@ -30,7 +33,7 @@ public class Radix64Enc
 		}
 	}
 
-	public String encodeBin(byte []dataBuff, int dataOfst, int buffSize)
+	public @Nullable String encodeBin(@Nonnull byte []dataBuff, int dataOfst, int buffSize)
 	{
 		StringBuilder sb = new StringBuilder();
 		int outSize;
@@ -69,7 +72,8 @@ public class Radix64Enc
 		return sb.toString();
 	}
 
-	public byte []decodeBin(String s)
+	@Nonnull
+	public byte []decodeBin(@Nonnull String s)
 	{
 		char b64Str[] = s.toCharArray();
 		int i = 0;
@@ -128,7 +132,7 @@ public class Radix64Enc
 		}
 	}
 
-	public String getName()
+	public @Nonnull String getName()
 	{
 		return "Radix64";
 	}

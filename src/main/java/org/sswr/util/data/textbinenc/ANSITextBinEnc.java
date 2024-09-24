@@ -1,5 +1,7 @@
 package org.sswr.util.data.textbinenc;
 
+import jakarta.annotation.Nonnull;
+
 public class ANSITextBinEnc extends CharsetTextBinEnc
 {
 	public ANSITextBinEnc()
@@ -7,7 +9,7 @@ public class ANSITextBinEnc extends CharsetTextBinEnc
 		super(null);
 	}
 
-	public String getName()
+	public @Nonnull String getName()
 	{
 		return "ANSI Text";
 	}

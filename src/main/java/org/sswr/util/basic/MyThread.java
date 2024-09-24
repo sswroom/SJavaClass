@@ -1,5 +1,7 @@
 package org.sswr.util.basic;
 
+import jakarta.annotation.Nonnull;
+
 public class MyThread
 {
 	public static void sleep(long ms)
@@ -13,7 +15,7 @@ public class MyThread
 		}
 	}
 
-	public static void setPriority(ThreadPriority priority)
+	public static void setPriority(@Nonnull ThreadPriority priority)
 	{
 		int ipriority;
 		switch (priority)

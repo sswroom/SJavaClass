@@ -4,11 +4,14 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class FieldSetter
 {
 	private Field field;
 	private Method setter;
-	public FieldSetter(Field field)
+	public FieldSetter(@Nonnull Field field)
 	{
 		this.field = field;
 		this.setter = ReflectTools.findSetter(field);
@@ -18,7 +21,7 @@ public class FieldSetter
 		}
 	}
 
-	public void set(Object o, Object v) throws IllegalAccessException, InvocationTargetException
+	public void set(@Nonnull Object o, @Nullable Object v) throws IllegalAccessException, InvocationTargetException
 	{
 		if (this.setter != null)
 		{
@@ -30,6 +33,7 @@ public class FieldSetter
 		}
 	}
 
+	@Nonnull
 	public Field getField()
 	{
 		return this.field;

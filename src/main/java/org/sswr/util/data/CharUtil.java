@@ -5,11 +5,13 @@ import java.util.List;
 
 import org.sswr.util.io.ResourceLoader;
 
+import jakarta.annotation.Nullable;
+
 public class CharUtil
 {
 	private static List<UnicodeBlock> ublk;
 
-	public static UnicodeBlock getUnicodeBlock(char c)
+	public static @Nullable UnicodeBlock getUnicodeBlock(char c)
 	{
 		if (ublk == null)
 		{

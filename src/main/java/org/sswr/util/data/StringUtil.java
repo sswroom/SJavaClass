@@ -10,6 +10,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class StringUtil
 {
 	private static final boolean VERBOSE = false;
@@ -22,7 +25,7 @@ public class StringUtil
 	* @param  s  the string to check
 	* @return    true if the string is not null/empty and contains digits only
 	*/
-	public static boolean isNumeric(String s)
+	public static boolean isNumeric(@Nullable String s)
 	{
 		if (s == null || s.length() == 0)
 		{
@@ -45,7 +48,7 @@ public class StringUtil
 	* @param  s  the string to check
 	* @return    true if the string is not null/empty and contains non-ASCII characters
 	*/
-	public static boolean isNonASCII(String s)
+	public static boolean isNonASCII(@Nullable String s)
 	{
 		if (s == null || s.length() == 0)
 		{
@@ -70,7 +73,7 @@ public class StringUtil
 	* @param  len  the length of byte array
 	* @return    true if the byte array are all ascii characters
 	*/
-	public static boolean isASCIIText(byte[] buff, int ofst, int len)
+	public static boolean isASCIIText(@Nonnull byte[] buff, int ofst, int len)
 	{
 		byte b;
 		while (len-- > 0)
@@ -94,7 +97,7 @@ public class StringUtil
 	* @param  s  the string to check
 	* @return    true if the string is in email address form
 	*/
-	public static boolean isEmailAddress(String s)
+	public static boolean isEmailAddress(@Nonnull String s)
 	{
 		int atPos = -1;
 		boolean dotFound = false;
@@ -144,7 +147,7 @@ public class StringUtil
 	* @param  s  the string to check
 	* @return    true if the string is null or empty
 	*/
-	public static boolean isNullOrEmpty(String s)
+	public static boolean isNullOrEmpty(@Nullable String s)
 	{
 		return s == null || s.length() == 0;
 	}
@@ -155,7 +158,7 @@ public class StringUtil
 	* @param  s  the string to check
 	* @return    true if the string has at least 1 characters
 	*/
-	public static boolean hasChars(String s)
+	public static boolean hasChars(@Nullable String s)
 	{
 		return s != null && s.length() > 0;
 	}
@@ -166,7 +169,7 @@ public class StringUtil
 	* @param  sarr  array of string to check
 	* @return    true if the string can convert to int array with at least 1 element
 	*/
-	public static boolean canParseIntArr(String sarr[])
+	public static boolean canParseIntArr(@Nullable String sarr[])
 	{
 		if (sarr == null)
 			return false;
@@ -189,7 +192,8 @@ public class StringUtil
 	* @param  padChar the char to pad
 	* @return      padded string
 	*/
-	public static String leftPad(String s, int minLeng, char padChar)
+	@Nonnull
+	public static String leftPad(@Nonnull String s, int minLeng, char padChar)
 	{
 		int l = s.length();
 		if (l >= minLeng)
@@ -213,6 +217,7 @@ public class StringUtil
 	* @param  minDigits minimum number of digits of the string
 	* @return      padded string
 	*/
+	@Nonnull
 	public static String intZPad(int val, int minDigits)
 	{
 		if (val < 0)
@@ -232,10 +237,9 @@ public class StringUtil
 	* @param  seperator seperator of strings
 	* @return      joined string or null if objs is null
 	*/
-	public static String join(Iterable<String> strs, String seperator)
+	@Nonnull
+	public static String join(@Nonnull Iterable<String> strs, @Nonnull String seperator)
 	{
-		if (strs == null)
-			return null;
 		StringBuilder sb = new StringBuilder();
 		Iterator<String> it = strs.iterator();
 		if (it.hasNext())
@@ -257,10 +261,9 @@ public class StringUtil
 	* @param  seperator seperator of strings
 	* @return      joined string or null if strs is null
 	*/
-	public static String join(String strs[], String seperator)
+	@Nonnull
+	public static String join(@Nonnull String strs[], @Nonnull String seperator)
 	{
-		if (strs == null)
-			return null;
 		StringBuilder sb = new StringBuilder();
 		int i = 1;
 		int j = strs.length;
@@ -284,10 +287,9 @@ public class StringUtil
 	* @param  seperator seperator of strings
 	* @return      joined string or null if objs is null
 	*/
-	public static <T extends Object> String joinObjs(Iterable<T> objs, String seperator)
+	@Nonnull
+	public static <T extends Object> String joinObjs(@Nonnull Iterable<T> objs, @Nonnull String seperator)
 	{
-		if (objs == null)
-			return null;
 		StringBuilder sb = new StringBuilder();
 		Iterator<T> it = objs.iterator();
 		if (it.hasNext())
@@ -308,7 +310,8 @@ public class StringUtil
 	* @param  s  Hexadecimal String to convert
 	* @return    Integer value, null if error
 	*/
-	public static Integer hex2Int(String s)
+	@Nullable
+	public static Integer hex2Int(@Nonnull String s)
 	{
 		if (s.length() > 8)
 		{
@@ -343,7 +346,8 @@ public class StringUtil
 	* @param  s  Hexadecimal String to convert
 	* @return    byte array value
 	*/
-	public static byte[] hex2Bytes(String s)
+	@Nonnull
+	public static byte[] hex2Bytes(@Nonnull String s)
 	{
 		char carr[] = s.toCharArray();
 		byte retArr[] = new byte[carr.length >> 1];
@@ -414,7 +418,8 @@ public class StringUtil
 	* @param  s  Hexadecimal String to convert
 	* @return    Long value, null if error
 	*/
-	public static Long hex2Long(String s)
+	@Nullable
+	public static Long hex2Long(@Nonnull String s)
 	{
 		if (s.length() > 16)
 		{
@@ -449,6 +454,7 @@ public class StringUtil
 	* @param  b  byte to convert
 	* @return    Upper case Hexadecimal String, must be 2 char long
 	*/
+	@Nonnull
 	public static String toHex(byte b)
 	{
 		int v = b & 0xff;
@@ -461,6 +467,7 @@ public class StringUtil
 	* @param  v  int16 to convert
 	* @return    Upper case Hexadecimal String, must be 4 char long
 	*/
+	@Nonnull
 	public static String toHex16(int v)
 	{
 		int v1 = (v >> 8) & 0xff;
@@ -474,6 +481,7 @@ public class StringUtil
 	* @param  v  int32 to convert
 	* @return    Upper case Hexadecimal String, must be 8 char long
 	*/
+	@Nonnull
 	public static String toHex32(int v)
 	{
 		int v1 = (v >> 24) & 0xff;
@@ -494,6 +502,7 @@ public class StringUtil
 	* @param  v  int64 to convert
 	* @return    Upper case Hexadecimal String, must be 16 char long
 	*/
+	@Nonnull
 	public static String toHex64(long v)
 	{
 		int v1 = (int)(v >> 56) & 0xff;
@@ -522,7 +531,8 @@ public class StringUtil
 	* @param  buff  byte array to convert
 	* @return    Upper case Hexadecimal String, must be 2 * buff.length characters long
 	*/
-	public static String toHex(byte buff[])
+	@Nonnull
+	public static String toHex(@Nonnull byte buff[])
 	{
 		int i = 0;
 		int j = buff.length;
@@ -546,7 +556,8 @@ public class StringUtil
 	* @param  len  length of the data
 	* @return    Upper case Hexadecimal String, must be 2 * len characters long
 	*/
-	public static String toHex(byte buff[], int index, int len)
+	@Nonnull
+	public static String toHex(@Nonnull byte buff[], int index, int len)
 	{
 		int i = index;
 		int j = index + len;
@@ -573,7 +584,8 @@ public class StringUtil
 	* @param  seperator  char for seperating bytes
 	* @return    Upper case Hexadecimal String, must be 3 * len - 1 characters long
 	*/
-	public static String toHex(byte buff[], int index, int len, char seperator)
+	@Nonnull
+	public static String toHex(@Nonnull byte buff[], int index, int len, char seperator)
 	{
 		int i = index;
 		int j = index + len;
@@ -603,7 +615,7 @@ public class StringUtil
 	* @param  ch  Char to seperate for every byte
 	* @param  lbt  LineBreakType to seperate for every 16 bytes
 	*/
-	public static void appendHex(StringBuilder sb, byte buff[], char ch, LineBreakType lbt)
+	public static void appendHex(@Nonnull StringBuilder sb, @Nonnull byte buff[], char ch, @Nonnull LineBreakType lbt)
 	{
 		appendHex(sb, buff, 0, buff.length, ch, lbt);
 	}
@@ -618,7 +630,7 @@ public class StringUtil
 	* @param  ch  Char to seperate for every byte
 	* @param  lbt  LineBreakType to seperate for every 16 bytes
 	*/
-	public static void appendHex(StringBuilder sb, byte buff[], int ofst, int count, char ch, LineBreakType lbt)
+	public static void appendHex(@Nonnull StringBuilder sb, @Nonnull byte buff[], int ofst, int count, char ch, @Nonnull LineBreakType lbt)
 	{
 		int i = 0;
 		int j = count;
@@ -660,7 +672,7 @@ public class StringUtil
 	* @param  sb  StringBuilder to append
 	* @param  lbt  LineBreakType to append
 	*/
-	public static void appendLineBreak(StringBuilder sb, LineBreakType lbt)
+	public static void appendLineBreak(@Nonnull StringBuilder sb, @Nonnull LineBreakType lbt)
 	{
 		switch (lbt)
 		{
@@ -686,7 +698,8 @@ public class StringUtil
 	* @return    null if it is not valid Integer
 	* @exception IllegalArgumentException if s is not in valid format
 	*/
-	public static Timestamp toTimestamp(String s)
+	@Nonnull
+	public static Timestamp toTimestamp(@Nonnull String s)
 	{
 		if (s.length() == 8)
 		{
@@ -712,7 +725,8 @@ public class StringUtil
 	* @param  s  String to parse
 	* @return     null if it is not valid Integer
 	*/
-	public static Integer toInteger(String s)
+	@Nullable
+	public static Integer toInteger(@Nonnull String s)
 	{
 		try
 		{
@@ -739,7 +753,7 @@ public class StringUtil
 	* @param  failVal  value to assign on fail
 	* @return     failVal if it is not valid Integer
 	*/
-	public static int toIntegerS(String s, int failVal)
+	public static int toIntegerS(@Nonnull String s, int failVal)
 	{
 		Integer iVal = toInteger(s);
 		if (iVal == null)
@@ -753,7 +767,8 @@ public class StringUtil
 	* @param  s  String to parse
 	* @return     null if it is not valid Long
 	*/
-	public static Long toLong(String s)
+	@Nullable
+	public static Long toLong(@Nonnull String s)
 	{
 		try
 		{
@@ -780,7 +795,7 @@ public class StringUtil
 	* @param  failVal  value to assign on fail
 	* @return     null if it is not valid Long
 	*/
-	public static long toLongS(String s, long failVal)
+	public static long toLongS(@Nonnull String s, long failVal)
 	{
 		Long lVal = toLong(s);
 		if (lVal == null)
@@ -794,7 +809,8 @@ public class StringUtil
 	* @param  s  String to parse
 	* @return     null if it is not valid Double
 	*/
-	public static Double toDouble(String s)
+	@Nullable
+	public static Double toDouble(@Nonnull String s)
 	{
 		try
 		{
@@ -817,10 +833,10 @@ public class StringUtil
 	* @param failVal value to assign on fail
 	* @return     null if it is not valid Double
 	*/
-	public static double toDoubleS(String s, double failVal)
+	public static double toDoubleS(@Nonnull String s, double failVal)
 	{
 		Double dVal = toDouble(s);
-		if (s == null)
+		if (dVal == null)
 			return failVal;
 		else
 			return dVal;
@@ -833,9 +849,9 @@ public class StringUtil
 	* @param  seperator Seperator of the string
 	* @return     null if it is input is not valid
 	*/
-	public static Set<Integer> toIntSet(String s, String seperator)
+	@Nullable
+	public static Set<Integer> toIntSet(@Nonnull String s, @Nonnull String seperator)
 	{
-		if (s == null) return null;
 		return toIntSet(StringUtil.split(s, seperator));
 	}
 
@@ -845,9 +861,9 @@ public class StringUtil
 	* @param  sarr  Array of String to parse
 	* @return     null if it is input is not valid
 	*/
-	public static Set<Integer> toIntSet(String sarr[])
+	@Nullable
+	public static Set<Integer> toIntSet(@Nonnull String sarr[])
 	{
-		if (sarr == null) return null;
 		Set<Integer> retSet = new HashSet<Integer>();
 		int i = sarr.length;
 		Integer val;
@@ -867,7 +883,8 @@ public class StringUtil
 	* @param  e  Enum to convert
 	* @return     null if it is input null
 	*/
-	public static <T extends Enum<T>> String getEnumName(T e)
+	@Nullable
+	public static <T extends Enum<T>> String getEnumName(@Nullable T e)
 	{
 		if (e == null)
 		{
@@ -882,6 +899,7 @@ public class StringUtil
 	* @param  v  double value to convert
 	* @return     string presentation of the value
 	*/
+	@Nonnull
 	public static String fromDouble(double v)
 	{
 		if (v == 0)
@@ -1067,7 +1085,7 @@ public class StringUtil
 	* @param  s     string to be concated
 	* @return     end offset of the string in buff
 	*/
-	public static int concat(char []buff, int ofst, String s)
+	public static int concat(@Nonnull char []buff, int ofst, @Nonnull String s)
 	{
 		char[] carr = s.toCharArray();
 		int i = 0;
@@ -1088,7 +1106,7 @@ public class StringUtil
 	* @param  s     string to be concated
 	* @return     end offset of the string in buff
 	*/
-	public static int concat(byte []buff, int ofst, String s)
+	public static int concat(@Nonnull byte []buff, int ofst, @Nonnull String s)
 	{
 		byte[] carr = s.getBytes(StandardCharsets.UTF_8);
 		int i = 0;
@@ -1111,7 +1129,7 @@ public class StringUtil
 	* @param  sbuffLen   string buffer length
 	* @return     end offset of the string in buff
 	*/
-	public static int concat(byte []buff, int ofst, byte[] sbuff, int sbuffOfst, int sbuffLen)
+	public static int concat(@Nonnull byte []buff, int ofst, @Nonnull byte[] sbuff, int sbuffOfst, int sbuffLen)
 	{
 		int i = 0;
 		int j = sbuffLen;
@@ -1134,7 +1152,7 @@ public class StringUtil
 	* @param  seperator  seperator between bytes
 	* @return     end offset of the string in buff
 	*/
-	public static int concatHexBytes(byte []buff, int ofst, byte[] bytes, int bytesOfst, int bytesLen, byte seperator)
+	public static int concatHexBytes(@Nonnull byte []buff, int ofst, @Nonnull byte[] bytes, int bytesOfst, int bytesLen, byte seperator)
 	{
 		byte val;
 		if (seperator == 0)
@@ -1172,7 +1190,7 @@ public class StringUtil
 	*
 	* @param  sb  StringBuilder to trim
 	*/
-	public static void trim(StringBuilder sb)
+	public static void trim(@Nonnull StringBuilder sb)
 	{
 		trimRight(sb);
 		trimLeft(sb);
@@ -1183,7 +1201,7 @@ public class StringUtil
 	*
 	* @param  sb  StringBuilder to trim
 	*/
-	public static void trimLeft(StringBuilder sb)
+	public static void trimLeft(@Nonnull StringBuilder sb)
 	{
 		int len = sb.length();
 		if (len <= 0)
@@ -1215,7 +1233,7 @@ public class StringUtil
 	*
 	* @param  sb  StringBuilder to trim
 	*/
-	public static void trimRight(StringBuilder sb)
+	public static void trimRight(@Nonnull StringBuilder sb)
 	{
 		int len = sb.length();
 		char c;
@@ -1243,7 +1261,7 @@ public class StringUtil
 	 * @return  {@literal >}= 0 for exact match
 	 *          {@literal <} 0 for not matching, ~return = position for sorted value to insert
 	 */
-	public static int sortedIndexOf(List<String> list, String value)
+	public static int sortedIndexOf(@Nonnull List<String> list, @Nonnull String value)
 	{
 		int i;
 		int j;
@@ -1278,7 +1296,7 @@ public class StringUtil
 	 * @param  value Value to insert
 	 * @return  index of list has been inserted
 	 */
-	public static int sortedInsert(List<String> list, String value)
+	public static int sortedInsert(@Nonnull List<String> list, @Nonnull String value)
 	{
 		int i = sortedIndexOf(list, value);
 		if (i >= 0)
@@ -1300,7 +1318,7 @@ public class StringUtil
 	 * @param  value Value to check
 	 * @return  whether it is starts with a string
 	 */
-	public static boolean startsWith(StringBuilder sb, String value)
+	public static boolean startsWith(@Nonnull StringBuilder sb, @Nonnull String value)
 	{
 		return sb.length() >= value.length() && sb.substring(0, value.length()).equals(value);
 	}
@@ -1312,7 +1330,7 @@ public class StringUtil
 	 * @param  value Value to check
 	 * @return  whether it is ends with a string
 	 */
-	public static boolean endsWith(StringBuilder sb, String value)
+	public static boolean endsWith(@Nonnull StringBuilder sb, @Nonnull String value)
 	{
 		if (sb.length() < value.length())
 		{
@@ -1328,7 +1346,7 @@ public class StringUtil
 	 * @param  value Value to check
 	 * @return  whether it is ends with a char
 	 */
-	public static boolean endsWith(StringBuilder sb, char value)
+	public static boolean endsWith(@Nonnull StringBuilder sb, char value)
 	{
 		if (sb.length() <= 0)
 		{
@@ -1344,7 +1362,7 @@ public class StringUtil
 	 * @param  value Value to check
 	 * @return  whether str is ends with value
 	 */
-	public static boolean endsWithICase(String str, String value)
+	public static boolean endsWithICase(@Nonnull String str, @Nonnull String value)
 	{
 		int strLen = str.length();
 		int valueLen = value.length();
@@ -1362,7 +1380,7 @@ public class StringUtil
 	 * @param  c  Char to append
 	 * @param  cnt Number of char to append
 	 */
-	public static void appendChar(StringBuilder sb, char c, int cnt)
+	public static void appendChar(@Nonnull StringBuilder sb, char c, int cnt)
 	{
 		while (cnt-- > 0)
 		{
@@ -1377,7 +1395,8 @@ public class StringUtil
 	 * @param  buffOfst start offset of the UTF8 string
 	 * @return  result string
 	 */
-	public static String fromUTF8Z(byte[] buff, int buffOfst)
+	@Nonnull
+	public static String fromUTF8Z(@Nonnull byte[] buff, int buffOfst)
 	{
 		int len = buff.length;
 		int endOfst = buffOfst;
@@ -1399,7 +1418,8 @@ public class StringUtil
 	 * @param  ofst offset of byte buffer start
 	 * @return  converted string
 	 */
-	public static String byte2String(byte[] buff, int ofst)
+	@Nonnull
+	public static String byte2String(@Nonnull byte[] buff, int ofst)
 	{
 		int endOfst = ofst;
 		int j = buff.length;
@@ -1422,7 +1442,7 @@ public class StringUtil
 	 * @param  value Value to check
 	 * @return  whether it is starts with a string
 	 */
-	public static boolean startsWith(byte[] buff, int ofst, String value)
+	public static boolean startsWith(@Nonnull byte[] buff, int ofst, @Nonnull String value)
 	{
 		byte[] valueBuff = value.getBytes(StandardCharsets.UTF_8);
 		if (ofst + valueBuff.length > buff.length)
@@ -1451,7 +1471,7 @@ public class StringUtil
 	 * @param  value Value to check
 	 * @return  whether it is starts with a string
 	 */
-	public static boolean startsWith(char[] buff, int ofst, int len, String value)
+	public static boolean startsWith(@Nonnull char[] buff, int ofst, int len, @Nonnull String value)
 	{
 		if (len < value.length() || ofst + len > buff.length)
 			return false;
@@ -1467,7 +1487,7 @@ public class StringUtil
 	 * @param  value Value to check
 	 * @return  whether it is starts with a string
 	 */
-	public static boolean startsWithC(byte[] buff, int ofst, int len, String value)
+	public static boolean startsWithC(@Nonnull byte[] buff, int ofst, int len, @Nonnull String value)
 	{
 		byte[] valueBuff = value.getBytes(StandardCharsets.UTF_8);
 		if (valueBuff.length > len)
@@ -1495,7 +1515,7 @@ public class StringUtil
 	 * @param  value Value to check
 	 * @return  whether it is equals to a string
 	 */
-	public static boolean equalsICase(byte[] buff, int ofst, String value)
+	public static boolean equalsICase(@Nonnull byte[] buff, int ofst, @Nonnull String value)
 	{
 		byte[] valueBuff = value.getBytes(StandardCharsets.UTF_8);
 		if (ofst + valueBuff.length > buff.length)
@@ -1544,7 +1564,7 @@ public class StringUtil
 	 * @param  ofst offset of the byte buffer to be start of the string
 	 * @return  result double value or 0 if error occurs
 	 */
-	public static double toDouble(byte[] buff, int ofst)
+	public static double toDouble(@Nonnull byte[] buff, int ofst)
 	{
 		Double d = toDouble(byte2String(buff, ofst));
 		if (d == null)
@@ -1561,7 +1581,8 @@ public class StringUtil
 	 * @param seperator the seperator to split
 	 * @return  splitted string array
 	 */
-	public static String[] split(String s, String seperator)
+	@Nonnull
+	public static String[] split(@Nonnull String s, @Nonnull String seperator)
 	{
 		ArrayList<String> sarr = new ArrayList<String>();
 		int k = 0;
@@ -1595,7 +1616,8 @@ public class StringUtil
 	 * @param s the string to split
 	 * @return  splitted string array
 	 */
-	public static String[] splitLine(String s)
+	@Nonnull
+	public static String[] splitLine(@Nonnull String s)
 	{
 		ArrayList<String> sarr = new ArrayList<String>();
 		int k = 0;
@@ -1641,7 +1663,7 @@ public class StringUtil
 	 * @param s the string to check
 	 * @return  true if s contain CJK characters
 	 */
-	public static boolean hasCJKChar(String s)
+	public static boolean hasCJKChar(@Nonnull String s)
 	{
 		int i = 0;
 		int j = s.length();
@@ -1663,7 +1685,7 @@ public class StringUtil
 	 * @return  -1 if character not found
 	 * 			other = index of the first appear
 	 */
-	public static int indexOfChar(char[] carr, int startIndex, char c)
+	public static int indexOfChar(@Nonnull char[] carr, int startIndex, char c)
 	{
 		int j = carr.length;
 		while (startIndex < j)
@@ -1682,7 +1704,7 @@ public class StringUtil
 	 * @return 	number of UTF-16 char
 	 * 			0 if s is null
 	 */
-	public static int utf16CharCnt(String s)
+	public static int utf16CharCnt(@Nullable String s)
 	{
 		if (s == null)
 			return 0;
@@ -1703,7 +1725,7 @@ public class StringUtil
 	 * @param s string to check
 	 * @return true if the string is unsigned integer
 	 */
-	public static boolean isUInteger(String s)
+	public static boolean isUInteger(@Nonnull String s)
 	{
 		int i = 0;
 		int j = s.length();
@@ -1723,7 +1745,7 @@ public class StringUtil
 	 * @param hkid the string to check
 	 * @return true if the string is valid hkid
 	 */
-	public static boolean isHKID(String hkid)
+	public static boolean isHKID(@Nonnull String hkid)
 	{
 		String sbuff;
 		char chk;
@@ -1855,7 +1877,8 @@ public class StringUtil
 	 * @param s string or null string
 	 * @return non-null string
 	 */
-	public static String orEmpty(String s)
+	@Nonnull
+	public static String orEmpty(@Nullable String s)
 	{
 		return (s == null)?"":s;
 	}
@@ -1866,7 +1889,8 @@ public class StringUtil
 	 * @param charLength length in char to split
 	 * @return List of splitted string
 	 */
-	public static List<String> fixedSplit(String s, int charLength)
+	@Nonnull
+	public static List<String> fixedSplit(@Nonnull String s, int charLength)
 	{
 		int i;
 		int l;

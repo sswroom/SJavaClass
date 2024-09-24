@@ -5,8 +5,10 @@ import java.util.List;
 
 import org.sswr.util.math.Coord2DDbl;
 
+import jakarta.annotation.Nonnull;
+
 public class ByteTool {
-	public static int readInt32(byte buff[], int index)
+	public static int readInt32(@Nonnull byte buff[], int index)
 	{
 		return (buff[index] & 0xff) | 
 			((buff[index + 1] & 0xff) << 8) |
@@ -14,7 +16,7 @@ public class ByteTool {
 			((buff[index + 3] & 0xff) << 24);
 	}
 
-	public static int readMInt32(byte buff[], int index)
+	public static int readMInt32(@Nonnull byte buff[], int index)
 	{
 		return ((buff[index] & 0xff) << 24) | 
 			((buff[index + 1] & 0xff) << 16) |
@@ -22,52 +24,52 @@ public class ByteTool {
 			(buff[index + 3] & 0xff);
 	}
 
-	public static int readUInt16(byte buff[], int index)
+	public static int readUInt16(@Nonnull byte buff[], int index)
 	{
 		return ((buff[index + 1] & 0xff) << 8) | 
 			(buff[index] & 0xff);
 	}
 
-	public static int readInt16(byte buff[], int index)
+	public static int readInt16(@Nonnull byte buff[], int index)
 	{
 		return (((int)buff[index + 1]) << 8) | 
 			(buff[index] & 0xff);
 	}
 
-	public static int readMUInt16(byte buff[], int index)
+	public static int readMUInt16(@Nonnull byte buff[], int index)
 	{
 		return ((buff[index] & 0xff) << 8) | 
 			(buff[index + 1] & 0xff);
 	}
 
-	public static int readMInt16(byte buff[], int index)
+	public static int readMInt16(@Nonnull byte buff[], int index)
 	{
 		return (((int)buff[index]) << 8) | 
 			(buff[index + 1] & 0xff);
 	}
 
-	public static int readUInt24(byte buff[], int index)
+	public static int readUInt24(@Nonnull byte buff[], int index)
 	{
 		return ((buff[index + 2] & 0xff) << 16) | 
 			((buff[index + 1] & 0xff) << 8) | 
 			(buff[index + 0] & 0xff);
 	}
 
-	public static int readMUInt24(byte buff[], int index)
+	public static int readMUInt24(@Nonnull byte buff[], int index)
 	{
 		return ((buff[index] & 0xff) << 16) | 
 			((buff[index + 1] & 0xff) << 8) | 
 			(buff[index + 2] & 0xff);
 	}
 
-	public static int readMInt24(byte buff[], int index)
+	public static int readMInt24(@Nonnull byte buff[], int index)
 	{
 		return (((int)buff[index + 2]) << 16) | 
 			((buff[index + 1] & 0xff) << 8) | 
 			(buff[index + 0] & 0xff);
 	}
 
-	public static long readInt64(byte buff[], int index)
+	public static long readInt64(@Nonnull byte buff[], int index)
 	{
 		return ((long) buff[index + 7] << 56)
        | ((long) buff[index + 6] & 0xff) << 48
@@ -79,7 +81,7 @@ public class ByteTool {
        | ((long) buff[index + 0] & 0xff);
 	}
 
-	public static long readMInt64(byte buff[], int index)
+	public static long readMInt64(@Nonnull byte buff[], int index)
 	{
 		return ((long) buff[index + 0] << 56)
        | ((long) buff[index + 1] & 0xff) << 48
@@ -91,33 +93,33 @@ public class ByteTool {
        | ((long) buff[index + 7] & 0xff);
 	}
 
-	public static float readSingle(byte buff[], int index)
+	public static float readSingle(@Nonnull byte buff[], int index)
 	{
 		return Float.intBitsToFloat(readInt32(buff, index));
 	}
 
-	public static float readMSingle(byte buff[], int index)
+	public static float readMSingle(@Nonnull byte buff[], int index)
 	{
 		return Float.intBitsToFloat(readMInt32(buff, index));
 	}
 
-	public static double readDouble(byte buff[], int index)
+	public static double readDouble(@Nonnull byte buff[], int index)
 	{
 		return Double.longBitsToDouble(readInt64(buff, index));
 	}
 
-	public static double readMDouble(byte buff[], int index)
+	public static double readMDouble(@Nonnull byte buff[], int index)
 	{
 		return Double.longBitsToDouble(readMInt64(buff, index));
 	}
 
-	public static void writeInt16(byte buff[], int index, int val)
+	public static void writeInt16(@Nonnull byte buff[], int index, int val)
 	{
 		buff[index + 0] = (byte)(val & 0xff);
 		buff[index + 1] = (byte)((val >> 8) & 0xff);
 	}
 
-	public static void writeInt32(byte buff[], int index, int val)
+	public static void writeInt32(@Nonnull byte buff[], int index, int val)
 	{
 		buff[index + 0] = (byte)(val & 0xff);
 		buff[index + 1] = (byte)((val >> 8) & 0xff);
@@ -125,7 +127,7 @@ public class ByteTool {
 		buff[index + 3] = (byte)((val >> 24) & 0xff);
 	}
 
-	public static void writeInt64(byte buff[], int index, long val)
+	public static void writeInt64(@Nonnull byte buff[], int index, long val)
 	{
 		buff[index + 0] = (byte)(val & 0xff);
 		buff[index + 1] = (byte)((val >> 8) & 0xff);
@@ -137,20 +139,20 @@ public class ByteTool {
 		buff[index + 7] = (byte)((val >> 56) & 0xff);
 	}
 
-	public static void writeMInt16(byte buff[], int index, int val)
+	public static void writeMInt16(@Nonnull byte buff[], int index, int val)
 	{
 		buff[index + 0] = (byte)((val >> 8) & 0xff);
 		buff[index + 1] = (byte)(val & 0xff);
 	}
 
-	public static void writeMInt24(byte buff[], int index, int val)
+	public static void writeMInt24(@Nonnull byte buff[], int index, int val)
 	{
 		buff[index + 0] = (byte)((val >> 16) & 0xff);
 		buff[index + 1] = (byte)((val >> 8) & 0xff);
 		buff[index + 2] = (byte)(val & 0xff);
 	}
 
-	public static void writeMInt32(byte buff[], int index, int val)
+	public static void writeMInt32(@Nonnull byte buff[], int index, int val)
 	{
 		buff[index + 0] = (byte)((val >> 24) & 0xff);
 		buff[index + 1] = (byte)((val >> 16) & 0xff);
@@ -158,7 +160,7 @@ public class ByteTool {
 		buff[index + 3] = (byte)(val & 0xff);
 	}
 
-	public static void writeMInt64(byte buff[], int index, long val)
+	public static void writeMInt64(@Nonnull byte buff[], int index, long val)
 	{
 		buff[index + 0] = (byte)((val >> 56) & 0xff);
 		buff[index + 1] = (byte)((val >> 48) & 0xff);
@@ -170,27 +172,27 @@ public class ByteTool {
 		buff[index + 7] = (byte)(val & 0xff);
 	}
 
-	public static void writeSingle(byte buff[], int index, float val)
+	public static void writeSingle(@Nonnull byte buff[], int index, float val)
 	{
 		writeInt32(buff, index, Float.floatToIntBits(val));
 	}
 
-	public static void writeMSingle(byte buff[], int index, float val)
+	public static void writeMSingle(@Nonnull byte buff[], int index, float val)
 	{
 		writeMInt32(buff, index, Float.floatToIntBits(val));
 	}
 
-	public static void writeDouble(byte buff[], int index, double val)
+	public static void writeDouble(@Nonnull byte buff[], int index, double val)
 	{
 		writeInt64(buff, index, Double.doubleToLongBits(val));
 	}
 
-	public static void writeMDouble(byte buff[], int index, double val)
+	public static void writeMDouble(@Nonnull byte buff[], int index, double val)
 	{
 		writeMInt64(buff, index, Double.doubleToLongBits(val));
 	}
 
-	public static int readUTF8(StringBuilder sb, byte dataBuff[], int dataOfst)
+	public static int readUTF8(@Nonnull StringBuilder sb, @Nonnull byte dataBuff[], int dataOfst)
 	{
 		byte b = dataBuff[dataOfst];
 		char code;
@@ -230,7 +232,7 @@ public class ByteTool {
 		return dataOfst + 6;
 	}
 
-	public static int writeUTF8(byte buff[], int ofst, char c)
+	public static int writeUTF8(@Nonnull byte buff[], int ofst, char c)
 	{
 		if (c < 0x80)
 		{
@@ -426,7 +428,7 @@ public class ByteTool {
 		return cnt;
 	}
 
-	public static void copyArray(byte destArr[], int destOfst, byte srcArr[], int srcOfst, int size)
+	public static void copyArray(@Nonnull byte destArr[], int destOfst, @Nonnull byte srcArr[], int srcOfst, int size)
 	{
 		if (destArr == srcArr && destOfst > srcOfst)
 		{
@@ -446,7 +448,7 @@ public class ByteTool {
 		}
 	}
 
-	public static void copyArray(int destArr[], int destOfst, int srcArr[], int srcOfst, int size)
+	public static void copyArray(@Nonnull int destArr[], int destOfst, @Nonnull int srcArr[], int srcOfst, int size)
 	{
 		if (destArr == srcArr && destOfst > srcOfst)
 		{
@@ -466,7 +468,7 @@ public class ByteTool {
 		}
 	}
 
-	public static void copyArray(int destArr[], int destOfst, List<Integer> srcArr, int srcOfst, int size)
+	public static void copyArray(@Nonnull int destArr[], int destOfst, @Nonnull List<Integer> srcArr, int srcOfst, int size)
 	{
 		int i = 0;
 		while (i < size)
@@ -476,7 +478,7 @@ public class ByteTool {
 		}
 	}
 
-	public static void copyArray(double destArr[], int destOfst, double srcArr[], int srcOfst, int size)
+	public static void copyArray(@Nonnull double destArr[], int destOfst, @Nonnull double srcArr[], int srcOfst, int size)
 	{
 		if (destArr == srcArr && destOfst > srcOfst)
 		{
@@ -496,7 +498,7 @@ public class ByteTool {
 		}
 	}
 
-	public static void copyArray(Coord2DDbl destArr[], int destOfst, Coord2DDbl srcArr[], int srcOfst, int size)
+	public static void copyArray(@Nonnull Coord2DDbl destArr[], int destOfst, @Nonnull Coord2DDbl srcArr[], int srcOfst, int size)
 	{
 		if (destArr == srcArr && destOfst > srcOfst)
 		{
@@ -516,7 +518,7 @@ public class ByteTool {
 		}
 	}
 
-	public static void copyArray(Coord2DDbl destArr[], int destOfst, List<Double> srcArr, int srcOfst, int destCnt)
+	public static void copyArray(@Nonnull Coord2DDbl destArr[], int destOfst, @Nonnull List<Double> srcArr, int srcOfst, int destCnt)
 	{
 		int i = 0;
 		while (i < destCnt)
@@ -526,7 +528,7 @@ public class ByteTool {
 		}
 	}
 
-	public static void copyArray(Object destArr[], int destOfst, Object srcArr[], int srcOfst, int size)
+	public static void copyArray(@Nonnull Object destArr[], int destOfst, @Nonnull Object srcArr[], int srcOfst, int size)
 	{
 		if (destArr == srcArr && destOfst > srcOfst)
 		{
@@ -546,7 +548,7 @@ public class ByteTool {
 		}
 	}
 
-	public static void clearArray(byte arr[], int ofst, int size)
+	public static void clearArray(@Nonnull byte arr[], int ofst, int size)
 	{
 		int i = 0;
 		while (i < size)
@@ -556,7 +558,7 @@ public class ByteTool {
 		}
 	}
 
-	public static void arrayXOR(byte destArr[], int destOfst, byte srcArr1[], int srcOfst1, byte srcArr2[], int srcOfst2, int size)
+	public static void arrayXOR(@Nonnull byte destArr[], int destOfst, @Nonnull byte srcArr1[], int srcOfst1, @Nonnull byte srcArr2[], int srcOfst2, int size)
 	{
 		while (size-- > 0)
 		{
@@ -564,7 +566,7 @@ public class ByteTool {
 		}
 	}
 
-	public static void arrayFill(byte destArr[], int destOfst, int size, byte b)
+	public static void arrayFill(@Nonnull byte destArr[], int destOfst, int size, byte b)
 	{
 		while (size-- > 0)
 		{
@@ -572,7 +574,7 @@ public class ByteTool {
 		}
 	}
 
-	public static boolean strEquals(byte[] buff, int ofst, String s)
+	public static boolean strEquals(@Nonnull byte[] buff, int ofst, @Nonnull String s)
 	{
 		byte[] sbuff = s.getBytes(StandardCharsets.UTF_8);
 		int i = sbuff.length;
@@ -594,7 +596,7 @@ public class ByteTool {
 		return true;
 	}
 
-	public static boolean byteEquals(byte[] buff1, int ofst1, byte[] buff2, int ofst2, int len)
+	public static boolean byteEquals(@Nonnull byte[] buff1, int ofst1, @Nonnull byte[] buff2, int ofst2, int len)
 	{
 		while (len-- > 0)
 		{
@@ -604,7 +606,7 @@ public class ByteTool {
 		return true;
 	}
 
-	public static <T> void listAddArray(List<T> list, T[] arr, int ofst, int len)
+	public static <T> void listAddArray(@Nonnull List<T> list, @Nonnull T[] arr, int ofst, int len)
 	{
 		int i = 0;
 		while (i < len)
@@ -614,12 +616,12 @@ public class ByteTool {
 		}
 	}
 
-	public static byte[] toByteArray(Coord2DDbl[] arr, boolean lsb)
+	public static byte[] toByteArray(@Nonnull Coord2DDbl[] arr, boolean lsb)
 	{
 		return toByteArray(arr, 0, arr.length, lsb);
 	}
 
-	public static byte[] toByteArray(Coord2DDbl[] arr, int ofst, int len, boolean lsb)
+	public static byte[] toByteArray(@Nonnull Coord2DDbl[] arr, int ofst, int len, boolean lsb)
 	{
 		byte[] ret = new byte[len * 16];
 		int i = 0;

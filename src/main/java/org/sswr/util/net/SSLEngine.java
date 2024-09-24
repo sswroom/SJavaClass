@@ -22,6 +22,9 @@ import javax.security.auth.x500.X500Principal;
 
 import org.sswr.util.crypto.CertUtil;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class SSLEngine
 {
 	private SSLContext sc;
@@ -36,11 +39,11 @@ public class SSLEngine
 			this.tms = tms;
 		}
 
-		public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+		public @Nullable java.security.cert.X509Certificate[] getAcceptedIssuers() {
 			return null;
 		}
 
-		private boolean certValid(X509Certificate cert) throws CertificateException
+		private boolean certValid(@Nonnull X509Certificate cert) throws CertificateException
 		{
 			cert.checkValidity();
 			X500Principal principal = cert.getIssuerX500Principal();
@@ -146,7 +149,7 @@ public class SSLEngine
 		this.noCertCheck = noCertCheck;
 	}
 
-	public boolean addCert(String fileName)
+	public boolean addCert(@Nonnull String fileName)
 	{
 		X509Certificate cert = CertUtil.loadCertificate(new File(fileName));
 		if (cert != null)
@@ -186,6 +189,7 @@ public class SSLEngine
 		catch (NoSuchAlgorithmException e)
 		{
 			e.printStackTrace();
+			return;
 		}
 		try
 		{
@@ -207,7 +211,7 @@ public class SSLEngine
 		HttpsURLConnection.setDefaultHostnameVerifier(validHosts);
 	}
 
-	public static void setTrustStore(String path, String password)
+	public static void setTrustStore(@Nonnull String path, @Nonnull String password)
 	{
 		System.setProperty("javax.net.ssl.trustStore", path);
 		System.setProperty("javax.net.ssl.trustStorePassword", password);

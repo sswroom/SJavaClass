@@ -3,6 +3,8 @@ package org.sswr.util.net;
 import java.util.ArrayList;
 import java.util.List;
 
+import jakarta.annotation.Nonnull;
+
 public class MQTTStaticClient implements Runnable, MQTTEventHdlr, MQTTClient, FailoverChannel
 {
 	public enum ConnError
@@ -202,7 +204,7 @@ public class MQTTStaticClient implements Runnable, MQTTEventHdlr, MQTTClient, Fa
 	}
 
 	@Override
-	public void onPublishMessage(String topic, byte[] buff, int buffOfst, int buffSize)
+	public void onPublishMessage(@Nonnull String topic, @Nonnull byte[] buff, int buffOfst, int buffSize)
 	{
 		List<MQTTPublishMessageHdlr> hdlrList = new ArrayList<MQTTPublishMessageHdlr>();
 		TopicInfo info;

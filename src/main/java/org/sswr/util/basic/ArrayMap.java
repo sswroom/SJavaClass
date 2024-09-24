@@ -6,6 +6,10 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
+//NN
 public class ArrayMap<T, V> implements Map<T, V>
 {
 	protected SortableArrayList<T> keys;
@@ -128,22 +132,22 @@ public class ArrayMap<T, V> implements Map<T, V>
 		return this.vals;
 	}
 
-	public T getKey(int index)
+	public @Nullable T getKey(int index)
 	{
 		return this.keys.get(index);
 	}
 
-	public int getIndex(T key)
+	public int getIndex(@Nullable T key)
 	{
 		return this.keys.sortedIndexOf(key);
 	}
 
-	public ArrayList<V> getValueList()
+	public @Nonnull ArrayList<V> getValueList()
 	{
 		return this.vals;
 	}
 
-	public SortableArrayList<T> getKeys()
+	public @Nonnull SortableArrayList<T> getKeys()
 	{
 		return this.keys;
 	}

@@ -432,13 +432,16 @@ public class CertUtil
 		catch (IOException ex)
 		{
 			ex.printStackTrace();
-			try
+			if (fis != null)
 			{
-				fis.close();
-			}
-			catch (IOException ex2)
-			{
-
+				try
+				{
+					fis.close();
+				}
+				catch (IOException ex2)
+				{
+	
+				}
 			}
 			return null;
 		}

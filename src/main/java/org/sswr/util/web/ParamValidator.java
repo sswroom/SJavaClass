@@ -10,6 +10,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.Part;
@@ -38,7 +40,7 @@ public class ParamValidator {
 	protected Map<String, String> mpartReq;
 	protected ArrayList<Part> mpartFiles;
 
-	public ParamValidator(String funcName, LogTool logger, HttpServletRequest req, HttpServletResponse resp)
+	public ParamValidator(@Nonnull String funcName, @Nonnull LogTool logger, @Nonnull HttpServletRequest req, @Nonnull HttpServletResponse resp)
 	{
 		this.funcName = funcName;
 		this.logger = logger;
@@ -64,7 +66,8 @@ public class ParamValidator {
 		this.forceRespStatus = status;
 	}
 	
-	public Timestamp str2Timestamp(String varDispName, String strTime)
+	@Nullable
+	public Timestamp str2Timestamp(@Nonnull String varDispName, @Nonnull String strTime)
 	{
 		if (this.errMsg != null) return null;
 		try
@@ -83,7 +86,8 @@ public class ParamValidator {
 		return null;
 	}
 
-	public Long str2Long(String varDispName, String varValue)
+	@Nullable
+	public Long str2Long(@Nonnull String varDispName, @Nonnull String varValue)
 	{
 		try
 		{
@@ -101,7 +105,8 @@ public class ParamValidator {
 		}
 	}
 
-	public Byte str2Byte(String varDispName, String varValue)
+	@Nullable
+	public Byte str2Byte(@Nonnull String varDispName, @Nonnull String varValue)
 	{
 		try
 		{
@@ -119,7 +124,8 @@ public class ParamValidator {
 		}
 	}
 
-	public Integer str2Integer(String varDispName, String varValue)
+	@Nullable
+	public Integer str2Integer(@Nonnull String varDispName, @Nonnull String varValue)
 	{
 		try
 		{
@@ -137,7 +143,8 @@ public class ParamValidator {
 		}
 	}
 
-	public Double str2Double(String varDispName, String varValue)
+	@Nullable
+	public Double str2Double(@Nonnull String varDispName, @Nonnull String varValue)
 	{
 		try
 		{
@@ -155,7 +162,8 @@ public class ParamValidator {
 		}
 	}
 
-	public <T extends Enum<T>> T str2Enum(Class<T> cls, String varDispName, String varValue)
+	@Nullable
+	public <T extends Enum<T>> T str2Enum(@Nonnull Class<T> cls, @Nonnull String varDispName, @Nonnull String varValue)
 	{
 		if (this.errMsg != null) return null;
 		T ret = DataTools.getEnum(cls, varValue);
@@ -171,7 +179,8 @@ public class ParamValidator {
 		return ret;
 	}
 
-	public Geometry str2Geometry(String varDispName, String varValue, int srid)
+	@Nullable
+	public Geometry str2Geometry(@Nonnull String varDispName, @Nonnull String varValue, int srid)
 	{
 		try
 		{
@@ -191,7 +200,8 @@ public class ParamValidator {
 		}
 	}
 
-	public String getReqStringOpt(String varName)
+	@Nullable
+	public String getReqStringOpt(@Nonnull String varName)
 	{
 		if (this.errMsg != null) return null;
 		if (this.req == null) { this.setReqEmptyErr(); return null; }
@@ -207,7 +217,8 @@ public class ParamValidator {
 		return varValue;
 	}
 
-	public String getReqString(String varName, String varDispName)
+	@Nullable
+	public String getReqString(@Nonnull String varName, @Nullable String varDispName)
 	{
 		if (varDispName == null) varDispName = varName;
 		if (this.errMsg != null) return null;
@@ -233,7 +244,8 @@ public class ParamValidator {
 		return varValue;
 	}
 
-	public String []getReqStrings(String varName, String varDispName)
+	@Nullable
+	public String []getReqStrings(@Nonnull String varName, @Nullable String varDispName)
 	{
 		if (varDispName == null) varDispName = varName;
 		if (this.errMsg != null) return null;
@@ -267,7 +279,8 @@ public class ParamValidator {
 		return varValue;
 	}
 
-	public String []getReqStringsOpt(String varName, String varDispName)
+	@Nullable
+	public String []getReqStringsOpt(@Nonnull String varName, @Nullable String varDispName)
 	{
 		if (varDispName == null) varDispName = varName;
 		if (this.errMsg != null) return null;
@@ -292,7 +305,8 @@ public class ParamValidator {
 		return varValue;
 	}
 
-	public String getReqStringLen(String varName, String varDispName, int minCharCnt, int maxCharCnt)
+	@Nullable
+	public String getReqStringLen(@Nonnull String varName, @Nullable String varDispName, int minCharCnt, int maxCharCnt)
 	{
 		if (varDispName == null) varDispName = varName;
 		String varValue = getReqString(varName, varDispName);
@@ -301,7 +315,8 @@ public class ParamValidator {
 		return varValue;
 	}
 
-	public Timestamp getReqTimestamp(String varName, String varDispName)
+	@Nullable
+	public Timestamp getReqTimestamp(@Nonnull String varName, @Nullable String varDispName)
 	{
 		if (varDispName == null) varDispName = varName;
 		String varValue;
@@ -309,7 +324,8 @@ public class ParamValidator {
 		return str2Timestamp(varDispName, varValue);
 	}
 
-	public Long getReqLong(String varName, String varDispName)
+	@Nullable
+	public Long getReqLong(@Nonnull String varName, @Nullable String varDispName)
 	{
 		if (varDispName == null) varDispName = varName;
 		String varValue;
@@ -317,7 +333,8 @@ public class ParamValidator {
 		return str2Long(varDispName, varValue);
 	}
 
-	public Byte getReqByte(String varName, String varDispName)
+	@Nullable
+	public Byte getReqByte(@Nonnull String varName, @Nullable String varDispName)
 	{
 		if (varDispName == null) varDispName = varName;
 		String varValue;
@@ -325,7 +342,8 @@ public class ParamValidator {
 		return str2Byte(varDispName, varValue);
 	}
 
-	public Integer getReqInt(String varName, String varDispName)
+	@Nullable
+	public Integer getReqInt(@Nonnull String varName, @Nullable String varDispName)
 	{
 		if (varDispName == null) varDispName = varName;
 		String varValue;
@@ -333,14 +351,16 @@ public class ParamValidator {
 		return str2Integer(varDispName, varValue);
 	}
 
-	public Integer getReqIntOpt(String varName)
+	@Nullable
+	public Integer getReqIntOpt(@Nonnull String varName)
 	{
 		String varValue = this.getReqStringOpt(varName);
 		if ((varValue = this.getReqStringOpt(varName)) == null) return null;
 		return StringUtil.toInteger(varValue);
 	}
 
-	public Integer getReqIntRange(String varName, String varDispName, int min, int max, boolean noZero)
+	@Nullable
+	public Integer getReqIntRange(@Nonnull String varName, @Nullable String varDispName, int min, int max, boolean noZero)
 	{
 		if (varDispName == null) varDispName = varName;
 		Integer varValue = this.getReqInt(varName, varDispName);
@@ -349,7 +369,8 @@ public class ParamValidator {
 		return varValue;
 	}
 
-	public Double getReqDouble(String varName, String varDispName)
+	@Nullable
+	public Double getReqDouble(@Nonnull String varName, @Nullable String varDispName)
 	{
 		if (varDispName == null) varDispName = varName;
 		String varValue;
@@ -357,7 +378,8 @@ public class ParamValidator {
 		return str2Double(varDispName, varValue);
 	}
 
-	public Double getReqDoubleRange(String varName, String varDispName, double min, double max)
+	@Nullable
+	public Double getReqDoubleRange(@Nonnull String varName, @Nullable String varDispName, double min, double max)
 	{
 		if (varDispName == null) varDispName = varName;
 		Double varValue = this.getReqDouble(varName, varDispName);
@@ -366,7 +388,8 @@ public class ParamValidator {
 		return varValue;
 	}
 
-	public <T extends Enum<T>> T getReqEnum(String varName, String varDispName, Class<T> cls)
+	@Nullable
+	public <T extends Enum<T>> T getReqEnum(@Nonnull String varName, @Nullable String varDispName, @Nonnull Class<T> cls)
 	{
 		if (varDispName == null) varDispName = varName;
 		String varValue;
@@ -375,7 +398,8 @@ public class ParamValidator {
 		return str2Enum(cls, varDispName, varValue);
 	}
 
-	public Geometry getReqGeometry(String varName, String varDispName, int srid)
+	@Nullable
+	public Geometry getReqGeometry(@Nonnull String varName, @Nullable String varDispName, int srid)
 	{
 		if (varDispName == null) varDispName = varName;
 		String varValue;
@@ -391,6 +415,7 @@ public class ParamValidator {
 		return this.mpartFiles.size();
 	}
 
+	@Nullable
 	public Part getReqFile(int index)
 	{
 		if (this.mpartFiles == null)
@@ -399,7 +424,7 @@ public class ParamValidator {
 	}
 
 
-	public <T extends Enum<T>> boolean checkEnum(T val, String varDispName, T[] validVals)
+	public <T extends Enum<T>> boolean checkEnum(@Nonnull T val, @Nonnull String varDispName, @Nonnull T[] validVals)
 	{
 		int i = validVals.length;
 		while (i-- > 0)
@@ -416,7 +441,7 @@ public class ParamValidator {
 		return true;
 	}
 
-	public boolean checkVarcharLen(String varDispName, String varValue, int maxLen)
+	public boolean checkVarcharLen(@Nonnull String varDispName, @Nonnull String varValue, int maxLen)
 	{
 		if (this.errMsg != null) return true;
 		byte b[] = varValue.getBytes(StandardCharsets.UTF_8);
@@ -433,7 +458,7 @@ public class ParamValidator {
 		return false;
 	}
 
-	public boolean checkStringDbLen(String varDispName, String varValue, int maxLen, boolean notEmpty)
+	public boolean checkStringDbLen(@Nonnull String varDispName, @Nonnull String varValue, int maxLen, boolean notEmpty)
 	{
 		if (this.errMsg != null) return true;
 		byte b[] = varValue.getBytes(StandardCharsets.UTF_16LE);
@@ -460,7 +485,7 @@ public class ParamValidator {
 		return false;
 	}
 
-	public boolean checkStringCharDbLen(String varDispName, String varValue, int minCharCnt, int maxCharCnt)
+	public boolean checkStringCharDbLen(@Nonnull String varDispName, @Nonnull String varValue, int minCharCnt, int maxCharCnt)
 	{
 		if (this.errMsg != null) return true;
 		int leng = varValue.length();
@@ -498,7 +523,7 @@ public class ParamValidator {
 		return false;
 	}
 
-	public boolean checkRange(String varDispName, int varValue, int min, int max, boolean noZero)
+	public boolean checkRange(@Nonnull String varDispName, int varValue, int min, int max, boolean noZero)
 	{
 		if (this.errMsg != null) return true;
 		if ((noZero && varValue == 0) || varValue < min || varValue > max)
@@ -521,7 +546,7 @@ public class ParamValidator {
 		return false;
 	}
 
-	public boolean checkRangeDbl(String varDispName, double varValue, double min, double max)
+	public boolean checkRangeDbl(@Nonnull String varDispName, double varValue, double min, double max)
 	{
 		if (this.errMsg != null) return true;
 		if (varValue < min || varValue > max)
@@ -537,7 +562,7 @@ public class ParamValidator {
 		return false;
 	}
 
-	public <T> boolean checkInList(String varDispName, T varValue, List<T> validList)
+	public <T> boolean checkInList(@Nonnull String varDispName, @Nonnull T varValue, @Nonnull List<T> validList)
 	{
 		if (this.errMsg != null) return true;
 		boolean found = false;
@@ -590,7 +615,8 @@ public class ParamValidator {
 		this.errFuncDesc = "req is null";
 	}
 
-	public Map<String, Object> setError(String varDispName, String varValue, String funcDesc, String errMsg)
+	@Nonnull
+	public Map<String, Object> setError(@Nonnull String varDispName, @Nullable String varValue, @Nonnull String funcDesc, @Nullable String errMsg)
 	{
 		if (errMsg == null)
 		{
@@ -612,7 +638,8 @@ public class ParamValidator {
 		return getErrorObj();
 	}
 
-	public Map<String, Object> setError(String varDispName, String varValue, String funcDesc)
+	@Nonnull
+	public Map<String, Object> setError(@Nonnull String varDispName, @Nullable String varValue, @Nonnull String funcDesc)
 	{
 		if (varValue != null)
 		{
@@ -630,6 +657,7 @@ public class ParamValidator {
 		return getErrorObj();
 	}
 
+	@Nonnull
 	public Map<String, Object> getErrorObj()
 	{
 		Map<String, Object> retMap = new HashMap<String, Object>();
@@ -661,14 +689,15 @@ public class ParamValidator {
 		this.resp.getWriter().print(json);
 	}
 
-	public Map<String, Object> handleException(Exception ex) throws IOException
+	@Nullable
+	public Map<String, Object> handleException(@Nonnull Exception ex) throws IOException
 	{
 		this.logger.logException(ex);
 		setRespStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 		return null;
 	}
 
-	public void exceptionDetail(Exception ex)
+	public void exceptionDetail(@Nonnull Exception ex)
 	{
 		StringWriter writer = new StringWriter();
 		ex.printStackTrace(new PrintWriter(writer));

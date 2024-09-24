@@ -1,5 +1,7 @@
 package org.sswr.util.basic;
 
+import jakarta.annotation.Nonnull;
+
 public class Matrix3
 {
 	public Vector3 vec[];
@@ -65,14 +67,14 @@ public class Matrix3
 		this.vec[2].val[1] = t;
 	}
 
-	public void set(Matrix3 matrix)
+	public void set(@Nonnull Matrix3 matrix)
 	{
 		this.vec[0].set(matrix.vec[0]);
 		this.vec[1].set(matrix.vec[1]);
 		this.vec[2].set(matrix.vec[2]);
 	}
 
-	public void multiply(Matrix3 matrix)
+	public void multiply(@Nonnull Matrix3 matrix)
 	{
 		Vector3 tmpVec[] = new Vector3[3];
 		tmpVec[0] = this.vec[0];
@@ -89,7 +91,7 @@ public class Matrix3
 		this.vec[2].val[2] = tmpVec[2].val[0] * matrix.vec[0].val[2] + tmpVec[2].val[1] * matrix.vec[1].val[2] + tmpVec[2].val[2] * matrix.vec[2].val[2];
 	}
 
-	public void myMultiply(Matrix3 matrix)
+	public void myMultiply(@Nonnull Matrix3 matrix)
 	{
 		Vector3 tmpVec[] = new Vector3[3];;
 		tmpVec[0] = this.vec[0];
@@ -106,7 +108,7 @@ public class Matrix3
 		this.vec[2].val[2] = tmpVec[0].val[2] * matrix.vec[2].val[0] + tmpVec[1].val[2] * matrix.vec[2].val[1] + tmpVec[2].val[2] * matrix.vec[2].val[2];
 	}
 
-	public Vector3 multiply(double x, double y, double z)
+	public @Nonnull Vector3 multiply(double x, double y, double z)
 	{
 		Vector3 ret = new Vector3();
 		ret.set(x * this.vec[0].val[0] + y * this.vec[0].val[1] + z * this.vec[0].val[2],
@@ -115,7 +117,7 @@ public class Matrix3
 		return ret;
 	}
 
-	public Vector3 multiply(Vector3 vec)
+	public @Nonnull Vector3 multiply(@Nonnull Vector3 vec)
 	{
 		Vector3 ret = new Vector3();
 		ret.set(this.vec[0].multiply(vec),
