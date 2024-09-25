@@ -1,6 +1,9 @@
 # SJavaClass
 
 # Changes:
+0.3.20240925
+- Adding Nonnull/Nullable
+
 0.3.20240711
 - Support null attachment contentId
 
