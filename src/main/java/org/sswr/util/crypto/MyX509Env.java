@@ -8,11 +8,15 @@ import org.sswr.util.crypto.MyX509File.FileType;
 import org.sswr.util.net.HTTPOSClient;
 import org.sswr.util.parser.X509Parser;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class MyX509Env
 {
 	protected KeyStore trustStore;
 	protected Map<String, Certificate> trustStoreMap;
 
+	@Nullable
 	public Map<String, Certificate> getTrustStore()
 	{
 		if (this.trustStore == null)
@@ -30,7 +34,8 @@ public class MyX509Env
 		return this.trustStoreMap;
 	}
 
-	public MyX509CRL getCRL(String url)
+	@Nullable
+	public MyX509CRL getCRL(@Nonnull String url)
 	{
 		byte[] crlBytes = HTTPOSClient.getAsBytes(url, 200);
 		if (crlBytes == null)

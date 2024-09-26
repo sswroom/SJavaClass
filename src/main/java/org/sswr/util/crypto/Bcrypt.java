@@ -5,10 +5,15 @@ import org.sswr.util.data.RandomBytesGenerator;
 import org.sswr.util.data.StringUtil;
 import org.sswr.util.data.textbinenc.Radix64Enc;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class Bcrypt
 {
 	private Radix64Enc radix64;
-	private byte[] calcHash(int cost, byte[] salt, String password)
+
+	@Nonnull
+	private byte[] calcHash(int cost, @Nonnull byte[] salt, @Nonnull String password) throws EncryptionException
 	{
 		Blowfish bf = new Blowfish();
 		bf.setChainMode(ChainMode.ECB);
@@ -27,7 +32,7 @@ public class Bcrypt
 		this.radix64 = new Radix64Enc("./ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789");
 	}
 
-	public boolean isMatch(String hash, String password)
+	public boolean isMatch(@Nonnull String hash, @Nonnull String password)
 	{
 		if (hash.charAt(0) != '$')
 		{
@@ -43,7 +48,15 @@ public class Bcrypt
 			byte[] salt = this.radix64.decodeBin(hashArr[2].substring(0, 22));
 			byte[] hashCTxt = this.radix64.decodeBin(hashArr[2].substring(22));
 			int count = Integer.parseInt(hashArr[1]);
-			byte[] myCTxt = this.calcHash(count, salt, password);
+			byte[] myCTxt;
+			try
+			{
+				myCTxt = this.calcHash(count, salt, password);
+			}
+			catch (EncryptionException ex)
+			{
+				return false;
+			}
 			int i = hashCTxt.length;
 			while (i-- > 0)
 			{
@@ -58,7 +71,8 @@ public class Bcrypt
 		}
 	}
 
-	public String genHash(int cost, String password)
+	@Nullable
+	public String genHash(int cost, @Nonnull String password)
 	{
 		if (cost < 4 || cost > 31)
 		{
@@ -68,7 +82,8 @@ public class Bcrypt
 		return this.genHash(cost, rand.nextBytes(16), password);
 	}
 
-	public String genHash(int cost, byte[] salt, String password)
+	@Nullable
+	public String genHash(int cost, @Nonnull byte[] salt, @Nonnull String password)
 	{
 		if (salt == null || salt.length != 16)
 		{
@@ -88,8 +103,16 @@ public class Bcrypt
 		sb.append('$');
 		
 		sb.append(this.radix64.encodeBin(salt, 0, 16));
-		byte[] hashCTxt = this.calcHash(cost, salt, password);
-		sb.append(this.radix64.encodeBin(hashCTxt, 0, 23));
+		byte[] hashCTxt;
+		try
+		{
+			hashCTxt = this.calcHash(cost, salt, password);
+			sb.append(this.radix64.encodeBin(hashCTxt, 0, 23));
+		}
+		catch (EncryptionException ex)
+		{
+
+		}
 		return sb.toString();
 	}
 }

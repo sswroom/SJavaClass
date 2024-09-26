@@ -1,5 +1,8 @@
 package org.sswr.util.crypto;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class JWTParam
 {
 	private String iss;
@@ -26,36 +29,39 @@ public class JWTParam
 		this.jti = null;
 	}
 
-	public void setIssuer(String issuer)
+	public void setIssuer(@Nullable String issuer)
 	{
 		this.iss = issuer;
 	}
 
+	@Nullable
 	public String getIssuer()
 	{
 		return this.iss;
 	}
 
-	public boolean isIssuerValid(String issuer)
+	public boolean isIssuerValid(@Nonnull String issuer)
 	{
 		return this.iss == null || this.iss.equals(issuer);
 	}
 
-	public void setSubject(String subject)
+	public void setSubject(@Nullable String subject)
 	{
 		this.sub = subject;
 	}
 
+	@Nullable
 	public String getSubject()
 	{
 		return this.sub;
 	}
 
-	public void setAudience(String audience)
+	public void setAudience(@Nullable String audience)
 	{
 		this.aud = audience;
 	}
 
+	@Nullable
 	public String getAudience()
 	{
 		return this.aud;
@@ -91,11 +97,12 @@ public class JWTParam
 		return this.iat;
 	}
 
-	public void setJWTId(String id)
+	public void setJWTId(@Nullable String id)
 	{
 		this.jti = id;
 	}
 
+	@Nullable
 	public String getJWTId()
 	{
 		return this.jti;
@@ -110,6 +117,7 @@ public class JWTParam
 		return false;
 	}
 
+	@Nonnull
 	public String toString()
 	{
 		StringBuilder sb = new StringBuilder();

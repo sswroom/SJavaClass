@@ -2,6 +2,8 @@ package org.sswr.util.data;
 
 import java.util.Objects;
 
+import jakarta.annotation.Nonnull;
+
 public class UnicodeBlock
 {
 	private int firstCode;
@@ -12,7 +14,7 @@ public class UnicodeBlock
 	public UnicodeBlock() {
 	}
 
-	public UnicodeBlock(int firstCode, int lastCode, boolean dblWidth, String name) {
+	public UnicodeBlock(int firstCode, int lastCode, boolean dblWidth, @Nonnull String name) {
 		this.firstCode = firstCode;
 		this.lastCode = lastCode;
 		this.dblWidth = dblWidth;
@@ -47,11 +49,12 @@ public class UnicodeBlock
 		this.dblWidth = dblWidth;
 	}
 
+	@Nonnull 
 	public String getName() {
 		return this.name;
 	}
 
-	public void setName(String name) {
+	public void setName(@Nonnull String name) {
 		this.name = name;
 	}
 

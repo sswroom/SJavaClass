@@ -7,6 +7,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.Table;
 
 import org.sswr.util.data.ArtificialQuickSort;
@@ -28,7 +30,7 @@ public class FileGDBDir extends ReadingConnection
 {
 	private Map<String, FileGDBTable> tables;
 
-	private FileGDBDir(String sourceName, LogTool logger)
+	private FileGDBDir(@Nonnull String sourceName, @Nullable LogTool logger)
 	{
 		super(logger);
 		this.tables = new HashMap<String, FileGDBTable>();
@@ -44,13 +46,14 @@ public class FileGDBDir extends ReadingConnection
 		tables.clear();
 	}
 
-	public int getTableNames(List<String> names)
+	public int getTableNames(@Nonnull List<String> names)
 	{
 		names.addAll(this.tables.keySet());
 		return this.tables.size();
 	}
 
-	public DBReader getTableData(String name, List<String> colNames, int maxCnt, String ordering, QueryConditions<?> condition)
+	@Nullable
+	public DBReader getTableData(@Nonnull String name, @Nullable List<String> colNames, int maxCnt, @Nullable String ordering, @Nullable QueryConditions<?> condition)
 	{
 		FileGDBTable table = this.tables.get(name);
 		if (table == null)
@@ -60,12 +63,12 @@ public class FileGDBDir extends ReadingConnection
 		return table.openReader(colNames);
 	}
 
-	public void closeReader(DBReader r)
+	public void closeReader(@Nonnull DBReader r)
 	{
 		r.close();
 	}
 
-	public void getErrorMsg(StringBuilder str)
+	public void getErrorMsg(@Nonnull StringBuilder str)
 	{
 	}
 
@@ -73,12 +76,13 @@ public class FileGDBDir extends ReadingConnection
 	{
 	}
 
-	public void addTable(FileGDBTable table)
+	public void addTable(@Nonnull FileGDBTable table)
 	{
 		this.tables.put(table.getName(), table);
 	}
 
-	public static FileGDBDir openDir(PackageFile pkg, LogTool logger)
+	@Nullable
+	public static FileGDBDir openDir(@Nonnull PackageFile pkg, @Nullable LogTool logger)
 	{
 		StreamData fd = pkg.getItemStmData("a00000001.gdbtable");
 		FileGDBTable table;
@@ -130,14 +134,16 @@ public class FileGDBDir extends ReadingConnection
 		return dir;
 	}
 
-	public static FileGDBDir openDir(String pathName, LogTool logger)
+	@Nullable
+	public static FileGDBDir openDir(@Nonnull String pathName, @Nullable LogTool logger)
 	{
 		DirectoryPackage pkg = new DirectoryPackage(pathName);
 		return openDir(pkg, logger);
 	}
 
 	@Override
-	public <T> List<T> loadItemsAsList(Class<T> cls, Object parent, QueryConditions<T> conditions, List<String> joinFields, String sortString, int dataOfst, int dataCnt)
+	@Nullable
+	public <T> List<T> loadItemsAsList(@Nonnull Class<T> cls, @Nullable Object parent, @Nullable QueryConditions<T> conditions, @Nullable List<String> joinFields, @Nullable String sortString, int dataOfst, int dataCnt)
 	{
 		Table tableAnn = parseClassTable(cls);
 		if (tableAnn == null)
@@ -149,6 +155,10 @@ public class FileGDBDir extends ReadingConnection
 		ArrayList<DBColumnInfo> idCols = new ArrayList<DBColumnInfo>();
 		DBUtil.parseDBCols(cls, cols, idCols, joinFields);
 		DBReader r = this.getTableData(tableAnn.name(), DataTools.createValueList(String.class, cols, "colName", null), 0, null, conditions);
+		if (r == null)
+		{
+			return null;
+		}
 		List<T> retList;
 		List<QueryConditions<T>.Condition> clientConditions;
 		if (conditions == null)
@@ -212,7 +222,8 @@ public class FileGDBDir extends ReadingConnection
 		return retList;
 	}
 
-	public <T> Map<Integer, T> loadItemsIClass(Class<T> cls, Object parent, QueryConditions<T> conditions, List<String> joinFields)
+	@Nullable
+	public <T> Map<Integer, T> loadItemsIClass(@Nonnull Class<T> cls, @Nullable Object parent, @Nullable QueryConditions<T> conditions, @Nullable List<String> joinFields)
 	{
 		Table tableAnn = parseClassTable(cls);
 		if (tableAnn == null)
@@ -236,7 +247,11 @@ public class FileGDBDir extends ReadingConnection
 			throw new IllegalArgumentException("No Id column found");
 		}
 		DBReader r = this.getTableData(tableAnn.name(), DataTools.createValueList(String.class, cols, "colName", null), 0, null, conditions);
-		Map<Integer, T> retMap = this.readAsMap(r, parent, constr, cols, conditions.toList());
+		if (r == null)
+		{
+			return null;
+		}
+		Map<Integer, T> retMap = this.readAsMap(r, parent, constr, cols, conditions == null?List.of():conditions.toList());
 		r.close();
 		return retMap;
 	}

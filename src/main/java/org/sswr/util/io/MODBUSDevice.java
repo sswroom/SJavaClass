@@ -5,6 +5,9 @@ import org.sswr.util.data.ByteTool;
 import org.sswr.util.data.SharedDouble;
 import org.sswr.util.data.SharedInt;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class MODBUSDevice implements MODBUSListener
 {
 	private MODBUSMaster modbus;
@@ -17,7 +20,7 @@ public class MODBUSDevice implements MODBUSListener
 	private boolean reqHasResult;
 	private int reqSetStartAddr;
 
-	public void onReadResult(int funcCode, byte[] result, int resultOfst, int resultSize)
+	public void onReadResult(int funcCode, @Nonnull byte[] result, int resultOfst, int resultSize)
 	{
 		if (funcCode == 4)
 		{
@@ -164,7 +167,7 @@ public class MODBUSDevice implements MODBUSListener
 		this.timeout = timeoutMS;
 	}
 
-	protected boolean readInputI16(int addr, SharedInt outVal)
+	protected boolean readInputI16(int addr, @Nonnull SharedInt outVal)
 	{
 		boolean succ;
 		synchronized(this)
@@ -180,7 +183,7 @@ public class MODBUSDevice implements MODBUSListener
 		return succ;
 	}
 
-	protected boolean readInputFloat(int addr, SharedDouble outVal)
+	protected boolean readInputFloat(int addr, @Nonnull SharedDouble outVal)
 	{
 		synchronized(this)
 		{
@@ -194,7 +197,7 @@ public class MODBUSDevice implements MODBUSListener
 		}
 	}
 
-	protected boolean readInputBuff(int addr, int regCnt, byte[] buff, int buffOfst)
+	protected boolean readInputBuff(int addr, int regCnt, @Nonnull byte[] buff, int buffOfst)
 	{
 		synchronized(this)
 		{
@@ -208,7 +211,7 @@ public class MODBUSDevice implements MODBUSListener
 		}
 	}
 
-	protected boolean readHoldingI16(int addr, SharedInt outVal)
+	protected boolean readHoldingI16(int addr, @Nonnull SharedInt outVal)
 	{
 		synchronized(this)
 		{
@@ -222,7 +225,7 @@ public class MODBUSDevice implements MODBUSListener
 		}
 	}
 
-	protected boolean readHoldingI32(int addr, SharedInt outVal)
+	protected boolean readHoldingI32(int addr, @Nonnull SharedInt outVal)
 	{
 		synchronized(this)
 		{
@@ -236,7 +239,7 @@ public class MODBUSDevice implements MODBUSListener
 		}
 	}
 
-	protected boolean readHoldingFloat(int addr, SharedDouble outVal)
+	protected boolean readHoldingFloat(int addr, @Nonnull SharedDouble outVal)
 	{
 		synchronized(this)
 		{
@@ -264,7 +267,7 @@ public class MODBUSDevice implements MODBUSListener
 		}
 	}
 
-	protected boolean writeHoldingsU16(int addr, int cnt, int[] vals, int valOfst)
+	protected boolean writeHoldingsU16(int addr, int cnt, @Nonnull int[] vals, int valOfst)
 	{
 		byte []buff = new byte[256];
 		int i = 0;
@@ -316,6 +319,7 @@ public class MODBUSDevice implements MODBUSListener
 		}
 	}
 
+	@Nullable
 	protected Boolean readDInput(int addr)
 	{
 		SharedInt outVal = new SharedInt(0);
@@ -338,7 +342,7 @@ public class MODBUSDevice implements MODBUSListener
 		}
 	}
 
-	protected boolean readDInputs(int addr, int cnt, SharedInt outVal)
+	protected boolean readDInputs(int addr, int cnt, @Nonnull SharedInt outVal)
 	{
 		synchronized(this)
 		{
@@ -352,6 +356,7 @@ public class MODBUSDevice implements MODBUSListener
 		}
 	}
 
+	@Nullable
 	protected Boolean readCoil(int addr)
 	{
 		SharedInt outVal = new SharedInt(0);
@@ -388,7 +393,7 @@ public class MODBUSDevice implements MODBUSListener
 		}
 	}
 
-	public MODBUSDevice(MODBUSMaster modbus, byte addr)
+	public MODBUSDevice(@Nonnull MODBUSMaster modbus, byte addr)
 	{
 		this.modbus = modbus;
 		this.addr = addr;

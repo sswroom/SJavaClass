@@ -20,6 +20,9 @@ import org.sswr.util.net.ASN1Type;
 import org.sswr.util.net.ASN1Util;
 import org.sswr.util.net.SocketUtil;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public abstract class MyX509File extends ASN1Data
 {
 	public enum FileType
@@ -80,19 +83,21 @@ public abstract class MyX509File extends ASN1Data
 		AuthenticatedSafe
 	}
 
-	protected MyX509File(String sourceName, byte[] buff, int ofst, int size)
+	protected MyX509File(@Nonnull String sourceName, @Nonnull byte[] buff, int ofst, int size)
 	{
 		super(sourceName, buff, ofst, size);
 	}
 
+	@Nonnull
 	public ASN1Type getASN1Type()
 	{
 		return ASN1Type.X509;
 	}
 
+	@Nonnull
 	public abstract FileType getFileType();
 
-	protected static boolean isSigned(byte[] pdu, int beginOfst, int endOfst, String path)
+	protected static boolean isSigned(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull String path)
 	{
 		int cnt = ASN1Util.pduCountItem(pdu, beginOfst, endOfst, path);
 		if (cnt < 3)
@@ -111,7 +116,7 @@ public abstract class MyX509File extends ASN1Data
 	
 	}
 
-	protected static void appendSigned(byte[] pdu, int beginOfst, int endOfst, String path, StringBuilder sb, String varName)
+	protected static void appendSigned(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull String path, @Nonnull StringBuilder sb, @Nullable String varName)
 	{
 		String name;
 		ASN1Item itemPDU;
@@ -143,7 +148,7 @@ public abstract class MyX509File extends ASN1Data
 		}
 	}
 
-	protected static boolean isTBSCertificate(byte[] pdu, int beginOfst, int endOfst, String path)
+	protected static boolean isTBSCertificate(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull String path)
 	{
 		int cnt = ASN1Util.pduCountItem(pdu, beginOfst, endOfst, path);
 		if (cnt < 6)
@@ -188,7 +193,7 @@ public abstract class MyX509File extends ASN1Data
 		return true;
 	}
 
-	protected static void appendTBSCertificate(byte[] pdu, int beginOfst, int endOfst, String path, StringBuilder sb, String varName)
+	protected static void appendTBSCertificate(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull String path, @Nonnull StringBuilder sb, @Nullable String varName)
 	{
 		String name;
 		int i = 1;
@@ -312,18 +317,18 @@ public abstract class MyX509File extends ASN1Data
 		}
 	}
 
-	protected static boolean isCertificate(byte[] pdu, int beginOfst, int endOfst, String path)
+	protected static boolean isCertificate(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull String path)
 	{
 		return isSigned(pdu, beginOfst, endOfst, path) && isTBSCertificate(pdu, beginOfst, endOfst, path + ".1");
 	}
 
-	protected static void appendCertificate(byte[] pdu, int beginOfst, int endOfst, String path, StringBuilder sb, String varName)
+	protected static void appendCertificate(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull String path, @Nonnull StringBuilder sb, @Nullable String varName)
 	{
 		appendTBSCertificate(pdu, beginOfst, endOfst, path + ".1", sb, varName);
 		appendSigned(pdu, beginOfst, endOfst, path, sb, varName);
 	}
 
-	protected static boolean isTBSCertList(byte[] pdu, int beginOfst, int endOfst, String path)
+	protected static boolean isTBSCertList(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull String path)
 	{
 		int cnt = ASN1Util.pduCountItem(pdu, beginOfst, endOfst, path);
 		if (cnt < 4)
@@ -367,7 +372,7 @@ public abstract class MyX509File extends ASN1Data
 		return true;
 	}
 
-	protected static void appendTBSCertList(byte[] pdu, int beginOfst, int endOfst, String path, StringBuilder sb, String varName)
+	protected static void appendTBSCertList(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull String path, @Nonnull StringBuilder sb, @Nullable String varName)
 	{
 		ZonedDateTime dt;
 		String name;
@@ -509,18 +514,18 @@ public abstract class MyX509File extends ASN1Data
 		}
 	}
 
-	protected static boolean isCertificateList(byte[] pdu, int beginOfst, int endOfst, String path)
+	protected static boolean isCertificateList(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull String path)
 	{
 		return isSigned(pdu, beginOfst, endOfst, path) && isTBSCertList(pdu, beginOfst, endOfst, path + ".1");
 	}
 
-	protected static void appendCertificateList(byte[] pdu, int beginOfst, int endOfst, String path, StringBuilder sb, String varName)
+	protected static void appendCertificateList(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull String path, @Nonnull StringBuilder sb, @Nullable String varName)
 	{
 		appendTBSCertList(pdu, beginOfst, endOfst, path + ".1", sb, varName);
 		appendSigned(pdu, beginOfst, endOfst, path, sb, varName);
 	}
 
-	protected static boolean isPrivateKeyInfo(byte[] pdu, int beginOfst, int endOfst, String path)
+	protected static boolean isPrivateKeyInfo(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull String path)
 	{
 		int cnt = ASN1Util.pduCountItem(pdu, beginOfst, endOfst, path);
 		if (cnt != 3 && cnt != 4)
@@ -549,7 +554,7 @@ public abstract class MyX509File extends ASN1Data
 		return true;
 	}
 
-	protected static void appendPrivateKeyInfo(byte[] pdu, int beginOfst, int endOfst, String path, StringBuilder sb)
+	protected static void appendPrivateKeyInfo(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull String path, @Nonnull StringBuilder sb)
 	{
 		ASN1Item itemPDU;
 		KeyType keyType = KeyType.Unknown;
@@ -584,7 +589,7 @@ public abstract class MyX509File extends ASN1Data
 		}
 	}
 
-	protected static boolean isCertificateRequestInfo(byte[] pdu, int beginOfst, int endOfst, String path)
+	protected static boolean isCertificateRequestInfo(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull String path)
 	{
 		int cnt = ASN1Util.pduCountItem(pdu, beginOfst, endOfst, path);
 		if (cnt < 4)
@@ -614,7 +619,7 @@ public abstract class MyX509File extends ASN1Data
 		return true;
 	}
 
-	protected static void appendCertificateRequestInfo(byte[] pdu, int beginOfst, int endOfst, String path, StringBuilder sb)
+	protected static void appendCertificateRequestInfo(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull String path, @Nonnull StringBuilder sb)
 	{
 		int i = 1;
 		ASN1Item itemPDU;
@@ -671,18 +676,18 @@ public abstract class MyX509File extends ASN1Data
 		}
 	}
 
-	protected static boolean isCertificateRequest(byte[] pdu, int beginOfst, int endOfst, String path)
+	protected static boolean isCertificateRequest(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull String path)
 	{
 		return isSigned(pdu, beginOfst, endOfst, path) && isCertificateRequestInfo(pdu, beginOfst, endOfst, path + ".1");
 	}
 
-	protected static void appendCertificateRequest(byte[] pdu, int beginOfst, int endOfst, String path, StringBuilder sb)
+	protected static void appendCertificateRequest(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull String path, @Nonnull StringBuilder sb)
 	{
 		appendCertificateRequestInfo(pdu, beginOfst, endOfst, path + ".1", sb);
 		appendSigned(pdu, beginOfst, endOfst, path, sb, null);
 	}
 
-	public static boolean isPublicKeyInfo(byte[] pdu, int beginOfst, int endOfst, String path)
+	public static boolean isPublicKeyInfo(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull String path)
 	{
 		int cnt = ASN1Util.pduCountItem(pdu, beginOfst, endOfst, path);
 		if (cnt < 2)
@@ -700,7 +705,7 @@ public abstract class MyX509File extends ASN1Data
 		return true;
 	}
 
-	protected static void appendPublicKeyInfo(byte[] pdu, int beginOfst, int endOfst, String path, StringBuilder sb)
+	protected static void appendPublicKeyInfo(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull String path, @Nonnull StringBuilder sb)
 	{
 		ASN1Item item = ASN1Util.pduGetItem(pdu, beginOfst, endOfst, path);
 		if (item != null && item.itemType == ASN1Util.IT_SEQUENCE)
@@ -718,7 +723,7 @@ public abstract class MyX509File extends ASN1Data
 		}
 	}
 
-	protected static boolean isContentInfo(byte[] pdu, int beginOfst, int endOfst, String path)
+	protected static boolean isContentInfo(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull String path)
 	{
 		if (ASN1Util.pduGetItemType(pdu, beginOfst, endOfst, path) != ASN1Util.IT_SEQUENCE)
 			return false;
@@ -738,7 +743,7 @@ public abstract class MyX509File extends ASN1Data
 		return true;
 	}
 
-	protected static void appendContentInfo(byte[] pdu, int beginOfst, int endOfst, String path, StringBuilder sb, String varName, ContentDataType dataType)
+	protected static void appendContentInfo(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull String path, @Nonnull StringBuilder sb, @Nullable String varName, @Nonnull ContentDataType dataType)
 	{
 		ASN1Item item = ASN1Util.pduGetItem(pdu, beginOfst, endOfst, path);
 		if (item != null && item.itemType == ASN1Util.IT_SEQUENCE)
@@ -798,7 +803,7 @@ public abstract class MyX509File extends ASN1Data
 		}
 	}
 
-	protected static boolean isPFX(byte[] pdu, int beginOfst, int endOfst, String path)
+	protected static boolean isPFX(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull String path)
 	{
 		if (ASN1Util.pduGetItemType(pdu, beginOfst, endOfst, path) != ASN1Util.IT_SEQUENCE)
 			return false;
@@ -825,7 +830,7 @@ public abstract class MyX509File extends ASN1Data
 		return true;
 	}
 
-	protected static void appendPFX(byte[] pdu, int beginOfst, int endOfst, String path, StringBuilder sb, String varName)
+	protected static void appendPFX(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull String path, @Nonnull StringBuilder sb, @Nullable String varName)
 	{
 		ASN1Item item = ASN1Util.pduGetItem(pdu, beginOfst, endOfst, path);
 		if (item != null && item.itemType == ASN1Util.IT_SEQUENCE)
@@ -862,7 +867,7 @@ public abstract class MyX509File extends ASN1Data
 		}
 	}
 
-	protected static void appendVersion(byte[] pdu, int beginOfst, int endOfst, String path, StringBuilder sb)
+	protected static void appendVersion(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull String path, @Nonnull StringBuilder sb)
 	{
 		ASN1Item itemPDU = ASN1Util.pduGetItem(pdu, beginOfst, endOfst, path);
 		if (itemPDU != null && itemPDU.itemType == ASN1Util.IT_INTEGER)
@@ -885,7 +890,8 @@ public abstract class MyX509File extends ASN1Data
 		}
 	}
 
-	protected static KeyType appendAlgorithmIdentifier(byte[] pdu, int beginOfst, int endOfst, StringBuilder sb, String varName, boolean pubKey)
+	@Nonnull
+	protected static KeyType appendAlgorithmIdentifier(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull StringBuilder sb, @Nullable String varName, boolean pubKey)
 	{
 		KeyType keyType = KeyType.Unknown;
 		ASN1Item algorithm = ASN1Util.pduGetItem(pdu, beginOfst, endOfst, "1");
@@ -920,7 +926,7 @@ public abstract class MyX509File extends ASN1Data
 		return keyType;
 	}
 
-	protected static void appendValidity(byte[] pdu, int beginOfst, int endOfst, StringBuilder sb, String varName)
+	protected static void appendValidity(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull StringBuilder sb, @Nullable String varName)
 	{
 		ZonedDateTime dt;
 		ASN1Item itemPDU;
@@ -948,7 +954,7 @@ public abstract class MyX509File extends ASN1Data
 		}
 	}
 
-	protected static void appendSubjectPublicKeyInfo(byte[] pdu, int beginOfst, int endOfst, StringBuilder sb, String varName)
+	protected static void appendSubjectPublicKeyInfo(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull StringBuilder sb, @Nullable String varName)
 	{
 		ASN1Item itemPDU;
 		KeyType keyType = KeyType.Unknown;
@@ -977,7 +983,7 @@ public abstract class MyX509File extends ASN1Data
 		}
 	}
 
-	protected static void appendName(byte[] pdu, int beginOfst, int endOfst, StringBuilder sb, String varName)
+	protected static void appendName(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull StringBuilder sb, @Nullable String varName)
 	{
 		ASN1Item itemPDU;
 		int cnt = ASN1Util.pduCountItem(pdu, beginOfst, endOfst, null);
@@ -996,7 +1002,7 @@ public abstract class MyX509File extends ASN1Data
 		}
 	}
 
-	protected static void appendRelativeDistinguishedName(byte[] pdu, int beginOfst, int endOfst, StringBuilder sb, String varName)
+	protected static void appendRelativeDistinguishedName(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull StringBuilder sb, @Nullable String varName)
 	{
 		ASN1Item itemPDU;
 		int cnt = ASN1Util.pduCountItem(pdu, beginOfst, endOfst, null);
@@ -1015,7 +1021,7 @@ public abstract class MyX509File extends ASN1Data
 		}
 	}
 
-	protected static void appendAttributeTypeAndDistinguishedValue(byte[] pdu, int beginOfst, int endOfst, StringBuilder sb, String varName)
+	protected static void appendAttributeTypeAndDistinguishedValue(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull StringBuilder sb, @Nullable String varName)
 	{
 		ASN1Item typePDU;
 		ASN1Item valuePDU;
@@ -1063,7 +1069,7 @@ public abstract class MyX509File extends ASN1Data
 		}
 	}
 
-	protected static void appendCRLExtensions(byte[] pdu, int beginOfst, int endOfst, StringBuilder sb, String varName)
+	protected static void appendCRLExtensions(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull StringBuilder sb, @Nullable String varName)
 	{
 		ASN1Item itemPDU;
 		ASN1Item subItemPDU;
@@ -1081,7 +1087,7 @@ public abstract class MyX509File extends ASN1Data
 		}
 	}
 	
-	protected static void appendCRLExtension(byte[] pdu, int beginOfst, int endOfst, StringBuilder sb, String varName)
+	protected static void appendCRLExtension(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull StringBuilder sb, @Nullable String varName)
 	{
 		ASN1Item extension = null;
 		ASN1Item itemPDU;
@@ -1372,7 +1378,7 @@ public abstract class MyX509File extends ASN1Data
 		}
 	}
 		
-	protected static void appendGeneralNames(byte[] pdu, int beginOfst, int endOfst, StringBuilder sb, String varName)
+	protected static void appendGeneralNames(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull StringBuilder sb, @Nullable String varName)
 	{
 		ASN1Item itemPDU;
 		if ((itemPDU = ASN1Util.pduGetItem(pdu, beginOfst, endOfst, "1")) != null)
@@ -1388,7 +1394,7 @@ public abstract class MyX509File extends ASN1Data
 		}
 	}
 
-	protected static boolean appendGeneralName(byte[] pdu, int beginOfst, int endOfst, String path, StringBuilder sb, String varName)
+	protected static boolean appendGeneralName(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull String path, @Nonnull StringBuilder sb, @Nullable String varName)
 	{
 		ASN1Item subItemPDU;
 		if ((subItemPDU = ASN1Util.pduGetItem(pdu, beginOfst, endOfst, path)) != null)
@@ -1474,7 +1480,7 @@ public abstract class MyX509File extends ASN1Data
 		return false;
 	}
 
-	protected static boolean appendDistributionPoint(byte[] pdu, int beginOfst, int endOfst, String path, StringBuilder sb, String varName)
+	protected static boolean appendDistributionPoint(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull String path, @Nonnull StringBuilder sb, @Nullable String varName)
 	{
 		ASN1Item itemPDU;
 		ASN1Item subItemPDU;
@@ -1525,7 +1531,7 @@ public abstract class MyX509File extends ASN1Data
 		return false;
 	}
 
-	protected static void appendDistributionPointName(byte[] pdu, int beginOfst, int endOfst, StringBuilder sb, String varName)
+	protected static void appendDistributionPointName(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull StringBuilder sb, @Nullable String varName)
 	{
 		int i;
 		ASN1Item itemPDU;
@@ -1546,7 +1552,7 @@ public abstract class MyX509File extends ASN1Data
 		}
 	}
 
-	protected static boolean appendPolicyInformation(byte[] pdu, int beginOfst, int endOfst, String path, StringBuilder sb, String varName)
+	protected static boolean appendPolicyInformation(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull String path, @Nonnull StringBuilder sb, @Nullable String varName)
 	{
 		ASN1Item itemPDU;
 		ASN1Item subItemPDU;
@@ -1609,7 +1615,7 @@ public abstract class MyX509File extends ASN1Data
 		return false;
 	}
 
-	protected static void appendPKCS7SignedData(byte[] pdu, int beginOfst, int endOfst, StringBuilder sb, String varName)
+	protected static void appendPKCS7SignedData(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull StringBuilder sb, @Nullable String varName)
 	{
 		ASN1Item itemPDU = ASN1Util.pduGetItem(pdu, beginOfst, endOfst, "1");
 		if (itemPDU != null && itemPDU.itemType == ASN1Util.IT_SEQUENCE)
@@ -1651,7 +1657,7 @@ public abstract class MyX509File extends ASN1Data
 		}
 	}
 
-	protected static void appendPKCS7DigestAlgorithmIdentifiers(byte[] pdu, int beginOfst, int endOfst, StringBuilder sb, String varName)
+	protected static void appendPKCS7DigestAlgorithmIdentifiers(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull StringBuilder sb, @Nullable String varName)
 	{
 		int i;
 		ASN1Item itemPDU;
@@ -1670,7 +1676,7 @@ public abstract class MyX509File extends ASN1Data
 		}
 	}
 
-	protected static void appendPKCS7SignerInfos(byte[] pdu, int beginOfst, int endOfst, StringBuilder sb, String varName)
+	protected static void appendPKCS7SignerInfos(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull StringBuilder sb, @Nullable String varName)
 	{
 		int i;
 		ASN1Item itemPDU;
@@ -1690,7 +1696,7 @@ public abstract class MyX509File extends ASN1Data
 		}
 	}
 
-	protected static void appendPKCS7SignerInfo(byte[] pdu, int beginOfst, int endOfst, StringBuilder sb, String varName)
+	protected static void appendPKCS7SignerInfo(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull StringBuilder sb, @Nullable String varName)
 	{
 		int i;
 		ASN1Item itemPDU = ASN1Util.pduGetItem(pdu, beginOfst, endOfst, "1");
@@ -1742,7 +1748,7 @@ public abstract class MyX509File extends ASN1Data
 		}
 	}
 
-	protected static void appendIssuerAndSerialNumber(byte[] pdu, int beginOfst, int endOfst, StringBuilder sb, String varName)
+	protected static void appendIssuerAndSerialNumber(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull StringBuilder sb, @Nullable String varName)
 	{
 		ASN1Item itemPDU;
 		if ((itemPDU = ASN1Util.pduGetItem(pdu, beginOfst, endOfst, "1")) != null && itemPDU.itemType == ASN1Util.IT_SEQUENCE)
@@ -1759,7 +1765,7 @@ public abstract class MyX509File extends ASN1Data
 		}
 	}
 
-	protected static void appendPKCS7Attributes(byte[] pdu, int beginOfst, int endOfst, StringBuilder sb, String varName)
+	protected static void appendPKCS7Attributes(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull StringBuilder sb, @Nullable String varName)
 	{
 		ASN1Item itemPDU;
 		ASN1Item oidPDU;
@@ -1857,7 +1863,7 @@ public abstract class MyX509File extends ASN1Data
 		}
 	}
 
-	protected static boolean appendMacData(byte[] pdu, int beginOfst, int endOfst, String path, StringBuilder sb, String varName)
+	protected static boolean appendMacData(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull String path, @Nonnull StringBuilder sb, @Nullable String varName)
 	{
 		ASN1Item itemPDU;
 		ASN1Item subItemPDU;
@@ -1888,7 +1894,7 @@ public abstract class MyX509File extends ASN1Data
 		return false;
 	}
 
-	protected static void appendDigestInfo(byte[] pdu, int beginOfst, int endOfst, StringBuilder sb, String varName)
+	protected static void appendDigestInfo(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull StringBuilder sb, @Nullable String varName)
 	{
 		ASN1Item itemPDU;
 		if ((itemPDU = ASN1Util.pduGetItem(pdu, beginOfst, endOfst, "1")) != null && itemPDU.itemType == ASN1Util.IT_SEQUENCE)
@@ -1904,7 +1910,7 @@ public abstract class MyX509File extends ASN1Data
 		}
 	}
 
-	protected static void appendData(byte[] pdu, int beginOfst, int endOfst, StringBuilder sb, String varName, ContentDataType dataType)
+	protected static void appendData(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull StringBuilder sb, @Nullable String varName, @Nonnull ContentDataType dataType)
 	{
 		switch (dataType)
 		{
@@ -1917,7 +1923,7 @@ public abstract class MyX509File extends ASN1Data
 		}
 	}
 
-	protected static void appendEncryptedData(byte[] pdu, int beginOfst, int endOfst, StringBuilder sb, String varName, ContentDataType dataType)
+	protected static void appendEncryptedData(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull StringBuilder sb, @Nullable String varName, @Nonnull ContentDataType dataType)
 	{
 		ASN1Item itemPDU;
 		ASN1Item subitemPDU;
@@ -1954,7 +1960,7 @@ public abstract class MyX509File extends ASN1Data
 		}
 	}
 
-	protected static void appendAuthenticatedSafe(byte[] pdu, int beginOfst, int endOfst, StringBuilder sb, String varName)
+	protected static void appendAuthenticatedSafe(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull StringBuilder sb, @Nullable String varName)
 	{
 		ASN1Item itemPDU;
 		int i;
@@ -1971,7 +1977,7 @@ public abstract class MyX509File extends ASN1Data
 		}
 	}
 
-	protected static void appendEncryptedContentInfo(byte[] pdu, int beginOfst, int endOfst, StringBuilder sb, String varName, ContentDataType dataType)
+	protected static void appendEncryptedContentInfo(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull StringBuilder sb, @Nullable String varName, @Nonnull ContentDataType dataType)
 	{
 		String name;
 		ASN1Item itemPDU;
@@ -2007,7 +2013,8 @@ public abstract class MyX509File extends ASN1Data
 		}
 	}
 
-	protected static String nameGetByOID(byte[] pdu, int beginOfst, int endOfst, String oidText)
+	@Nullable
+	protected static String nameGetByOID(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull String oidText)
 	{
 		ASN1Item itemPDU;
 		ASN1Item oidPDU;
@@ -2037,12 +2044,14 @@ public abstract class MyX509File extends ASN1Data
 		return null;
 	}
 	
-	protected static String nameGetCN(byte[] pdu, int beginOfst, int endOfst)
+	@Nullable
+	protected static String nameGetCN(@Nonnull byte[] pdu, int beginOfst, int endOfst)
 	{
 		return nameGetByOID(pdu, beginOfst, endOfst, "2.5.4.3");
 	}
 	
-	protected static CertNames namesGet(byte[] pdu, int beginOfst, int endOfst)
+	@Nullable
+	protected static CertNames namesGet(@Nonnull byte[] pdu, int beginOfst, int endOfst)
 	{
 		String path;
 		ASN1Item itemPDU;
@@ -2109,7 +2118,8 @@ public abstract class MyX509File extends ASN1Data
 		}
 	}
 
-	protected static List<String> extensionsGetCRLDistributionPoints(byte[] pdu, int beginOfst, int endOfst)
+	@Nonnull
+	protected static List<String> extensionsGetCRLDistributionPoints(@Nonnull byte[] pdu, int beginOfst, int endOfst)
 	{
 		String path;
 		ASN1Item itemPDU;
@@ -2161,7 +2171,7 @@ public abstract class MyX509File extends ASN1Data
 		return crlDistributionPoints;
 	}
 
-	protected static int distributionPointAdd(byte[] pdu, int beginOfst, int endOfst, List<String> crlDistributionPoints)
+	protected static int distributionPointAdd(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull List<String> crlDistributionPoints)
 	{
 		ASN1Item itemPDU;
 		if ((itemPDU = ASN1Util.pduGetItem(pdu, beginOfst, endOfst, "1")) != null && itemPDU.itemType == ASN1Util.IT_CONTEXT_SPECIFIC_0)
@@ -2178,7 +2188,8 @@ public abstract class MyX509File extends ASN1Data
 		return 0;
 	}
 
-	protected static MyX509Key publicKeyGetNew(byte[] pdu, int beginOfst, int endOfst)
+	@Nullable
+	protected static MyX509Key publicKeyGetNew(@Nonnull byte[] pdu, int beginOfst, int endOfst)
 	{
 		ASN1Item oidItem = ASN1Util.pduGetItem(pdu, beginOfst, endOfst, "1.1");
 		ASN1Item bstrItem = ASN1Util.pduGetItem(pdu, beginOfst, endOfst, "2");
@@ -2205,7 +2216,8 @@ public abstract class MyX509File extends ASN1Data
 		return null;
 	}
 
-	protected static KeyType keyTypeFromOID(byte[] oid, int ofst, int oidLen, boolean pubKey)
+	@Nonnull
+	protected static KeyType keyTypeFromOID(@Nonnull byte[] oid, int ofst, int oidLen, boolean pubKey)
 	{
 		if (ASN1Util.oidEqualsText(oid, ofst, oidLen, "1.2.840.113549.1.1.1"))
 		{
@@ -2221,7 +2233,8 @@ public abstract class MyX509File extends ASN1Data
 		return KeyType.Unknown;
 	}
 
-	protected static ECName ecNameFromOID(byte[] oid, int ofst, int oidLen)
+	@Nonnull
+	protected static ECName ecNameFromOID(@Nonnull byte[] oid, int ofst, int oidLen)
 	{
 		if (ASN1Util.oidEqualsText(oid, ofst, oidLen, "1.2.840.10045.3.1.7"))
 		{
@@ -2238,7 +2251,8 @@ public abstract class MyX509File extends ASN1Data
 		return ECName.Unknown;
 	}
 
-	protected static AlgType algorithmIdentifierGet(byte[] pdu, int beginOfst, int endOfst)
+	@Nonnull
+	protected static AlgType algorithmIdentifierGet(@Nonnull byte[] pdu, int beginOfst, int endOfst)
 	{
 		int cnt = ASN1Util.pduCountItem(pdu, beginOfst, endOfst, null);
 		if (cnt != 2 && cnt != 1)
@@ -2292,6 +2306,7 @@ public abstract class MyX509File extends ASN1Data
 		}
 	}
 
+	@Nullable
 	public SignedInfo getSignedInfo()
 	{
 		SignedInfo signedInfo = new SignedInfo();
@@ -2333,7 +2348,8 @@ public abstract class MyX509File extends ASN1Data
 	
 	}
 
-	public static HashType getAlgHash(AlgType algType)
+	@Nonnull
+	public static HashType getAlgHash(@Nonnull AlgType algType)
 	{
 		switch (algType)
 		{
@@ -2361,7 +2377,8 @@ public abstract class MyX509File extends ASN1Data
 		}
 	}
 
-	public static String getAlgName(AlgType algType)
+	@Nullable
+	public static String getAlgName(@Nonnull AlgType algType)
 	{
 		switch (algType)
 		{
@@ -2388,7 +2405,9 @@ public abstract class MyX509File extends ASN1Data
 			return null;
 		}
 	}
-	public static String keyTypeGetName(KeyType keyType)
+
+	@Nonnull
+	public static String keyTypeGetName(@Nonnull KeyType keyType)
 	{
 		switch (keyType)
 		{
@@ -2410,7 +2429,8 @@ public abstract class MyX509File extends ASN1Data
 		}
 	}
 
-	public static String keyTypeGetOID(KeyType keyType)
+	@Nonnull
+	public static String keyTypeGetOID(@Nonnull KeyType keyType)
 	{
 		switch (keyType)
 		{
@@ -2430,7 +2450,9 @@ public abstract class MyX509File extends ASN1Data
 			return "1.2.840.113549.1.1.1";
 		}
 	}
-	public static String ecNameGetName(ECName ecName)
+
+	@Nonnull
+	public static String ecNameGetName(@Nonnull ECName ecName)
 	{
 		switch (ecName)
 		{
@@ -2446,7 +2468,8 @@ public abstract class MyX509File extends ASN1Data
 		}
 	}
 
-	public static String ecNameGetOID(ECName ecName)
+	@Nonnull
+	public static String ecNameGetOID(@Nonnull ECName ecName)
 	{
 		switch (ecName)
 		{
@@ -2462,7 +2485,7 @@ public abstract class MyX509File extends ASN1Data
 		}
 	}
 
-	public static boolean verifySignedInfo(SignedInfo signedInfo, PublicKey key)
+	public static boolean verifySignedInfo(@Nonnull SignedInfo signedInfo, @Nonnull PublicKey key)
 	{
 		try
 		{
@@ -2488,7 +2511,8 @@ public abstract class MyX509File extends ASN1Data
 		}
 	}
 
-	public static HashType signAlgGetHashType(String signAlg)
+	@Nonnull
+	public static HashType signAlgGetHashType(@Nonnull String signAlg)
 	{
 		switch (signAlg)
 		{
@@ -2514,7 +2538,8 @@ public abstract class MyX509File extends ASN1Data
 		}
 	}
 
-	public static HashType hashTypeFromOID(byte[] oid, int oidOfst, int oidLen)
+	@Nonnull
+	public static HashType hashTypeFromOID(@Nonnull byte[] oid, int oidOfst, int oidLen)
 	{
 		if (ASN1Util.oidEqualsText(oid, oidOfst, oidLen, "2.16.840.1.101.3.4.2.1"))
 		{

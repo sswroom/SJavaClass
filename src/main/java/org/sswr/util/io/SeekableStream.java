@@ -1,8 +1,10 @@
 package org.sswr.util.io;
 
+import jakarta.annotation.Nonnull;
+
 public abstract class SeekableStream extends IOStream
 {
-	public SeekableStream(String sourceName)
+	public SeekableStream(@Nonnull String sourceName)
 	{
 		super(sourceName);
 	}

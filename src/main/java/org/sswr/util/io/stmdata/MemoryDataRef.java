@@ -3,13 +3,15 @@ package org.sswr.util.io.stmdata;
 import org.sswr.util.data.ByteTool;
 import org.sswr.util.io.StreamData;
 
+import jakarta.annotation.Nonnull;
+
 public class MemoryDataRef implements StreamData
 {
 	private byte[] data;
 	private int dataOfst;
 	private int dataLength;
 
-	public MemoryDataRef(byte[] data, int dataOfst, int dataLength)
+	public MemoryDataRef(@Nonnull byte[] data, int dataOfst, int dataLength)
 	{
 		this.data = data;
 		this.dataOfst = dataOfst;
@@ -20,7 +22,7 @@ public class MemoryDataRef implements StreamData
 	{
 	}
 
-	public int getRealData(long dataOffset, int length, byte[] buffer, int buffOfst)
+	public int getRealData(long dataOffset, int length, @Nonnull byte[] buffer, int buffOfst)
 	{
 		if (dataOffset >= this.dataLength)
 		{
@@ -37,17 +39,19 @@ public class MemoryDataRef implements StreamData
 		return length;
 	}
 
+	@Nonnull
 	public String getFullName()
 	{
 		return "";
 	}
 
+	@Nonnull
 	public String getShortName()
 	{
 		return "Memory";
 	}
 
-	public void setFullName(String fullName)
+	public void setFullName(@Nonnull String fullName)
 	{
 	}
 
@@ -56,6 +60,7 @@ public class MemoryDataRef implements StreamData
 		return this.dataLength;
 	}
 
+	@Nonnull
 	public StreamData getPartialData(long offset, long length)
 	{
 		if (offset >= this.dataLength)
@@ -74,9 +79,10 @@ public class MemoryDataRef implements StreamData
 		return false;
 	}
 
+	@Nonnull
 	public String getFullFileName()
 	{
-		return null;
+		return "";
 	}
 
 	public boolean isLoading()

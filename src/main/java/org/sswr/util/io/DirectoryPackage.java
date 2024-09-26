@@ -6,12 +6,15 @@ import java.util.Set;
 
 import org.sswr.util.io.stmdata.FileData;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class DirectoryPackage extends PackageFile
 {
 	private Set<String> fileNames;
 	private Set<String> dirNames;
 
-	public DirectoryPackage(String pathName)
+	public DirectoryPackage(@Nonnull String pathName)
 	{
 		super(pathName);
 
@@ -39,7 +42,8 @@ public class DirectoryPackage extends PackageFile
 		}
 	}
 
-	public StreamData getItemStmData(String name)
+	@Nullable
+	public StreamData getItemStmData(@Nonnull String name)
 	{
 		if (this.fileNames.contains(name))
 		{

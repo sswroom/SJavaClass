@@ -30,6 +30,9 @@ import org.sswr.util.math.geometry.Polygon;
 import org.sswr.util.math.geometry.Polyline;
 import org.sswr.util.math.geometry.Vector2D;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class FileGDBReader extends DBReader
 {
 	private StreamData fd;
@@ -42,6 +45,7 @@ public class FileGDBReader extends DBReader
 	private int []fieldOfst;
 	private List<Integer> colList;
 
+	@Nullable
 	private FileGDBFieldInfo getField(int fieldIndex)
 	{
 		List<FileGDBFieldInfo> fields = this.tableInfo.getFields();
@@ -65,7 +69,7 @@ public class FileGDBReader extends DBReader
 		return this.colList.get(colIndex);
 	}
 
-	public FileGDBReader(StreamData fd, long ofst, FileGDBTableInfo tableInfo, List<String> colList)
+	public FileGDBReader(@Nonnull StreamData fd, long ofst, @Nonnull FileGDBTableInfo tableInfo, @Nullable List<String> colList)
 	{
 		this.fd = fd.getPartialData(ofst, fd.getDataSize() - ofst);
 		this.currOfst = 0;
@@ -289,6 +293,7 @@ public class FileGDBReader extends DBReader
 		return 0;
 	}
 
+	@Nullable
 	public String getString(int colIndex)
 	{
 		if (this.rowData == null)
@@ -337,6 +342,10 @@ public class FileGDBReader extends DBReader
 		case 8:
 			{
 				byte[] binBuff = this.getBinary(colIndex);
+				if (binBuff == null)
+				{
+					return null;
+				}
 				return StringUtil.toHex(binBuff, 0, binBuff.length, (char)0);
 			}
 		case 10:
@@ -348,6 +357,7 @@ public class FileGDBReader extends DBReader
 		return null;
 	}
 
+	@Nullable
 	public ZonedDateTime getDate(int colIndex)
 	{
 		if (this.rowData == null)
@@ -407,6 +417,7 @@ public class FileGDBReader extends DBReader
 		return this.getInt32(colIndex) != 0;
 	}
 
+	@Nullable
 	public byte[] getBinary(int colIndex)
 	{
 		if (this.rowData == null)
@@ -456,6 +467,7 @@ public class FileGDBReader extends DBReader
 		return null;
 	}
 
+	@Nullable
 	public Vector2D getVector(int colIndex)
 	{
 		if (this.rowData == null)
@@ -856,12 +868,15 @@ public class FileGDBReader extends DBReader
 		return null;
 	}
 
+	@Nullable
 	public Geometry getGeometry(int colIndex)
 	{
 		Vector2D vec = this.getVector(colIndex);
 		if (vec == null) return null;
 		return GeometryUtil.fromVector2D(vec);
 	}
+
+	@Nullable
 	public Object getObject(int colIndex)
 	{
 		if (this.rowData == null)
@@ -915,6 +930,7 @@ public class FileGDBReader extends DBReader
 		return this.fieldNull[fieldIndex];
 	}
 
+	@Nullable
 	public String getName(int colIndex)
 	{
 		int fieldIndex = getFieldIndex(colIndex);
@@ -926,6 +942,7 @@ public class FileGDBReader extends DBReader
 		return null;
 	}
 
+	@Nonnull
 	public ColumnType getColumnType(int colIndex)
 	{
 		int fieldIndex = getFieldIndex(colIndex);
@@ -967,6 +984,7 @@ public class FileGDBReader extends DBReader
 		return ColumnType.Unknown;
 	}
 	
+	@Nullable
 	public ColumnDef getColumnDef(int colIndex)
 	{
 		int fieldIndex = getFieldIndex(colIndex);

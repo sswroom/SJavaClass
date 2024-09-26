@@ -7,6 +7,9 @@ import org.sswr.util.data.SharedBool;
 import org.sswr.util.data.SharedDouble;
 import org.sswr.util.math.Coord2DDbl;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class Polyline extends MultiGeometry<LineString>
 {
 	protected int flags;
@@ -19,11 +22,13 @@ public class Polyline extends MultiGeometry<LineString>
 		this.color = 0;
 	}
 
+	@Nonnull
 	public VectorType getVectorType()
 	{
 		return VectorType.Polyline;
 	}
 
+	@Nonnull
 	public Vector2D clone()
 	{
 		Polyline pl = new Polyline(this.srid);
@@ -37,7 +42,7 @@ public class Polyline extends MultiGeometry<LineString>
 		return pl;
 	}
 
-	public double calBoundarySqrDistance(Coord2DDbl pt, Coord2DDbl nearPt)
+	public double calBoundarySqrDistance(@Nonnull Coord2DDbl pt, @Nonnull Coord2DDbl nearPt)
 	{
 		Iterator<LineString> it = this.geometries.iterator();
 		if (!it.hasNext())
@@ -63,7 +68,7 @@ public class Polyline extends MultiGeometry<LineString>
 		return minDist;
 	}
 	
-	public boolean joinVector(Vector2D vec)
+	public boolean joinVector(@Nonnull Vector2D vec)
 	{
 		if (vec.getVectorType() != VectorType.Polyline || this.hasZ() != vec.hasZ() || this.hasM() != vec.hasM())
 		{
@@ -78,7 +83,7 @@ public class Polyline extends MultiGeometry<LineString>
 		return true;
 	}
 
-	public void addFromPtOfst(int[] ptOfstList, Coord2DDbl[] pointList, double[] zList, double[] mList)
+	public void addFromPtOfst(@Nonnull int[] ptOfstList, @Nonnull Coord2DDbl[] pointList, @Nullable double[] zList, @Nullable double[] mList)
 	{
 		LineString lineString;
 		int i = 0;
@@ -101,11 +106,11 @@ public class Polyline extends MultiGeometry<LineString>
 			zArr = lineString.getZList();
 			mArr = lineString.getMList();
 			ByteTool.copyArray(ptArr, 0, pointList, j, (k - j));
-			if (zList != null)
+			if (zList != null && zArr != null)
 			{
 				ByteTool.copyArray(zArr, 0, zList, j, (k - j));
 			}
-			if (mList != null)
+			if (mList != null && mArr != null)
 			{
 				ByteTool.copyArray(mArr, 0, mList, j, (k - j));
 			}

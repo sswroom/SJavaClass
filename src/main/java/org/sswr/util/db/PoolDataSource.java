@@ -11,6 +11,9 @@ import javax.sql.DataSource;
 
 import org.sswr.util.basic.ThreadEvent;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class PoolDataSource implements DataSource
 {
 	private static final boolean debug = true;
@@ -36,7 +39,7 @@ public class PoolDataSource implements DataSource
 		}
 	}
 
-	public void setDriverClassName(String className)
+	public void setDriverClassName(@Nonnull String className)
 	{
 		try
 		{
@@ -48,17 +51,17 @@ public class PoolDataSource implements DataSource
 		}
 	}
 
-	public void setUrl(String url)
+	public void setUrl(@Nullable String url)
 	{
 		this.url = url;
 	}
 
-	public void setUsername(String username)
+	public void setUsername(@Nullable String username)
 	{
 		this.username = username;
 	}
 
-	public void setPassword(String password)
+	public void setPassword(@Nullable String password)
 	{
 		this.password = password;
 	}

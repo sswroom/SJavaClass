@@ -7,6 +7,8 @@ import org.sswr.util.data.ByteTool;
 import org.sswr.util.data.GeometryUtil;
 import org.sswr.util.math.Coord2DDbl;
 
+import jakarta.annotation.Nonnull;
+
 public class CompoundCurve extends MultiGeometry<LineString>
 {
 	public CompoundCurve(int srid)
@@ -14,7 +16,7 @@ public class CompoundCurve extends MultiGeometry<LineString>
 		super(srid);
 	}
 
-	public void addGeometry(LineString geometry)
+	public void addGeometry(@Nonnull LineString geometry)
 	{
 		VectorType t = geometry.getVectorType();
 		if (t == VectorType.CircularString || t == VectorType.LineString)
@@ -23,11 +25,13 @@ public class CompoundCurve extends MultiGeometry<LineString>
 		}
 	}
 
+	@Nonnull
 	public VectorType getVectorType()
 	{
 		return VectorType.CompoundCurve;
 	}
 
+	@Nonnull
 	public Vector2D clone()
 	{
 		CompoundCurve newObj = new CompoundCurve(this.srid);
@@ -42,7 +46,7 @@ public class CompoundCurve extends MultiGeometry<LineString>
 	}
 
 
-	public int getDrawPoints(List<Coord2DDbl> ptList)
+	public int getDrawPoints(@Nonnull List<Coord2DDbl> ptList)
 	{
 		int ret = 0;
 		LineString ls;

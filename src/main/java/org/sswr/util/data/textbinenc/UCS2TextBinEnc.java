@@ -11,7 +11,8 @@ public class UCS2TextBinEnc extends CharsetTextBinEnc
 		super(StandardCharsets.UTF_16LE);
 	}
 
-	public @Nonnull String getName()
+	@Nonnull
+	public String getName()
 	{
 		return "Unicode Text";
 	}

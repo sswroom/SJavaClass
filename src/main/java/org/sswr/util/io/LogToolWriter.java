@@ -2,13 +2,15 @@ package org.sswr.util.io;
 
 import org.sswr.util.data.StringUtil;
 
+import jakarta.annotation.Nonnull;
+
 public class LogToolWriter implements IOWriter
 {
 	private StringBuilder sb;
 	private LogTool log;
 	private LogLevel level;
 
-	public LogToolWriter(LogTool log, LogLevel level)
+	public LogToolWriter(@Nonnull LogTool log, @Nonnull LogLevel level)
 	{
 		this.log = log;
 		this.level = level;
@@ -16,7 +18,7 @@ public class LogToolWriter implements IOWriter
 	}
 
 	@Override
-	public boolean writeStr(String str)
+	public boolean writeStr(@Nonnull String str)
 	{
 		this.sb.append(str);
 		this.flush();
@@ -24,7 +26,7 @@ public class LogToolWriter implements IOWriter
 	}
 
 	@Override
-	public boolean writeLine(String str)
+	public boolean writeLine(@Nonnull String str)
 	{
 		this.sb.append(str);
 		this.flush();

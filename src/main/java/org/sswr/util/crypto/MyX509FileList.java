@@ -5,11 +5,14 @@ import java.util.List;
 
 import org.sswr.util.net.ASN1Data;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class MyX509FileList extends MyX509File
 {
 	private List<MyX509File> fileList;
 
-	public MyX509FileList(String sourceName, MyX509Cert cert)
+	public MyX509FileList(@Nonnull String sourceName, @Nonnull MyX509Cert cert)
 	{
 		super(sourceName, cert.getASN1Buff(), 0, cert.getASN1BuffSize());
 		this.fileList = new ArrayList<MyX509File>();
@@ -17,12 +20,14 @@ public class MyX509FileList extends MyX509File
 	}
 
 	@Override
+	@Nonnull
 	public FileType getFileType()
 	{
 		return FileType.FileList;
 	}
 
 	@Override
+	@Nonnull
 	public ASN1Data clone()
 	{
 		MyX509FileList fileList = new MyX509FileList(this.getSourceNameObj(), (MyX509Cert)this.fileList.get(0).clone());
@@ -37,6 +42,7 @@ public class MyX509FileList extends MyX509File
 	}
 
 	@Override
+	@Nonnull
 	public String toString()
 	{
 		StringBuilder sb = new StringBuilder();
@@ -50,7 +56,7 @@ public class MyX509FileList extends MyX509File
 		return sb.toString();
 	}
 
-	public void addFile(MyX509File file)
+	public void addFile(@Nonnull MyX509File file)
 	{
 		this.fileList.add(file);
 	}
@@ -60,6 +66,7 @@ public class MyX509FileList extends MyX509File
 		return this.fileList.size();
 	}
 	
+	@Nullable
 	public MyX509File getFile(int index)
 	{
 		return this.fileList.get(index);

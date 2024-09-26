@@ -5,6 +5,8 @@ import java.util.Iterator;
 
 import org.sswr.util.math.Coord2DDbl;
 
+import jakarta.annotation.Nonnull;
+
 public class CurvePolygon extends MultiGeometry<Vector2D>
 {
 	public CurvePolygon(int srid)
@@ -12,7 +14,7 @@ public class CurvePolygon extends MultiGeometry<Vector2D>
 		super(srid);
 	}
 
-	public void addGeometry(Vector2D geometry)
+	public void addGeometry(@Nonnull Vector2D geometry)
 	{
 		VectorType t = geometry.getVectorType();
 		if (t == VectorType.CircularString || t == VectorType.CompoundCurve || t == VectorType.LineString)
@@ -21,11 +23,13 @@ public class CurvePolygon extends MultiGeometry<Vector2D>
 		}
 	}
 
+	@Nonnull
 	public VectorType getVectorType()
 	{
 		return VectorType.CurvePolygon;
 	}
 
+	@Nonnull
 	public Vector2D clone()
 	{
 		CurvePolygon newObj = new CurvePolygon(this.srid);
@@ -39,6 +43,7 @@ public class CurvePolygon extends MultiGeometry<Vector2D>
 		return newObj;
 	}	
 
+	@Nonnull
 	public Vector2D curveToLine()
 	{
 		Polygon pg = new Polygon(this.srid);
@@ -70,7 +75,7 @@ public class CurvePolygon extends MultiGeometry<Vector2D>
 		return pg;
 	}
 
-	public boolean insideOrTouch(Coord2DDbl coord)
+	public boolean insideOrTouch(@Nonnull Coord2DDbl coord)
 	{
 		return this.curveToLine().insideOrTouch(coord);
 	}

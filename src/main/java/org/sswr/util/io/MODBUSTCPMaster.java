@@ -6,6 +6,9 @@ import java.util.Map;
 import org.sswr.util.basic.HiResClock;
 import org.sswr.util.data.ByteTool;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class MODBUSTCPMaster implements MODBUSMaster, Runnable
 {
 	public static final int CMDDELAY = 0;
@@ -126,7 +129,7 @@ public class MODBUSTCPMaster implements MODBUSMaster, Runnable
 		this.threadRunning = false;
 	}
 
-	public MODBUSTCPMaster(IOStream stm)
+	public MODBUSTCPMaster(@Nonnull IOStream stm)
 	{
 		this.stm = stm;
 		this.threadRunning = false;
@@ -396,7 +399,7 @@ public class MODBUSTCPMaster implements MODBUSMaster, Runnable
 		return true;
 	}
 
-	public boolean writeHoldingRegisters(byte devAddr, int regAddr, int cnt, byte []val, int valOfst)
+	public boolean writeHoldingRegisters(byte devAddr, int regAddr, int cnt, @Nonnull byte []val, int valOfst)
 	{
 		byte []buff = new byte[cnt * 2 + 13];
 		ByteTool.writeMInt16(buff, 0, this.tranId);
@@ -435,7 +438,7 @@ public class MODBUSTCPMaster implements MODBUSMaster, Runnable
 		return true;
 	}
 
-	public void handleReadResult(byte addr, MODBUSListener listener)
+	public void handleReadResult(byte addr, @Nullable MODBUSListener listener)
 	{
 		this.cbMap.put(addr, listener);
 	}

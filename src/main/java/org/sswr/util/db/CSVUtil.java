@@ -22,8 +22,12 @@ import java.util.List;
 
 import org.sswr.util.data.FieldGetter;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class CSVUtil {
-	public static String quote(String s)
+	@Nonnull
+	public static String quote(@Nullable String s)
 	{
 		if (s == null)
 		{
@@ -31,7 +35,9 @@ public class CSVUtil {
 		}
 		return "\""+s.replace("\"", "\"\"")+"\"";
 	}
-	public static String join(String s[])
+
+	@Nonnull
+	public static String join(@Nonnull String s[])
 	{
 		StringBuilder sb = new StringBuilder();
 		int i = 0;
@@ -45,7 +51,8 @@ public class CSVUtil {
 		return sb.toString();
 	}
 
-	public static String[] readLine(BufferedReader reader) throws IOException
+	@Nullable
+	public static String[] readLine(@Nonnull BufferedReader reader) throws IOException
 	{
 		ArrayList<String> cols;
 		boolean isQuoted = false;
@@ -106,7 +113,7 @@ public class CSVUtil {
 		return cols.toArray(new String[cols.size()]);
 	}
 
-	private static <T> void appendRow(StringBuilder sb, T data, List<FieldGetter<T>> getters) throws IllegalAccessException, InvocationTargetException
+	private static <T> void appendRow(@Nonnull StringBuilder sb, @Nonnull T data, @Nonnull List<FieldGetter<T>> getters) throws IllegalAccessException, InvocationTargetException
 	{
 		int i = 0;
 		int j = getters.size();
@@ -137,7 +144,7 @@ public class CSVUtil {
 		}
 	}
 
-	public static <T> boolean createFile(Writer writer, Iterable<T> datas, String cols[])
+	public static <T> boolean createFile(@Nonnull Writer writer, @Nonnull Iterable<T> datas, @Nonnull String cols[])
 	{
 		try
 		{
@@ -211,7 +218,7 @@ public class CSVUtil {
 		}
 	}
 
-	public static <T> boolean createFile(File file, Charset cs, Iterable<T> datas, String cols[])
+	public static <T> boolean createFile(@Nonnull File file, @Nonnull Charset cs, @Nonnull Iterable<T> datas, @Nonnull String cols[])
 	{
 		try
 		{
@@ -227,7 +234,7 @@ public class CSVUtil {
 		}
 	}
 
-	public static boolean createFile(Writer writer, Connection conn, String sql)
+	public static boolean createFile(@Nonnull Writer writer, @Nonnull Connection conn, @Nonnull String sql)
 	{
 		try
 		{
@@ -402,7 +409,7 @@ public class CSVUtil {
 		}
 	}	
 
-	public static boolean createFile(File file, Charset cs, Connection conn, String sql)
+	public static boolean createFile(@Nonnull File file, @Nonnull Charset cs, @Nonnull Connection conn, @Nonnull String sql)
 	{
 		try
 		{

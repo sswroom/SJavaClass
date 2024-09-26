@@ -3,9 +3,11 @@ package org.sswr.util.data;
 import java.util.Comparator;
 import java.util.List;
 
+import jakarta.annotation.Nonnull;
+
 public class InsertionSort
 {
-	static <T> void sortB(List<T> arr, Comparator<T> func, int left, int right)
+	static <T> void sortB(@Nonnull List<T> arr, @Nonnull Comparator<T> func, int left, int right)
 	{
 		int i;
 		int j;
@@ -47,7 +49,7 @@ public class InsertionSort
 		}
 	}
 	
-	static <T extends Comparable<T>> void sortB(List<T> arr, int left, int right)
+	static <T extends Comparable<T>> void sortB(@Nonnull List<T> arr, int left, int right)
 	{
 		int i;
 		int j;

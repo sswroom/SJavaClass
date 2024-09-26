@@ -2,6 +2,8 @@ package org.sswr.util.crypto;
 
 import org.sswr.util.data.ByteTool;
 
+import jakarta.annotation.Nonnull;
+
 public class SHA512 extends Hash
 {
 	private long intermediateHash[];
@@ -9,7 +11,7 @@ public class SHA512 extends Hash
 	private long messageLength;
 	private int messageBlockIndex;
 
-	static void calcBlock(long intermediateHash[], byte messageBlock[], int ofst)
+	static void calcBlock(@Nonnull long intermediateHash[], @Nonnull byte messageBlock[], int ofst)
 	{
 		long w[] = new long[80];
 		long k[] =    {
@@ -100,11 +102,13 @@ public class SHA512 extends Hash
 		this.clear();
 	}
 
+	@Nonnull
 	public String getName()
 	{
 		return "SHA-512";
 	}
 
+	@Nonnull
 	public Hash clone()
 	{
 		SHA512 sha512 = new SHA512();
@@ -130,7 +134,7 @@ public class SHA512 extends Hash
 		this.intermediateHash[7]   = 0x5be0cd19137e2179L;
 	}
 
-	public void calc(byte buff[], int ofst, int buffSize)
+	public void calc(@Nonnull byte buff[], int ofst, int buffSize)
 	{
 		this.messageLength += (buffSize << 3);
 		if ((buffSize + this.messageBlockIndex) < 128)
@@ -161,6 +165,7 @@ public class SHA512 extends Hash
 		}
 	}
 
+	@Nonnull
 	public byte []getValue()
 	{
 		byte calBuff[] = new byte[128];

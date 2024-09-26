@@ -8,6 +8,8 @@ import org.sswr.util.data.ByteTool;
 import org.sswr.util.data.LineBreakType;
 import org.sswr.util.data.StringUtil;
 
+import jakarta.annotation.Nonnull;
+
 public class UTF8Reader
 {
 	private static final int BUFFSIZE = 65536;
@@ -65,7 +67,7 @@ public class UTF8Reader
 		}
 	}
 
-	public UTF8Reader(InputStream stm)
+	public UTF8Reader(@Nonnull InputStream stm)
 	{
 		this.stm = stm;
 		this.buff = new byte[BUFFSIZE];
@@ -299,7 +301,7 @@ public class UTF8Reader
 		return 0;
 	}
 
-	public boolean readLine(StringBuilder sb, int maxByteCnt)
+	public boolean readLine(@Nonnull StringBuilder sb, int maxByteCnt)
 	{
 		if (this.currOfst >= this.buffSize)
 		{
@@ -414,7 +416,7 @@ public class UTF8Reader
 		}
 	}
 
-	public int readLine(char []u8buff, int ofst, int maxByteCnt)
+	public int readLine(@Nonnull char []u8buff, int ofst, int maxByteCnt)
 	{
 		if (this.currOfst >= this.buffSize)
 		{
@@ -529,7 +531,7 @@ public class UTF8Reader
 		}
 	}
 
-	public int getLastLineBreak(char []buff, int ofst)
+	public int getLastLineBreak(@Nonnull char []buff, int ofst)
 	{
 		if (this.lineBreak == LineBreakType.CR)
 		{
@@ -547,7 +549,7 @@ public class UTF8Reader
 		return ofst;
 	}
 
-	public int getLastLineBreak(byte []buff, int ofst)
+	public int getLastLineBreak(@Nonnull byte []buff, int ofst)
 	{
 		if (this.lineBreak == LineBreakType.CR)
 		{
@@ -565,7 +567,7 @@ public class UTF8Reader
 		return ofst;
 	}
 
-	public boolean getLastLineBreak(StringBuilder sb)
+	public boolean getLastLineBreak(@Nonnull StringBuilder sb)
 	{
 		if (this.lineBreak == LineBreakType.CR)
 		{
@@ -587,7 +589,7 @@ public class UTF8Reader
 		return this.lineBreak != LineBreakType.NONE;
 	}
 
-	public boolean readToEnd(StringBuilder sb)
+	public boolean readToEnd(@Nonnull StringBuilder sb)
 	{
 		boolean succ = false;
 		while (this.readLine(sb, BUFFSIZE))

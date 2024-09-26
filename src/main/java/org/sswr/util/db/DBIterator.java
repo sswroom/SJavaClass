@@ -10,6 +10,9 @@ import java.util.List;
 
 import org.sswr.util.db.DBUtil.DBType;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class DBIterator<T> implements Iterator<T>
 {
 	private T nextItem;
@@ -21,7 +24,7 @@ public class DBIterator<T> implements Iterator<T>
 	private List<QueryConditions<T>.Condition> clientConditions;
 	private boolean connError;
 
-	DBIterator(ResultSet rs, Object parent, Constructor<T> constr, DBType dbType, ArrayList<DBColumnInfo> cols, List<QueryConditions<T>.Condition> clientConditions)
+	DBIterator(@Nullable ResultSet rs, @Nullable Object parent, @Nonnull Constructor<T> constr, @Nonnull DBType dbType, @Nullable ArrayList<DBColumnInfo> cols, @Nullable List<QueryConditions<T>.Condition> clientConditions)
 	{
 		this.rs = rs;
 		this.constr = constr;

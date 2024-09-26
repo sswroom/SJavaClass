@@ -2,6 +2,8 @@ package org.sswr.util.crypto;
 
 import org.sswr.util.data.ByteTool;
 
+import jakarta.annotation.Nonnull;
+
 public abstract class BlockCipher extends Encryption
 {
 	public enum ChainMode
@@ -25,7 +27,8 @@ public abstract class BlockCipher extends Encryption
 		ByteTool.clearArray(this.iv, 0, blockSize);
 	}
 
-	public byte []encrypt(byte []inBuff, int inOfst, int inSize)
+	@Nonnull
+	public byte []encrypt(@Nonnull byte []inBuff, int inOfst, int inSize) throws EncryptionException
 	{
 		byte outBuff[];
 		byte blk[];
@@ -133,11 +136,12 @@ public abstract class BlockCipher extends Encryption
 			}
 			return outBuff;
 		default:
-			return null;
+			throw new EncryptionException("Unsupported Chain Mode");
 		}
 	}
 
-	public byte []decrypt(byte []inBuff, int inOfst, int inSize)
+	@Nonnull
+	public byte []decrypt(@Nonnull byte []inBuff, int inOfst, int inSize) throws EncryptionException
 	{
 		byte outBuff[];
 		byte blk[];
@@ -242,7 +246,7 @@ public abstract class BlockCipher extends Encryption
 			}
 			return outBuff;
 		default:
-			return null;
+			throw new EncryptionException("Unsupported Chain Mode");
 		}
 	}
 
@@ -256,15 +260,15 @@ public abstract class BlockCipher extends Encryption
 		return this.blockSize;
 	}
 
-	public abstract int encryptBlock(byte []inBlock, int inOfst, byte []outBlock, int outOfst);
-	public abstract int decryptBlock(byte []inBlock, int inOfst, byte []outBlock, int outOfst);
+	public abstract int encryptBlock(@Nonnull byte []inBlock, int inOfst, @Nonnull byte []outBlock, int outOfst);
+	public abstract int decryptBlock(@Nonnull byte []inBlock, int inOfst, @Nonnull byte []outBlock, int outOfst);
 
-	public void setChainMode(ChainMode cm)
+	public void setChainMode(@Nonnull ChainMode cm)
 	{
 		this.cm = cm;
 	}
 
-	public void setIV(byte []iv)
+	public void setIV(@Nonnull byte []iv)
 	{
 		ByteTool.copyArray(this.iv, 0, iv, 0, this.blockSize);
 	}

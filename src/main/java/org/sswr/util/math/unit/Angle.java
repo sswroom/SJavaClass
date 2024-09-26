@@ -1,5 +1,7 @@
 package org.sswr.util.math.unit;
 
+import jakarta.annotation.Nonnull;
+
 public class Angle
 {
 	public enum AngleUnit
@@ -14,7 +16,7 @@ public class Angle
 		Microarcsecond
 	};
 
-	public static double getUnitRatio(AngleUnit unit)
+	public static double getUnitRatio(@Nonnull AngleUnit unit)
 	{
 		switch (unit)
 		{
@@ -38,7 +40,8 @@ public class Angle
 		return 1;
 	}
 
-	public static String getUnitShortName(AngleUnit unit)
+	@Nonnull
+	public static String getUnitShortName(@Nonnull AngleUnit unit)
 	{
 		switch (unit)
 		{
@@ -62,7 +65,8 @@ public class Angle
 		return "";
 	}
 
-	public static String getUnitName(AngleUnit unit)
+	@Nonnull
+	public static String getUnitName(@Nonnull AngleUnit unit)
 	{
 		switch (unit)
 		{
@@ -86,7 +90,7 @@ public class Angle
 		return "";
 	}
 
-	public static double convert(AngleUnit fromUnit, AngleUnit toUnit, double fromValue)
+	public static double convert(@Nonnull AngleUnit fromUnit, @Nonnull AngleUnit toUnit, double fromValue)
 	{
 		return fromValue * getUnitRatio(fromUnit) / getUnitRatio(toUnit);
 	}

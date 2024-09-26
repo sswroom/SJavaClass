@@ -5,6 +5,9 @@ import java.util.Arrays;
 
 import org.sswr.util.data.ByteTool;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class Blowfish extends BlockCipher
 {
 	private static final int N = 16;
@@ -362,7 +365,7 @@ public class Blowfish extends BlockCipher
 		}
 	}
 	
-	private void expandKey(byte[] salt, byte[] password)
+	private void expandKey(@Nullable byte[] salt, @Nullable byte[] password)
 	{
 		int i;
 		int j;
@@ -467,13 +470,13 @@ public class Blowfish extends BlockCipher
 		this.p = new int[N + 2];
 	}
 	
-	public Blowfish(byte[] key)
+	public Blowfish(@Nullable byte[] key)
 	{
 		this();
 		this.setKey(key);
 	}
 	
-	public int encryptBlock(byte []inBlock, int inOfst, byte []outBlock, int outOfst)
+	public int encryptBlock(@Nonnull byte []inBlock, int inOfst, @Nonnull byte []outBlock, int outOfst)
 	{
 		this.xl = ByteTool.readMInt32(inBlock, inOfst + 0);
 		this.xr = ByteTool.readMInt32(inBlock, inOfst + 4);
@@ -483,7 +486,7 @@ public class Blowfish extends BlockCipher
 		return 8;
 	}
 	
-	public int decryptBlock(byte[] inBlock, int inOfst, byte[] outBlock, int outOfst)
+	public int decryptBlock(@Nonnull byte[] inBlock, int inOfst, @Nonnull byte[] outBlock, int outOfst)
 	{
 		this.xl = ByteTool.readMInt32(inBlock, inOfst + 0);
 		this.xr = ByteTool.readMInt32(inBlock, inOfst + 4);
@@ -493,13 +496,13 @@ public class Blowfish extends BlockCipher
 		return 8;
 	}
 	
-	public void setKey(byte[] key)
+	public void setKey(@Nullable byte[] key)
 	{
 		this.init();
 		this.expandKey(null, key);
 	}
 	
-	public void eksBlowfishSetup(int cost, byte[] salt, String password)
+	public void eksBlowfishSetup(int cost, @Nonnull byte[] salt, @Nonnull String password)
 	{
 		int i;
 		byte[] pwdBuff1 = password.getBytes(StandardCharsets.UTF_8);

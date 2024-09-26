@@ -21,17 +21,20 @@ public class CharsetTextBinEnc extends TextBinEnc
 		}
 	}
 
-	public @Nullable String encodeBin(@Nonnull byte []dataBuff, int dataOfst, int buffSize)
+	@Nonnull
+	public String encodeBin(@Nonnull byte []dataBuff, int dataOfst, int buffSize)
 	{
 		return new String(dataBuff, dataOfst, buffSize, this.cs);
 	}
 
-	public @Nullable byte []decodeBin(@Nonnull String s)
+	@Nonnull
+	public byte []decodeBin(@Nonnull String s)
 	{
 		return s.getBytes(this.cs);
 	}
 
-	public @Nonnull String getName()
+	@Nonnull
+	public String getName()
 	{
 		return "Charset Encoding";
 	}	

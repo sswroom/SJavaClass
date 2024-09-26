@@ -7,12 +7,14 @@ import java.util.Map;
 import org.sswr.util.db.DBColumnInfo;
 import org.sswr.util.db.DBUtil;
 
+import jakarta.annotation.Nonnull;
+
 public class FieldComparator<T> implements Comparator<T>
 {
 	private String fieldNames[];
 	private Object getters[];
 	private int dirs[];
-	public FieldComparator(Class<?> cls, String compareConds) throws NoSuchFieldException
+	public FieldComparator(@Nonnull Class<?> cls, @Nonnull String compareConds) throws NoSuchFieldException
 	{
 		String conds[] = StringUtil.split(compareConds, ",");
 		String cond[];
@@ -82,7 +84,8 @@ public class FieldComparator<T> implements Comparator<T>
 		}
 	}
 
-	public String toOrderClause(Map<String, DBColumnInfo> colsMap, DBUtil.DBType dbType)
+	@Nonnull
+	public String toOrderClause(@Nonnull Map<String, DBColumnInfo> colsMap, @Nonnull DBUtil.DBType dbType)
 	{
 		StringBuilder sb = new StringBuilder();
 		int i = 0;

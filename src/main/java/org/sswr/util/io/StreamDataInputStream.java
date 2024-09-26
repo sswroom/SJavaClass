@@ -4,11 +4,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Objects;
 
+import jakarta.annotation.Nonnull;
+
 public class StreamDataInputStream extends InputStream {
 	private StreamData fd;
 	private long ofst;
 
-	public StreamDataInputStream(StreamData fd)
+	public StreamDataInputStream(@Nonnull StreamData fd)
 	{
 		this.fd = fd.getPartialData(0, fd.getDataSize());
 		this.ofst = 0;

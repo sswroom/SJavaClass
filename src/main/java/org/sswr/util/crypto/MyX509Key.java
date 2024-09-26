@@ -20,29 +20,35 @@ import org.sswr.util.net.ASN1Item;
 import org.sswr.util.net.ASN1PDUBuilder;
 import org.sswr.util.net.ASN1Util;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class MyX509Key extends MyX509File
 {
 	private KeyType keyType;
 
-	public MyX509Key(String sourceName, byte[] buff, int ofst, int size, KeyType keyType)
+	public MyX509Key(@Nonnull String sourceName, @Nonnull byte[] buff, int ofst, int size, @Nonnull KeyType keyType)
 	{
 		super(sourceName, buff, ofst, size);
 		this.keyType = keyType;
 	}
 
 	@Override
+	@Nonnull
 	public FileType getFileType()
 	{
 		return FileType.Key;
 	}
 
 	@Override
+	@Nonnull
 	public ASN1Data clone()
 	{
 		return new MyX509Key(this.sourceName, this.buff, 0, this.buff.length, this.keyType);
 	}
 
 	@Override
+	@Nonnull
 	public String toString()
 	{
 		StringBuilder sb = new StringBuilder();
@@ -168,6 +174,7 @@ public class MyX509Key extends MyX509File
 		return sb.toString();
 	}
 
+	@Nonnull
 	public KeyType getKeyType()
 	{
 		return this.keyType;
@@ -197,6 +204,7 @@ public class MyX509Key extends MyX509File
 		}
 	}
 
+	@Nullable
 	public MyX509Key createPublicKey()
 	{
 		if (this.keyType == KeyType.RSAPublic)
@@ -223,6 +231,7 @@ public class MyX509Key extends MyX509File
 		}
 	}
 
+	@Nullable
 	public byte[] getKeyId()
 	{
 		MyX509Key pubKey = this.createPublicKey();
@@ -236,13 +245,15 @@ public class MyX509Key extends MyX509File
 		return null;
 	}
 	
-	private byte[] toBuff(ASN1Item item)
+	@Nullable
+	private byte[] toBuff(@Nullable ASN1Item item)
 	{
 		if (item == null)
 			return null;
 		return Arrays.copyOfRange(this.buff, item.ofst, item.ofst + item.len);
 	}
 
+	@Nullable
 	public byte[] getRSAModulus()
 	{
 		if (this.keyType == KeyType.RSA)
@@ -259,6 +270,7 @@ public class MyX509Key extends MyX509File
 		}
 	}
 	
+	@Nullable
 	public byte[] getRSAPublicExponent()
 	{
 		if (this.keyType == KeyType.RSA)
@@ -275,42 +287,49 @@ public class MyX509Key extends MyX509File
 		}
 	}
 	
+	@Nullable
 	public byte[] getRSAPrivateExponent()
 	{
 		if (this.keyType != KeyType.RSA) return null;
 		return toBuff(ASN1Util.pduGetItem(this.buff, 0, this.buff.length, "1.4"));
 	}
 	
+	@Nullable
 	public byte[] getRSAPrime1()
 	{
 		if (this.keyType != KeyType.RSA) return null;
 		return toBuff(ASN1Util.pduGetItem(this.buff, 0, this.buff.length, "1.5"));
 	}
 	
+	@Nullable
 	public byte[] getRSAPrime2()
 	{
 		if (this.keyType != KeyType.RSA) return null;
 		return toBuff(ASN1Util.pduGetItem(this.buff, 0, this.buff.length, "1.6"));
 	}
 	
+	@Nullable
 	public byte[] getRSAExponent1()
 	{
 		if (this.keyType != KeyType.RSA) return null;
 		return toBuff(ASN1Util.pduGetItem(this.buff, 0, this.buff.length, "1.7"));
 	}
 	
+	@Nullable
 	public byte[] getRSAExponent2()
 	{
 		if (this.keyType != KeyType.RSA) return null;
 		return toBuff(ASN1Util.pduGetItem(this.buff, 0, this.buff.length, "1.8"));
 	}
 	
+	@Nullable
 	public byte[] getRSACoefficient()
 	{
 		if (this.keyType != KeyType.RSA) return null;
 		return toBuff(ASN1Util.pduGetItem(this.buff, 0, this.buff.length, "1.9"));
 	}
 
+	@Nullable
 	public byte[] getECPrivate()
 	{
 		if (this.keyType == KeyType.ECDSA)
@@ -323,6 +342,7 @@ public class MyX509Key extends MyX509File
 		}		
 	}
 
+	@Nullable
 	public byte[] getECPublic()
 	{
 		ASN1Item itemPDU;
@@ -365,6 +385,7 @@ public class MyX509Key extends MyX509File
 		}
 	}
 
+	@Nonnull
 	public ECName getECName()
 	{
 		if (this.keyType == KeyType.ECPublic)
@@ -390,7 +411,8 @@ public class MyX509Key extends MyX509File
 		return ECName.Unknown;
 	}
 
-	public Cipher createCipher(CipherPadding padding)
+	@Nullable
+	public Cipher createCipher(@Nonnull CipherPadding padding)
 	{
 		try
 		{
@@ -429,6 +451,7 @@ public class MyX509Key extends MyX509File
 		}
 	}
 
+	@Nullable
 	public PrivateKey createJPrivateKey()
 	{
 		MyX509PrivKey privKey = MyX509PrivKey.createFromKey(this);
@@ -472,6 +495,7 @@ public class MyX509Key extends MyX509File
 		}		
 	}
 
+	@Nullable
 	public PublicKey createJPublicKey()
 	{
 		MyX509Key pKey = createPublicKey();
@@ -516,7 +540,8 @@ public class MyX509Key extends MyX509File
 		}	
 	}
 
-	public byte[] signature(HashType hashType, byte[] buff, int ofst, int len)
+	@Nullable
+	public byte[] signature(@Nonnull HashType hashType, @Nonnull byte[] buff, int ofst, int len)
 	{
 		PrivateKey key = createJPrivateKey();
 		if (key == null)
@@ -524,7 +549,7 @@ public class MyX509Key extends MyX509File
 		return CertUtil.signature(buff, ofst, len, hashType, key);
 	}
 
-	public boolean signatureVerify(HashType hashType, byte[] buff, int ofst, int len, byte[] sign, int signOfst, int signSize)
+	public boolean signatureVerify(@Nonnull HashType hashType, @Nonnull byte[] buff, int ofst, int len, @Nonnull byte[] sign, int signOfst, int signSize)
 	{
 		PublicKey key = createJPublicKey();
 		if (key == null)
@@ -532,7 +557,8 @@ public class MyX509Key extends MyX509File
 		return CertUtil.verifySign(buff, ofst, len, sign, signOfst, signSize, key, hashType, null, "temp");
 	}
 
-	public byte[] decrypt(byte[] buff, int ofst, int len, CipherPadding padding)
+	@Nullable
+	public byte[] decrypt(@Nonnull byte[] buff, int ofst, int len, @Nonnull CipherPadding padding)
 	{
 		try
 		{
@@ -552,7 +578,8 @@ public class MyX509Key extends MyX509File
 		}
 	}
 
-	public static MyX509Key fromECPublicKey(byte[] buff, int buffOfst, int buffSize, byte[] paramOID, int oidOfst, int oidLen)
+	@Nonnull
+	public static MyX509Key fromECPublicKey(@Nonnull byte[] buff, int buffOfst, int buffSize, @Nonnull byte[] paramOID, int oidOfst, int oidLen)
 	{
 		ASN1PDUBuilder pdu = new ASN1PDUBuilder();
 		pdu.beginSequence();

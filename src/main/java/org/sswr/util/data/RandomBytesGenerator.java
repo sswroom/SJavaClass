@@ -1,5 +1,7 @@
 package org.sswr.util.data;
 
+import jakarta.annotation.Nonnull;
+
 public class RandomBytesGenerator
 {
 	private RandomMT19937 random;
@@ -8,6 +10,7 @@ public class RandomBytesGenerator
 		this.random = null;
 	}
 
+	@Nonnull
 	public byte[] nextBytes(int len)
 	{
 		if (this.random == null)

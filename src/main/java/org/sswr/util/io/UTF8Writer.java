@@ -4,17 +4,19 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 
+import jakarta.annotation.Nonnull;
+
 public class UTF8Writer implements IOWriter
 {
 	private IOStream ioStm;
 	private OutputStream stm;
 
-	public UTF8Writer(IOStream stm)
+	public UTF8Writer(@Nonnull IOStream stm)
 	{
 		this.ioStm = stm;
 	}
 
-	public UTF8Writer(OutputStream stm)
+	public UTF8Writer(@Nonnull OutputStream stm)
 	{
 		this.stm = stm;
 	}
@@ -23,7 +25,7 @@ public class UTF8Writer implements IOWriter
 	{
 	}
 
-	public boolean writeStr(String str)
+	public boolean writeStr(@Nonnull String str)
 	{
 		byte[] buff = str.getBytes(StandardCharsets.UTF_8);
 		if (this.ioStm != null)
@@ -41,7 +43,7 @@ public class UTF8Writer implements IOWriter
 		}
 	}
 
-	public boolean writeLine(String str)
+	public boolean writeLine(@Nonnull String str)
 	{
 		byte[] buff = str.getBytes(StandardCharsets.UTF_8);
 		if (this.ioStm != null)

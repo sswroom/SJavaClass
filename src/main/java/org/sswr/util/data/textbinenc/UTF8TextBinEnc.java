@@ -11,7 +11,8 @@ public class UTF8TextBinEnc extends CharsetTextBinEnc
 		super(StandardCharsets.UTF_8);
 	}
 
-	public @Nonnull String getName()
+	@Nonnull
+	public String getName()
 	{
 		return "UTF-8 Text";
 	}

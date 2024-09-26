@@ -28,6 +28,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
@@ -80,7 +82,7 @@ public class DBUtil {
 	private static List<DBUpdateHandler> updateHandlers = null;
 	static LogTool sqlLogger = new LogTool();
 
-	public static void addUpdateHandler(DBUpdateHandler updateHandler)
+	public static void addUpdateHandler(@Nonnull DBUpdateHandler updateHandler)
 	{
 		if (DBUtil.updateHandlers == null)
 		{
@@ -89,7 +91,7 @@ public class DBUtil {
 		DBUtil.updateHandlers.add(updateHandler);
 	}
 
-	public static void setSqlLogger(LogTool sqlLogger)
+	public static void setSqlLogger(@Nullable LogTool sqlLogger)
 	{
 		if (sqlLogger != null)
 		{
@@ -97,7 +99,8 @@ public class DBUtil {
 		}
 	}
 
-	public static DBType connGetDBType(Connection conn)
+	@Nonnull
+	public static DBType connGetDBType(@Nonnull Connection conn)
 	{
 		String clsName;
 		if (conn instanceof PoolConnection)
@@ -151,7 +154,8 @@ public class DBUtil {
 		}
 	}
 
-	private static String getFieldDefColName(Field field)
+	@Nonnull
+	private static String getFieldDefColName(@Nonnull Field field)
 	{
 		StringBuilder sb = new StringBuilder();
 		String name = field.getName();
@@ -175,7 +179,8 @@ public class DBUtil {
 		return sb.toString();
 	}
 
-	private static DBColumnInfo parseField2ColInfo(Field field, List<String> joinFields)
+	@Nullable
+	private static DBColumnInfo parseField2ColInfo(@Nonnull Field field, @Nullable List<String> joinFields)
 	{
 		EnumType enumType;
 		String colName;
@@ -311,7 +316,8 @@ public class DBUtil {
 		}
 	}
 
-	private static Table parseClassTable(Class<?> cls)
+	@Nullable
+	private static Table parseClassTable(@Nonnull Class<?> cls)
 	{
 		boolean entityFound = false;
 		Table tableAnn = null;
@@ -341,7 +347,8 @@ public class DBUtil {
 		return tableAnn;
 	}
 
-	public static TableInfo parseTableInfo(Class<?> cls)
+	@Nonnull
+	public static TableInfo parseTableInfo(@Nonnull Class<?> cls)
 	{
 		TableInfo table = new TableInfo();
 		table.tableAnn = parseClassTable(cls);
@@ -356,10 +363,18 @@ public class DBUtil {
 		return table;
 	}
 
-	public static String uncol(String name)
+
+	@Nullable
+	public static String uncolOrNull(@Nullable String name)
 	{
 		if (name == null)
 			return null;
+		return uncol(name);
+	}
+
+	@Nonnull
+	public static String uncol(@Nonnull String name)
+	{
 		if (name.length() >= 2)
 		{
 			if (name.startsWith("[") && name.endsWith("]"))
@@ -378,7 +393,8 @@ public class DBUtil {
 		return name;
 	}
 
-	private static String getTableName(Table table, DBType dbType)
+	@Nonnull
+	private static String getTableName(@Nonnull Table table, @Nonnull DBType dbType)
 	{
 		StringBuilder sb = new StringBuilder();
 		String catalog = uncol(table.catalog());
@@ -410,7 +426,8 @@ public class DBUtil {
 		return sb.toString();
 	}
 
-	private static Map<String, DBColumnInfo> dbCols2Map(Iterable<DBColumnInfo> cols)
+	@Nonnull
+	private static Map<String, DBColumnInfo> dbCols2Map(@Nonnull Iterable<DBColumnInfo> cols)
 	{
 		Map<String, DBColumnInfo> colsMap = new HashMap<String, DBColumnInfo>();
 		Iterator<DBColumnInfo> it = cols.iterator();
@@ -438,7 +455,7 @@ public class DBUtil {
 	* @param idCols return all id columns info
 	* @param joinFields return fields which are joined with other tables, null = not returns
 	*/
-	public static void parseDBCols(Class<?> cls, List<DBColumnInfo> allCols, List<DBColumnInfo> idCols, List<String> joinFields)
+	public static void parseDBCols(@Nonnull Class<?> cls, @Nonnull List<DBColumnInfo> allCols, @Nonnull List<DBColumnInfo> idCols, @Nullable List<String> joinFields)
 	{
 		Field fields[] = cls.getDeclaredFields();
 		DBColumnInfo col;
@@ -465,7 +482,8 @@ public class DBUtil {
 		}*/
 	}
 
-	public static PageStatus appendSelect(StringBuilder sb, List<DBColumnInfo> allCols, Table tableAnn, DBType dbType, int dataOfst, int dataCnt)
+	@Nonnull
+	public static PageStatus appendSelect(@Nonnull StringBuilder sb, @Nonnull List<DBColumnInfo> allCols, @Nonnull Table tableAnn, @Nonnull DBType dbType, int dataOfst, int dataCnt)
 	{
 		PageStatus status;
 		if (dataOfst == 0 && dataCnt == 0)
@@ -508,7 +526,8 @@ public class DBUtil {
 		return status;
 	}
 
-	public static Integer fillColVals(DBType dbType, ResultSet rs, Object o, List<DBColumnInfo> allCols) throws IllegalAccessException, InvocationTargetException, SQLException
+	@Nullable
+	public static Integer fillColVals(@Nonnull DBType dbType, @Nonnull ResultSet rs, @Nonnull Object o, @Nonnull List<DBColumnInfo> allCols) throws IllegalAccessException, InvocationTargetException, SQLException
 	{
 		Class<?> fieldType;
 		Integer id = null;
@@ -690,7 +709,11 @@ public class DBUtil {
 					}
 					else if (dbType == DBType.MSSQL)
 					{
-						col.setter.set(o, GeometryUtil.fromVector2D(MSGeography.parseBinary(bytes)));
+						Vector2D vec = MSGeography.parseBinary(bytes);
+						if (vec != null)
+							col.setter.set(o, GeometryUtil.fromVector2D(vec));
+						else
+							col.setter.set(o, null);
 					}
 					else if (dbType == DBType.PostgreSQL || dbType == DBType.PostgreSQLESRI)
 					{
@@ -741,7 +764,7 @@ public class DBUtil {
 	/*
 	* @param joinFields return fields which are joined with other tables, null = not returns
 	*/
-	public static <T> Map<Integer, T> loadItemsById(Class<T> cls, Connection conn, Set<Integer> idSet, List<String> joinFields)
+	public static <T> Map<Integer, T> loadItemsById(@Nonnull Class<T> cls, @Nonnull Connection conn, @Nonnull Set<Integer> idSet, @Nullable List<String> joinFields)
 	{
 		StringBuilder sb;
 		Table tableAnn = parseClassTable(cls);
@@ -841,7 +864,8 @@ public class DBUtil {
 	/*
 	* @param joinFields return fields which are joined with other tables, null = not returns
 	*/
-	public static <T> Map<Integer, T> loadItems(Class<T> cls, Connection conn, QueryConditions<T> conditions, List<String> joinFields)
+	@Nullable
+	public static <T> Map<Integer, T> loadItems(@Nonnull Class<T> cls, @Nonnull Connection conn, @Nullable QueryConditions<T> conditions, @Nullable List<String> joinFields)
 	{
 		return loadItemsIClass(cls, null, conn, conditions, joinFields);
 	}	
@@ -856,7 +880,8 @@ public class DBUtil {
 		List<QueryConditions<T>.Condition> clientConditions;
 	}
 
-	private static <T> LoadDataSession<T> parseLoadSession(Class<T> cls, Object parent, Connection conn, QueryConditions<T> conditions, List<String> joinFields, boolean requireIdCol)
+	@Nonnull
+	private static <T> LoadDataSession<T> parseLoadSession(@Nonnull Class<T> cls, @Nullable Object parent, @Nonnull Connection conn, @Nullable QueryConditions<T> conditions, @Nullable List<String> joinFields, boolean requireIdCol)
 	{
 		LoadDataSession<T> sess = new LoadDataSession<T>();
 		Table tableAnn = parseClassTable(cls);
@@ -928,7 +953,8 @@ public class DBUtil {
 	/*
 	* @param joinFields return fields which are joined with other tables, null = not returns
 	*/
-	public static <T> Map<Integer, T> loadItemsIClass(Class<T> cls, Object parent, Connection conn, QueryConditions<T> conditions, List<String> joinFields)
+	@Nullable
+	public static <T> Map<Integer, T> loadItemsIClass(@Nonnull Class<T> cls, @Nullable Object parent, @Nonnull Connection conn, @Nullable QueryConditions<T> conditions, @Nullable List<String> joinFields)
 	{
 		LoadDataSession<T> sess = parseLoadSession(cls, parent, conn, conditions, joinFields, true);
 		try
@@ -981,7 +1007,8 @@ public class DBUtil {
 		}
 	}	
 
-	public static <T> DBIterator<T> loadData(Class<T> cls, Object parent, Connection conn, QueryConditions<T> conditions, List<String> joinFields)
+	@Nullable
+	public static <T> DBIterator<T> loadData(@Nonnull Class<T> cls, @Nullable Object parent, @Nonnull Connection conn, @Nullable QueryConditions<T> conditions, @Nullable List<String> joinFields)
 	{
 		LoadDataSession<T> sess = parseLoadSession(cls, parent, conn, conditions, joinFields, false);
 		try
@@ -998,7 +1025,7 @@ public class DBUtil {
 		}
 	}
 
-	public static <T> DBIterator<T> loadDataScript(Class<T> cls, Object parent, Connection conn, String catalog, String schema, String procName, List<Object> params)
+	public static <T> DBIterator<T> loadDataScript(@Nonnull Class<T> cls, @Nullable Object parent, @Nonnull Connection conn, @Nullable String catalog, @Nullable String schema, @Nonnull String procName, @Nullable List<Object> params)
 	{
 		Constructor<T> constr;
 		if (parent == null)
@@ -1085,21 +1112,26 @@ public class DBUtil {
 	/*
 	* @param joinFields return fields which are joined with other tables, null = not returns
 	*/
-	public static <T> List<T> loadItemsAsList(Class<T> cls, Object parent, Connection conn, QueryConditions<T> conditions, List<String> joinFields, String sortString, int dataOfst, int dataCnt)
+	@Nullable
+	public static <T> List<T> loadItemsAsList(@Nonnull Class<T> cls, @Nullable Object parent, @Nonnull Connection conn, @Nullable QueryConditions<T> conditions, @Nullable List<String> joinFields, @Nullable String sortString, int dataOfst, int dataCnt)
 	{
 		return new SQLConnection(conn, sqlLogger).loadItemsAsList(cls, parent, conditions, joinFields, sortString, dataOfst, dataCnt);
 	}	
 
-	public static <T> List<T> loadItemsAsListWithJoins(Class<T> cls, Object parent, Connection conn, QueryConditions<T> conditions, String sortString, int dataOfst, int dataCnt) throws NoSuchFieldException
+	@Nullable
+	public static <T> List<T> loadItemsAsListWithJoins(@Nonnull Class<T> cls, @Nullable Object parent, @Nonnull Connection conn, @Nullable QueryConditions<T> conditions, @Nullable String sortString, int dataOfst, int dataCnt) throws NoSuchFieldException
 	{
 		List<String> joinFields = new ArrayList<String>();
 		List<T> list = new SQLConnection(conn, sqlLogger).loadItemsAsList(cls, parent, conditions, joinFields, sortString, dataOfst, dataCnt);
-		int i = 0;
-		int j = joinFields.size();
-		while (i < j)
+		if (list != null)
 		{
-			DBUtil.loadJoinItems(conn, list, joinFields.get(i));
-			i++;
+			int i = 0;
+			int j = joinFields.size();
+			while (i < j)
+			{
+				DBUtil.loadJoinItems(conn, list, joinFields.get(i));
+				i++;
+			}
 		}
 		return list;
 	}	
@@ -1107,7 +1139,8 @@ public class DBUtil {
 	/*
 	* @param joinFields return fields which are joined with other tables, null = not returns
 	*/
-	public static <T, K> T loadItem(Class<T> cls, Connection conn, K id, List<String> joinFields)
+	@Nullable
+	public static <T, K> T loadItem(@Nonnull Class<T> cls, @Nonnull Connection conn, @Nonnull K id, @Nullable List<String> joinFields)
 	{
 		StringBuilder sb;
 		DBType dbType = connGetDBType(conn);
@@ -1193,7 +1226,7 @@ public class DBUtil {
 		}
 	}
 
-	public static <T> boolean loadJoinItems(Connection conn, Iterable<T> items, String fieldName) throws NoSuchFieldException
+	public static <T> boolean loadJoinItems(@Nonnull Connection conn, @Nonnull Iterable<T> items, @Nonnull String fieldName) throws NoSuchFieldException
 	{
 		Iterator<T> it = items.iterator();
 		if (!it.hasNext())
@@ -1352,6 +1385,8 @@ public class DBUtil {
 			if (joinIdCols.size() == 1)
 			{
 				Set<Integer> idSet = DataTools.createIntSet(items, fieldName+"."+joinIdCols.get(0).colName, null);
+				if (idSet == null)
+					throw new IllegalArgumentException("Error in creating intSet ("+fieldName+"."+joinIdCols.get(0).colName+")");
 				Map<Integer, ?> innerItems = DBUtil.loadItemsById(fieldType, conn, idSet, null);
 				DBColumnInfo idCol = joinIdCols.get(0);
 				FieldSetter setter = new FieldSetter(field);
@@ -1425,7 +1460,12 @@ public class DBUtil {
 			FieldGetter<Object> targetGetter = new FieldGetter<>(targetField);
 			@SuppressWarnings("unchecked")
 			Class<Object> tmpClass = (Class<Object>)targetClass;
-			Map<Integer, ?> targetMap = loadItems(tmpClass, conn, new QueryConditions<>(tmpClass).intIn(oneToMany.mappedBy()+"."+idCol.field.getName(), DataTools.createIntSet(items, idCol.field.getName(), null)), null);
+			Set<Integer> idSet = DataTools.createIntSet(items, idCol.field.getName(), null);
+			if (idSet == null)
+				throw new IllegalArgumentException("Error in creating idSet");
+			Map<Integer, ?> targetMap = loadItems(tmpClass, conn, new QueryConditions<>(tmpClass).intIn(oneToMany.mappedBy()+"."+idCol.field.getName(), idSet), null);
+			if (targetMap == null)
+				throw new IllegalArgumentException("Error in loading join items");
 			Iterator<?> itTarget = targetMap.values().iterator();
 			try
 			{
@@ -1565,7 +1605,12 @@ public class DBUtil {
 				sqlLogger.logException(ex);
 				throw new IllegalArgumentException("Error in joining table");
 			}
-			Map<Integer, ? extends Object> targetMap = loadItemsById(targetClass, conn, DataTools.createIntSet(joinItemList, "joinId", null), null);
+			Set<Integer> joinIdSet = DataTools.createIntSet(joinItemList, "joinId", null);
+			if (joinIdSet == null)
+			{
+				throw new IllegalArgumentException("Error in creating joinIdSet");
+			}
+			Map<Integer, ? extends Object> targetMap = loadItemsById(targetClass, conn, joinIdSet, null);
 			Map<Integer, T> itemMap = DataTools.createIntMap(items, idCols.get(0).field.getName(), null);
 			if (itemMap == null)
 				throw new IllegalArgumentException("Error in creating intMap");
@@ -1710,7 +1755,10 @@ public class DBUtil {
 				sqlLogger.logException(ex);
 				throw new IllegalArgumentException("Error in joining table");
 			}
-			Map<Integer, ? extends Object> targetMap = loadItemsById(targetClass, conn, DataTools.createIntSet(joinItemList, "joinId", null), null);
+			Set<Integer> joinIdSet = DataTools.createIntSet(joinItemList, "joinId", null);
+			if (joinIdSet == null)
+				throw new IllegalArgumentException("Error in creating joinIdSet");
+			Map<Integer, ? extends Object> targetMap = loadItemsById(targetClass, conn, joinIdSet, null);
 			Map<Integer, T> itemMap = DataTools.createIntMap(items, idCols.get(0).field.getName(), null);
 			if (itemMap == null)
 				throw new IllegalArgumentException("Error in creating int map");
@@ -1781,7 +1829,8 @@ public class DBUtil {
 		}
 	}
 
-	public static Charset mssqlCollationGetCharset(String coll)
+	@Nonnull
+	public static Charset mssqlCollationGetCharset(@Nonnull String coll)
 	{
 		/*
 		SQL_Latin1_General_CP1_CI_AS
@@ -1798,7 +1847,8 @@ public class DBUtil {
 		return StandardCharsets.UTF_8;
 	}
 
-	public static String dbStr(DBType dbType, String val)
+	@Nonnull
+	public static String dbStr(@Nonnull DBType dbType, @Nonnull String val)
 	{
 		if (dbType == DBType.MySQL)
 		{
@@ -1845,12 +1895,14 @@ public class DBUtil {
 		}
 	}
 
-	public static String dbBool(DBType dbType, boolean val)
+	@Nonnull
+	public static String dbBool(@Nonnull DBType dbType, boolean val)
 	{
 		return val?"1":"0";
 	}
 
-	public static String dbTS(DBType dbType, Timestamp val)
+	@Nonnull
+	public static String dbTS(@Nonnull DBType dbType, @Nullable Timestamp val)
 	{
 		if (val == null)
 		{
@@ -1886,7 +1938,8 @@ public class DBUtil {
 		}
 	}
 
-	public static String dbDate(DBType dbType, Date val)
+	@Nonnull
+	public static String dbDate(@Nonnull DBType dbType, @Nullable Date val)
 	{
 		if (val == null)
 		{
@@ -1922,7 +1975,8 @@ public class DBUtil {
 		}
 	}
 
-	public static String dbTime(DBType dbType, Time val)
+	@Nonnull
+	public static String dbTime(@Nonnull DBType dbType, @Nullable Time val)
 	{
 		if (val == null)
 		{
@@ -1958,7 +2012,8 @@ public class DBUtil {
 		}
 	}
 
-	public static String dbBin(DBType dbType, byte val[])
+	@Nonnull
+	public static String dbBin(@Nonnull DBType dbType, @Nullable byte val[])
 	{
 		if (val == null)
 		{
@@ -1978,7 +2033,8 @@ public class DBUtil {
 		}
 	}
 
-	public static String dbGeometry(DBType dbType, Geometry geometry)
+	@Nonnull
+	public static String dbGeometry(@Nonnull DBType dbType, @Nullable Geometry geometry)
 	{
 		if (geometry == null)
 		{
@@ -2007,7 +2063,8 @@ public class DBUtil {
 		}
 	}
 
-	public static String dbVec(DBType dbType, Vector2D geometry)
+	@Nonnull
+	public static String dbVec(@Nonnull DBType dbType, @Nullable Vector2D geometry)
 	{
 		if (geometry == null)
 		{
@@ -2040,7 +2097,8 @@ public class DBUtil {
 		}
 	}
 
-	public static String dbVal(DBType dbType, DBColumnInfo col, Object val)
+	@Nonnull
+	public static String dbVal(@Nonnull DBType dbType, @Nonnull DBColumnInfo col, @Nullable Object val)
 	{
 		if (val == null)
 		{
@@ -2140,8 +2198,8 @@ public class DBUtil {
 		return "?";
 	}
 
-
-	public static String dbCol(DBType dbType, String val)
+	@Nonnull
+	public static String dbCol(@Nonnull DBType dbType, @Nonnull String val)
 	{
 		if (dbType == DBType.MySQL)
 		{
@@ -2161,7 +2219,7 @@ public class DBUtil {
 		}
 	}
 
-	public static void dbCol(StringBuilder sb, DBType dbType, String val)
+	public static void dbCol(@Nonnull StringBuilder sb, @Nonnull DBType dbType, @Nonnull String val)
 	{
 		if (dbType == DBType.MySQL)
 		{
@@ -2187,7 +2245,7 @@ public class DBUtil {
 		}
 	}
 
-	public static int getLastIdentity32(Connection conn)
+	public static int getLastIdentity32(@Nonnull Connection conn)
 	{
 		DBType dbType = connGetDBType(conn);
 		if (dbType == DBType.MySQL || dbType == DBType.MSSQL || dbType == DBType.Access)
@@ -2240,7 +2298,7 @@ public class DBUtil {
 		}
 	}
 
-	private static <T> boolean update(Connection conn, TableInfo table, T oriObj, T newObj, DBOptions options)
+	private static <T> boolean update(@Nonnull Connection conn, @Nonnull TableInfo table, @Nullable T oriObj, @Nullable T newObj, @Nullable DBOptions options)
 	{
 		DBType dbType = connGetDBType(conn);
 		if (dbType == DBType.PostgreSQL && (table.tableAnn != null) && "sde".equals(table.tableAnn.schema()))
@@ -2460,31 +2518,17 @@ public class DBUtil {
 		}
 	}
 
-	public static <T> boolean objInsert(Connection conn, T newObj, DBOptions options)
+	public static <T> boolean objInsert(@Nonnull Connection conn, @Nonnull T newObj, @Nullable DBOptions options)
 	{
 		TableInfo table = null;
-		if (newObj != null)
-		{
-			table = parseTableInfo(newObj.getClass());
-		}
-		else
-		{
-			return false;
-		}
+		table = parseTableInfo(newObj.getClass());
 		return update(conn, table, null, newObj, options);
 	}
 
-	public static <T> boolean objInsertAll(Connection conn, Class<T> cls, Iterable<T> objList, DBOptions options)
+	public static <T> boolean objInsertAll(@Nonnull Connection conn, @Nonnull Class<T> cls, @Nonnull Iterable<T> objList, @Nullable DBOptions options)
 	{
 		TableInfo table = null;
-		if (cls != null)
-		{
-			table = parseTableInfo(cls);
-		}
-		else
-		{
-			return false;
-		}
+		table = parseTableInfo(cls);
 		DBType dbType = connGetDBType(conn);
 		if (dbType == DBType.PostgreSQL && (table.tableAnn != null) && "sde".equals(table.tableAnn.schema()))
 		{
@@ -2587,32 +2631,21 @@ public class DBUtil {
 		return found;
 	}
 
-	public static <T> boolean objDelete(Connection conn, T oriObj, DBOptions options)
+	public static <T> boolean objDelete(@Nonnull Connection conn, @Nonnull T oriObj, @Nullable DBOptions options)
 	{
 		TableInfo table = null;
-		if (oriObj != null)
-		{
-			table = parseTableInfo(oriObj.getClass());
-		}
-		else
-		{
-			return false;
-		}
+		table = parseTableInfo(oriObj.getClass());
 		return update(conn, table, oriObj, null, options);
 	}
 
-	public static <T> boolean objUpdate(Connection conn, T oriObj, T newObj, DBOptions options)
+	public static <T> boolean objUpdate(@Nonnull Connection conn, @Nonnull T oriObj, @Nonnull T newObj, @Nullable DBOptions options)
 	{
 		TableInfo table = null;
-		if (oriObj == null || newObj == null)
-		{
-			return false;
-		}
 		table = parseTableInfo(oriObj.getClass());
 		return update(conn, table, oriObj, newObj, options);
 	}
 
-	public static boolean executeNonQuery(Connection conn, String sql, DBOptions options)
+	public static boolean executeNonQuery(@Nonnull Connection conn, @Nonnull String sql, @Nullable DBOptions options)
 	{
 		try
 		{
@@ -2635,7 +2668,7 @@ public class DBUtil {
 		}
 	}
 	
-	public static <T> boolean deleteRecords(Connection conn, Class<T> cls, QueryConditions<T> conditions)
+	public static <T> boolean deleteRecords(@Nonnull Connection conn, @Nonnull Class<T> cls, @Nullable QueryConditions<T> conditions)
 	{
 		StringBuilder sb;
 		Table tableAnn = parseClassTable(cls);
@@ -2681,7 +2714,8 @@ public class DBUtil {
 		}
 	}
 
-	public static Connection openAccessFile(String accessPath, String accessPwd)
+	@Nullable
+	public static Connection openAccessFile(@Nonnull String accessPath, @Nullable String accessPwd)
 	{
 		String jdbcStr;
 		try
@@ -2718,7 +2752,8 @@ public class DBUtil {
 		}
 	}
 
-	public static ColumnType parseColType(DBType svrType, String typeName, SharedInt colSize)
+	@Nonnull
+	public static ColumnType parseColType(@Nonnull DBType svrType, @Nonnull String typeName, @Nullable SharedInt colSize)
 	{
 		typeName = typeName.toUpperCase();
 		if (colSize == null)

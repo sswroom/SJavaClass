@@ -6,6 +6,9 @@ import java.io.IOException;
 
 import org.sswr.util.io.StreamData;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class FileData implements StreamData
 {
 	class FileDataHandle
@@ -60,7 +63,7 @@ public class FileData implements StreamData
 		}
 	}
 	
-	private FileData(FileData fd, long offset, long length)
+	private FileData(@Nonnull FileData fd, long offset, long length)
 	{
 		this.dataOffset = offset + fd.dataOffset;
 		long endOffset = fd.dataOffset + fd.dataLength;
@@ -89,7 +92,7 @@ public class FileData implements StreamData
 		}
 	}
 
-	public FileData(String fileName, boolean deleteOnClose)
+	public FileData(@Nonnull String fileName, boolean deleteOnClose)
 	{
 		this.fdh = null;
 		FileInputStream fs;
@@ -150,7 +153,7 @@ public class FileData implements StreamData
 		this.fdh = null;
 	}
 
-	public int getRealData(long offset, int length, byte[] buffer, int buffOfst)
+	public int getRealData(long offset, int length, @Nonnull byte[] buffer, int buffOfst)
 	{
 		if (this.fdh == null)
 			return 0;
@@ -193,15 +196,18 @@ public class FileData implements StreamData
 			return byteRead;
 		}
 	}
+
+	@Nonnull
 	public String getFullName()
 	{
 		if (this.fdn != null)
 			return this.fdn.fullName;
 		if (this.fdh != null)
 			return this.fdh.fullName;
-		return null;
+		return "";
 	}
 
+	@Nullable
 	public String getShortName()
 	{
 		if (this.fdn != null)
@@ -211,7 +217,7 @@ public class FileData implements StreamData
 		return null;		
 	}
 
-	public void setFullName(String fullName)
+	public void setFullName(@Nullable String fullName)
 	{
 		if (this.fdn != null)
 		{
@@ -237,6 +243,7 @@ public class FileData implements StreamData
 		return dataLength;
 	}
 
+	@Nonnull
 	public StreamData getPartialData(long offset, long length)
 	{
 		FileData data;
@@ -249,11 +256,12 @@ public class FileData implements StreamData
 		return this.dataOffset == 0;
 	}
 
+	@Nonnull
 	public String getFullFileName()
 	{
 		if (this.fdh != null)
 			return this.fdh.fullName;
-		return null;
+		return "";
 	}
 
 	public boolean isLoading()
@@ -268,6 +276,7 @@ public class FileData implements StreamData
 		return 0;
 	}
 
+	@Nullable
 	public FileInputStream getFileStream()
 	{
 		if (this.fdh != null)

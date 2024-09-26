@@ -9,6 +9,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 public class FileLog implements LogHandler
 {
@@ -21,7 +22,8 @@ public class FileLog implements LogHandler
 	private String extName;
 	private boolean closed;
 	
-	private String getNewName(ZonedDateTime logTime)
+	@Nonnull
+	private String getNewName(@Nonnull ZonedDateTime logTime)
 	{
 		StringBuilder sb = new StringBuilder();
 		ZonedDateTime time = logTime;
@@ -83,7 +85,7 @@ public class FileLog implements LogHandler
 		return sb.toString();
 	}
 
-	public FileLog(String fileName, LogType style, LogGroup groupStyle, String dateFormat)
+	public FileLog(@Nonnull String fileName, @Nonnull LogType style, @Nonnull LogGroup groupStyle, @Nullable String dateFormat)
 	{
 		if (dateFormat != null)
 		{

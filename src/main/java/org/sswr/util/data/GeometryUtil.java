@@ -30,21 +30,30 @@ import org.sswr.util.math.geometry.Vector2D;
 import org.sswr.util.math.geometry.Vector2D.VectorType;
 import org.sswr.util.math.unit.Distance.DistanceUnit;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class GeometryUtil
 {
-	public static String toWKT(Geometry geometry)
+	@Nullable
+	public static String toWKT(@Nonnull Geometry geometry)
 	{
 		org.sswr.util.math.WKTWriter writer = new org.sswr.util.math.WKTWriter();
-		return writer.generateWKT(toVector2D(geometry));
+		Vector2D vec = toVector2D(geometry);
+		if (vec == null)
+			return null;
+		return writer.generateWKT(vec);
 	}
 
+	@Nonnull
 	public static Geometry createPointZ(double x, double y, double z, int srid)
 	{
 		GeometryFactory factory = new GeometryFactory(new PrecisionModel(), srid);
 		return factory.createPoint(new Coordinate(x, y, z));
 	}
 
-	public static Geometry createLineStringZ(List<Double> points, int srid)
+	@Nonnull
+	public static Geometry createLineStringZ(@Nonnull List<Double> points, int srid)
 	{
 		GeometryFactory factory = new GeometryFactory(new PrecisionModel(), srid);
 		Coordinate[] coordinates = new Coordinate[points.size() / 3];
@@ -60,12 +69,9 @@ public class GeometryUtil
 		return factory.createLineString(coordinates);
 	}
 
-	public static Geometry fromVector2D(Vector2D vec)
+	@Nullable
+	public static Geometry fromVector2D(@Nonnull Vector2D vec)
 	{
-		if (vec == null)
-		{
-			return null;
-		}
 		GeometryFactory factory = new GeometryFactory(new PrecisionModel(), vec.getSRID());
 		if (vec.getVectorType() == VectorType.Point)
 		{
@@ -197,12 +203,9 @@ public class GeometryUtil
 		return null;
 	}
 
-	public static Vector2D toVector2D(Geometry geometry)
+	@Nullable
+	public static Vector2D toVector2D(@Nonnull Geometry geometry)
 	{
-		if (geometry == null)
-		{
-			return null;
-		}
 		switch (geometry.getGeometryType())
 		{
 		case Geometry.TYPENAME_POINT:
@@ -367,12 +370,12 @@ public class GeometryUtil
 		}
 	}
 
-	public static double calcMaxDistanceFromCenter(Geometry geometry, DistanceUnit unit)
+	public static double calcMaxDistanceFromCenter(@Nonnull Geometry geometry, @Nonnull DistanceUnit unit)
 	{
 		return calcMaxDistanceFromPoint(geometry.getCentroid(), geometry, unit);
 	}
 
-	public static double calcMaxDistanceFromPoint(Point point, Geometry geometry, DistanceUnit unit)
+	public static double calcMaxDistanceFromPoint(@Nonnull Point point, @Nonnull Geometry geometry, @Nonnull DistanceUnit unit)
 	{
 		Coordinate[] coordinates = geometry.getCoordinates();
 		Coordinate ccoord = point.getCoordinate();
@@ -403,13 +406,14 @@ public class GeometryUtil
 		}
 	}
 
+	@Nonnull
 	public static Coord2DDbl mercatorToProject(double lat, double lon)
 	{
 		double a = 6378137.0;
 		return new Coord2DDbl(lon * a, a * Math.log(Math.tan(Math.PI * 0.25 + lat * 0.5)));
 	}
 	
-	public static void calcHVAngleRad(Coord2DDbl ptCurr, Coord2DDbl ptNext, double heightCurr, double heightNext, SharedDouble hAngle, SharedDouble vAngle)
+	public static void calcHVAngleRad(@Nonnull Coord2DDbl ptCurr, @Nonnull Coord2DDbl ptNext, double heightCurr, double heightNext, @Nonnull SharedDouble hAngle, @Nonnull SharedDouble vAngle)
 	{
 		Coord2DDbl projCurr = mercatorToProject(ptCurr.y, ptCurr.x);
 		Coord2DDbl projDiff = mercatorToProject(ptNext.y, ptNext.x).subtract(projCurr);
@@ -435,13 +439,14 @@ public class GeometryUtil
 		}
 	}
 	
-	public static void calcHVAngleDeg(Coord2DDbl ptCurr, Coord2DDbl ptNext, double heightCurr, double heightNext, SharedDouble hAngle, SharedDouble vAngle)
+	public static void calcHVAngleDeg(@Nonnull Coord2DDbl ptCurr, @Nonnull Coord2DDbl ptNext, double heightCurr, double heightNext, @Nonnull SharedDouble hAngle, @Nonnull SharedDouble vAngle)
 	{
 		calcHVAngleRad(ptCurr.multiply(Math.PI / 180.0), ptNext.multiply(Math.PI / 180.0), heightCurr, heightNext, hAngle, vAngle);
 		hAngle.value = hAngle.value * 180 / Math.PI;
 		vAngle.value = vAngle.value * 180 / Math.PI;
 	}
 
+	@Nonnull
 	public static Polygon createCircularPolygonWGS84(double lat, double lon, double radiusMeter, int nPoints)
 	{
 		CoordinateSystem csys4326 = CoordinateSystemManager.srCreateCSys(4326);
@@ -480,6 +485,7 @@ public class GeometryUtil
 			return addVal - sqrtVal;
 	}
 
+	@Nonnull
 	private static Coord2DDbl arcNearest(double x, double y, double h, double k, double r, int cnt)
 	{
 		double r2 = r * r;
@@ -499,7 +505,7 @@ public class GeometryUtil
 		return new Coord2DDbl(thisX, thisY);
 	}
 	
-	public static int arcToLine(Coord2DDbl pt1, Coord2DDbl pt2, Coord2DDbl pt3, double minDist, List<Coord2DDbl> ptOut)
+	public static int arcToLine(@Nonnull Coord2DDbl pt1, @Nonnull Coord2DDbl pt2, @Nonnull Coord2DDbl pt3, double minDist, @Nonnull List<Coord2DDbl> ptOut)
 	{
 		//(x – h)^2 + (y – k)^2 = r^2
 		//2h(x1 - x2) + 2k(y1 - y2) = x1^2 - x2^2 + y1^2 - y2^2
@@ -547,7 +553,7 @@ public class GeometryUtil
 		return ptOut.size() - initCnt;
 	}
 
-	private static <T> void appendGeojsonList(Iterable<T> coll, StringBuilder sb) throws NoSuchFieldException, InvocationTargetException, IllegalAccessException
+	private static <T> void appendGeojsonList(@Nonnull Iterable<T> coll, @Nonnull StringBuilder sb) throws NoSuchFieldException, InvocationTargetException, IllegalAccessException
 	{
 		Iterator<T> it = coll.iterator();
 		boolean first = true;
@@ -567,7 +573,7 @@ public class GeometryUtil
 		sb.append("]}");
 	}
 
-	private static void appendGeojsonGeometry(Geometry geom, StringBuilder sb)
+	private static void appendGeojsonGeometry(@Nonnull Geometry geom, @Nonnull StringBuilder sb)
 	{
 		String t = geom.getGeometryType();
 		if (t.equals(Geometry.TYPENAME_POINT))
@@ -632,7 +638,7 @@ public class GeometryUtil
 		}
 	}
 
-	private static <T> void appendGeojson(T o, StringBuilder sb) throws NoSuchFieldException, InvocationTargetException, IllegalAccessException
+	private static <T> void appendGeojson(@Nonnull T o, @Nonnull StringBuilder sb) throws NoSuchFieldException, InvocationTargetException, IllegalAccessException
 	{
 		Class<?> cls = o.getClass();
 		Field[] fields = cls.getDeclaredFields();
@@ -654,99 +660,107 @@ public class GeometryUtil
 		{
 			FieldGetter<T> getter = new FieldGetter<T>(cls, geomField.getName());
 			Geometry geom = (Geometry)getter.get(o);
-			sb.append("{\"type\":\"Feature\",\"geometry\":");
-			appendGeojsonGeometry(geom, sb);
-			sb.append(",\"geometry_name\":");
-			JSText.toJSTextDQuote(sb, geomField.getName());
-			sb.append(",\"properties\":{");
-			boolean found = false;
-			i = 0;
-			int j = fields.length;
-			while (i < j)
+			if (geom != null)
 			{
-				if (fields[i] == geomField)
+				sb.append("{\"type\":\"Feature\",\"geometry\":");
+				appendGeojsonGeometry(geom, sb);
+				sb.append(",\"geometry_name\":");
+				JSText.toJSTextDQuote(sb, geomField.getName());
+				sb.append(",\"properties\":{");
+				boolean found = false;
+				i = 0;
+				int j = fields.length;
+				while (i < j)
 				{
+					if (fields[i] == geomField)
+					{
 
-				}
-				else
-				{
-					Class<?> t = fields[i].getType();
-					if (!found)
-					{
-						found = true;
 					}
 					else
 					{
-						sb.append(",");
-					}
-					JSText.toJSTextDQuote(sb, fields[i].getName());
-					sb.append(":");
-					if (t.equals(String.class))
-					{
-						getter = new FieldGetter<T>(cls, fields[i].getName());
-						String s = (String)getter.get(o);
-						if (s == null)
+						Class<?> t = fields[i].getType();
+						if (!found)
 						{
-							sb.append("null");
+							found = true;
 						}
 						else
 						{
-							JSText.toJSTextDQuote(sb, (String)getter.get(o));
+							sb.append(",");
 						}
-					}
-					else if (t.equals(int.class) || t.equals(Integer.class))
-					{
-						getter = new FieldGetter<T>(cls, fields[i].getName());
-						Integer v = (Integer)getter.get(o);
-						if (v == null)
+						JSText.toJSTextDQuote(sb, fields[i].getName());
+						sb.append(":");
+						if (t.equals(String.class))
 						{
-							sb.append("null");
+							getter = new FieldGetter<T>(cls, fields[i].getName());
+							String s = (String)getter.get(o);
+							if (s == null)
+							{
+								sb.append("null");
+							}
+							else
+							{
+								JSText.toJSTextDQuote(sb, (String)getter.get(o));
+							}
+						}
+						else if (t.equals(int.class) || t.equals(Integer.class))
+						{
+							getter = new FieldGetter<T>(cls, fields[i].getName());
+							Integer v = (Integer)getter.get(o);
+							if (v == null)
+							{
+								sb.append("null");
+							}
+							else
+							{
+								sb.append(v);
+							}
+						}
+						else if (t.equals(double.class) || t.equals(Double.class))
+						{
+							getter = new FieldGetter<T>(cls, fields[i].getName());
+							Double v = (Double)getter.get(o);
+							if (v == null)
+							{
+								sb.append("null");
+							}
+							else
+							{
+								sb.append(v);
+							}
+						}
+						else if (t.equals(Timestamp.class))
+						{
+							getter = new FieldGetter<T>(cls, fields[i].getName());
+							Timestamp ts = (Timestamp)getter.get(o);
+							if (ts == null)
+							{
+								sb.append("null");
+							}
+							else
+							{
+								JSText.toJSTextDQuote(sb, DateTimeUtil.toString(ts, "yyyy-MM-dd HH:mm:ss.fffffffff"));
+							}
 						}
 						else
 						{
-							sb.append(v);
-						}
-					}
-					else if (t.equals(double.class) || t.equals(Double.class))
-					{
-						getter = new FieldGetter<T>(cls, fields[i].getName());
-						Double v = (Double)getter.get(o);
-						if (v == null)
-						{
+							System.out.println("GeometryUtil.appendGeojson: Unknown properties type: "+t.toString());
 							sb.append("null");
 						}
-						else
-						{
-							sb.append(v);
-						}
 					}
-					else if (t.equals(Timestamp.class))
-					{
-						getter = new FieldGetter<T>(cls, fields[i].getName());
-						Timestamp ts = (Timestamp)getter.get(o);
-						if (ts == null)
-						{
-							sb.append("null");
-						}
-						else
-						{
-							JSText.toJSTextDQuote(sb, DateTimeUtil.toString(ts, "yyyy-MM-dd HH:mm:ss.fffffffff"));
-						}
-					}
-					else
-					{
-						System.out.println("GeometryUtil.appendGeojson: Unknown properties type: "+t.toString());
-						sb.append("null");
-					}
+					i++;
 				}
-				i++;
+				sb.append("}");
+				sb.append("}");
 			}
-			sb.append("}");
-			sb.append("}");
+			else
+			{
+				System.out.println("GeometryUtil.appendGeojson: Get Geometry = null");
+			}
 		}
 	}
 
-	public static <T> String toGeojsonList(Iterable<T> o)
+	@Nullable
+	public static <T> String toGeojsonList(@Nonnull Iterable<T> o)
 	{
 		try
 		{
@@ -761,7 +775,8 @@ public class GeometryUtil
 		}
 	}
 
-	public static <T> String toGeojson(T o)
+	@Nullable
+	public static <T> String toGeojson(@Nonnull T o)
 	{
 		try
 		{
@@ -776,9 +791,14 @@ public class GeometryUtil
 		}
 	}
 
-	public static Geometry csysConv(Geometry geom, CoordinateSystem csysSrc, CoordinateSystem csysDest)
+	@Nullable
+	public static Geometry csysConv(@Nonnull Geometry geom, @Nonnull CoordinateSystem csysSrc, @Nonnull CoordinateSystem csysDest)
 	{
 		Vector2D vec = toVector2D(geom);
+		if (vec == null)
+		{
+			return null;
+		}
 		vec.convCSys(csysSrc, csysDest);
 		return fromVector2D(vec);
 	}

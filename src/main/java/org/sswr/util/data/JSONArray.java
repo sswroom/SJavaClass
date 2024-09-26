@@ -3,6 +3,9 @@ package org.sswr.util.data;
 import java.util.ArrayList;
 import java.util.List;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class JSONArray extends JSONBase
 {
 	private List<JSONBase> arrVals;
@@ -12,6 +15,7 @@ public class JSONArray extends JSONBase
 		this.arrVals = new ArrayList<JSONBase>();
 	}
 
+	@Nonnull
 	public String toJSONString()
 	{
 		StringBuilder sb = new StringBuilder();
@@ -40,33 +44,35 @@ public class JSONArray extends JSONBase
 		return sb.toString();
 	}
 
-	public boolean equals(String s)
+	public boolean equals(@Nonnull String s)
 	{
 		///////////////////////////////
 		return false;
 	}
 
-	public boolean identical(JSONBase obj)
+	public boolean identical(@Nonnull JSONBase obj)
 	{
 		return this == obj;
 	}
 
+	@Nonnull
 	public String toString()
 	{
 		return this.toJSONString();
 	}
 
-	public void setArrayValue(int index, JSONBase val)
+	public void setArrayValue(int index, @Nullable JSONBase val)
 	{
 		this.arrVals.set(index, val);
 		////////////////////////////////////
 	}
 
-	public void addArrayValue(JSONBase val)
+	public void addArrayValue(@Nullable JSONBase val)
 	{
 		this.arrVals.add(val);
 	}
 
+	@Nullable
 	public JSONBase getArrayValue(int index)
 	{
 		if (index < 0 || index >= this.arrVals.size())
@@ -74,6 +80,7 @@ public class JSONArray extends JSONBase
 		return this.arrVals.get(index);
 	}
 
+	@Nullable
 	public JSONObject getArrayObject(int index)
 	{
 		JSONBase o = this.getArrayValue(index);
@@ -92,6 +99,7 @@ public class JSONArray extends JSONBase
 		return baseObj.getAsDouble();
 	}
 
+	@Nullable
 	public String getArrayString(int index)
 	{
 		JSONBase baseObj = this.getArrayValue(index);

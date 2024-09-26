@@ -1,7 +1,10 @@
 package org.sswr.util.io;
 
+import jakarta.annotation.Nonnull;
+
 public class JavaEnv
 {
+	@Nonnull
 	public static String getProgName()
 	{
 		String cmd = System.getProperty("sun.java.command");

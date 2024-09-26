@@ -9,6 +9,9 @@ import org.sswr.util.math.Coord2DDbl;
 import org.sswr.util.math.CoordinateSystem;
 import org.sswr.util.math.RectAreaDbl;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public abstract class MultiGeometry<T extends Vector2D> extends Vector2D
 {
 	private static boolean VERBOSE = false;
@@ -20,7 +23,7 @@ public abstract class MultiGeometry<T extends Vector2D> extends Vector2D
 		this.geometries = new ArrayList<T>();
 	}
 
-	public void addGeometry(T geometry)
+	public void addGeometry(@Nonnull T geometry)
 	{
 		this.geometries.add(geometry);
 	}
@@ -30,21 +33,31 @@ public abstract class MultiGeometry<T extends Vector2D> extends Vector2D
 		return this.geometries.size();
 	}
 
+	@Nonnull
 	public Iterator<T> iterator()
 	{
 		return this.geometries.iterator();
 	}
 
+	@Nullable
 	public T getItem(int index)
 	{
 		return this.geometries.get(index);
 	}
 
+	@Nonnull
+	public T getItemNN(int index)
+	{
+		return this.geometries.get(index);
+	}
+
+	@Nonnull
 	public Coord2DDbl getCenter()
 	{
 		return this.getBounds().getCenter();
 	}
 
+	@Nonnull
 	public RectAreaDbl getBounds()
 	{
 		RectAreaDbl bounds;
@@ -64,7 +77,7 @@ public abstract class MultiGeometry<T extends Vector2D> extends Vector2D
 		return bounds;
 	}
 
-	public double calBoundarySqrDistance(Coord2DDbl pt, Coord2DDbl nearPt)
+	public double calBoundarySqrDistance(@Nonnull Coord2DDbl pt, @Nonnull Coord2DDbl nearPt)
 	{
 		Iterator<T> it = this.iterator();
 		if (!it.hasNext())
@@ -91,7 +104,7 @@ public abstract class MultiGeometry<T extends Vector2D> extends Vector2D
 		return minDist;
 	}
 
-	public double calSqrDistance(Coord2DDbl pt, Coord2DDbl nearPt)
+	public double calSqrDistance(@Nonnull Coord2DDbl pt, @Nonnull Coord2DDbl nearPt)
 	{
 		int j = this.geometries.size();
 		if (j == 0)
@@ -131,7 +144,7 @@ public abstract class MultiGeometry<T extends Vector2D> extends Vector2D
 		return totalArea;
 	}
 
-	public boolean joinVector(Vector2D vec)
+	public boolean joinVector(@Nonnull Vector2D vec)
 	{
 		if (this.getVectorType() != vec.getVectorType())
 		{
@@ -163,18 +176,18 @@ public abstract class MultiGeometry<T extends Vector2D> extends Vector2D
 		return false;
 	}
 
-	public void convCSys(CoordinateSystem srcCSys, CoordinateSystem destCSys)
+	public void convCSys(@Nonnull CoordinateSystem srcCSys, @Nonnull CoordinateSystem destCSys)
 	{
 		int i = this.getCount();
 		while (i-- > 0)
 		{
-			this.getItem(i).convCSys(srcCSys, destCSys);
+			this.getItemNN(i).convCSys(srcCSys, destCSys);
 		}
 		this.srid = destCSys.getSRID();
 	}
 
 	@Override
-	public boolean equals(Vector2D vec, boolean sameTypeOnly, boolean nearlyVal) {
+	public boolean equals(@Nonnull Vector2D vec, boolean sameTypeOnly, boolean nearlyVal) {
 		if (vec == this)
 			return true;
 		if (this.getVectorType() != vec.getVectorType())
@@ -204,7 +217,7 @@ public abstract class MultiGeometry<T extends Vector2D> extends Vector2D
 		return true;
 	}
 
-	public boolean insideOrTouch(Coord2DDbl coord)
+	public boolean insideOrTouch(@Nonnull Coord2DDbl coord)
 	{
 		Iterator<T> it = this.geometries.iterator();
 		while (it.hasNext())

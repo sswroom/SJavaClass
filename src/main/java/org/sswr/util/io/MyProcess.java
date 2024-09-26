@@ -4,9 +4,11 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
+import jakarta.annotation.Nonnull;
+
 public class MyProcess
 {
-	public static int run(String cmd, String []args, StringBuilder output)
+	public static int run(@Nonnull String cmd, @Nonnull String []args, @Nonnull StringBuilder output)
 	{
 		Runtime rt = Runtime.getRuntime();
 		String[] commands = new String[args.length + 1];

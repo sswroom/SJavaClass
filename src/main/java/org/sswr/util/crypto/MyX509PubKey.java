@@ -5,26 +5,32 @@ import org.sswr.util.net.ASN1Item;
 import org.sswr.util.net.ASN1PDUBuilder;
 import org.sswr.util.net.ASN1Util;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class MyX509PubKey extends MyX509File
 {
-	public MyX509PubKey(String sourceName, byte[] buff, int ofst, int size)
+	public MyX509PubKey(@Nonnull String sourceName, @Nonnull byte[] buff, int ofst, int size)
 	{
 		super(sourceName, buff, ofst, size);
 	}
 
 	@Override
+	@Nonnull
 	public FileType getFileType()
 	{
 		return FileType.PublicKey;
 	}
 
 	@Override
+	@Nonnull
 	public ASN1Data clone()
 	{
 		return new MyX509PubKey(this.sourceName, this.buff, 0, this.buff.length);
 	}
 
 	@Override
+	@Nonnull
 	public String toString()
 	{
 		StringBuilder sb = new StringBuilder();
@@ -35,6 +41,7 @@ public class MyX509PubKey extends MyX509File
 		return sb.toString();
 	}
 
+	@Nullable
 	public MyX509Key createKey()
 	{
 		ASN1Item keyTypeOID = ASN1Util.pduGetItem(this.buff, 0, this.buff.length, "1.1.1");
@@ -53,6 +60,7 @@ public class MyX509PubKey extends MyX509File
 		return null;
 	}
 
+	@Nullable
 	public byte[] getKeyId()
 	{
 		MyX509Key key = this.createKey();
@@ -63,7 +71,8 @@ public class MyX509PubKey extends MyX509File
 		return null;
 	}
 
-	public static MyX509PubKey createFromKeyBuff(KeyType keyType, byte[] buff, int ofst, int buffSize, String sourceName)
+	@Nonnull
+	public static MyX509PubKey createFromKeyBuff(@Nonnull KeyType keyType, @Nonnull byte[] buff, int ofst, int buffSize, @Nonnull String sourceName)
 	{
 		ASN1PDUBuilder keyPDU = new ASN1PDUBuilder();
 		keyPDU.beginSequence();
@@ -84,7 +93,8 @@ public class MyX509PubKey extends MyX509File
 		return new MyX509PubKey(sourceName, keyPDU.getBuff(), 0, keyPDU.getBuffSize());
 	}
 	
-	public static MyX509PubKey createFromKey(MyX509Key key)
+	@Nonnull
+	public static MyX509PubKey createFromKey(@Nonnull MyX509Key key)
 	{
 		return createFromKeyBuff(key.getKeyType(), key.getASN1Buff(), 0, key.getASN1BuffSize(), key.getSourceNameObj());
 	}

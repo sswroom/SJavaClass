@@ -1,5 +1,7 @@
 package org.sswr.util.math.geometry;
 
+import jakarta.annotation.Nonnull;
+
 public class MultiPolygon extends MultiGeometry<Polygon>
 {
 	public MultiPolygon(int srid)
@@ -7,11 +9,13 @@ public class MultiPolygon extends MultiGeometry<Polygon>
 		super(srid);
 	}
 
+	@Nonnull
 	public VectorType getVectorType()
 	{
 		return VectorType.MultiPolygon;
 	}
 
+	@Nonnull
 	public Vector2D clone()
 	{
 		MultiPolygon newObj = new MultiPolygon(this.srid);

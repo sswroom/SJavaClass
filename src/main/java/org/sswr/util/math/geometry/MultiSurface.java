@@ -1,5 +1,7 @@
 package org.sswr.util.math.geometry;
 
+import jakarta.annotation.Nonnull;
+
 public class MultiSurface extends MultiGeometry<Vector2D>
 {
 	public MultiSurface(int srid)
@@ -7,7 +9,7 @@ public class MultiSurface extends MultiGeometry<Vector2D>
 		super(srid);
 	}
 
-	public void addGeometry(Vector2D geometry)
+	public void addGeometry(@Nonnull Vector2D geometry)
 	{
 		VectorType t = geometry.getVectorType();
 		if (t == VectorType.CurvePolygon)
@@ -16,11 +18,13 @@ public class MultiSurface extends MultiGeometry<Vector2D>
 		}
 	}
 
+	@Nonnull
 	public VectorType getVectorType()
 	{
 		return VectorType.MultiSurface;
 	}
 
+	@Nonnull
 	public Vector2D clone()
 	{
 		MultiSurface newObj = new MultiSurface(this.srid);

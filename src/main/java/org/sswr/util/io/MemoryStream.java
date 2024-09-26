@@ -2,6 +2,8 @@ package org.sswr.util.io;
 
 import org.sswr.util.data.ByteTool;
 
+import jakarta.annotation.Nonnull;
+
 public class MemoryStream extends SeekableStream
 {
 	public static final int MAX_CAPACITY = 1048576000;
@@ -22,6 +24,7 @@ public class MemoryStream extends SeekableStream
 		this.memPtr = new byte[this.capacity];
 	}
 
+	@Nonnull
 	public byte[] getBuff()
 	{
 		return this.memPtr;
@@ -34,7 +37,7 @@ public class MemoryStream extends SeekableStream
 	}
 
 	@Override
-	public int read(byte[] buff, int ofst, int size)
+	public int read(@Nonnull byte[] buff, int ofst, int size)
 	{
 		int readSize = size;
 		if (this.currSize - this.currPtr < readSize)
@@ -47,7 +50,7 @@ public class MemoryStream extends SeekableStream
 	}
 
 	@Override
-	public int write(byte[] buff, int ofst, int size)
+	public int write(@Nonnull byte[] buff, int ofst, int size)
 	{
 		int endPos = this.currPtr + size;
 

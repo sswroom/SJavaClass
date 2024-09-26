@@ -2,13 +2,15 @@ package org.sswr.util.io;
 
 import java.io.IOException;
 
+import jakarta.annotation.Nonnull;
+
 public class CharReader
 {
 	public UTF8Reader reader;
 	public StringBuilder sb;
 	public int charInd;
 
-	public CharReader(UTF8Reader reader)
+	public CharReader(@Nonnull UTF8Reader reader)
 	{
 		this.sb = new StringBuilder();
 		this.reader = reader;
@@ -46,6 +48,7 @@ public class CharReader
 		return sb.charAt(this.charInd);
 	}
 
+	@Nonnull
 	public String currLine()
 	{
 		if (this.charInd >= sb.length())
@@ -97,7 +100,7 @@ public class CharReader
 		}
 	}
 
-	public boolean startsWith(String s)
+	public boolean startsWith(@Nonnull String s)
 	{
 		int len = s.length();
 		while (true)

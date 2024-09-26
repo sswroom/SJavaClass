@@ -21,6 +21,8 @@ import org.sswr.util.net.SSLEngine;
 import org.sswr.util.net.SocketFactory;
 import org.sswr.util.net.StatusCode;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -43,6 +45,7 @@ public class OSMCacheHandler {
 	private SSLEngine ssl;
 	private CacheStatus status;
 
+	@Nullable
 	private SeekableStream getTileData(int lev, int xTile, int yTile)
 	{
 		String path = this.cacheDir;
@@ -177,7 +180,7 @@ public class OSMCacheHandler {
 		return fs;
 	}
 
-	public OSMCacheHandler(String url, String cacheDir, int maxLevel, SocketFactory sockf, SSLEngine ssl)
+	public OSMCacheHandler(@Nonnull String url, @Nonnull String cacheDir, int maxLevel, @Nullable SocketFactory sockf, @Nullable SSLEngine ssl)
 	{
 		this.urls = new ArrayList<String>();
 		if (url != null && url.length() > 0)
@@ -196,12 +199,12 @@ public class OSMCacheHandler {
 		this.status.cacheCnt = 0;
 	}
 
-	public void addAlternateURL(String url)
+	public void addAlternateURL(@Nonnull String url)
 	{
 		this.urls.add(url);
 	}
 	
-	public void getStatus(CacheStatus status)
+	public void getStatus(@Nonnull CacheStatus status)
 	{
 		status.reqCnt = this.status.reqCnt;
 		status.remoteSuccCnt = this.status.remoteSuccCnt;
@@ -210,7 +213,7 @@ public class OSMCacheHandler {
 		status.cacheCnt = this.status.cacheCnt;
 	}
 
-	public boolean processRequest(HttpServletRequest req, HttpServletResponse resp, String subReq) throws IOException
+	public boolean processRequest(@Nonnull HttpServletRequest req, @Nonnull HttpServletResponse resp, @Nonnull String subReq) throws IOException
 	{
 		if (VERBOSE)
 		{

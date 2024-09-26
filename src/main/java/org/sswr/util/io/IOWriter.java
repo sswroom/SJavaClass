@@ -1,8 +1,10 @@
 package org.sswr.util.io;
 
+import jakarta.annotation.Nonnull;
+
 public interface IOWriter
 {
-	public boolean writeStr(String str);
-	public boolean writeLine(String str);
+	public boolean writeStr(@Nonnull String str);
+	public boolean writeLine(@Nonnull String str);
 	public boolean writeLine();
 }

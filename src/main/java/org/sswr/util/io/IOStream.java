@@ -4,9 +4,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import jakarta.annotation.Nonnull;
+
 public abstract class IOStream extends ParsedObject
 {
-	public IOStream(String sourceName)
+	public IOStream(@Nonnull String sourceName)
 	{
 		super(sourceName);
 	}
@@ -17,32 +19,36 @@ public abstract class IOStream extends ParsedObject
 	}
 
 	public abstract boolean isDown();
-	public abstract int read(byte []buff, int ofst, int size);
-	public abstract int write(byte []buff, int ofst, int size);
+	public abstract int read(@Nonnull byte []buff, int ofst, int size);
+	public abstract int write(@Nonnull byte []buff, int ofst, int size);
 	public abstract int flush();
 	public abstract void close();
 	public abstract boolean recover();
 
-	public int write(byte[] buff)
+	public int write(@Nonnull byte[] buff)
 	{
 		return write(buff, 0, buff.length);
 	}
 
+	@Nonnull
 	public InputStream createInputStream()
 	{
 		return new MyInputStream(this);
 	}
 
+	@Nonnull
 	public OutputStream createOutputStream()
 	{
 		return new MyOutputStream(this);
 	}
 
+	@Nonnull
 	public ParserType getParserType()
 	{
 		return ParserType.Stream;
 	}
 
+	@Nonnull
 	public byte[] readToEnd()
 	{
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();

@@ -18,12 +18,15 @@ import org.sswr.util.math.geometry.Polyline;
 import org.sswr.util.math.geometry.Vector2D;
 import org.sswr.util.math.geometry.Vector2D.VectorType;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class WKTWriter implements VectorTextWriter
 {
 	private String lastError;
 	private boolean reverseAxis;
 	
-	private static void appendLineString(StringBuilder sb, LineString pl, boolean reverseAxis)
+	private static void appendLineString(@Nonnull StringBuilder sb, @Nonnull LineString pl, boolean reverseAxis)
 	{
 		sb.append('(');
 		int nPoint;
@@ -136,7 +139,7 @@ public class WKTWriter implements VectorTextWriter
 		sb.append(')');
 	}
 
-	private static void appendPolygon(StringBuilder sb, Polygon pg, boolean reverseAxis)
+	private static void appendPolygon(@Nonnull StringBuilder sb, @Nonnull Polygon pg, boolean reverseAxis)
 	{
 		Iterator<LinearRing> it = pg.iterator();
 		boolean found = false;
@@ -151,7 +154,7 @@ public class WKTWriter implements VectorTextWriter
 		sb.append(')');
 	}
 
-	private static void appendPolyline(StringBuilder sb, Polyline pl, boolean reverseAxis)
+	private static void appendPolyline(@Nonnull StringBuilder sb, @Nonnull Polyline pl, boolean reverseAxis)
 	{
 		sb.append('(');
 		Iterator<LineString> it = pl.iterator();
@@ -165,7 +168,7 @@ public class WKTWriter implements VectorTextWriter
 		sb.append(')');
 	}
 
-	private static void appendCompoundCurve(StringBuilder sb, CompoundCurve cc, boolean reverseAxis)
+	private static void appendCompoundCurve(@Nonnull StringBuilder sb, @Nonnull CompoundCurve cc, boolean reverseAxis)
 	{
 		sb.append('(');
 		LineString pl;
@@ -185,7 +188,7 @@ public class WKTWriter implements VectorTextWriter
 		sb.append(')');
 	}
 
-	private static void appendCurvePolygon(StringBuilder sb, CurvePolygon cpg, boolean reverseAxis)
+	private static void appendCurvePolygon(@Nonnull StringBuilder sb, @Nonnull CurvePolygon cpg, boolean reverseAxis)
 	{
 		sb.append('(');
 		Vector2D geometry;
@@ -215,7 +218,7 @@ public class WKTWriter implements VectorTextWriter
 		sb.append(')');
 	}
 
-	private static void appendMultiPolygon(StringBuilder sb, MultiPolygon mpg, boolean reverseAxis)
+	private static void appendMultiPolygon(@Nonnull StringBuilder sb, @Nonnull MultiPolygon mpg, boolean reverseAxis)
 	{
 		Iterator<Polygon> it = mpg.iterator();
 		boolean found = false;
@@ -229,7 +232,7 @@ public class WKTWriter implements VectorTextWriter
 		sb.append(')');
 	}
 
-	private static void appendMultiSurface(StringBuilder sb, MultiSurface ms, boolean reverseAxis)
+	private static void appendMultiSurface(@Nonnull StringBuilder sb, @Nonnull MultiSurface ms, boolean reverseAxis)
 	{
 		sb.append('(');
 		Vector2D geometry;
@@ -259,7 +262,7 @@ public class WKTWriter implements VectorTextWriter
 		sb.append(')');
 	}
 	
-	private boolean appendGeometryCollection(StringBuilder sb, GeometryCollection geoColl)
+	private boolean appendGeometryCollection(@Nonnull StringBuilder sb, @Nonnull GeometryCollection geoColl)
 	{
 		sb.append('(');
 		Vector2D geometry;
@@ -283,18 +286,14 @@ public class WKTWriter implements VectorTextWriter
 		this.reverseAxis = false;
 	}
 
+	@Nonnull
 	public String getWriterName()
 	{
 		return "Well Known Text (WKT)";
 	}
 
-	public boolean toText(StringBuilder sb, Vector2D vec)
+	public boolean toText(@Nonnull StringBuilder sb, @Nonnull Vector2D vec)
 	{
-		if (vec == null)
-		{
-			this.lastError = "Input vector is null";
-			return false;
-		}
 		switch (vec.getVectorType())
 		{
 		case Point:
@@ -402,7 +401,8 @@ public class WKTWriter implements VectorTextWriter
 		}
 	}
 
-	public String generateWKT(Vector2D vec)
+	@Nullable
+	public String generateWKT(@Nonnull Vector2D vec)
 	{
 		StringBuilder sb = new StringBuilder();
 		if (toText(sb, vec))
@@ -412,6 +412,7 @@ public class WKTWriter implements VectorTextWriter
 		return null;
 	}
 
+	@Nullable
 	public String getLastError()
 	{
 		return this.lastError;

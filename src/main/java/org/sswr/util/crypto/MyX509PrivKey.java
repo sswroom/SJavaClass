@@ -5,26 +5,32 @@ import org.sswr.util.net.ASN1Item;
 import org.sswr.util.net.ASN1PDUBuilder;
 import org.sswr.util.net.ASN1Util;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class MyX509PrivKey extends MyX509File
 {
-	public MyX509PrivKey(String sourceName, byte[] buff, int ofst, int size)
+	public MyX509PrivKey(@Nonnull String sourceName, @Nonnull byte[] buff, int ofst, int size)
 	{
 		super(sourceName, buff, ofst, size);
 	}
 
 	@Override
+	@Nonnull
 	public FileType getFileType()
 	{
 		return FileType.PrivateKey;
 	}
 
 	@Override
+	@Nonnull
 	public ASN1Data clone()
 	{
 		return new MyX509PrivKey(this.sourceName, this.buff, 0, this.buff.length);
 	}
 
 	@Override
+	@Nonnull
 	public String toString()
 	{
 		StringBuilder sb = new StringBuilder();
@@ -35,6 +41,7 @@ public class MyX509PrivKey extends MyX509File
 		return sb.toString();
 	}
 
+	@Nonnull
 	public KeyType getKeyType()
 	{
 		ASN1Item item = ASN1Util.pduGetItem(this.buff, 0, this.buff.length, "1.2.1");
@@ -45,6 +52,7 @@ public class MyX509PrivKey extends MyX509File
 		return KeyType.Unknown;
 	}
 
+	@Nullable
 	public MyX509Key createKey()
 	{
 		KeyType keyType = this.getKeyType();
@@ -60,6 +68,7 @@ public class MyX509PrivKey extends MyX509File
 		return null;
 	}
 
+	@Nullable
 	public byte[] getKeyId()
 	{
 		MyX509Key key = createKey();
@@ -70,7 +79,8 @@ public class MyX509PrivKey extends MyX509File
 		return null;
 	}
 
-	public static MyX509PrivKey createFromKeyBuff(KeyType keyType, byte[] buff, int ofst, int buffSize, String sourceName)
+	@Nonnull
+	public static MyX509PrivKey createFromKeyBuff(@Nonnull KeyType keyType, @Nonnull byte[] buff, int ofst, int buffSize, @Nullable String sourceName)
 	{
 		if (sourceName == null)
 		{
@@ -89,7 +99,8 @@ public class MyX509PrivKey extends MyX509File
 		return new MyX509PrivKey(sourceName, keyPDU.getBuff(null), 0, keyPDU.getBuffSize());
 	}
 
-	public static MyX509PrivKey createFromKey(MyX509Key key)
+	@Nullable
+	public static MyX509PrivKey createFromKey(@Nonnull MyX509Key key)
 	{
 		KeyType keyType = key.getKeyType();
 		if (keyType == KeyType.ECDSA)
@@ -109,6 +120,8 @@ public class MyX509PrivKey extends MyX509File
 			keyPDU.beginSequence();
 			keyPDU.appendInt32(1);
 			keyBuff = key.getECPrivate();
+			if (keyBuff == null)
+				return null;
 			keyPDU.appendOctetString(keyBuff, 0, keyBuff.length);
 			keyBuff = key.getECPublic();
 			if (keyBuff != null)

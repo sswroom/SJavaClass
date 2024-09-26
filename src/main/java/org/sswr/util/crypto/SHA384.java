@@ -2,6 +2,8 @@ package org.sswr.util.crypto;
 
 import org.sswr.util.data.ByteTool;
 
+import jakarta.annotation.Nonnull;
+
 public class SHA384 extends Hash
 {
 	private long intermediateHash[];
@@ -16,11 +18,13 @@ public class SHA384 extends Hash
 		this.clear();
 	}
 
+	@Nonnull
 	public String getName()
 	{
 		return "SHA-384";
 	}
 
+	@Nonnull
 	public Hash clone()
 	{
 		SHA384 sha384 = new SHA384();
@@ -46,7 +50,7 @@ public class SHA384 extends Hash
 		this.intermediateHash[7]   = 0x47b5481dbefa4fa4L;
 	}
 
-	public void calc(byte buff[], int ofst, int buffSize)
+	public void calc(@Nonnull byte buff[], int ofst, int buffSize)
 	{
 		this.messageLength += (buffSize << 3);
 		if ((buffSize + this.messageBlockIndex) < 128)
@@ -77,6 +81,7 @@ public class SHA384 extends Hash
 		}
 	}
 
+	@Nonnull
 	public byte []getValue()
 	{
 		byte calBuff[] = new byte[128];

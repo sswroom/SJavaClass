@@ -4,19 +4,21 @@ import org.sswr.util.data.ByteTool;
 import org.sswr.util.data.textbinenc.Base32Enc;
 import org.sswr.util.data.textenc.URIEncoding;
 
+import jakarta.annotation.Nonnull;
+
 public class HOTP extends OTP
 {
 	private byte[] key;
 	private long counter;
 
-	public HOTP(byte[] key, long counter)
+	public HOTP(@Nonnull byte[] key, long counter)
 	{
 		super(6);
 		this.key = key.clone();
 		this.counter = counter;
 	}
 
-	public HOTP(String key, long counter)
+	public HOTP(@Nonnull String key, long counter)
 	{
 		super(6);
 		this.key = new Base32Enc().decodeBin(key);
@@ -50,7 +52,7 @@ public class HOTP extends OTP
 		return false;
 	}
 
-	public static int calcCode(byte[] key, long counter, int nDigits)
+	public static int calcCode(@Nonnull byte[] key, long counter, int nDigits)
 	{
 		byte[] buff = new byte[20];
 		HMAC hmac;
@@ -75,7 +77,8 @@ public class HOTP extends OTP
 		}
 	}
 
-	public String genURI(String name)
+	@Nonnull
+	public String genURI(@Nonnull String name)
 	{
 		StringBuilder sb = new StringBuilder();
 		sb.append("otpauth://hotp/");

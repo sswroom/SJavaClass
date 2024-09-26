@@ -2,12 +2,14 @@ package org.sswr.util.crypto;
 
 import org.sswr.util.data.ByteTool;
 
+import jakarta.annotation.Nonnull;
+
 public class AES192 extends BlockCipher
 {
 	private int encRK[];
 	private int decRK[];
 
-	public AES192(byte []key)
+	public AES192(@Nonnull byte []key)
 	{
 		super(16);
 		this.encRK = new int[52];
@@ -16,7 +18,7 @@ public class AES192 extends BlockCipher
 	}
 
 
-	public int encryptBlock(byte []inBlock, int inOfst, byte []outBlock, int outOfst)
+	public int encryptBlock(@Nonnull byte []inBlock, int inOfst, @Nonnull byte []outBlock, int outOfst)
 	{
 		int s0;
 		int s1;
@@ -117,7 +119,7 @@ public class AES192 extends BlockCipher
 		return 16;
 	}
 	
-	public int decryptBlock(byte []inBlock, int inOfst, byte []outBlock, int outOfst)
+	public int decryptBlock(@Nonnull byte []inBlock, int inOfst, @Nonnull byte []outBlock, int outOfst)
 	{
 		int s0;
 		int s1;
@@ -219,7 +221,7 @@ public class AES192 extends BlockCipher
 		return 16;
 	}
 	
-	public void setKey(byte []key)
+	public void setKey(@Nonnull byte []key)
 	{
 		int i;
 		int j;

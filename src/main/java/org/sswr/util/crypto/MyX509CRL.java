@@ -10,20 +10,25 @@ import org.sswr.util.net.ASN1Data;
 import org.sswr.util.net.ASN1Item;
 import org.sswr.util.net.ASN1Util;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class MyX509CRL extends MyX509File
 {
-	public MyX509CRL(String sourceName, byte[] buff, int ofst, int size)
+	public MyX509CRL(@Nonnull String sourceName, @Nonnull byte[] buff, int ofst, int size)
 	{
 		super(sourceName, buff, ofst, size);
 	}
 
 	@Override
+	@Nonnull
 	public FileType getFileType()
 	{
 		return FileType.CRL;
 	}
 
-	public ValidStatus isValid(MyX509Env ssl, Map<String, Certificate> trustStoreMap)
+	@Nonnull
+	public ValidStatus isValid(@Nonnull MyX509Env ssl, @Nullable Map<String, Certificate> trustStoreMap)
 	{
 		if (trustStoreMap == null)
 		{
@@ -63,7 +68,11 @@ public class MyX509CRL extends MyX509File
 			return ValidStatus.UnsupportedAlgorithm;
 		}
 	
-		Certificate issuer = trustStoreMap.get(issuerCN);
+		Certificate issuer;
+		if (trustStoreMap == null)
+			issuer = null;
+		else
+			issuer = trustStoreMap.get(issuerCN);
 		if (issuer == null)
 		{
 			return ValidStatus.UnknownIssuer;
@@ -81,7 +90,7 @@ public class MyX509CRL extends MyX509File
 		return ValidStatus.Valid;
 	}
 
-	public boolean timeValid(ZonedDateTime time)
+	public boolean timeValid(@Nonnull ZonedDateTime time)
 	{
 		ZonedDateTime t = this.getThisUpdate();
 		if (t == null)
@@ -104,12 +113,14 @@ public class MyX509CRL extends MyX509File
 	}
 
 	@Override
+	@Nonnull
 	public ASN1Data clone()
 	{
 		return new MyX509CRL(this.sourceName, this.buff, 0, this.buff.length);
 	}
 
 	@Override
+	@Nonnull
 	public String toString()
 	{
 		StringBuilder sb = new StringBuilder();
@@ -130,6 +141,7 @@ public class MyX509CRL extends MyX509File
 		return false;
 	}
 
+	@Nullable
 	public String getIssuerCN()
 	{
 		ASN1Item tmpBuff;
@@ -151,6 +163,7 @@ public class MyX509CRL extends MyX509File
 		}		
 	}
 
+	@Nullable
 	public ZonedDateTime getThisUpdate()
 	{
 		ASN1Item itemPDU;
@@ -172,6 +185,7 @@ public class MyX509CRL extends MyX509File
 		}
 	}
 
+	@Nullable
 	public ZonedDateTime getNextUpdate()
 	{
 		ASN1Item itemPDU;
@@ -193,7 +207,7 @@ public class MyX509CRL extends MyX509File
 		}
 	}
 
-	public boolean isRevoked(MyX509Cert cert)
+	public boolean isRevoked(@Nonnull MyX509Cert cert)
 	{
 		byte[] sn = cert.getSerialNumber();
 		if (sn == null)

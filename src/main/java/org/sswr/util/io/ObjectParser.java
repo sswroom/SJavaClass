@@ -1,5 +1,9 @@
 package org.sswr.util.io;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public abstract class ObjectParser extends ParserBase {
-	public abstract ParsedObject parseObject(ParsedObject pobj, PackageFile pkgFile, ParserType targetType);
+	@Nullable
+	public abstract ParsedObject parseObject(@Nonnull ParsedObject pobj, @Nullable PackageFile pkgFile, @Nonnull ParserType targetType);
 }

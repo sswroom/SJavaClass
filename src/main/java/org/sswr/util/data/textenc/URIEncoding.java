@@ -26,7 +26,8 @@ public class URIEncoding
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 	
-	public static @Nonnull String uriEncode(@Nonnull String uri)
+	@Nonnull
+	public static String uriEncode(@Nonnull String uri)
 	{
 		byte[] carr = uri.getBytes(StandardCharsets.UTF_8);
 		StringBuilder sb = new StringBuilder();
@@ -51,7 +52,8 @@ public class URIEncoding
 		return sb.toString();
 	}
 
-	public static @Nonnull String uriDecode(@Nonnull String uri)
+	@Nonnull
+	public static String uriDecode(@Nonnull String uri)
 	{
 		byte[] carr = uri.getBytes(StandardCharsets.UTF_8);
 		byte[] destBuff = new byte[carr.length];

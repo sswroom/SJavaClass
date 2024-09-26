@@ -13,6 +13,9 @@ import org.sswr.util.math.CoordinateSystem;
 import org.sswr.util.math.MathUtil;
 import org.sswr.util.math.RectAreaDbl;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class LineString extends Vector2D
 {
 	protected Coord2DDbl[] pointArr;
@@ -41,7 +44,7 @@ public class LineString extends Vector2D
 		}
 	}
 
-	public LineString(int srid, Coord2DDbl[] pointArr, double[] zArr, double[] mArr)
+	public LineString(int srid, @Nonnull Coord2DDbl[] pointArr, @Nullable double[] zArr, @Nullable double[] mArr)
 	{
 		super(srid);
 		int i = 0;
@@ -86,11 +89,13 @@ public class LineString extends Vector2D
 		}
 	}
 
+	@Nonnull
 	public VectorType getVectorType()
 	{
 		return VectorType.LineString;
 	}
 
+	@Nonnull
 	public Coord2DDbl getCenter()
 	{
 		double maxX;
@@ -133,6 +138,7 @@ public class LineString extends Vector2D
 		}
 	}
 
+	@Nonnull
 	public Vector2D clone()
 	{
 		LineString pl = new LineString(this.srid, this.pointArr.length, this.hasZ(), this.hasM());
@@ -148,6 +154,7 @@ public class LineString extends Vector2D
 		return pl;
 	}
 
+	@Nonnull
 	public RectAreaDbl getBounds()
 	{
 		int i = this.pointArr.length;
@@ -164,7 +171,7 @@ public class LineString extends Vector2D
 		return new RectAreaDbl(min, max);		
 	}
 
-	public double calBoundarySqrDistance(Coord2DDbl pt, Coord2DDbl nearPt)
+	public double calBoundarySqrDistance(@Nonnull Coord2DDbl pt, @Nullable Coord2DDbl nearPt)
 	{
 		int l;
 		Coord2DDbl[] points;
@@ -272,7 +279,7 @@ public class LineString extends Vector2D
 		return dist;
 	}
 
-	public double calSqrDistance3D(Coord2DDbl pt, double z, Coord2DDbl nearPt, SharedDouble nearZ)
+	public double calSqrDistance3D(@Nonnull Coord2DDbl pt, double z, @Nonnull Coord2DDbl nearPt, @Nullable SharedDouble nearZ)
 	{
 		if (!this.hasZ())
 		{
@@ -419,7 +426,7 @@ public class LineString extends Vector2D
 		return 0;
 	}
 
-	public boolean joinVector(Vector2D vec)
+	public boolean joinVector(@Nonnull Vector2D vec)
 	{
 		if (vec.getVectorType() != VectorType.LineString || this.hasZ() != vec.hasZ() || this.hasM() != vec.hasM())
 		{
@@ -487,7 +494,7 @@ public class LineString extends Vector2D
 		return this.mArr != null;
 	}
 
-	public void convCSys(CoordinateSystem srcCSys, CoordinateSystem destCSys)
+	public void convCSys(@Nonnull CoordinateSystem srcCSys, @Nonnull CoordinateSystem destCSys)
 	{
 		if (this.zArr != null)
 		{
@@ -510,7 +517,7 @@ public class LineString extends Vector2D
 	}
 
 	@Override
-	public boolean equals(Vector2D vec, boolean sameTypeOnly, boolean nearlyVal) {
+	public boolean equals(@Nonnull Vector2D vec, boolean sameTypeOnly, boolean nearlyVal) {
 		if (vec == this)
 			return true;
 		if (!(vec instanceof LineString)) {
@@ -604,7 +611,7 @@ public class LineString extends Vector2D
 		}
 	}
 
-	public boolean insideOrTouch(Coord2DDbl coord)
+	public boolean insideOrTouch(@Nonnull Coord2DDbl coord)
 	{
 		double thisX;
 		double thisY;
@@ -658,6 +665,7 @@ public class LineString extends Vector2D
 		return Objects.hash(srid, pointArr, zArr, mArr);
 	}
 
+	@Nonnull
 	public Coord2DDbl[] getPointList()
 	{
 		return this.pointArr;
@@ -668,6 +676,7 @@ public class LineString extends Vector2D
 		return this.pointArr.length;
 	}
 
+	@Nonnull
 	public Coord2DDbl getPoint(int index)
 	{
 		if (index >= this.pointArr.length)
@@ -689,17 +698,20 @@ public class LineString extends Vector2D
 		return leng;
 	}
 
+	@Nullable
 	public double []getZList()
 	{
 		return this.zArr;
 	}
 
+	@Nullable
 	public double []getMList()
 	{
 		return this.mArr;
 	}
 
-	public LineString splitByPoint(Coord2DDbl pt)
+	@Nullable
+	public LineString splitByPoint(@Nonnull Coord2DDbl pt)
 	{
 		int l;
 	
@@ -779,18 +791,24 @@ public class LineString extends Vector2D
 			{
 				l = nPoint;
 				newZ = newPL.getZList();
-				while (l-- > minId)
+				if (newZ != null)
 				{
-					newZ[l - minId] = oldZ[l];
+					while (l-- > minId)
+					{
+						newZ[l - minId] = oldZ[l];
+					}
 				}
 			}
 			if (oldM != null)
 			{
 				l = nPoint;
 				newM = newPL.getMList();
-				while (l-- > minId)
+				if (newM != null)
 				{
-					newM[l - minId] = oldM[l];
+					while (l-- > minId)
+					{
+						newM[l - minId] = oldM[l];
+					}
 				}
 			}
 			return newPL;
@@ -845,29 +863,35 @@ public class LineString extends Vector2D
 			if (oldZ != null)
 			{
 				newZ = newPL.getZList();
-				l = nPoint;
-				while (--l > minId)
+				if (newZ != null)
 				{
-					newZ[l - minId] = oldZ[l];
+					l = nPoint;
+					while (--l > minId)
+					{
+						newZ[l - minId] = oldZ[l];
+					}
+					newZ[0] = calZ;
 				}
-				newZ[0] = calZ;
 			}
 
 			if (oldM != null)
 			{
 				newM = newPL.getMList();
-				l = nPoint;
-				while (--l > minId)
+				if (newM != null)
 				{
-					newM[l - minId] = oldM[l];
+					l = nPoint;
+					while (--l > minId)
+					{
+						newM[l - minId] = oldM[l];
+					}
+					newM[0] = calM;
 				}
-				newM[0] = calM;
 			}
 			return newPL;
 		}
 	}
 
-	public int getPointNo(Coord2DDbl pt, SharedBool isPoint, SharedDouble calPtXOut, SharedDouble calPtYOut, SharedDouble calPtZOut, SharedDouble calPtMOut)
+	public int getPointNo(@Nonnull Coord2DDbl pt, @Nullable SharedBool isPoint, @Nullable SharedDouble calPtXOut, @Nullable SharedDouble calPtYOut, @Nullable SharedDouble calPtZOut, @Nullable SharedDouble calPtMOut)
 	{
 		int l;
 		Coord2DDbl []points;
@@ -1057,6 +1081,7 @@ public class LineString extends Vector2D
 		return minId;
 	}
 
+	@Nullable
 	public Polygon createPolygonByDist(double dist)
 	{
 		int nPoint = this.pointArr.length;
@@ -1199,6 +1224,7 @@ public class LineString extends Vector2D
 		return pg;
 	}
 
+	@Nonnull
 	public Polyline createPolyline()
 	{
 		Polyline pl = new Polyline(this.srid);

@@ -13,19 +13,25 @@ import java.nio.charset.Charset;
 import java.util.Iterator;
 import java.util.Set;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class IniFile
 {
-	public static ConfigFile parse(InputStream stm, Charset charset) throws IOException
+	@Nullable
+	public static ConfigFile parse(@Nonnull InputStream stm, @Nonnull Charset charset) throws IOException
 	{
 		return parseReader(new InputStreamReader(stm, charset));
 	}
 
+	@Nullable
 	public static ConfigFile parse(String fileName, Charset charset) throws IOException
 	{
 		return parseReader(new FileReader(FileUtil.getRealPath(fileName, false), charset));
 	}
 
-	private static ConfigFile parseReader(Reader reader) throws IOException
+	@Nullable
+	private static ConfigFile parseReader(@Nonnull Reader reader) throws IOException
 	{
 		ConfigFile cfg = new ConfigFile();
 		String cate = null;
@@ -82,23 +88,27 @@ public class IniFile
 		return cfg;
 	}
 
-	public static boolean saveConfig(OutputStream stm, Charset charset, ConfigFile cfg) throws IOException
+	public static boolean saveConfig(@Nonnull OutputStream stm, @Nonnull Charset charset, @Nonnull ConfigFile cfg) throws IOException
 	{
 		return saveConfig(new OutputStreamWriter(stm, charset), cfg);
 	}
 
-	public static boolean saveConfig(Writer writer, ConfigFile cfg) throws IOException
+	public static boolean saveConfig(@Nonnull Writer writer, @Nonnull ConfigFile cfg) throws IOException
 	{
 		Set<String> keys;
 		String key;
 		keys = cfg.getKeys(null);
-		Iterator<String> itKey = keys.iterator();
-		while (itKey.hasNext())
+		Iterator<String> itKey;
+		if (keys != null)
 		{
-			key = itKey.next();
-			writer.write(key);
-			writer.write("=");
-			writer.write(cfg.getValue(key)+"\r\n");
+			itKey = keys.iterator();
+			while (itKey.hasNext())
+			{
+				key = itKey.next();
+				writer.write(key);
+				writer.write("=");
+				writer.write(cfg.getValue(key)+"\r\n");
+			}
 		}
 		Iterator<String> itCate = cfg.getCateList().iterator();
 		String cate;
@@ -111,13 +121,16 @@ public class IniFile
 			writer.write("]\r\n");
 	
 			keys = cfg.getKeys(cate);
-			itKey = keys.iterator();
-			while (itKey.hasNext())
+			if (keys != null)
 			{
-				key = itKey.next();
-				writer.write(key);
-				writer.write("=");
-				writer.write(cfg.getValue(cate, key)+"\r\n");
+				itKey = keys.iterator();
+				while (itKey.hasNext())
+				{
+					key = itKey.next();
+					writer.write(key);
+					writer.write("=");
+					writer.write(cfg.getValue(cate, key)+"\r\n");
+				}
 			}
 		}
 		return true;

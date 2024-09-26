@@ -4,6 +4,8 @@ import org.sswr.util.math.Coord2DDbl;
 import org.sswr.util.math.CoordinateSystem;
 import org.sswr.util.math.RectAreaDbl;
 
+import jakarta.annotation.Nonnull;
+
 public abstract class Vector2D
 {
 	public enum VectorType
@@ -41,12 +43,16 @@ public abstract class Vector2D
 		this.srid = srid;
 	}
 
+	@Nonnull
 	public abstract VectorType getVectorType();
+	@Nonnull
 	public abstract Coord2DDbl getCenter();
+	@Nonnull
 	public abstract Vector2D clone();
+	@Nonnull
 	public abstract RectAreaDbl getBounds();
-	public abstract double calBoundarySqrDistance(Coord2DDbl pt, Coord2DDbl nearPt);
-	public double calSqrDistance(Coord2DDbl pt, Coord2DDbl nearPt)
+	public abstract double calBoundarySqrDistance(@Nonnull Coord2DDbl pt, @Nonnull Coord2DDbl nearPt);
+	public double calSqrDistance(@Nonnull Coord2DDbl pt, @Nonnull Coord2DDbl nearPt)
 	{
 		if (this.insideOrTouch(pt))
 		{
@@ -58,7 +64,7 @@ public abstract class Vector2D
 	}
 
 	public abstract double calArea();
-	public abstract boolean joinVector(Vector2D vec);
+	public abstract boolean joinVector(@Nonnull Vector2D vec);
 
 	public boolean hasZ()
 	{
@@ -70,9 +76,9 @@ public abstract class Vector2D
 		return false;
 	}
 
-	public abstract void convCSys(CoordinateSystem srcCSys, CoordinateSystem destCSys);
-	public abstract boolean equals(Vector2D vec, boolean sameTypeOnly, boolean nearlyVal);
-	public abstract boolean insideOrTouch(Coord2DDbl coord);
+	public abstract void convCSys(@Nonnull CoordinateSystem srcCSys, @Nonnull CoordinateSystem destCSys);
+	public abstract boolean equals(@Nonnull Vector2D vec, boolean sameTypeOnly, boolean nearlyVal);
+	public abstract boolean insideOrTouch(@Nonnull Coord2DDbl coord);
 
 	public int getSRID()
 	{

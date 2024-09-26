@@ -18,6 +18,9 @@ import org.sswr.util.data.DateTimeUtil;
 import org.sswr.util.db.CSVUtil;
 import org.sswr.util.db.DBUpdateHandler;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class ActionFileStore implements Runnable, DBUpdateHandler {
 	public enum ActionType {
 		CREATE,
@@ -41,7 +44,7 @@ public class ActionFileStore implements Runnable, DBUpdateHandler {
 	private LogTool logger;
 	private String packageName;
 
-	public ActionFileStore(String logPath, LogTool logger, String packageName)
+	public ActionFileStore(@Nullable String logPath, @Nullable LogTool logger, @Nullable String packageName)
 	{
 		this.entries = new ArrayList<LogEntry>();
 		this.threadRunning = false;
@@ -60,7 +63,7 @@ public class ActionFileStore implements Runnable, DBUpdateHandler {
 	}
 
 
-	public void logAction(int stackSkip, String userName, ActionType actType, String fromData, String toData)
+	public void logAction(int stackSkip, @Nullable String userName, @Nonnull ActionType actType, @Nullable String fromData, @Nullable String toData)
 	{
 		StackTraceElement[] stacks = Thread.currentThread().getStackTrace();
 		String className = null;
@@ -294,25 +297,32 @@ public class ActionFileStore implements Runnable, DBUpdateHandler {
 
 
 	@Override
-	public void dbUpdated(Object oldObj, Object newObj) {
-		if (oldObj == null && newObj == null)
+	public void dbUpdated(@Nullable Object oldObj, @Nullable Object newObj) {
+		if (oldObj == null)
 		{
+			if (newObj == null)
+			{
 
-		}
-		else if (oldObj == null)
-		{
-			this.logAction(2, getUser(), ActionFileStore.ActionType.CREATE, null, newObj.toString());
-		}
-		else if (newObj == null)
-		{
-			this.logAction(2, getUser(), ActionFileStore.ActionType.DELETE, oldObj.toString(), null);
+			}
+			else
+			{
+				this.logAction(2, getUser(), ActionFileStore.ActionType.CREATE, null, newObj.toString());
+			}
 		}
 		else
 		{
-			this.logAction(2, getUser(), ActionFileStore.ActionType.UPDATE, oldObj.toString(), newObj.toString());
+			if (newObj == null)
+			{
+				this.logAction(2, getUser(), ActionFileStore.ActionType.DELETE, oldObj.toString(), null);
+			}
+			else
+			{
+				this.logAction(2, getUser(), ActionFileStore.ActionType.UPDATE, oldObj.toString(), newObj.toString());
+			}
 		}
 	}
 
+	@Nullable
 	public String getUser()
 	{
 		return (String)ThreadVar.get("User");

@@ -9,6 +9,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 
@@ -20,8 +22,9 @@ public class QueryConditions<T>
 {
 	public abstract class Condition
 	{
-		public abstract String toWhereClause(Map<String, DBColumnInfo> colsMap, DBUtil.DBType dbType, int maxDbItem);
-		public abstract boolean isValid(T obj) throws IllegalAccessException, InvocationTargetException;
+		@Nonnull
+		public abstract String toWhereClause(@Nonnull Map<String, DBColumnInfo> colsMap, @Nonnull DBUtil.DBType dbType, int maxDbItem);
+		public abstract boolean isValid(@Nonnull T obj) throws IllegalAccessException, InvocationTargetException;
 	}
 
 	public class TimeBetweenCondition extends Condition
@@ -31,7 +34,7 @@ public class QueryConditions<T>
 		private Timestamp t2;
 		private FieldGetter<T> getter;
 
-		public TimeBetweenCondition(String fieldName, Timestamp t1, Timestamp t2) throws NoSuchFieldException
+		public TimeBetweenCondition(@Nonnull String fieldName, @Nonnull Timestamp t1, @Nonnull Timestamp t2) throws NoSuchFieldException
 		{
 			this.fieldName = fieldName;
 			this.t1 = t1;
@@ -48,7 +51,8 @@ public class QueryConditions<T>
 			}
 		}
 
-		public String toWhereClause(Map<String, DBColumnInfo> colsMap, DBUtil.DBType dbType, int maxDbItem)
+		@Nonnull
+		public String toWhereClause(@Nonnull Map<String, DBColumnInfo> colsMap, @Nonnull DBUtil.DBType dbType, int maxDbItem)
 		{
 			StringBuilder sb = new StringBuilder();
 			DBColumnInfo col = colsMap.get(this.fieldName);
@@ -60,7 +64,7 @@ public class QueryConditions<T>
 			return sb.toString();
 		}
 
-		public boolean isValid(T obj) throws IllegalAccessException, InvocationTargetException
+		public boolean isValid(@Nonnull T obj) throws IllegalAccessException, InvocationTargetException
 		{
 			Object v = this.getter.get(obj);
 			if (v == null)
@@ -85,7 +89,7 @@ public class QueryConditions<T>
 		private CompareCondition cond;
 		private FieldGetter<T> getter;
 
-		public TimeCondition(String fieldName, Timestamp val, CompareCondition cond) throws NoSuchFieldException
+		public TimeCondition(@Nonnull String fieldName, @Nonnull Timestamp val, @Nonnull CompareCondition cond) throws NoSuchFieldException
 		{
 			this.fieldName = fieldName;
 			this.val = val;
@@ -102,22 +106,26 @@ public class QueryConditions<T>
 			}
 		}
 
+		@Nonnull
 		public String getFieldName()
 		{
 			return this.fieldName;
 		}
 
+		@Nonnull
 		public Timestamp getVal()
 		{
 			return this.val;
 		}
 
+		@Nonnull
 		public CompareCondition getCompareCond()
 		{
 			return this.cond;
 		}
 
-		public String toWhereClause(Map<String, DBColumnInfo> colsMap, DBUtil.DBType dbType, int maxDbItem)
+		@Nonnull
+		public String toWhereClause(@Nonnull Map<String, DBColumnInfo> colsMap, @Nonnull DBUtil.DBType dbType, int maxDbItem)
 		{
 			StringBuilder sb = new StringBuilder();
 			DBColumnInfo col = colsMap.get(this.fieldName);
@@ -141,7 +149,7 @@ public class QueryConditions<T>
 			return sb.toString();
 		}
 
-		public boolean isValid(T obj) throws IllegalAccessException, InvocationTargetException
+		public boolean isValid(@Nonnull T obj) throws IllegalAccessException, InvocationTargetException
 		{
 			Object v = this.getter.get(obj);
 			if (this.val == null)
@@ -187,7 +195,7 @@ public class QueryConditions<T>
 		private CompareCondition cond;
 		private FieldGetter<T> getter;
 
-		public IntCondition(String fieldName, Integer val, CompareCondition cond) throws NoSuchFieldException
+		public IntCondition(@Nonnull String fieldName, @Nullable Integer val, @Nonnull CompareCondition cond) throws NoSuchFieldException
 		{
 			this.fieldName = fieldName;
 			this.val = val;
@@ -204,22 +212,26 @@ public class QueryConditions<T>
 			}
 		}
 
+		@Nonnull
 		public String getFieldName()
 		{
 			return this.fieldName;
 		}
 
+		@Nullable
 		public Integer getVal()
 		{
 			return this.val;
 		}
 
+		@Nonnull
 		public CompareCondition getCompareCond()
 		{
 			return this.cond;
 		}
 
-		public String toWhereClause(Map<String, DBColumnInfo> colsMap, DBUtil.DBType dbType, int maxDbItem)
+		@Nonnull
+		public String toWhereClause(@Nonnull Map<String, DBColumnInfo> colsMap, @Nonnull DBUtil.DBType dbType, int maxDbItem)
 		{
 			StringBuilder sb = new StringBuilder();
 			DBColumnInfo col = colsMap.get(this.fieldName);
@@ -243,7 +255,7 @@ public class QueryConditions<T>
 			return sb.toString();
 		}
 
-		public boolean isValid(T obj) throws IllegalAccessException, InvocationTargetException
+		public boolean isValid(@Nonnull T obj) throws IllegalAccessException, InvocationTargetException
 		{
 			Object v = this.getter.get(obj);
 			if (this.val == null)
@@ -288,7 +300,7 @@ public class QueryConditions<T>
 		private Iterable<Integer> vals;
 		private FieldGetter<T> getter;
 
-		public IntInCondition(String fieldName, Iterable<Integer> vals) throws NoSuchFieldException
+		public IntInCondition(@Nonnull String fieldName, @Nonnull Iterable<Integer> vals) throws NoSuchFieldException
 		{
 			this.fieldName = fieldName;
 			this.vals = vals;
@@ -304,7 +316,8 @@ public class QueryConditions<T>
 			}
 		}
 
-		public String toWhereClause(Map<String, DBColumnInfo> colsMap, DBUtil.DBType dbType, int maxDbItem)
+		@Nonnull
+		public String toWhereClause(@Nonnull Map<String, DBColumnInfo> colsMap, @Nonnull DBUtil.DBType dbType, int maxDbItem)
 		{
 			if (DataTools.getSize(vals) > maxDbItem)
 			{
@@ -322,7 +335,7 @@ public class QueryConditions<T>
 			}
 		}
 
-		public boolean isValid(T obj) throws IllegalAccessException, InvocationTargetException
+		public boolean isValid(@Nonnull T obj) throws IllegalAccessException, InvocationTargetException
 		{
 			Object v = this.getter.get(obj);
 			if (v == null)
@@ -349,7 +362,7 @@ public class QueryConditions<T>
 		private CompareCondition cond;
 		private FieldGetter<T> getter;
 
-		public DoubleCondition(String fieldName, Double val, CompareCondition cond) throws NoSuchFieldException
+		public DoubleCondition(@Nonnull String fieldName, @Nullable Double val, @Nonnull CompareCondition cond) throws NoSuchFieldException
 		{
 			this.fieldName = fieldName;
 			this.val = val;
@@ -366,7 +379,8 @@ public class QueryConditions<T>
 			}
 		}
 
-		public String toWhereClause(Map<String, DBColumnInfo> colsMap, DBUtil.DBType dbType, int maxDbItem)
+		@Nonnull
+		public String toWhereClause(@Nonnull Map<String, DBColumnInfo> colsMap, @Nonnull DBUtil.DBType dbType, int maxDbItem)
 		{
 			StringBuilder sb = new StringBuilder();
 			DBColumnInfo col = colsMap.get(this.fieldName);
@@ -390,7 +404,7 @@ public class QueryConditions<T>
 			return sb.toString();
 		}
 
-		public boolean isValid(T obj) throws IllegalAccessException, InvocationTargetException
+		public boolean isValid(@Nonnull T obj) throws IllegalAccessException, InvocationTargetException
 		{
 			Object v = this.getter.get(obj);
 			if (this.val == null)
@@ -435,14 +449,15 @@ public class QueryConditions<T>
 		private Iterable<String> vals;
 		private FieldGetter<T> getter;
 
-		public StrInCondition(String fieldName, Iterable<String> vals) throws NoSuchFieldException
+		public StrInCondition(@Nonnull String fieldName, @Nonnull Iterable<String> vals) throws NoSuchFieldException
 		{
 			this.fieldName = fieldName;
 			this.vals = vals;
 			this.getter = new FieldGetter<T>(cls, fieldName);
 		}
 
-		public String toWhereClause(Map<String, DBColumnInfo> colsMap, DBUtil.DBType dbType, int maxDbItem)
+		@Nonnull
+		public String toWhereClause(@Nonnull Map<String, DBColumnInfo> colsMap, @Nonnull DBUtil.DBType dbType, int maxDbItem)
 		{
 			if (DataTools.getSize(this.vals) > maxDbItem)
 			{
@@ -470,7 +485,7 @@ public class QueryConditions<T>
 			}
 		}
 
-		public boolean isValid(T obj) throws IllegalAccessException, InvocationTargetException
+		public boolean isValid(@Nonnull T obj) throws IllegalAccessException, InvocationTargetException
 		{
 			Object v = this.getter.get(obj);
 			if (v == null)
@@ -496,14 +511,15 @@ public class QueryConditions<T>
 		private String val;
 		private FieldGetter<T> getter;
 
-		public StrContainsCondition(String fieldName, String val) throws NoSuchFieldException
+		public StrContainsCondition(@Nonnull String fieldName, @Nonnull String val) throws NoSuchFieldException
 		{
 			this.fieldName = fieldName;
 			this.val = val;
 			this.getter = new FieldGetter<T>(cls, fieldName);
 		}
 
-		public String toWhereClause(Map<String, DBColumnInfo> colsMap, DBUtil.DBType dbType, int maxDbItem)
+		@Nonnull
+		public String toWhereClause(@Nonnull Map<String, DBColumnInfo> colsMap, @Nonnull DBUtil.DBType dbType, int maxDbItem)
 		{
 			StringBuilder sb = new StringBuilder();
 			DBColumnInfo col = colsMap.get(this.fieldName);
@@ -513,7 +529,7 @@ public class QueryConditions<T>
 			return sb.toString();
 		}
 
-		public boolean isValid(T obj) throws IllegalAccessException, InvocationTargetException
+		public boolean isValid(@Nonnull T obj) throws IllegalAccessException, InvocationTargetException
 		{
 			Object v = this.getter.get(obj);
 			if (v == null)
@@ -531,7 +547,7 @@ public class QueryConditions<T>
 		private String val;
 		private FieldGetter<T> getter;
 
-		public StrEqualsCondition(String fieldName, String val) throws NoSuchFieldException
+		public StrEqualsCondition(@Nonnull String fieldName, @Nonnull String val) throws NoSuchFieldException
 		{
 			this.fieldName = fieldName;
 			this.val = val;
@@ -548,7 +564,8 @@ public class QueryConditions<T>
 			return this.val;
 		}
 		
-		public String toWhereClause(Map<String, DBColumnInfo> colsMap, DBUtil.DBType dbType, int maxDbItem)
+		@Nonnull
+		public String toWhereClause(@Nonnull Map<String, DBColumnInfo> colsMap, @Nonnull DBUtil.DBType dbType, int maxDbItem)
 		{
 			StringBuilder sb = new StringBuilder();
 			DBColumnInfo col = colsMap.get(this.fieldName);
@@ -558,7 +575,7 @@ public class QueryConditions<T>
 			return sb.toString();
 		}
 
-		public boolean isValid(T obj) throws IllegalAccessException, InvocationTargetException
+		public boolean isValid(@Nonnull T obj) throws IllegalAccessException, InvocationTargetException
 		{
 			Object v = this.getter.get(obj);
 			if (v == null)
@@ -578,7 +595,7 @@ public class QueryConditions<T>
 		private CompareCondition cond;
 		private FieldGetter<T> getter;
 
-		public EnumCondition(String fieldName, Enum<?> val, EnumType enumType, CompareCondition cond) throws NoSuchFieldException
+		public EnumCondition(@Nonnull String fieldName, @Nonnull Enum<?> val, @Nonnull EnumType enumType, @Nonnull CompareCondition cond) throws NoSuchFieldException
 		{
 			this.fieldName = fieldName;
 			this.val = val;
@@ -595,7 +612,8 @@ public class QueryConditions<T>
 			}
 		}
 
-		public String toWhereClause(Map<String, DBColumnInfo> colsMap, DBUtil.DBType dbType, int maxDbItem)
+		@Nonnull
+		public String toWhereClause(@Nonnull Map<String, DBColumnInfo> colsMap, @Nonnull DBUtil.DBType dbType, int maxDbItem)
 		{
 			StringBuilder sb = new StringBuilder();
 			DBColumnInfo col = colsMap.get(this.fieldName);
@@ -641,7 +659,7 @@ public class QueryConditions<T>
 			return sb.toString();
 		}
 
-		public boolean isValid(T obj) throws IllegalAccessException, InvocationTargetException
+		public boolean isValid(@Nonnull T obj) throws IllegalAccessException, InvocationTargetException
 		{
 			Object v = this.getter.get(obj);
 			if (this.val == null)
@@ -673,7 +691,7 @@ public class QueryConditions<T>
 		private EnumType enumType;
 		private FieldGetter<T> getter;
 
-		public EnumInCondition(String fieldName, Iterable<Enum<?>> vals, EnumType enumType) throws NoSuchFieldException
+		public EnumInCondition(@Nonnull String fieldName, @Nonnull Iterable<Enum<?>> vals, @Nonnull EnumType enumType) throws NoSuchFieldException
 		{
 			this.fieldName = fieldName;
 			this.vals = vals;
@@ -689,7 +707,8 @@ public class QueryConditions<T>
 			}
 		}
 
-		public String toWhereClause(Map<String, DBColumnInfo> colsMap, DBUtil.DBType dbType, int maxDbItem)
+		@Nonnull
+		public String toWhereClause(@Nonnull Map<String, DBColumnInfo> colsMap, @Nonnull DBUtil.DBType dbType, int maxDbItem)
 		{
 			if (DataTools.getSize(this.vals) > maxDbItem)
 			{
@@ -733,7 +752,7 @@ public class QueryConditions<T>
 			}
 		}
 
-		public boolean isValid(T obj) throws IllegalAccessException, InvocationTargetException
+		public boolean isValid(@Nonnull T obj) throws IllegalAccessException, InvocationTargetException
 		{
 			Object v = this.getter.get(obj);
 			Iterator<Enum<?>> it = vals.iterator();
@@ -761,7 +780,7 @@ public class QueryConditions<T>
 		private boolean val;
 		private FieldGetter<T> getter;
 
-		public BooleanCondition(String fieldName, boolean val) throws NoSuchFieldException
+		public BooleanCondition(@Nonnull String fieldName, boolean val) throws NoSuchFieldException
 		{
 			this.fieldName = fieldName;
 			this.val = val;
@@ -777,7 +796,8 @@ public class QueryConditions<T>
 			}
 		}
 
-		public String toWhereClause(Map<String, DBColumnInfo> colsMap, DBUtil.DBType dbType, int maxDbItem)
+		@Nonnull
+		public String toWhereClause(@Nonnull Map<String, DBColumnInfo> colsMap, @Nonnull DBUtil.DBType dbType, int maxDbItem)
 		{
 			StringBuilder sb = new StringBuilder();
 			DBColumnInfo col = colsMap.get(this.fieldName);
@@ -789,7 +809,7 @@ public class QueryConditions<T>
 			return sb.toString();
 		}
 
-		public boolean isValid(T obj) throws IllegalAccessException, InvocationTargetException
+		public boolean isValid(@Nonnull T obj) throws IllegalAccessException, InvocationTargetException
 		{
 			Object v = this.getter.get(obj);
 			return (Boolean)v == this.val;
@@ -802,13 +822,14 @@ public class QueryConditions<T>
 		private String fieldName;
 		private FieldGetter<T> getter;
 
-		public NotNullCondition(String fieldName) throws NoSuchFieldException
+		public NotNullCondition(@Nonnull String fieldName) throws NoSuchFieldException
 		{
 			this.fieldName = fieldName;
 			this.getter = new FieldGetter<T>(cls, fieldName);
 		}
 
-		public String toWhereClause(Map<String, DBColumnInfo> colsMap, DBUtil.DBType dbType, int maxDbItem)
+		@Nonnull
+		public String toWhereClause(@Nonnull Map<String, DBColumnInfo> colsMap, @Nonnull DBUtil.DBType dbType, int maxDbItem)
 		{
 			StringBuilder sb = new StringBuilder();
 			DBColumnInfo col = colsMap.get(this.fieldName);
@@ -817,7 +838,7 @@ public class QueryConditions<T>
 			return sb.toString();
 		}
 
-		public boolean isValid(T obj) throws IllegalAccessException, InvocationTargetException
+		public boolean isValid(@Nonnull T obj) throws IllegalAccessException, InvocationTargetException
 		{
 			Object v = this.getter.get(obj);
 			return v != null;
@@ -827,12 +848,13 @@ public class QueryConditions<T>
 	{
 		private QueryConditions<T> innerCond;
 
-		public InnerCondition(QueryConditions<T> innerCond)
+		public InnerCondition(@Nonnull QueryConditions<T> innerCond)
 		{
 			this.innerCond = innerCond;
 		}
 
-		public String toWhereClause(Map<String, DBColumnInfo> colsMap, DBUtil.DBType dbType, int maxDbItem)
+		@Nonnull
+		public String toWhereClause(@Nonnull Map<String, DBColumnInfo> colsMap, @Nonnull DBUtil.DBType dbType, int maxDbItem)
 		{
 			List<Condition> clientConditions = new ArrayList<Condition>();
 			String whereClause = this.innerCond.toWhereClause(colsMap, dbType, clientConditions, maxDbItem);
@@ -846,11 +868,12 @@ public class QueryConditions<T>
 			}
 		}
 
-		public boolean isValid(T obj) throws IllegalAccessException, InvocationTargetException
+		public boolean isValid(@Nonnull T obj) throws IllegalAccessException, InvocationTargetException
 		{
 			return this.innerCond.isValid(obj);
 		}
 
+		@Nonnull
 		public QueryConditions<T> getConditions()
 		{
 			return this.innerCond;
@@ -863,12 +886,13 @@ public class QueryConditions<T>
 		{
 		}
 
-		public String toWhereClause(Map<String, DBColumnInfo> colsMap, DBUtil.DBType dbType, int maxDbItem)
+		@Nonnull
+		public String toWhereClause(@Nonnull Map<String, DBColumnInfo> colsMap, @Nonnull DBUtil.DBType dbType, int maxDbItem)
 		{
 			return " or ";
 		}
 
-		public boolean isValid(T obj)
+		public boolean isValid(@Nonnull T obj)
 		{
 			return true;
 		}
@@ -877,18 +901,18 @@ public class QueryConditions<T>
 	private Class<T> cls;
 	private List<Condition> conditionList;
 
-	public QueryConditions(Class<T> cls)
+	public QueryConditions(@Nonnull Class<T> cls)
 	{
 		this.cls = cls;
 		this.conditionList = new ArrayList<Condition>();
 	}
 
-	public boolean isValid(T obj) throws IllegalAccessException, InvocationTargetException
+	public boolean isValid(@Nonnull T obj) throws IllegalAccessException, InvocationTargetException
 	{
 		return objectValid(obj, this.conditionList);
 	}
 
-	public static <T> boolean objectValid(T obj, List<QueryConditions<T>.Condition> conditionList) throws IllegalAccessException, InvocationTargetException
+	public static <T> boolean objectValid(@Nonnull T obj, @Nonnull List<QueryConditions<T>.Condition> conditionList) throws IllegalAccessException, InvocationTargetException
 	{
 		boolean ret = true;
 		QueryConditions<T>.Condition cond;
@@ -912,18 +936,21 @@ public class QueryConditions<T>
 		return ret;
 	}
 
-	public QueryConditions<T> timeBetween(String fieldName, Timestamp t1, Timestamp t2) throws NoSuchFieldException
+	@Nonnull
+	public QueryConditions<T> timeBetween(@Nonnull String fieldName, @Nonnull Timestamp t1, @Nonnull Timestamp t2) throws NoSuchFieldException
 	{
 		this.conditionList.add(new TimeBetweenCondition(fieldName, t1, t2));
 		return this;
 	}
 
-	public QueryConditions<T> timeCompare(String fieldName, CompareCondition cond, Timestamp t) throws NoSuchFieldException
+	@Nonnull
+	public QueryConditions<T> timeCompare(@Nonnull String fieldName, @Nonnull CompareCondition cond, @Nonnull Timestamp t) throws NoSuchFieldException
 	{
 		this.conditionList.add(new TimeCondition(fieldName, t, cond));
 		return this;
 	}
 
+	@Nonnull
 	public QueryConditions<T> or()
 	{
 		if (this.conditionList.size() == 0)
@@ -934,25 +961,29 @@ public class QueryConditions<T>
 		return this;
 	}
 
-	public QueryConditions<T> innerCond(QueryConditions<T> cond)
+	@Nonnull
+	public QueryConditions<T> innerCond(@Nonnull QueryConditions<T> cond)
 	{
 		this.conditionList.add(new InnerCondition(cond));
 		return this;
 	}
 
-	public QueryConditions<T> intEquals(String fieldName, Integer val) throws NoSuchFieldException
+	@Nonnull
+	public QueryConditions<T> intEquals(@Nonnull String fieldName, @Nullable Integer val) throws NoSuchFieldException
 	{
 		this.conditionList.add(new IntCondition(fieldName, val, CompareCondition.EQUAL));
 		return this;
 	}
 
-	public QueryConditions<T> intCompare(String fieldName, CompareCondition cond, int val) throws NoSuchFieldException
+	@Nonnull
+	public QueryConditions<T> intCompare(@Nonnull String fieldName, @Nonnull CompareCondition cond, int val) throws NoSuchFieldException
 	{
 		this.conditionList.add(new IntCondition(fieldName, val, cond));
 		return this;
 	}
 
-	public QueryConditions<T> intIn(String fieldName, Iterable<Integer> vals) throws NoSuchFieldException
+	@Nonnull
+	public QueryConditions<T> intIn(@Nonnull String fieldName, @Nonnull Iterable<Integer> vals) throws NoSuchFieldException
 	{
 		if (vals.iterator().hasNext())
 		{
@@ -965,43 +996,50 @@ public class QueryConditions<T>
 		return this;
 	}
 
-	public QueryConditions<T> doubleGE(String fieldName, double val) throws NoSuchFieldException
+	@Nonnull
+	public QueryConditions<T> doubleGE(@Nonnull String fieldName, double val) throws NoSuchFieldException
 	{
 		this.conditionList.add(new DoubleCondition(fieldName, val, CompareCondition.GREATER_OR_EQUAL));
 		return this;
 	}
 
-	public QueryConditions<T> doubleLE(String fieldName, double val) throws NoSuchFieldException
+	@Nonnull
+	public QueryConditions<T> doubleLE(@Nonnull String fieldName, double val) throws NoSuchFieldException
 	{
 		this.conditionList.add(new DoubleCondition(fieldName, val, CompareCondition.LESS_OR_EQUAL));
 		return this;
 	}
 
-	public QueryConditions<T> strIn(String fieldName, Iterable<String> vals) throws NoSuchFieldException
+	@Nonnull
+	public QueryConditions<T> strIn(@Nonnull String fieldName, @Nonnull Iterable<String> vals) throws NoSuchFieldException
 	{
 		this.conditionList.add(new StrInCondition(fieldName, vals));
 		return this;
 	}
 
-	public QueryConditions<T> strContains(String fieldName, String val) throws NoSuchFieldException
+	@Nonnull
+	public QueryConditions<T> strContains(@Nonnull String fieldName, @Nonnull String val) throws NoSuchFieldException
 	{
 		this.conditionList.add(new StrContainsCondition(fieldName, val));
 		return this;
 	}
 
-	public QueryConditions<T> strEquals(String fieldName, String val) throws NoSuchFieldException
+	@Nonnull
+	public QueryConditions<T> strEquals(@Nonnull String fieldName, @Nonnull String val) throws NoSuchFieldException
 	{
 		this.conditionList.add(new StrEqualsCondition(fieldName, val));
 		return this;
 	}
 
-	public QueryConditions<T> boolEquals(String fieldName, boolean val) throws NoSuchFieldException
+	@Nonnull
+	public QueryConditions<T> boolEquals(@Nonnull String fieldName, boolean val) throws NoSuchFieldException
 	{
 		this.conditionList.add(new BooleanCondition(fieldName, val));
 		return this;
 	}
 
-	private EnumType parseEnumType(String fieldName) throws NoSuchFieldException
+	@Nonnull
+	private EnumType parseEnumType(@Nonnull String fieldName) throws NoSuchFieldException
 	{
 		EnumType enumType = EnumType.ORDINAL;
 		Field field = cls.getDeclaredField(fieldName);
@@ -1020,36 +1058,42 @@ public class QueryConditions<T>
 		return enumType;
 	}
 
-	private EnumCondition parseEnumCondition(String fieldName, Enum<?> val, CompareCondition cond) throws NoSuchFieldException
+	@Nonnull
+	private EnumCondition parseEnumCondition(@Nonnull String fieldName, @Nonnull Enum<?> val, @Nonnull CompareCondition cond) throws NoSuchFieldException
 	{
 		return new EnumCondition(fieldName, val, parseEnumType(fieldName), cond);
 	}
 
-	public QueryConditions<T> enumEquals(String fieldName, Enum<?> val) throws NoSuchFieldException
+	@Nonnull
+	public QueryConditions<T> enumEquals(@Nonnull String fieldName, @Nonnull Enum<?> val) throws NoSuchFieldException
 	{
 		this.conditionList.add(parseEnumCondition(fieldName, val, CompareCondition.EQUAL));
 		return this;
 	}
 
-	public QueryConditions<T> enumNotEquals(String fieldName, Enum<?> val) throws NoSuchFieldException
+	@Nonnull
+	public QueryConditions<T> enumNotEquals(@Nonnull String fieldName, @Nonnull Enum<?> val) throws NoSuchFieldException
 	{
 		this.conditionList.add(parseEnumCondition(fieldName, val, CompareCondition.NOT_EQUAL));
 		return this;
 	}
 
-	public QueryConditions<T> enumIn(String fieldName, Iterable<Enum<?>> vals) throws NoSuchFieldException
+	@Nonnull
+	public QueryConditions<T> enumIn(@Nonnull String fieldName, @Nonnull Iterable<Enum<?>> vals) throws NoSuchFieldException
 	{
 		this.conditionList.add(new EnumInCondition(fieldName, vals, parseEnumType(fieldName)));
 		return this;
 	}
 
-	public QueryConditions<T> notNull(String fieldName) throws NoSuchFieldException
+	@Nonnull
+	public QueryConditions<T> notNull(@Nonnull String fieldName) throws NoSuchFieldException
 	{
 		this.conditionList.add(new NotNullCondition(fieldName));
 		return this;
 	}
 
-	public String toWhereClause(Map<String, DBColumnInfo> colsMap, DBUtil.DBType dbType, List<Condition> clientConditions, int maxDbItem)
+	@Nonnull
+	public String toWhereClause(@Nonnull Map<String, DBColumnInfo> colsMap, @Nonnull DBUtil.DBType dbType, @Nonnull List<Condition> clientConditions, int maxDbItem)
 	{
 		StringBuilder sb = new StringBuilder();
 		boolean hasOr = false;
@@ -1152,17 +1196,20 @@ public class QueryConditions<T>
 		return this.conditionList.size();
 	}
 
+	@Nullable
 	public Condition get(int index)
 	{
 		return this.conditionList.get(index);
 	}
 
+	@Nonnull
 	public List<Condition> toList()
 	{
 		return this.conditionList;
 	}
 
-	public static String getCondStr(CompareCondition cond)
+	@Nonnull
+	public static String getCondStr(@Nonnull CompareCondition cond)
 	{
 		switch (cond)
 		{

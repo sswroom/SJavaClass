@@ -13,12 +13,16 @@ import org.sswr.util.data.SharedInt;
 import org.sswr.util.data.SharedLong;
 import org.sswr.util.math.ArcGISPRJParser;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class FileGDBUtil
 {
 	public static final byte HAS_M_FLAG = 4;
 	public static final byte HAS_Z_FLAG = 2;
 
-	public static FileGDBTableInfo parseFieldDesc(byte[] fieldDesc)
+	@Nullable
+	public static FileGDBTableInfo parseFieldDesc(@Nonnull byte[] fieldDesc)
 	{
 		FileGDBFieldInfo field;
 		FileGDBTableInfo table = new FileGDBTableInfo();
@@ -180,7 +184,7 @@ public class FileGDBUtil
 		return table;
 	}
 
-	public static int readVarUInt(byte []buff, int ofst, SharedLong val)
+	public static int readVarUInt(@Nonnull byte []buff, int ofst, @Nonnull SharedLong val)
 	{
 		long v = 0;
 		int i = 0;
@@ -200,7 +204,7 @@ public class FileGDBUtil
 		return ofst;
 	}
 
-	public static int readVarInt(byte []buff, int ofst, SharedLong val)
+	public static int readVarInt(@Nonnull byte []buff, int ofst, @Nonnull SharedLong val)
 	{
 		boolean sign = (buff[0] & 0x40) != 0;
 		long v = 0;
@@ -228,6 +232,7 @@ public class FileGDBUtil
 		return ofst;
 	}
 
+	@Nonnull
 	public static ZonedDateTime toDateTime(double v)
 	{
 		int days = (int)v;
@@ -235,6 +240,7 @@ public class FileGDBUtil
 		return dt.withZoneSameLocal(ZoneId.systemDefault());
 	}
 
+	@Nonnull
 	public static String geometryTypeGetName(byte t)
 	{
 		switch (t)
@@ -284,6 +290,7 @@ public class FileGDBUtil
 		}
 	}
 
+	@Nonnull
 	public static String fieldTypeGetName(byte t)
 	{
 		switch (t)

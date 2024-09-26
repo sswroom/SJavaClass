@@ -11,6 +11,9 @@ import org.sswr.util.io.ParserType;
 import org.sswr.util.io.stmdata.FileData;
 import org.sswr.util.parser.ParserList;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class MapManager
 {
 	public static class MapLayerInfo
@@ -36,7 +39,8 @@ public class MapManager
 		}
 	}
 
-	public MapDrawLayer loadLayer(String fileName, ParserList parsers, MapEnv env)
+	@Nullable
+	public MapDrawLayer loadLayer(@Nonnull String fileName, @Nonnull ParserList parsers, @Nonnull MapEnv env)
 	{
 		MapLayerInfo info = this.layerArr.get(fileName);
 		if (info != null)
@@ -67,7 +71,7 @@ public class MapManager
 		return lyr;		
 	}
 
-	public void clearMap(MapEnv env)
+	public void clearMap(@Nonnull MapEnv env)
 	{
 		Iterator<MapLayerInfo> it = this.layerArr.values().iterator();
 		MapLayerInfo info;

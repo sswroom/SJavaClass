@@ -3,11 +3,13 @@ package org.sswr.util.io;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import jakarta.annotation.Nonnull;
+
 public class MyOutputStream extends OutputStream
 {
 	private IOStream stm;
 
-	MyOutputStream(IOStream stm)
+	MyOutputStream(@Nonnull IOStream stm)
 	{
 		this.stm = stm;
 	}

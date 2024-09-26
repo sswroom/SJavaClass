@@ -3,19 +3,21 @@ package org.sswr.util.crypto;
 import org.sswr.util.data.textbinenc.Base32Enc;
 import org.sswr.util.data.textenc.URIEncoding;
 
+import jakarta.annotation.Nonnull;
+
 public class TOTP extends OTP
 {
 	private byte[] key;
 	private int intervalMS;
 
-	public TOTP(byte[] key)
+	public TOTP(@Nonnull byte[] key)
 	{
 		super(6);
 		this.key = key.clone();
 		this.intervalMS = 30000;
 	}
 
-	public TOTP(String key)
+	public TOTP(@Nonnull String key)
 	{
 		super(6);
 		this.key = new Base32Enc().decodeBin(key);
@@ -47,7 +49,8 @@ public class TOTP extends OTP
 		return false;
 	}
 
-	public String genURI(String name)
+	@Nonnull
+	public String genURI(@Nonnull String name)
 	{
 		StringBuilder sb = new StringBuilder();
 		sb.append("otpauth://totp/");

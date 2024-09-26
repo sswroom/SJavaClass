@@ -1,8 +1,12 @@
 package org.sswr.util.data;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class JSText
 {
-	public static String quoteString(String v)
+	@Nonnull
+	public static String quoteString(@Nullable String v)
 	{
 		if (v == null)
 		{
@@ -49,7 +53,8 @@ public class JSText
 		return sb.toString();
 	}
 
-	public static String dquoteString(String v)
+	@Nonnull
+	public static String dquoteString(@Nullable String v)
 	{
 		if (v == null)
 		{
@@ -96,8 +101,13 @@ public class JSText
 		return sb.toString();
 	}
 
-	public static void toJSTextDQuote(StringBuilder sb, String v)
+	public static void toJSTextDQuote(@Nonnull StringBuilder sb, @Nullable String v)
 	{
+		if (v == null)
+		{
+			sb.append("null");
+			return;
+		}
 		char carr[] = v.toCharArray();
 		char c;
 		int i = 0;

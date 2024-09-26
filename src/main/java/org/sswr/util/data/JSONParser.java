@@ -5,9 +5,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class JSONParser
 {
-	public static Object parse(String jsonStr)
+	@Nullable
+	public static Object parse(@Nonnull String jsonStr)
 	{
 		char carr[] = jsonStr.toCharArray();
 		int leng = carr.length;
@@ -19,7 +23,7 @@ public class JSONParser
 		return parseJSONStr2(carr, index, leng, new SharedInt());
 	}
 
-	private static int clearWS(char carr[], int index, int endIndex)
+	private static int clearWS(@Nonnull char carr[], int index, int endIndex)
 	{
 		char c;
 		while (index < endIndex)
@@ -37,7 +41,7 @@ public class JSONParser
 		return index;
 	}
 
-	private static int parseJSString(char carr[], int index, int endIndex, StringBuilder sb)
+	private static int parseJSString(@Nonnull char carr[], int index, int endIndex, @Nonnull StringBuilder sb)
 	{
 		char c;
 		c = carr[index++];
@@ -210,7 +214,7 @@ public class JSONParser
 		return endIndex + 1;
 	}
 
-	private static int parseJSNumber(char carr[], int index, int endIndex, SharedObject<Object> val)
+	private static int parseJSNumber(@Nonnull char carr[], int index, int endIndex, @Nonnull SharedObject<Object> val)
 	{
 		char sbuff[] = new char[256];
 		int dindex = 0;
@@ -283,7 +287,8 @@ public class JSONParser
 		}
 	}
 
-	private static Object parseJSONStr2(char carr[], int index, int endIndex, SharedInt parseEndIndex)
+	@Nullable
+	private static Object parseJSONStr2(@Nonnull char carr[], int index, int endIndex, @Nonnull SharedInt parseEndIndex)
 	{
 		char c;
 		index = clearWS(carr, index, endIndex);
@@ -503,7 +508,8 @@ public class JSONParser
 		}
 	}
 
-	public static Object parseJSONStr(String s)
+	@Nullable
+	public static Object parseJSONStr(@Nonnull String s)
 	{
 		try
 		{

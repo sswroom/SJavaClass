@@ -2,17 +2,21 @@ package org.sswr.util.math.geometry;
 
 import org.sswr.util.data.ByteTool;
 
+import jakarta.annotation.Nonnull;
+
 public class CircularString extends LineString {
 	public CircularString(int srid, int nPoint, boolean hasZ, boolean hasM)
 	{
 		super(srid, nPoint | 1, hasZ, hasM);
 	}
 
+	@Nonnull
 	public VectorType getVectorType()
 	{
 		return VectorType.CircularString;
 	}
 
+	@Nonnull
 	public Vector2D clone()
 	{
 		CircularString pl;

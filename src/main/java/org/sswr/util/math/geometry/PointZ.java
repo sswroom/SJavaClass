@@ -6,6 +6,8 @@ import org.sswr.util.basic.Vector3;
 import org.sswr.util.math.CoordinateSystem;
 import org.sswr.util.math.MathUtil;
 
+import jakarta.annotation.Nonnull;
+
 public class PointZ extends Point2D
 {
 	protected double z;
@@ -16,6 +18,7 @@ public class PointZ extends Point2D
 		this.z = z;
 	}
 
+	@Nonnull
 	public Vector2D clone()
 	{
 		return new PointZ(this.srid, this.pos.x, this.pos.y, this.z);
@@ -36,7 +39,7 @@ public class PointZ extends Point2D
 		return true;
 	}
 
-	public void convCSys(CoordinateSystem srcCSys, CoordinateSystem destCSys)
+	public void convCSys(@Nonnull CoordinateSystem srcCSys, @Nonnull CoordinateSystem destCSys)
 	{
 		Vector3 tmpPos = CoordinateSystem.convert3D(srcCSys, destCSys, new Vector3(this.pos, this.z));
 		this.pos = tmpPos.getXY();
@@ -45,7 +48,7 @@ public class PointZ extends Point2D
 	}
 
 	@Override
-	public boolean equals(Vector2D vec, boolean sameTypeOnly, boolean nearlyVal) {
+	public boolean equals(@Nonnull Vector2D vec, boolean sameTypeOnly, boolean nearlyVal) {
 		if (vec == this)
 			return true;
 		if (!(vec instanceof PointZ)) {

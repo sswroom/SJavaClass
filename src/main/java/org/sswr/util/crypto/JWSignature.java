@@ -5,6 +5,10 @@ import java.util.Arrays;
 import org.sswr.util.data.ByteTool;
 import org.sswr.util.data.DataTools;
 import org.sswr.util.data.textbinenc.Base64Enc;
+import org.sswr.util.data.textbinenc.EncodingException;
+
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 public class JWSignature
 {
@@ -32,7 +36,7 @@ public class JWSignature
 	private byte[] privateKey;
 	private byte[] hashVal;
 
-	public JWSignature(Algorithm alg, byte[] privateKey, int privateKeyOfst, int privateKeyLen, MyX509Key.KeyType keyType)
+	public JWSignature(@Nonnull Algorithm alg, @Nonnull byte[] privateKey, int privateKeyOfst, int privateKeyLen, @Nonnull MyX509Key.KeyType keyType)
 	{
 		this.alg = alg;
 		this.privateKey = Arrays.copyOfRange(privateKey, privateKeyOfst, privateKeyLen);
@@ -40,12 +44,12 @@ public class JWSignature
 		this.hashVal = null;
 	}
 
-	public boolean calcHash(byte[] buff)
+	public boolean calcHash(@Nonnull byte[] buff)
 	{
 		return calcHash(buff, 0, buff.length);
 	}
 
-	public boolean calcHash(byte[] buff, int buffOfst, int buffSize)
+	public boolean calcHash(@Nonnull byte[] buff, int buffOfst, int buffSize)
 	{
 		Hash hash;
 		switch (this.alg)
@@ -95,7 +99,7 @@ public class JWSignature
 		return true;
 	}
 
-	public boolean verifyHash(byte[] buff, int buffOfst, int buffSize, byte[] signature, int signOfst, int signatureSize)
+	public boolean verifyHash(@Nonnull byte[] buff, int buffOfst, int buffSize, @Nonnull byte[] signature, int signOfst, int signatureSize)
 	{
 		Hash hash;
 		switch (this.alg)
@@ -151,21 +155,34 @@ public class JWSignature
 		return ByteTool.byteEquals(signature, signOfst, hashVal, 0, signatureSize);
 	}
 
+	@Nullable
 	public String getHashB64()
 	{
 		if (this.hashVal == null)
 			return null;
 		Base64Enc b64 = new Base64Enc(Base64Enc.B64Charset.URL, true);
-		return b64.encodeBin(this.hashVal);
+		try
+		{
+			return b64.encodeBin(this.hashVal);
+		}
+		catch (EncodingException ex)
+		{
+			return null;
+		}
 	}
 
+	@Nullable
 	public byte[] getSignature()
 	{
 		return this.hashVal;
 	}
 
-	public static Algorithm algorithmGetByName(String name)
+	@Nonnull
+	public static Algorithm algorithmGetByName(@Nonnull String name)
 	{
-		return DataTools.getEnum(Algorithm.class, name.toUpperCase());
+		Algorithm alg = DataTools.getEnum(Algorithm.class, name.toUpperCase());
+		if (alg == null)
+			return Algorithm.Unknown;
+		return alg;
 	}
 }

@@ -1,5 +1,8 @@
 package org.sswr.util.db;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class ColumnDef
 {
 	private String colName;
@@ -12,23 +15,27 @@ public class ColumnDef
 	private String defVal;
 	private String attr;
 
-	public ColumnDef(String colName)
+	public ColumnDef(@Nonnull String colName)
 	{
+		this.colName = colName;
+		this.colType = ColumnType.Unknown;
 	}
 
+	@Nonnull
 	public String getColName() {
 		return this.colName;
 	}
 
-	public void setColName(String colName) {
+	public void setColName(@Nonnull String colName) {
 		this.colName = colName;
 	}
 
+	@Nonnull
 	public ColumnType getColType() {
 		return this.colType;
 	}
 
-	public void setColType(ColumnType colType) {
+	public void setColType(@Nonnull ColumnType colType) {
 		this.colType = colType;
 	}
 
@@ -84,27 +91,31 @@ public class ColumnDef
 		this.autoInc = autoInc;
 	}
 
+	@Nullable
 	public String getDefVal() {
 		return this.defVal;
 	}
 
-	public void setDefVal(String defVal) {
+	public void setDefVal(@Nullable String defVal) {
 		this.defVal = defVal;
 	}
 
+	@Nullable
 	public String getAttr() {
 		return this.attr;
 	}
 
-	public void setAttr(String attr) {
+	public void setAttr(@Nullable String attr) {
 		this.attr = attr;
 	}
 
+	@Nonnull
 	public String toColTypeStr()
 	{
 		return ColumnType.getString(this.colType, this.colSize);
 	}
 
+	@Nonnull
 	public ColumnDef clone()
 	{
 		ColumnDef newObj;

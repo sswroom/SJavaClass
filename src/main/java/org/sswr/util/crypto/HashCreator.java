@@ -1,8 +1,12 @@
 package org.sswr.util.crypto;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class HashCreator
 {
-	public static Hash createHash(HashType hashType)
+	@Nullable
+	public static Hash createHash(@Nonnull HashType hashType)
 	{
 		Hash hash = null;
 		switch (hashType)

@@ -7,6 +7,9 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class LogTool
 {
 	private List<LogHandler> hdlrArr;
@@ -41,7 +44,7 @@ public class LogTool
 		}
 	}
 	
-	public void addFileLog(String fileName, LogType style, LogGroup groupStyle, LogLevel logLev, String dateFormat, boolean directWrite)
+	public void addFileLog(@Nonnull String fileName, @Nonnull LogType style, @Nonnull LogGroup groupStyle, @Nonnull LogLevel logLev, @Nullable String dateFormat, boolean directWrite)
 	{
 		if (closed)
 			return;
@@ -63,7 +66,8 @@ public class LogTool
 		}
 	}
 
-	public LogTool addPrintLog(PrintStream pstm, LogLevel logLev)
+	@Nonnull
+	public LogTool addPrintLog(@Nonnull PrintStream pstm, @Nonnull LogLevel logLev)
 	{
 		if (closed)
 			return this;
@@ -71,7 +75,7 @@ public class LogTool
 		return this;
 	}
 	
-	public void addLogHandler(LogHandler hdlr, LogLevel logLev)
+	public void addLogHandler(@Nonnull LogHandler hdlr, @Nonnull LogLevel logLev)
 	{
 		if (this.closed)
 			return;
@@ -92,7 +96,7 @@ public class LogTool
 		}
 	}
 	
-	public void removeLogHandler(LogHandler hdlr)
+	public void removeLogHandler(@Nonnull LogHandler hdlr)
 	{
 		if (this.closed)
 			return;
@@ -111,7 +115,7 @@ public class LogTool
 		}
 	}
 	
-	public void logMessage(String logMsg, LogLevel level)
+	public void logMessage(@Nonnull String logMsg, @Nonnull LogLevel level)
 	{
 		int iLevel = level.ordinal();
 		ZonedDateTime t = ZonedDateTime.now();
@@ -126,7 +130,7 @@ public class LogTool
 		}
 	}
 
-	public void logException(Exception ex)
+	public void logException(@Nonnull Exception ex)
 	{
 		StringWriter writer = new StringWriter();
 		ex.printStackTrace(new PrintWriter(writer));

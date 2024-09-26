@@ -14,12 +14,15 @@ import org.sswr.util.data.StringUtil;
 import org.sswr.util.db.DBUtil.DBType;
 import org.sswr.util.math.geometry.Vector2D;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class SQLReader extends DBReader
 {
 	private DBType dbType;
 	private ResultSet rs;
 
-	public SQLReader(DBType dbType, ResultSet rs)
+	public SQLReader(@Nonnull DBType dbType, @Nonnull ResultSet rs)
 	{
 		this.dbType = dbType;
 		this.rs = rs;
@@ -99,6 +102,7 @@ public class SQLReader extends DBReader
 	}
 
 	@Override
+	@Nullable
 	public String getString(int colIndex)
 	{
 		if (this.rs == null) return null;
@@ -113,6 +117,7 @@ public class SQLReader extends DBReader
 	}
 
 	@Override
+	@Nullable
 	public ZonedDateTime getDate(int colIndex)
 	{
 		if (this.rs == null) return null;
@@ -147,6 +152,7 @@ public class SQLReader extends DBReader
 	}
 
 	@Override
+	@Nullable
 	public byte[] getBinary(int colIndex)
 	{
 		if (this.rs == null) return null;
@@ -161,6 +167,7 @@ public class SQLReader extends DBReader
 	}
 
 	@Override
+	@Nullable
 	public Vector2D getVector(int colIndex)
 	{
 		if (this.rs == null) return null;
@@ -197,6 +204,7 @@ public class SQLReader extends DBReader
 	}
 
 	@Override
+	@Nullable
 	public Geometry getGeometry(int colIndex)
 	{
 		if (this.rs == null) return null;
@@ -209,7 +217,10 @@ public class SQLReader extends DBReader
 			}
 			else if (dbType == DBType.MSSQL)
 			{
-				return GeometryUtil.fromVector2D(MSGeography.parseBinary(bytes));
+				Vector2D vec = MSGeography.parseBinary(bytes);
+				if (vec == null)
+					return null;
+				return GeometryUtil.fromVector2D(vec);
 			}
 			else if (dbType == DBType.PostgreSQL || dbType == DBType.PostgreSQLESRI)
 			{
@@ -250,6 +261,7 @@ public class SQLReader extends DBReader
 	}
 
 	@Override
+	@Nullable
 	public Object getObject(int colIndex)
 	{
 		if (this.rs == null) return null;
@@ -292,6 +304,7 @@ public class SQLReader extends DBReader
 	}
 
 	@Override
+	@Nonnull
 	public ColumnType getColumnType(int colIndex)
 	{
 		if (this.rs == null) return ColumnType.Unknown;

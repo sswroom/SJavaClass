@@ -4,11 +4,15 @@ import org.sswr.util.data.ByteTool;
 import org.sswr.util.data.RandomBytesGenerator;
 import org.sswr.util.data.textbinenc.Base32Enc;
 import org.sswr.util.data.textbinenc.Base64Enc;
+import org.sswr.util.data.textbinenc.EncodingException;
 import org.sswr.util.data.textbinenc.Base64Enc.B64Charset;
+
+import jakarta.annotation.Nonnull;
 
 public class IntKeyHandler
 {
-	public static String generate(int id, int leng, boolean caseSensitive)
+	@Nonnull
+	public static String generate(int id, int leng, boolean caseSensitive) throws EncodingException
 	{
 		if (leng < 4)
 		{
@@ -32,7 +36,7 @@ public class IntKeyHandler
 		}
 	}
 
-	public static int parseKey(String key, boolean caseSensitive)
+	public static int parseKey(@Nonnull String key, boolean caseSensitive)
 	{
 		byte[] buff;
 		if (caseSensitive)

@@ -6,6 +6,9 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class ConfigFile
 {
 	private Map<String, Map<String, String>> cfgVals;
@@ -15,12 +18,14 @@ public class ConfigFile
 		this.cfgVals = new HashMap<String, Map<String, String>>();
 	}
 
-	public String getValue(String name)
+	@Nullable
+	public String getValue(@Nonnull String name)
 	{
 		return getValue("", name);
 	}
 
-	public String getValue(String category, String name)
+	@Nullable
+	public String getValue(@Nullable String category, @Nonnull String name)
 	{
 		if (category == null)
 		{
@@ -32,11 +37,9 @@ public class ConfigFile
 		return cate.get(name);
 	}
 
-	public boolean setValue(String category, String name, String value)
+	public boolean setValue(@Nullable String category, @Nonnull String name, @Nullable String value)
 	{
 		Map<String, String> cate;
-		if (name == null)
-			return false;
 		if (category == null)
 		{
 			category = "";
@@ -56,12 +59,14 @@ public class ConfigFile
 		return this.cfgVals.size();
 	}
 
+	@Nonnull
 	public Set<String> getCateList()
 	{
 		return this.cfgVals.keySet();
 	}
 
-	public Set<String> getKeys(String category)
+	@Nullable
+	public Set<String> getKeys(@Nullable String category)
 	{
 		Map<String, String> cate;
 		if (category == null)
@@ -76,7 +81,7 @@ public class ConfigFile
 		return cate.keySet();
 	}
 
-	public boolean hasCategory(String category)
+	public boolean hasCategory(@Nullable String category)
 	{
 		if (category == null)
 		{
@@ -85,7 +90,8 @@ public class ConfigFile
 		return this.cfgVals.containsKey(category);
 	}
 
-	public ConfigFile cloneCate(String category)
+	@Nullable
+	public ConfigFile cloneCate(@Nullable String category)
 	{
 		ConfigFile cfg = new ConfigFile();
 		if (category == null)
@@ -93,6 +99,8 @@ public class ConfigFile
 			category = "";
 		}
 		Set<String> cateVal = this.getKeys(category);
+		if (cateVal == null)
+			return null;
 		Iterator<String> itCate = cateVal.iterator();
 		while (itCate.hasNext())
 		{
@@ -102,6 +110,7 @@ public class ConfigFile
 		return cfg;
 	}
 
+	@Nonnull
 	public String toString()
 	{
 		StringBuilder sb = new StringBuilder();
@@ -109,33 +118,40 @@ public class ConfigFile
 		Iterator<String> itCate = cates.iterator();
 		String key;
 		Iterator<String> itKey;
+		Set<String> keys;
 		String cate;
 		while (itCate.hasNext())
 		{
 			cate = itCate.next();
-			itKey = this.getKeys(cate).iterator();
-			while (itKey.hasNext())
+			keys = this.getKeys(cate);
+			if (keys != null)
 			{
-				key = itKey.next();
-				if (cate.length() > 0)
+				itKey = keys.iterator();
+				while (itKey.hasNext())
 				{
-					sb.append(cate+".");
+					key = itKey.next();
+					if (cate.length() > 0)
+					{
+						sb.append(cate+".");
+					}
+					sb.append(key);
+					sb.append("=");
+					sb.append(this.getValue(cate, key));
+					sb.append("\r\n");
 				}
-				sb.append(key);
-				sb.append("=");
-				sb.append(this.getValue(cate, key));
-				sb.append("\r\n");
 			}
 		}
 		return sb.toString();
 	}
 
+	@Nonnull
 	public static ConfigFile fromSystemProperties()
 	{
 		return fromProperties(System.getProperties());
 	}
 
-	public static ConfigFile fromProperties(Properties properties)
+	@Nonnull
+	public static ConfigFile fromProperties(@Nonnull Properties properties)
 	{
 		ConfigFile cfg = new ConfigFile();
 		Iterator<Object> itKeys = properties.keySet().iterator();
@@ -148,18 +164,23 @@ public class ConfigFile
 		return cfg;
 	}
 
-	public ConfigFile merge(ConfigFile cfg)
+	@Nonnull
+	public ConfigFile merge(@Nonnull ConfigFile cfg)
 	{
 		Iterator<String> itCates = cfg.getCateList().iterator();
 		while (itCates.hasNext())
 		{
 			String cate = itCates.next();
-			Iterator<String> itKeys = cfg.getKeys(cate).iterator();
-			String key;
-			while (itKeys.hasNext())
+			Set<String> keys = cfg.getKeys(cate);
+			if (keys != null)
 			{
-				key = itKeys.next();
-				this.setValue(cate, key, cfg.getValue(cate, key));
+				Iterator<String> itKeys = keys.iterator();
+				String key;
+				while (itKeys.hasNext())
+				{
+					key = itKeys.next();
+					this.setValue(cate, key, cfg.getValue(cate, key));
+				}
 			}
 		}
 		return this;

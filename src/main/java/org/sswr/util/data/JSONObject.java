@@ -5,6 +5,9 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class JSONObject extends JSONBase
 {
 	private Map<String, JSONBase> objVals;
@@ -14,6 +17,7 @@ public class JSONObject extends JSONBase
 		this.objVals = new HashMap<String, JSONBase>();
 	}
 
+	@Nonnull
 	public String toJSONString()
 	{
 		StringBuilder sb = new StringBuilder();
@@ -46,58 +50,61 @@ public class JSONObject extends JSONBase
 		return sb.toString();
 	}
 
-	public boolean equals(String s)
+	public boolean equals(@Nonnull String s)
 	{
 		///////////////////////////////
 		return false;
 	}
 
-	public boolean identical(JSONBase obj)
+	public boolean identical(@Nonnull JSONBase obj)
 	{
 		return this == obj;
 	}
 
+	@Nonnull
 	public String toString()
 	{
 		return this.toJSONString();
 	}
 		
-	public void setObjectValue(String name, JSONBase val)
+	public void setObjectValue(@Nonnull String name, @Nullable JSONBase val)
 	{
 		this.objVals.put(name, val);
 	}
 
-	public void setObjectInt32(String name, int val)
+	public void setObjectInt32(@Nonnull String name, int val)
 	{
 		this.objVals.put(name, new JSONInt32(val));
 	}
 
-	public void setObjectInt64(String name, long val)
+	public void setObjectInt64(@Nonnull String name, long val)
 	{
 		this.objVals.put(name, new JSONInt64(val));
 	}
 
-	public void setObjectDouble(String name, double val)
+	public void setObjectDouble(@Nonnull String name, double val)
 	{
 		this.objVals.put(name, new JSONNumber(val));
 	}
 
-	public void setObjectString(String name, String val)
+	public void setObjectString(@Nonnull String name, @Nonnull String val)
 	{
 		this.objVals.put(name, new JSONString(val));
 	}
 
-	public void setObjectBool(String name, boolean val)
+	public void setObjectBool(@Nonnull String name, boolean val)
 	{
 		this.objVals.put(name, new JSONBool(val));
 	}
 
-	public JSONBase getObjectValue(String name)
+	@Nullable
+	public JSONBase getObjectValue(@Nonnull String name)
 	{
 		return this.objVals.get(name);
 	}
 
-	public JSONArray getObjectArray(String name)
+	@Nullable
+	public JSONArray getObjectArray(@Nonnull String name)
 	{
 		JSONBase o = this.getObjectValue(name);
 		if (o != null && o instanceof JSONArray)
@@ -105,7 +112,8 @@ public class JSONObject extends JSONBase
 		return null;
 	}
 
-	public JSONObject getObjectObject(String name)
+	@Nullable
+	public JSONObject getObjectObject(@Nonnull String name)
 	{
 		JSONBase o = this.getObjectValue(name);
 		if (o != null && o instanceof JSONObject)
@@ -113,12 +121,14 @@ public class JSONObject extends JSONBase
 		return null;
 	}
 
+	@Nonnull
 	public Set<String> getObjectNames()
 	{
 		return this.objVals.keySet();
 	}
 
-	public String getObjectString(String name)
+	@Nullable
+	public String getObjectString(@Nonnull String name)
 	{
 		JSONBase baseObj = this.objVals.get(name);
 		if (baseObj == null || !(baseObj instanceof JSONString))
@@ -128,7 +138,7 @@ public class JSONObject extends JSONBase
 		return ((JSONString)baseObj).getValue();
 	}
 
-	public double getObjectDouble(String name)
+	public double getObjectDouble(@Nonnull String name)
 	{
 		JSONBase baseObj = this.objVals.get(name);
 		if (baseObj == null)
@@ -138,7 +148,7 @@ public class JSONObject extends JSONBase
 		return baseObj.getAsDouble();
 	}
 
-	public int getObjectInt32(String name)
+	public int getObjectInt32(@Nonnull String name)
 	{
 		JSONBase baseObj = this.objVals.get(name);
 		if (baseObj == null)
@@ -148,7 +158,7 @@ public class JSONObject extends JSONBase
 		return baseObj.getAsInt32();
 	}
 
-	public long getObjectInt64(String name)
+	public long getObjectInt64(@Nonnull String name)
 	{
 		JSONBase baseObj = this.objVals.get(name);
 		if (baseObj == null)
@@ -158,7 +168,7 @@ public class JSONObject extends JSONBase
 		return baseObj.getAsInt64();
 	}
 
-	public boolean getObjectBool(String name)
+	public boolean getObjectBool(@Nonnull String name)
 	{
 		JSONBase baseObj = this.objVals.get(name);
 		if (baseObj == null)
@@ -168,7 +178,7 @@ public class JSONObject extends JSONBase
 		return baseObj.getAsBool();
 	}
 
-	public void removeObject(String name)
+	public void removeObject(@Nonnull String name)
 	{
 		this.objVals.remove(name);
 	}

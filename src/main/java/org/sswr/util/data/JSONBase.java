@@ -2,18 +2,24 @@ package org.sswr.util.data;
 
 import org.sswr.util.math.MathUtil;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public abstract class JSONBase
 {
 	protected JSONBase()
 	{
 	}
 
+	@Nonnull
 	public abstract String toJSONString();
-	public abstract boolean equals(String s);
-	public abstract boolean identical(JSONBase obj);
+	public abstract boolean equals(@Nonnull String s);
+	public abstract boolean identical(@Nonnull JSONBase obj);
+	@Nonnull
 	public abstract String toString();
 
-	public JSONBase getValue(String path)
+	@Nullable
+	public JSONBase getValue(@Nonnull String path)
 	{
 		if (path.equals("this"))
 		{
@@ -132,7 +138,8 @@ public abstract class JSONBase
 		return null;
 	}
 
-	public String getValueString(String path)
+	@Nullable
+	public String getValueString(@Nonnull String path)
 	{
 		JSONBase json = this.getValue(path);
 		if (json != null && json instanceof JSONString)
@@ -142,7 +149,7 @@ public abstract class JSONBase
 		return null;
 	}
 
-	public int getValueAsInt32(String path)
+	public int getValueAsInt32(@Nonnull String path)
 	{
 		JSONBase json = this.getValue(path);
 		if (json != null)
@@ -152,7 +159,7 @@ public abstract class JSONBase
 		return 0;
 	}
 
-	public long getValueAsInt64(String path)
+	public long getValueAsInt64(@Nonnull String path)
 	{
 		JSONBase json = this.getValue(path);
 		if (json != null)
@@ -162,7 +169,7 @@ public abstract class JSONBase
 		return 0;
 	}
 
-	public double getValueAsDouble(String path)
+	public double getValueAsDouble(@Nonnull String path)
 	{
 		JSONBase json = this.getValue(path);
 		if (json != null)
@@ -172,7 +179,7 @@ public abstract class JSONBase
 		return 0;		
 	}
 
-	public boolean getValueAsDouble(String path, SharedDouble val)
+	public boolean getValueAsDouble(@Nonnull String path, @Nonnull SharedDouble val)
 	{
 		JSONBase json = this.getValue(path);
 		if (json != null)
@@ -182,7 +189,7 @@ public abstract class JSONBase
 		return false;
 	}
 
-	public boolean getValueAsBool(String path)
+	public boolean getValueAsBool(@Nonnull String path)
 	{
 		JSONBase json = this.getValue(path);
 		if (json != null)
@@ -192,7 +199,8 @@ public abstract class JSONBase
 		return false;
 	}
 
-	public JSONArray getValueArray(String path)
+	@Nullable
+	public JSONArray getValueArray(@Nonnull String path)
 	{
 		JSONBase json = this.getValue(path);
 		if (json != null && json instanceof JSONArray)
@@ -202,7 +210,8 @@ public abstract class JSONBase
 		return null;
 	}
 
-	public JSONObject getValueObject(String path)
+	@Nullable
+	public JSONObject getValueObject(@Nonnull String path)
 	{
 		JSONBase json = this.getValue(path);
 		if (json != null && json instanceof JSONObject)
@@ -260,7 +269,7 @@ public abstract class JSONBase
 			return 0;
 	}
 
-	public boolean getAsDouble(SharedDouble val)
+	public boolean getAsDouble(@Nonnull SharedDouble val)
 	{
 		if (this instanceof JSONBool)
 		{
@@ -310,7 +319,8 @@ public abstract class JSONBase
 			return false;
 	}
 
-	public static JSONBase parseJSONStr(String jsonStr)
+	@Nullable
+	public static JSONBase parseJSONStr(@Nonnull String jsonStr)
 	{
 		StringBuilder sb = new StringBuilder();
 		char[] carr = jsonStr.toCharArray();
@@ -318,7 +328,7 @@ public abstract class JSONBase
 		return parseJSONStr2(carr, 0, carr.length, endIndex, sb);
 	}
 
-	private static int clearWS(char[] carr, int index, int endIndex)
+	private static int clearWS(@Nonnull char[] carr, int index, int endIndex)
 	{
 		char c;
 		while (index < endIndex)
@@ -336,7 +346,7 @@ public abstract class JSONBase
 		return index;
 	}
 
-	private static int parseJSString(char[] jsonStr, int startIndex, int endIndex, StringBuilder sb)
+	private static int parseJSString(@Nonnull char[] jsonStr, int startIndex, int endIndex, @Nonnull StringBuilder sb)
 	{
 		char[] sbuff = new char[128];
 		int sindex;
@@ -456,7 +466,7 @@ public abstract class JSONBase
 		}
 	}
 
-	private static int parseJSNumber(char[] jsonStr, int startIndex, int endIndex, SharedDouble val)
+	private static int parseJSNumber(@Nonnull char[] jsonStr, int startIndex, int endIndex, @Nonnull SharedDouble val)
 	{
 		char[] sbuff = new char[256];
 		int dindex = 0;
@@ -521,7 +531,7 @@ public abstract class JSONBase
 		}
 	}
 
-	private static JSONBase parseJSONStr2(char[] jsonStr, int startIndex, int endIndex, SharedInt endIndexOut, StringBuilder sbEnv)
+	private static JSONBase parseJSONStr2(@Nonnull char[] jsonStr, int startIndex, int endIndex, @Nonnull SharedInt endIndexOut, @Nonnull StringBuilder sbEnv)
 	{
 		char c;
 		startIndex = clearWS(jsonStr, startIndex, endIndex);

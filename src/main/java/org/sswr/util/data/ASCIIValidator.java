@@ -1,5 +1,7 @@
 package org.sswr.util.data;
 
+import jakarta.annotation.Nonnull;
+
 public class ASCIIValidator implements StringValidator
 {
 	private boolean validChars[];
@@ -54,7 +56,7 @@ public class ASCIIValidator implements StringValidator
 		this.allowDigits();
 	}
 
-	public void allowChars(String chars)
+	public void allowChars(@Nonnull String chars)
 	{
 		char[] carr = chars.toCharArray();
 		int i = 0;
@@ -67,7 +69,7 @@ public class ASCIIValidator implements StringValidator
 		}
 	}
 
-	public boolean isValid(String s)
+	public boolean isValid(@Nonnull String s)
 	{
 		char[] carr = s.toCharArray();
 		int i = 0;

@@ -16,13 +16,16 @@ import org.sswr.util.io.FileStream.FileShare;
 import org.sswr.util.net.ASN1Data;
 import org.sswr.util.net.ASN1Type;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class PEMExporter
 {
 	public PEMExporter()
 	{
 	}
 
-	public boolean exportFile(SeekableStream stm, String fileName, ParsedObject pobj, Object param)
+	public boolean exportFile(@Nonnull SeekableStream stm, @Nonnull String fileName, @Nonnull ParsedObject pobj, @Nullable Object param)
 	{
 		if (!(pobj instanceof ASN1Data))
 		{
@@ -36,7 +39,7 @@ public class PEMExporter
 		return exportStream(stm, (MyX509File)asn1);
 	}
 
-	public static boolean exportStream(SeekableStream stm, MyX509File x509)
+	public static boolean exportStream(@Nonnull SeekableStream stm, @Nonnull MyX509File x509)
 	{
 		Base64Enc b64 = new Base64Enc();
 		StringBuilder sb = new StringBuilder();
@@ -107,11 +110,12 @@ public class PEMExporter
 		case FileList:
 		{
 			MyX509FileList fileList = (MyX509FileList)x509;
+			MyX509File file;
 			int i = 0;
 			int j = fileList.getFileCount();
 			while (i < j)
 			{
-				if (!exportStream(stm, fileList.getFile(i)))
+				if ((file = fileList.getFile(i)) == null || !exportStream(stm, file))
 					return false;
 				i++;
 			}
@@ -125,7 +129,7 @@ public class PEMExporter
 		return false;
 	}
 
-	public static boolean exportFile(String fileName, MyX509File x509)
+	public static boolean exportFile(@Nonnull String fileName, @Nonnull MyX509File x509)
 	{
 		FileStream fs = new FileStream(fileName, FileMode.Create, FileShare.DenyNone, BufferType.Normal);
 		if (fs.isError())

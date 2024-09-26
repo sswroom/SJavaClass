@@ -6,6 +6,9 @@ import java.util.Iterator;
 import org.sswr.util.data.ByteTool;
 import org.sswr.util.math.Coord2DDbl;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class Polygon extends MultiGeometry<LinearRing>
 {
 	public Polygon(int srid)
@@ -13,11 +16,13 @@ public class Polygon extends MultiGeometry<LinearRing>
 		super(srid);
 	}
 
+	@Nonnull
 	public VectorType getVectorType()
 	{
 		return VectorType.Polygon;
 	}
 
+	@Nonnull
 	public Vector2D clone()
 	{
 		Polygon pg = new Polygon(this.srid);
@@ -29,7 +34,7 @@ public class Polygon extends MultiGeometry<LinearRing>
 		return pg;
 	}
 
-	public double calBoundarySqrDistance(Coord2DDbl pt, Coord2DDbl nearPt)
+	public double calBoundarySqrDistance(@Nonnull Coord2DDbl pt, @Nonnull Coord2DDbl nearPt)
 	{
 		double minDist = 100000000000.0;
 		Coord2DDbl minPt = new Coord2DDbl(0, 0);
@@ -50,7 +55,7 @@ public class Polygon extends MultiGeometry<LinearRing>
 		return minDist;
 	}
 
-	public boolean joinVector(Vector2D vec)
+	public boolean joinVector(@Nonnull Vector2D vec)
 	{
 		if (vec.getVectorType() != VectorType.Polygon || this.srid != vec.getSRID())
 			return false;
@@ -63,7 +68,7 @@ public class Polygon extends MultiGeometry<LinearRing>
 		return true;
 	}
 
-	public boolean insideOrTouch(Coord2DDbl coord)
+	public boolean insideOrTouch(@Nonnull Coord2DDbl coord)
 	{
 		int insideCnt = 0;
 		Iterator<LinearRing> it = this.geometries.iterator();
@@ -336,6 +341,7 @@ public class Polygon extends MultiGeometry<LinearRing>
 		results.add(this);
 	}*/
 
+	@Nonnull
 	public MultiPolygon createMultiPolygon()
 	{
 		MultiPolygon mpg = new MultiPolygon(this.srid);
@@ -380,7 +386,7 @@ public class Polygon extends MultiGeometry<LinearRing>
 		return mpg;
 	}
 
-	public void addFromPtOfst(int[] ptOfstList, Coord2DDbl[] pointList, double[] zList, double[] mList)
+	public void addFromPtOfst(@Nonnull int[] ptOfstList, @Nonnull Coord2DDbl[] pointList, @Nullable double[] zList, @Nullable double[] mList)
 	{
 		LinearRing linearRing;
 		int i = 0;
@@ -403,11 +409,11 @@ public class Polygon extends MultiGeometry<LinearRing>
 			zArr = linearRing.getZList();
 			mArr = linearRing.getMList();
 			ByteTool.copyArray(ptArr, 0, pointList, j, (k - j));
-			if (zList != null)
+			if (zList != null && zArr != null)
 			{
 				ByteTool.copyArray(zArr, 0, zList, j, (k - j));
 			}
-			if (mList != null)
+			if (mList != null && mArr != null)
 			{
 				ByteTool.copyArray(mArr, 0, mList, j, (k - j));
 			}
@@ -416,7 +422,7 @@ public class Polygon extends MultiGeometry<LinearRing>
 		}
 	}
 
-	public int fillPointOfstList(Coord2DDbl[] pointList, int[] ptOfstList, double[] zList, double[] mList)
+	public int fillPointOfstList(@Nonnull Coord2DDbl[] pointList, @Nonnull int[] ptOfstList, @Nullable double[] zList, @Nullable double[] mList)
 	{
 		int totalCnt = 0;
 		LineString lineString;

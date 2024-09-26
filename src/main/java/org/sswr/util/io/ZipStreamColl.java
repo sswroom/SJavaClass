@@ -4,11 +4,15 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 public class ZipStreamColl implements StreamColl
 {
@@ -18,7 +22,7 @@ public class ZipStreamColl implements StreamColl
 	private HashMap<String, ZipEntry> zipMap;
 	private HashMap<String, ZipEntry> lcaseZipMap;
 
-	public ZipStreamColl(InputStream zipFile, boolean ignoreCase)
+	public ZipStreamColl(@Nonnull InputStream zipFile, boolean ignoreCase)
 	{
 		this.ignoreCase = ignoreCase;
 		FileOutputStream fos = null;
@@ -94,15 +98,16 @@ public class ZipStreamColl implements StreamColl
 	}
 
 	@Override
+	@Nonnull
 	public Iterator<String> listFiles()
 	{
 		if (this.zipMap != null)
 			return this.zipMap.keySet().iterator();
-		return null;
+		return new ArrayList<String>().iterator();
 	}
 
 	@Override
-	public boolean hasFile(String fileName)
+	public boolean hasFile(@Nonnull String fileName)
 	{
 		if (this.ignoreCase)
 			return this.lcaseZipMap.containsKey(fileName.toLowerCase());
@@ -111,7 +116,7 @@ public class ZipStreamColl implements StreamColl
 	}
 
 	@Override
-	public long getStmSize(String fileName)
+	public long getStmSize(@Nonnull String fileName)
 	{
 		ZipEntry ent;
 		if (this.ignoreCase)
@@ -124,7 +129,8 @@ public class ZipStreamColl implements StreamColl
 	}
 
 	@Override
-	public InputStream openStream(String fileName)
+	@Nullable
+	public InputStream openStream(@Nonnull String fileName)
 	{
 		ZipEntry ent;
 		if (this.ignoreCase)

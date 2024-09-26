@@ -5,6 +5,9 @@ import java.util.Iterator;
 
 import org.sswr.util.db.CSVUtil;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class CSVTableBuilder implements TableBuilder
 {
 	private StringBuilder sb;
@@ -26,7 +29,7 @@ public class CSVTableBuilder implements TableBuilder
 	}
 	
 	@Override
-	public void appendRow(Iterable<?> rowData)
+	public void appendRow(@Nullable Iterable<?> rowData)
 	{
 		if (rowData != null)
 		{
@@ -73,6 +76,7 @@ public class CSVTableBuilder implements TableBuilder
 	}
 
 	@Override
+	@Nonnull
 	public byte[] build()
 	{
 		return sb.toString().getBytes(StandardCharsets.UTF_8);

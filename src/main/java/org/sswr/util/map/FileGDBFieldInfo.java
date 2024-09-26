@@ -5,6 +5,8 @@ import java.util.Objects;
 import org.sswr.util.data.ByteTool;
 import org.sswr.util.data.DataTools;
 
+import jakarta.annotation.Nonnull;
+
 public class FileGDBFieldInfo {
 	private String name;
 	private String alias;
@@ -18,7 +20,7 @@ public class FileGDBFieldInfo {
 	public FileGDBFieldInfo() {
 	}
 
-	public FileGDBFieldInfo(String name, String alias, byte fieldType, int fieldSize, byte flags, byte defSize, byte[] defValue) {
+	public FileGDBFieldInfo(@Nonnull String name, @Nonnull String alias, byte fieldType, int fieldSize, byte flags, byte defSize, @Nonnull byte[] defValue) {
 		this.name = name;
 		this.alias = alias;
 		this.fieldType = fieldType;
@@ -28,19 +30,21 @@ public class FileGDBFieldInfo {
 		this.defValue = defValue;
 	}
 
+	@Nonnull
 	public String getName() {
 		return this.name;
 	}
 
-	public void setName(String name) {
+	public void setName(@Nonnull String name) {
 		this.name = name;
 	}
 
+	@Nonnull
 	public String getAlias() {
 		return this.alias;
 	}
 
-	public void setAlias(String alias) {
+	public void setAlias(@Nonnull String alias) {
 		this.alias = alias;
 	}
 
@@ -76,11 +80,12 @@ public class FileGDBFieldInfo {
 		this.defSize = defSize;
 	}
 
+	@Nonnull
 	public byte[] getDefValue() {
 		return this.defValue;
 	}
 
-	public void setDefValue(byte[] defValue) {
+	public void setDefValue(@Nonnull byte[] defValue) {
 		this.defValue = defValue;
 	}
 
@@ -105,6 +110,7 @@ public class FileGDBFieldInfo {
 		return DataTools.toObjectString(this);
 	}
 
+	@Nonnull
 	public FileGDBFieldInfo clone()
 	{
 		FileGDBFieldInfo newField = new FileGDBFieldInfo();

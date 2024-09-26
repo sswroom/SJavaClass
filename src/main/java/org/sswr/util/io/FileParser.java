@@ -2,18 +2,24 @@ package org.sswr.util.io;
 
 import org.sswr.util.io.stmdata.FileData;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public abstract class FileParser extends ParserBase
 {
-	public abstract ParsedObject parseFileHdr(StreamData fd, PackageFile pkgFile, ParserType targetType, byte[] hdr, int hdrOfst, int hdrSize);
+	@Nullable
+	public abstract ParsedObject parseFileHdr(@Nonnull StreamData fd, @Nullable PackageFile pkgFile, @Nonnull ParserType targetType, @Nonnull byte[] hdr, int hdrOfst, int hdrSize);
 
-	public ParsedObject parseFile(StreamData fd, PackageFile pkgFile, ParserType targetType)
+	@Nullable
+	public ParsedObject parseFile(@Nonnull StreamData fd, @Nullable PackageFile pkgFile, @Nonnull ParserType targetType)
 	{
 		byte[] hdr = new byte[hdrSize];
 		fd.getRealData(0, hdrSize, hdr, 0);
 		return parseFileHdr(fd, pkgFile, targetType, hdr, 0, hdrSize);
 	}
 
-	public ParsedObject parseFilePath(String filePath)
+	@Nullable
+	public ParsedObject parseFilePath(@Nonnull String filePath)
 	{
 		PackageFile pkg = null;
 		int i = filePath.lastIndexOf(Path.PATH_SEPERATOR);

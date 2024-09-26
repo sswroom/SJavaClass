@@ -3,9 +3,13 @@ package org.sswr.util.data;
 import org.sswr.util.data.textenc.URIEncoding;
 import org.sswr.util.io.Path;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class URLString
 {
-	public static String getURLFilePath(String url)
+	@Nullable
+	public static String getURLFilePath(@Nonnull String url)
 	{
 		if (url.length() < 8 || !url.substring(0, 8).equalsIgnoreCase("FILE:///"))
 			return null;
@@ -19,7 +23,8 @@ public class URLString
 		}
 	}
 	
-	public static String getURLDomain(String url, SharedInt port)
+	@Nonnull
+	public static String getURLDomain(@Nonnull String url, @Nullable SharedInt port)
 	{
 		int i;
 		int j;
@@ -78,7 +83,8 @@ public class URLString
 		}
 	}
 
-	public static String getURIScheme(String url)
+	@Nullable
+	public static String getURIScheme(@Nonnull String url)
 	{
 		int i = url.indexOf(':');
 		if (i == -1)
@@ -88,7 +94,8 @@ public class URLString
 		return url.substring(0, i);
 	}
 	
-	public static String getURLHost(String url)
+	@Nonnull
+	public static String getURLHost(@Nonnull String url)
 	{
 		int i;
 		i = url.indexOf("://");

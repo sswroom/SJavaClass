@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Table;
@@ -26,12 +28,13 @@ public abstract class ReadingConnection
 {
 	protected LogTool logger;
 	
-	protected ReadingConnection(LogTool logger)
+	protected ReadingConnection(@Nullable LogTool logger)
 	{
 		this.logger = logger;
 	}
 
-	protected static Table parseClassTable(Class<?> cls)
+	@Nullable
+	protected static Table parseClassTable(@Nonnull Class<?> cls)
 	{
 		boolean entityFound = false;
 		Table tableAnn = null;
@@ -61,7 +64,8 @@ public abstract class ReadingConnection
 		return tableAnn;
 	}
 
-	protected static Map<String, DBColumnInfo> dbCols2Map(Iterable<DBColumnInfo> cols)
+	@Nonnull
+	protected static Map<String, DBColumnInfo> dbCols2Map(@Nonnull Iterable<DBColumnInfo> cols)
 	{
 		Map<String, DBColumnInfo> colsMap = new HashMap<String, DBColumnInfo>();
 		Iterator<DBColumnInfo> it = cols.iterator();
@@ -83,7 +87,8 @@ public abstract class ReadingConnection
 		return colsMap;
 	}
 
-	protected Integer fillColVals(DBReader r, Object o, List<DBColumnInfo> allCols) throws IllegalAccessException, InvocationTargetException
+	@Nullable
+	protected Integer fillColVals(@Nonnull DBReader r, @Nonnull Object o, @Nonnull List<DBColumnInfo> allCols) throws IllegalAccessException, InvocationTargetException
 	{
 		Class<?> fieldType;
 		Integer id = null;
@@ -227,7 +232,8 @@ public abstract class ReadingConnection
 		return id;
 	}
 
-	protected <T> Constructor<T> getConstructor(Class<T> cls, Object parent)
+	@Nonnull
+	protected <T> Constructor<T> getConstructor(@Nonnull Class<T> cls, @Nullable Object parent)
 	{
 		Constructor<T> constr;
 		if (parent == null)
@@ -253,7 +259,8 @@ public abstract class ReadingConnection
 		return constr;
 	}
 
-	protected <T> List<T> readAsList(DBReader r, PageStatus status, int dataOfst, int dataCnt, Object parent, Constructor<T> constr, List<DBColumnInfo> cols, List<QueryConditions<T>.Condition> clientConditions)
+	@Nonnull
+	protected <T> List<T> readAsList(@Nonnull DBReader r, @Nonnull PageStatus status, int dataOfst, int dataCnt, @Nullable Object parent, @Nonnull Constructor<T> constr, @Nonnull List<DBColumnInfo> cols, @Nonnull List<QueryConditions<T>.Condition> clientConditions)
 	{
 		ArrayList<T> retList = new ArrayList<T>();
 		if (status == PageStatus.SUCC)
@@ -320,7 +327,8 @@ public abstract class ReadingConnection
 		return retList;
 	}
 
-	protected <T> Map<Integer, T> readAsMap(DBReader r, Object parent, Constructor<T> constr, List<DBColumnInfo> cols, List<QueryConditions<T>.Condition> clientConditions)
+	@Nonnull
+	protected <T> Map<Integer, T> readAsMap(@Nonnull DBReader r, @Nullable Object parent, @Nonnull Constructor<T> constr, @Nonnull List<DBColumnInfo> cols, @Nonnull List<QueryConditions<T>.Condition> clientConditions)
 	{
 		Map<Integer, T> retMap = new HashMap<Integer, T>();
 		while (r.readNext())
@@ -358,7 +366,8 @@ public abstract class ReadingConnection
 		return retMap;
 	}
 
-	public <T> Map<Integer, T> loadItemsById(Class<T> cls, Set<Integer> idSet, List<String> joinFields)
+	@Nullable
+	public <T> Map<Integer, T> loadItemsById(@Nonnull Class<T> cls, @Nonnull Set<Integer> idSet, @Nullable List<String> joinFields)
 	{
 		ArrayList<DBColumnInfo> cols = new ArrayList<DBColumnInfo>();
 		ArrayList<DBColumnInfo> idCols = new ArrayList<DBColumnInfo>();
@@ -383,6 +392,8 @@ public abstract class ReadingConnection
 		}
 	}
 
-	public abstract <T> List<T> loadItemsAsList(Class<T> cls, Object parent, QueryConditions<T> conditions, List<String> joinFields, String sortString, int dataOfst, int dataCnt);
-	public abstract <T> Map<Integer, T> loadItemsIClass(Class<T> cls, Object parent, QueryConditions<T> conditions, List<String> joinFields);
+	@Nullable 
+	public abstract <T> List<T> loadItemsAsList(@Nonnull Class<T> cls, @Nullable Object parent, @Nullable QueryConditions<T> conditions, @Nullable List<String> joinFields, @Nullable String sortString, int dataOfst, int dataCnt);
+	@Nullable
+	public abstract <T> Map<Integer, T> loadItemsIClass(@Nonnull Class<T> cls, @Nullable Object parent, @Nullable QueryConditions<T> conditions, @Nullable List<String> joinFields);
 }

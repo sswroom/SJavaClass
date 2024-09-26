@@ -6,6 +6,9 @@ import org.sswr.util.data.ByteTool;
 import org.sswr.util.db.DBReader;
 import org.sswr.util.io.StreamData;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class FileGDBTable
 {
 	private String tableName;
@@ -13,7 +16,7 @@ public class FileGDBTable
 	private long dataOfst;
 	private FileGDBTableInfo tableInfo;
 
-	public FileGDBTable(String tableName, StreamData fd)
+	public FileGDBTable(@Nonnull String tableName, @Nonnull StreamData fd)
 	{
 		this.tableName = tableName;
 		this.fd = fd.getPartialData(0, fd.getDataSize());
@@ -54,12 +57,14 @@ public class FileGDBTable
 		return this.tableInfo == null || this.fd == null;
 	}
 
+	@Nonnull
 	public String getName()
 	{
 		return this.tableName;
 	}
 
-	public DBReader openReader(List<String> colList)
+	@Nullable
+	public DBReader openReader(@Nullable List<String> colList)
 	{
 		if (this.tableInfo == null || this.fd == null)
 		{

@@ -30,7 +30,8 @@ public class MTFileLog implements Runnable, LogHandler
 	private List<ZonedDateTime> dateList;
 	private List<String> msgList;
 
-	private String getNewName(ZonedDateTime logTime)
+	@Nonnull
+	private String getNewName(@Nonnull ZonedDateTime logTime)
 	{
 		StringBuilder sb = new StringBuilder();
 		ZonedDateTime time = logTime;

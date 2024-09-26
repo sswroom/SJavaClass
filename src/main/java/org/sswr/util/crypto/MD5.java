@@ -2,6 +2,8 @@ package org.sswr.util.crypto;
 
 import org.sswr.util.data.ByteTool;
 
+import jakarta.annotation.Nonnull;
+
 public class MD5 extends Hash
 {
 	private long msgLeng;
@@ -9,7 +11,7 @@ public class MD5 extends Hash
 	private byte[] buff;
 	private int buffSize;
 
-	private static void step1(int[] vals, int w, int x, int y, int z, int dataNum, int s)
+	private static void step1(@Nonnull int[] vals, int w, int x, int y, int z, int dataNum, int s)
 	{
 		vals[w] += vals[z] ^ (vals[x] & (vals[y] ^ vals[z]));
 		vals[w] += dataNum;
@@ -17,7 +19,7 @@ public class MD5 extends Hash
 		vals[w] += vals[x];
 	}
 	
-	private static void step2(int[] vals, int w, int x, int y, int z, int dataNum, int s)
+	private static void step2(@Nonnull int[] vals, int w, int x, int y, int z, int dataNum, int s)
 	{
 		vals[w] += vals[y] ^ (vals[z] & (vals[x] ^ vals[y]));
 		vals[w] += dataNum;
@@ -25,7 +27,7 @@ public class MD5 extends Hash
 		vals[w] += vals[x];
 	}
 
-	private static void step3(int[] vals, int w, int x, int y, int z, int dataNum, int s)
+	private static void step3(@Nonnull int[] vals, int w, int x, int y, int z, int dataNum, int s)
 	{
 		vals[w] += vals[z] ^ vals[y] ^ vals[x];
 		vals[w] += dataNum;
@@ -33,7 +35,7 @@ public class MD5 extends Hash
 		vals[w] += vals[x];
 	}
 
-	private static void step4(int[] vals, int w, int x, int y, int z, int dataNum, int s)
+	private static void step4(@Nonnull int[] vals, int w, int x, int y, int z, int dataNum, int s)
 	{
 		vals[w] += vals[y] ^ (vals[x] | ~vals[z]);
 		vals[w] += dataNum;
@@ -41,7 +43,7 @@ public class MD5 extends Hash
 		vals[w] += vals[x];
 	}
 
-	private static void calcBlock(int[] hVals, byte[] blocks, int ofst, int nblock)
+	private static void calcBlock(@Nonnull int[] hVals, @Nonnull byte[] blocks, int ofst, int nblock)
 	{
 		int[] blk = new int[16];
 		int[] vals = new int[4];
@@ -162,11 +164,13 @@ public class MD5 extends Hash
 	}
 
 	@Override
+	@Nonnull
 	public String getName() {
 		return "MD5";
 	}
 
 	@Override
+	@Nonnull
 	public Hash clone() {
 		MD5 md5 = new MD5();
 		md5.msgLeng = this.msgLeng;
@@ -190,7 +194,7 @@ public class MD5 extends Hash
 	}
 
 	@Override
-	public void calc(byte[] buff, int ofst, int buffSize) {
+	public void calc(@Nonnull byte[] buff, int ofst, int buffSize) {
 		this.msgLeng += (buffSize << 3);
 		if ((buffSize + this.buffSize) < 64)
 		{
@@ -220,6 +224,7 @@ public class MD5 extends Hash
 	}
 
 	@Override
+	@Nonnull
 	public byte[] getValue() {
 		byte[] calBuff = new byte[64];
 		int[] v = new int[4];

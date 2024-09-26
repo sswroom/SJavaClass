@@ -2,9 +2,12 @@ package org.sswr.util.crypto;
 
 import org.sswr.util.data.ByteTool;
 
+import jakarta.annotation.Nonnull;
+
 public class PBKDF2
 {
-	private static byte []f(byte salt[], int iterationCount, int i, Hash hashFunc)
+	@Nonnull
+	private static byte []f(@Nonnull byte salt[], int iterationCount, int i, @Nonnull Hash hashFunc)
 	{
 		byte buff1[];
 		byte buff2[];
@@ -27,7 +30,8 @@ public class PBKDF2
 		return buff1;
 	}
 
-	public static byte []pbkdf2(byte salt[], int iterationCount, int dkLen, Hash hashFunc)
+	@Nonnull
+	public static byte []pbkdf2(@Nonnull byte salt[], int iterationCount, int dkLen, @Nonnull Hash hashFunc)
 	{
 		byte outBuff[] = new byte[dkLen];
 		byte blockBuff[];

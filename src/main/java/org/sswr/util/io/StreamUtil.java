@@ -4,9 +4,11 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import jakarta.annotation.Nonnull;
+
 public class StreamUtil
 {
-	public static boolean seekFromBeginning(InputStream stm, long offset)
+	public static boolean seekFromBeginning(@Nonnull InputStream stm, long offset)
 	{
 		try
 		{
@@ -24,7 +26,7 @@ public class StreamUtil
 		}
 	}
 
-	public static long getLength(InputStream stm)
+	public static long getLength(@Nonnull InputStream stm)
 	{
 		try
 		{

@@ -12,6 +12,9 @@ import javax.sql.DataSource;
 
 import org.sswr.util.db.DBUtil.DBType;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class DBControl
 {
 	private DataSource ds;
@@ -23,13 +26,13 @@ public class DBControl
 	private DBType dbType;
 	private String dbVersion;
 
-	public DBControl(DataSource ds) throws SQLException
+	public DBControl(@Nonnull DataSource ds) throws SQLException
 	{
 		this.ds = ds;
 		this.init(this.ds.getConnection());
 	}
 
-	public DBControl(String url, String userName, String password) throws SQLException
+	public DBControl(@Nonnull String url, @Nullable String userName, @Nullable String password) throws SQLException
 	{
 		this.url = url;
 		this.userName = userName;
@@ -37,7 +40,7 @@ public class DBControl
 		this.init(DriverManager.getConnection(this.url, this.userName, this.password));
 	}
 
-	public void init(Connection conn)
+	public void init(@Nonnull Connection conn)
 	{
 		this.conn = conn;
 		this.charset = StandardCharsets.UTF_8;
@@ -46,11 +49,15 @@ public class DBControl
 		{
 			this.dbVersion = this.getSingleValue("select @@VERSION");
 			String coll = this.getSingleValue("SELECT collation_name FROM sys.databases");
-			this.charset = DBUtil.mssqlCollationGetCharset(coll);
+			if(coll != null)
+			{
+				this.charset = DBUtil.mssqlCollationGetCharset(coll);
+			}
 		}
 	}
 
-	public String getSingleValue(String sql)
+	@Nullable
+	public String getSingleValue(@Nonnull String sql)
 	{
 		String ret = null;
 		try
@@ -70,7 +77,7 @@ public class DBControl
 		return ret;
 	}
 
-	public int getStringLen(String s)
+	public int getStringLen(@Nullable String s)
 	{
 		if (s == null)
 		{
@@ -86,23 +93,25 @@ public class DBControl
 		}
 	}
 
-	public int getNVarcharLen(String s)
+	public int getNVarcharLen(@Nonnull String s)
 	{
 		byte b[] = s.getBytes(StandardCharsets.UTF_16LE);
 		return b.length >> 1;
 	}
 
-	public int getVarcharLen(String s)
+	public int getVarcharLen(@Nonnull String s)
 	{
 		byte b[] = s.getBytes(charset);
 		return b.length;
 	}
 
+	@Nullable
 	public String getDbVersion()
 	{
 		return this.dbVersion;
 	}
 
+	@Nullable
 	public synchronized Connection getConn()
 	{
 		try

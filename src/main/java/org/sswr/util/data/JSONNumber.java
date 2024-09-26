@@ -1,5 +1,7 @@
 package org.sswr.util.data;
 
+import jakarta.annotation.Nonnull;
+
 public class JSONNumber extends JSONBase
 {
 	private double val;
@@ -9,22 +11,25 @@ public class JSONNumber extends JSONBase
 		this.val = val;
 	}
 
+	@Nonnull
 	public String toJSONString()
 	{
 		return StringUtil.fromDouble(this.val);
 	}
 
-	public boolean equals(String s)
+	public boolean equals(@Nonnull String s)
 	{
 		return false;
 	}
 
-	public boolean identical(JSONBase obj)
+	public boolean identical(@Nonnull JSONBase obj)
 	{
 		if (!(obj instanceof JSONNumber))
 			return false;
 		return ((JSONNumber)obj).getValue() == this.val;
 	}
+	
+	@Nonnull
 	public String toString()
 	{
 		return StringUtil.fromDouble(this.val);

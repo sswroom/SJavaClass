@@ -20,6 +20,9 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Executor;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class PoolConnection implements Connection
 {
 	private Connection conn;
@@ -30,6 +33,7 @@ public class PoolConnection implements Connection
 	private boolean using;
 	private int recvTimeoutMS;
 
+	@Nonnull
 	private Connection getConn() throws SQLException
 	{
 		if (this.conn == null)
@@ -59,7 +63,7 @@ public class PoolConnection implements Connection
 		}
 	}
 
-	public PoolConnection(PoolDataSource dataSource, String url, String username, String password)
+	public PoolConnection(@Nonnull PoolDataSource dataSource, @Nonnull String url, @Nullable String username, @Nullable String password)
 	{
 		this.dataSource = dataSource;
 		this.url = url;
@@ -100,6 +104,7 @@ public class PoolConnection implements Connection
 		}
 	}
 
+	@Nonnull
 	public Class<? extends Connection> getConnClass()
 	{
 		try

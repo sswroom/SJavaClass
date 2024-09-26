@@ -1,5 +1,7 @@
 package org.sswr.util.db;
 
+import jakarta.annotation.Nonnull;
+
 public enum ColumnType
 {
 	Unknown,
@@ -27,7 +29,8 @@ public enum ColumnType
 	UUID
 	;
 
-	public static String getString(ColumnType colType, int colSize)
+	@Nonnull
+	public static String getString(@Nonnull ColumnType colType, int colSize)
 	{
 		switch (colType)
 		{

@@ -4,6 +4,8 @@ import java.util.Objects;
 
 import org.sswr.util.math.MathUtil;
 
+import jakarta.annotation.Nonnull;
+
 public class PointZM extends PointZ
 {
 	protected double m;
@@ -13,7 +15,7 @@ public class PointZM extends PointZ
 		this.m = m;
 	}
 
-
+	@Nonnull
 	public Vector2D clone()
 	{
 		PointZM pt;
@@ -32,7 +34,7 @@ public class PointZM extends PointZ
 	}
 	
 	@Override
-	public boolean equals(Vector2D vec, boolean sameTypeOnly, boolean nearlyVal) {
+	public boolean equals(@Nonnull Vector2D vec, boolean sameTypeOnly, boolean nearlyVal) {
 		if (vec == this)
 			return true;
 		if (!(vec instanceof PointZM)) {

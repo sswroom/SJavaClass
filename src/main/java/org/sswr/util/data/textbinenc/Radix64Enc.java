@@ -3,7 +3,6 @@ package org.sswr.util.data.textbinenc;
 import org.sswr.util.data.ByteTool;
 
 import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 
 public class Radix64Enc extends TextBinEnc
 {
@@ -33,7 +32,8 @@ public class Radix64Enc extends TextBinEnc
 		}
 	}
 
-	public @Nullable String encodeBin(@Nonnull byte []dataBuff, int dataOfst, int buffSize)
+	@Nonnull
+	public String encodeBin(@Nonnull byte []dataBuff, int dataOfst, int buffSize)
 	{
 		StringBuilder sb = new StringBuilder();
 		int outSize;
@@ -132,7 +132,8 @@ public class Radix64Enc extends TextBinEnc
 		}
 	}
 
-	public @Nonnull String getName()
+	@Nonnull
+	public String getName()
 	{
 		return "Radix64";
 	}

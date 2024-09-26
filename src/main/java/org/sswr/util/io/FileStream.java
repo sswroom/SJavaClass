@@ -15,6 +15,8 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Set;
 
+import jakarta.annotation.Nonnull;
+
 public class FileStream extends SeekableStream
 {
 	public enum BufferType
@@ -47,7 +49,7 @@ public class FileStream extends SeekableStream
 	private Path path;
 	private FileChannel file;
 
-	public FileStream(String fileName, FileMode mode, FileShare share, BufferType buffType)
+	public FileStream(@Nonnull String fileName, @Nonnull FileMode mode, @Nonnull FileShare share, @Nonnull BufferType buffType)
 	{
 		super(fileName);
 		Set<OpenOption> options;
@@ -104,7 +106,7 @@ public class FileStream extends SeekableStream
 		return this.file == null || !this.file.isOpen();
 	}
 
-	public int read(byte []buff, int ofst, int size)
+	public int read(@Nonnull byte []buff, int ofst, int size)
 	{
 		if (this.file == null)
 			return 0;
@@ -129,7 +131,7 @@ public class FileStream extends SeekableStream
 		}
 	}
 
-	public int write(byte []buff, int ofst , int size)
+	public int write(@Nonnull byte []buff, int ofst , int size)
 	{
 		if (this.file == null)
 			return 0;
@@ -264,6 +266,7 @@ public class FileStream extends SeekableStream
 		return 0;
 	}
 
+	@Nonnull
 	public ZonedDateTime getCreateTime()
 	{
 		try
@@ -277,6 +280,7 @@ public class FileStream extends SeekableStream
 		}
 	}
 
+	@Nonnull
 	public ZonedDateTime getModifyTime()
 	{
 		try
@@ -290,7 +294,7 @@ public class FileStream extends SeekableStream
 		}
 	}
 
-	public boolean setModifyTime(ZonedDateTime dt)
+	public boolean setModifyTime(@Nonnull ZonedDateTime dt)
 	{
 		try
 		{

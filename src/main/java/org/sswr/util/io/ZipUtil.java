@@ -8,9 +8,11 @@ import java.util.Enumeration;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import jakarta.annotation.Nonnull;
+
 public class ZipUtil
 {
-	private static boolean extractEntry(ZipFile zip, ZipEntry entry, File destDir)
+	private static boolean extractEntry(@Nonnull ZipFile zip, @Nonnull ZipEntry entry, @Nonnull File destDir)
 	{
 		String destPath = destDir.getPath() + File.separator + entry.getName();
 		if (entry.isDirectory())
@@ -49,7 +51,7 @@ public class ZipUtil
 		return true;
 	}
 
-	public static boolean extract(ZipFile zip, File destDir)
+	public static boolean extract(@Nonnull ZipFile zip, @Nonnull File destDir)
 	{
 		if (!destDir.isDirectory())
 		{

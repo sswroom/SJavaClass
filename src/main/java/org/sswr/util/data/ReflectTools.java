@@ -13,7 +13,8 @@ import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
 public class ReflectTools {
-	public static String getFuncName(String fieldName, String action)
+	@Nonnull
+	public static String getFuncName(@Nonnull String fieldName, @Nonnull String action)
 	{
 		char c = fieldName.charAt(0);
 		if (c >= 'a' && c <= 'z')
@@ -26,7 +27,8 @@ public class ReflectTools {
 		}
 	}
 
-	private static String getGetterName(Field field)
+	@Nonnull
+	private static String getGetterName(@Nonnull Field field)
 	{
 		Class<?> cls = field.getType();
 		if (cls.equals(boolean.class) || cls.equals(Boolean.class))
@@ -39,12 +41,14 @@ public class ReflectTools {
 		}
 	}
 
-	private static String getSetterName(String fieldName)
+	@Nonnull
+	private static String getSetterName(@Nonnull String fieldName)
 	{
 		return getFuncName(fieldName, "set");
 	}
 
-	public static Method findGetter(Field field)
+	@Nullable
+	public static Method findGetter(@Nonnull Field field)
 	{
 		Class<?> cls = field.getDeclaringClass();
 		String funcName = getGetterName(field);
@@ -70,7 +74,8 @@ public class ReflectTools {
 		}
 	}
 
-	public static Method findGetter(Class<?> cls, String fieldName)
+	@Nullable
+	public static Method findGetter(@Nonnull Class<?> cls, @Nonnull String fieldName)
 	{
 
 		try
@@ -120,7 +125,7 @@ public class ReflectTools {
 		return (modifiers & Modifier.PUBLIC) != 0;
 	}
 
-	private static void addTypeArguments(Type t, List<Type> typeList)
+	private static void addTypeArguments(@Nonnull Type t, @Nonnull List<Type> typeList)
 	{
 		if (t instanceof ParameterizedType)
 		{
@@ -136,7 +141,8 @@ public class ReflectTools {
 		}
 	}
 
-	public static List<Type> getTypeParameters(Type t)
+	@Nonnull
+	public static List<Type> getTypeParameters(@Nonnull Type t)
 	{
 		List<Type> typeList = new ArrayList<Type>();
 		if (t instanceof ParameterizedType)
@@ -148,7 +154,8 @@ public class ReflectTools {
 		return typeList;
 	}
 
-	public static <T> Constructor<T> getEmptyConstructor(Class<T> cls)
+	@Nullable
+	public static <T> Constructor<T> getEmptyConstructor(@Nonnull Class<T> cls)
 	{
 		try
 		{

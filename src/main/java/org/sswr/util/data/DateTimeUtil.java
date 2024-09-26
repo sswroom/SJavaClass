@@ -17,10 +17,10 @@ import java.time.temporal.ChronoUnit;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
-//NN
 public class DateTimeUtil
 {
-	private static @Nonnull ZonedDateTime setDate(@Nonnull ZonedDateTime dt, int year, int month, int day)
+	@Nonnull
+	private static ZonedDateTime setDate(@Nonnull ZonedDateTime dt, int year, int month, int day)
 	{
 		while (month <= 0)
 		{
@@ -61,7 +61,8 @@ public class DateTimeUtil
 		return dt.withDayOfMonth(1).withYear(year).withMonth(month).withDayOfMonth(day);
 	}
 
-	private static @Nonnull ZonedDateTime setDate(@Nonnull ZonedDateTime dt, String strs[])
+	@Nonnull
+	private static ZonedDateTime setDate(@Nonnull ZonedDateTime dt, String strs[])
 	{
 		int vals[] = new int[3];
 		vals[0] = Integer.parseInt(strs[0]);
@@ -95,7 +96,8 @@ public class DateTimeUtil
 		}
 	}
 
-	private static @Nonnull ZonedDateTime setTime(@Nonnull ZonedDateTime dt, String strs[])
+	@Nonnull
+	private static ZonedDateTime setTime(@Nonnull ZonedDateTime dt, String strs[])
 	{
 		int h;
 		int m;
@@ -135,7 +137,8 @@ public class DateTimeUtil
 		}
 	}
 
-	private static @Nonnull ZonedDateTime setTZ(@Nonnull ZonedDateTime dt, @Nonnull String tzStr)
+	@Nonnull
+	private static ZonedDateTime setTZ(@Nonnull ZonedDateTime dt, @Nonnull String tzStr)
 	{
 		if (tzStr.length() == 6)
 		{
@@ -166,82 +169,98 @@ public class DateTimeUtil
 		throw new IllegalArgumentException("Unknown tz: "+tzStr);
 	}
 
-	public static @Nonnull LocalDateTime clearDayOfMonth(@Nonnull LocalDateTime dt)
+	@Nonnull
+	public static LocalDateTime clearDayOfMonth(@Nonnull LocalDateTime dt)
 	{
 		return LocalDateTime.of(dt.getYear(), dt.getMonthValue(), 1, 0, 0);
 	}
 
-	public static @Nonnull Timestamp clearDayOfMonth(@Nonnull Timestamp ts)
+	@Nonnull
+	public static Timestamp clearDayOfMonth(@Nonnull Timestamp ts)
 	{
 		return Timestamp.valueOf(clearDayOfMonth(ts.toLocalDateTime()));
 	}
 
-	public static @Nonnull ZonedDateTime clearTime(@Nonnull ZonedDateTime dt)
+	@Nonnull
+	public static ZonedDateTime clearTime(@Nonnull ZonedDateTime dt)
 	{
 		return dt.truncatedTo(ChronoUnit.DAYS);
 	}
 
-	public static @Nonnull LocalDateTime clearTime(@Nonnull LocalDateTime dt)
+	@Nonnull
+	public static LocalDateTime clearTime(@Nonnull LocalDateTime dt)
 	{
 		return dt.truncatedTo(ChronoUnit.DAYS);
 	}
 
-	public static @Nonnull Timestamp clearTime(@Nonnull Timestamp ts)
+	@Nonnull
+	public static Timestamp clearTime(@Nonnull Timestamp ts)
 	{
 		return Timestamp.valueOf(clearTime(ts.toLocalDateTime()));
 	}
 
-	public static @Nonnull LocalDateTime clearMs(@Nonnull LocalDateTime dt)
+	@Nonnull
+	public static LocalDateTime clearMs(@Nonnull LocalDateTime dt)
 	{
 		return dt.truncatedTo(ChronoUnit.SECONDS);
 	}
 
-	public static @Nonnull Timestamp clearMs(@Nonnull Timestamp ts)
+	@Nonnull
+	public static Timestamp clearMs(@Nonnull Timestamp ts)
 	{
 		return Timestamp.valueOf(clearMs(ts.toLocalDateTime()));
 	}
 
-	public static @Nonnull Timestamp toDayStart(@Nonnull Timestamp ts)
+	@Nonnull
+	public static Timestamp toDayStart(@Nonnull Timestamp ts)
 	{
 		return clearTime(ts);
 	}
 
-	public static @Nonnull LocalDateTime toDayStart(@Nonnull LocalDateTime dt)
+	@Nonnull
+	public static LocalDateTime toDayStart(@Nonnull LocalDateTime dt)
 	{
 		return clearTime(dt);
 	}
 
-	public static @Nonnull ZonedDateTime toDayStart(@Nonnull ZonedDateTime dt)
+	@Nonnull
+	public static ZonedDateTime toDayStart(@Nonnull ZonedDateTime dt)
 	{
 		return clearTime(dt);
 	}
 
-	public static @Nonnull Timestamp toDayEnd(@Nonnull Timestamp ts)
+	@Nonnull
+	public static Timestamp toDayEnd(@Nonnull Timestamp ts)
 	{
 		return Timestamp.valueOf(toDayEnd(ts.toLocalDateTime()));
 	}
 
-	public static @Nonnull LocalDateTime toDayEnd(@Nonnull LocalDateTime dt)
+	@Nonnull
+	public static LocalDateTime toDayEnd(@Nonnull LocalDateTime dt)
 	{
 		return clearTime(dt).plusDays(1).minusNanos(1);
 	}
 
-	public static @Nonnull ZonedDateTime toDayEnd(@Nonnull ZonedDateTime dt)
+	@Nonnull
+	public static ZonedDateTime toDayEnd(@Nonnull ZonedDateTime dt)
 	{
 		return clearTime(dt).plusDays(1).minusNanos(1);
 	}
 
-	public static @Nonnull ZonedDateTime toMonthStart(@Nonnull ZonedDateTime dt)
+	@Nonnull
+	public static ZonedDateTime toMonthStart(@Nonnull ZonedDateTime dt)
 	{
 		return clearTime(dt).withDayOfMonth(1);
 	}
 
-	public static @Nonnull ZonedDateTime toYearStart(@Nonnull ZonedDateTime dt)
+	@Nonnull
+	public static ZonedDateTime toYearStart(@Nonnull ZonedDateTime dt)
 	{
 		return clearTime(dt).withDayOfYear(1);
 	}
 
-	public static @Nullable Timestamp toTimestamp(@Nullable ZonedDateTime dt)
+	@Nullable
+	public static Timestamp toTimestamp(@Nullable ZonedDateTime dt)
 	{
 		if (dt == null) return null;
 		return Timestamp.from(dt.toInstant());
@@ -306,7 +325,8 @@ public class DateTimeUtil
 		throw new IllegalArgumentException();
 	}
 
-	public static @Nonnull ZonedDateTime parse(@Nonnull String dateStr)
+	@Nonnull
+	public static ZonedDateTime parse(@Nonnull String dateStr)
 	{
 		if (dateStr.length() < 5)
 			throw new IllegalArgumentException("Cannot parse dateStr: "+dateStr);
@@ -506,27 +526,32 @@ public class DateTimeUtil
 		return (getTimeMillis(t1) - getTimeMillis(t2)) / 86400000.0;
 	}
 
-	public static @Nonnull Timestamp addSecond(@Nonnull Timestamp t, int secondDiff)
+	@Nonnull
+	public static Timestamp addSecond(@Nonnull Timestamp t, int secondDiff)
 	{
 		return Timestamp.valueOf(t.toLocalDateTime().plusSeconds(secondDiff));
 	}
 
-	public static @Nonnull Timestamp addDay(@Nonnull Timestamp t, int dayDiff)
+	@Nonnull
+	public static Timestamp addDay(@Nonnull Timestamp t, int dayDiff)
 	{
 		return Timestamp.valueOf(t.toLocalDateTime().plusDays(dayDiff));
 	}
 
-	public static @Nonnull Timestamp addMonth(@Nonnull Timestamp t, int monthDiff)
+	@Nonnull
+	public static Timestamp addMonth(@Nonnull Timestamp t, int monthDiff)
 	{
 		return Timestamp.valueOf(t.toLocalDateTime().plusMonths(monthDiff));
 	}
 
-	public static @Nonnull Timestamp toWeekdayBefore(@Nonnull Timestamp t, @Nonnull DayOfWeek weekday)
+	@Nonnull
+	public static Timestamp toWeekdayBefore(@Nonnull Timestamp t, @Nonnull DayOfWeek weekday)
 	{
 		return Timestamp.valueOf(toWeekdayBefore(t.toLocalDateTime(), weekday));
 	}
 
-	public static @Nonnull LocalDateTime toWeekdayBefore(@Nonnull LocalDateTime t, @Nonnull DayOfWeek weekday)
+	@Nonnull
+	public static LocalDateTime toWeekdayBefore(@Nonnull LocalDateTime t, @Nonnull DayOfWeek weekday)
 	{
 		t = toDayStart(t);
 		while (t.getDayOfWeek() != weekday)
@@ -536,7 +561,8 @@ public class DateTimeUtil
 		return t;
 	}
 
-	public static @Nonnull ZonedDateTime toWeekdayBefore(@Nonnull ZonedDateTime t, @Nonnull DayOfWeek weekday)
+	@Nonnull
+	public static ZonedDateTime toWeekdayBefore(@Nonnull ZonedDateTime t, @Nonnull DayOfWeek weekday)
 	{
 		t = toDayStart(t);
 		while (t.getDayOfWeek() != weekday)
@@ -546,17 +572,20 @@ public class DateTimeUtil
 		return t;
 	}
 
-	public static @Nonnull ZonedDateTime newZonedDateTime(@Nonnull Timestamp ts)
+	@Nonnull
+	public static ZonedDateTime newZonedDateTime(@Nonnull Timestamp ts)
 	{
 		return newZonedDateTime(ts.toInstant());
 	}
 
-	public static @Nonnull ZonedDateTime newZonedDateTime(long t)
+	@Nonnull
+	public static ZonedDateTime newZonedDateTime(long t)
 	{
 		return ZonedDateTime.ofInstant(Instant.ofEpochMilli(t), ZoneId.systemDefault());
 	}
 
-	public static @Nonnull ZonedDateTime newZonedDateTime(@Nonnull Instant inst)
+	@Nonnull
+	public static ZonedDateTime newZonedDateTime(@Nonnull Instant inst)
 	{
 		return ZonedDateTime.ofInstant(inst, ZoneId.systemDefault());
 	}
@@ -628,6 +657,7 @@ public class DateTimeUtil
 		return isSameHour(newZonedDateTime(t1), newZonedDateTime(t2));
 	}
 
+	@Nonnull
 	public static String toString(@Nonnull ZonedDateTime t, @Nonnull String format)
 	{
 		int i = 0;
@@ -653,22 +683,26 @@ public class DateTimeUtil
 		return DateTimeFormatter.ofPattern(format.replace('f', 'n').replace('z', 'x')).format(t);
 	}
 
-	public static @Nonnull String toString(@Nonnull Timestamp ts, @Nonnull String format)
+	@Nonnull
+	public static String toString(@Nonnull Timestamp ts, @Nonnull String format)
 	{
 		return toString(ZonedDateTime.ofInstant(ts.toInstant(), ZoneId.systemDefault()), format);
 	}
 
-	public static @Nonnull String toString(@Nonnull Date dat, @Nonnull String format)
+	@Nonnull
+	public static String toString(@Nonnull Date dat, @Nonnull String format)
 	{
 		return toString(ZonedDateTime.of(dat.toLocalDate().atStartOfDay(), ZoneId.systemDefault()), format);
 	}
 
-	public static @Nonnull String toString(@Nonnull Time tim, @Nonnull String format)
+	@Nonnull
+	public static String toString(@Nonnull Time tim, @Nonnull String format)
 	{
 		return toString(ZonedDateTime.of(tim.toLocalTime().atDate(LocalDate.now()), ZoneId.systemDefault()), format);
 	}
 
-	public static @Nonnull String toString(@Nonnull ZonedDateTime t)
+	@Nonnull
+	public static String toString(@Nonnull ZonedDateTime t)
 	{
 		int nano = t.getNano();
 		if (nano == 0)
@@ -689,7 +723,8 @@ public class DateTimeUtil
 		}
 	}
 
-	public static @Nonnull String toString(@Nonnull Timestamp ts)
+	@Nonnull
+	public static String toString(@Nonnull Timestamp ts)
 	{
 		int nano = ts.getNanos();
 		if (nano == 0)
@@ -710,12 +745,14 @@ public class DateTimeUtil
 		}
 	}
 
-	public static @Nonnull String toString(@Nonnull Date dat)
+	@Nonnull
+	public static String toString(@Nonnull Date dat)
 	{
 		return toString(dat, "yyyy-MM-dd");
 	}
 
-	public static @Nonnull String toStringNoZone(@Nonnull ZonedDateTime t)
+	@Nonnull
+	public static String toStringNoZone(@Nonnull ZonedDateTime t)
 	{
 		int nano = t.getNano();
 		if (nano == 0)
@@ -736,7 +773,8 @@ public class DateTimeUtil
 		}
 	}
 
-	public static @Nonnull String toStringNoZone(@Nonnull Timestamp ts)
+	@Nonnull
+	public static String toStringNoZone(@Nonnull Timestamp ts)
 	{
 		int nano = ts.getNanos();
 		if (nano == 0)
@@ -767,7 +805,8 @@ public class DateTimeUtil
 		return toYMD(newZonedDateTime(ts));
 	}
 
-	public static @Nonnull Timestamp timestampNow()
+	@Nonnull
+	public static Timestamp timestampNow()
 	{
 		return Timestamp.from(Instant.now());
 	}

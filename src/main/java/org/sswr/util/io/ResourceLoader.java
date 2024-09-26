@@ -10,9 +10,13 @@ import java.util.List;
 import org.sswr.util.data.CPPObjectParser;
 import org.sswr.util.data.SharedLong;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class ResourceLoader
 {
-	public static String getResourcePath(Class<?> cls, String resourceName)
+	@Nullable
+	public static String getResourcePath(@Nonnull Class<?> cls, @Nonnull String resourceName)
 	{
 		if (OSInfo.getOSType() == OSType.Android)
 		{
@@ -27,7 +31,8 @@ public class ResourceLoader
 		return url.getPath();
 	}
 
-	public static InputStream load(Class<?> cls, String resourceName, SharedLong lastModified)
+	@Nullable
+	public static InputStream load(@Nonnull Class<?> cls, @Nonnull String resourceName, @Nullable SharedLong lastModified)
 	{
 		if (OSInfo.getOSType() == OSType.Android)
 		{
@@ -59,7 +64,8 @@ public class ResourceLoader
 		}
 	}
 
-	public static <T> List<T> loadObjects(Class<T> cls, String resourceName, String[] fieldNames)
+	@Nullable
+	public static <T> List<T> loadObjects(@Nonnull Class<T> cls, @Nonnull String resourceName, @Nullable String[] fieldNames)
 	{
 		InputStream stm = load(cls, resourceName, null);
 		if (stm == null)

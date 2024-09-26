@@ -6,6 +6,9 @@ import org.sswr.util.crypto.BlockCipher.ChainMode;
 import org.sswr.util.data.ByteTool;
 import org.sswr.util.data.RandomMT19937;
 import org.sswr.util.data.textbinenc.Base64Enc;
+import org.sswr.util.data.textbinenc.EncodingException;
+
+import jakarta.annotation.Nonnull;
 
 public class JasyptEncryptor
 {
@@ -30,7 +33,7 @@ public class JasyptEncryptor
 	private int dkLen;
 	private RandomMT19937 random;
 
-	public JasyptEncryptor(KeyAlgorithm keyAlg, CipherAlgorithm cipherAlg, String key)
+	public JasyptEncryptor(@Nonnull KeyAlgorithm keyAlg, @Nonnull CipherAlgorithm cipherAlg, @Nonnull String key)
 	{
 		this.keyAlgorithmn = keyAlg;
 		this.cipherAlgorithm = cipherAlg;
@@ -55,7 +58,8 @@ public class JasyptEncryptor
 		this.key = key;
 	}
 
-	private byte []decGetSalt(byte salt[], byte buff[])
+	@Nonnull
+	private byte []decGetSalt(@Nonnull byte salt[], @Nonnull byte buff[])
 	{
 		if (this.salt != null)
 		{
@@ -71,7 +75,8 @@ public class JasyptEncryptor
 		}
 	}
 
-	private byte []decGetIV(byte iv[], byte buff[])
+	@Nonnull
+	private byte []decGetIV(@Nonnull byte iv[], @Nonnull byte buff[])
 	{
 		if (this.iv != null)
 		{
@@ -87,7 +92,8 @@ public class JasyptEncryptor
 		}
 	}
 
-	private byte []getEncKey(byte salt[])
+	@Nonnull
+	private byte []getEncKey(@Nonnull byte salt[])
 	{
 		switch (this.keyAlgorithmn)
 		{
@@ -99,7 +105,8 @@ public class JasyptEncryptor
 		return salt;
 	}
 
-	private Encryption getEnc(byte iv[], byte keyBuff[])
+	@Nonnull
+	private Encryption getEnc(@Nonnull byte iv[], @Nonnull byte keyBuff[])
 	{
 		switch (this.cipherAlgorithm)
 		{
@@ -112,7 +119,7 @@ public class JasyptEncryptor
 		}
 	}
 
-	private void genRandomBytes(byte buff[], int ofst, int len)
+	private void genRandomBytes(@Nonnull byte buff[], int ofst, int len)
 	{
 		if (this.random == null)
 		{
@@ -136,17 +143,20 @@ public class JasyptEncryptor
 		}
 	}
 
-	public byte []decrypt(String b64String)
+	@Nonnull
+	public byte []decrypt(@Nonnull String b64String) throws EncryptionException
 	{
 		return decrypt(new Base64Enc().decodeBin(b64String));
 	}
 
-	public String decryptToString(String b64String)
+	@Nonnull
+	public String decryptToString(@Nonnull String b64String) throws EncryptionException
 	{
 		return getString(decrypt(b64String));
 	}
 
-	public byte []decrypt(byte []buff)
+	@Nonnull 
+	public byte []decrypt(@Nonnull byte []buff) throws EncryptionException
 	{
 		byte salt[] = new byte[this.saltSize];
 		byte iv[] = new byte[this.ivSize];
@@ -175,7 +185,8 @@ public class JasyptEncryptor
 		return paddedResult;
 	}
 
-	public String getString(byte[] decBuff)
+	@Nonnull
+	public String getString(@Nonnull byte[] decBuff)
 	{
 		int i = decBuff.length;
 		while (i-- > 0)
@@ -188,12 +199,14 @@ public class JasyptEncryptor
 		return new String(decBuff, 0, i + 1, StandardCharsets.UTF_8);
 	}
 
-	public String encryptAsB64(byte srcBuff[])
+	@Nonnull
+	public String encryptAsB64(@Nonnull byte srcBuff[]) throws EncryptionException, EncodingException
 	{
 		return encryptAsB64(srcBuff, 0, srcBuff.length);
 	}
 
-	public String encryptAsB64(byte srcBuff[], int srcOfst, int srcLen)
+	@Nonnull
+	public String encryptAsB64(@Nonnull byte srcBuff[], int srcOfst, int srcLen) throws EncryptionException, EncodingException
 	{
 		byte srcTmpBuff[];
 		int nBlock = srcLen / this.ivSize;

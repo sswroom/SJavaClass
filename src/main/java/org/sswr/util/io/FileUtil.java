@@ -10,8 +10,11 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
+import jakarta.annotation.Nonnull;
+
 public class FileUtil {
-	public static String getRealPath(String path, boolean appendSeperator)
+	@Nonnull
+	public static String getRealPath(@Nonnull String path, boolean appendSeperator)
 	{
 		if (path.startsWith("~/"))
 		{
@@ -24,12 +27,13 @@ public class FileUtil {
 		return path;
 	}
 
-	public static String getRealPath(String path)
+	@Nonnull
+	public static String getRealPath(@Nonnull String path)
 	{
 		return getRealPath(path, true);
 	}
 
-	public static boolean copyFile(File srcFile, File destFile, boolean overwrite)
+	public static boolean copyFile(@Nonnull File srcFile, @Nonnull File destFile, boolean overwrite)
 	{
 		long fileLen = srcFile.length();
 		long copyLen = 0;
@@ -78,7 +82,7 @@ public class FileUtil {
 		}
 	}
 
-	public static boolean moveFile(File srcFile, String destPath, boolean overwrite)
+	public static boolean moveFile(@Nonnull File srcFile, @Nonnull String destPath, boolean overwrite)
 	{
 		File destFile = new File(destPath);
 		if (srcFile.renameTo(destFile))
@@ -93,7 +97,7 @@ public class FileUtil {
 		return false;
 	}
 
-	public static boolean copyDir(File srcDir, String destDir, boolean overwrite)
+	public static boolean copyDir(@Nonnull File srcDir, @Nonnull String destDir, boolean overwrite)
 	{
 		if (srcDir.isFile())
 		{
@@ -122,7 +126,7 @@ public class FileUtil {
 		}
 	}
 
-	public static boolean moveDir(File srcDir, String destDir, boolean overwrite)
+	public static boolean moveDir(@Nonnull File srcDir, @Nonnull String destDir, boolean overwrite)
 	{
 		File destFile = new File(destDir);
 		if (srcDir.renameTo(destFile))
@@ -137,7 +141,7 @@ public class FileUtil {
 		return false;
 	}
 
-	private static boolean fileNameMatchInner(char nameArr[], int nameIndex, char pattArr[], int pattIndex)
+	private static boolean fileNameMatchInner(@Nonnull char nameArr[], int nameIndex, @Nonnull char pattArr[], int pattIndex)
 	{
 		char p;
 		while (nameIndex < nameArr.length)
@@ -182,7 +186,7 @@ public class FileUtil {
 		return pattIndex >= pattArr.length || pattArr[pattIndex] == '*';
 	}
 
-	public static boolean fileNameMatch(String fileName, String pattern)
+	public static boolean fileNameMatch(@Nonnull String fileName, @Nonnull String pattern)
 	{
 		if (fileName.equals(pattern))
 		{
@@ -193,7 +197,7 @@ public class FileUtil {
 		return fileNameMatchInner(nameArr, 0, pattArr, 0);
 	}
 
-	private static void searchInner(List<File> list, File basePath, String pattern)
+	private static void searchInner(@Nonnull List<File> list, @Nonnull File basePath, @Nonnull String pattern)
 	{
 		String nextPattern = null;
 		int i = pattern.indexOf(File.separator);
@@ -237,7 +241,8 @@ public class FileUtil {
 		}
 	}
 
-	public static List<File> search(String pattern)
+	@Nonnull
+	public static List<File> search(@Nonnull String pattern)
 	{
 		pattern = getRealPath(pattern, false);
 		int j = pattern.indexOf("*");
@@ -271,22 +276,22 @@ public class FileUtil {
 		return list;
 	}
 
-	public static boolean deleteFile(String file)
+	public static boolean deleteFile(@Nonnull String file)
 	{
 		return deleteFile(new File(file));
 	}
 
-	public static boolean deleteFile(File file)
+	public static boolean deleteFile(@Nonnull File file)
 	{
 		return file.delete();
 	}
 
-	public static boolean deleteFileOrDir(String path)
+	public static boolean deleteFileOrDir(@Nonnull String path)
 	{
 		return deleteFileOrDir(new File(path));
 	}
 
-	public static boolean deleteFileOrDir(File file)
+	public static boolean deleteFileOrDir(@Nonnull File file)
 	{
 		if (file.isDirectory())
 		{

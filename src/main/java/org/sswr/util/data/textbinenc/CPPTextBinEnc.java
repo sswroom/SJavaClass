@@ -3,7 +3,6 @@ package org.sswr.util.data.textbinenc;
 import org.sswr.util.data.ByteTool;
 
 import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 
 public class CPPTextBinEnc extends TextBinEnc
 {
@@ -12,7 +11,8 @@ public class CPPTextBinEnc extends TextBinEnc
 
 	}
 
-	public @Nullable String encodeBin(@Nonnull byte []dataBuff, int dataOfst, int buffSize)
+	@Nonnull
+	public String encodeBin(@Nonnull byte []dataBuff, int dataOfst, int buffSize)
 	{
 		boolean lineStart = true;
 		byte b;
@@ -56,7 +56,8 @@ public class CPPTextBinEnc extends TextBinEnc
 		return sb.toString();
 	}
 
-	public @Nullable byte []decodeBin(@Nonnull String s)
+	@Nonnull
+	public byte []decodeBin(@Nonnull String s) throws EncodingException
 	{
 		char carr[] = s.toCharArray();
 		int i = 0;
@@ -79,14 +80,14 @@ public class CPPTextBinEnc extends TextBinEnc
 				}
 				else
 				{
-					return null;
+					throw new EncodingException("Non white space character out of quote");
 				}
 			}
 			else if (c == '\\')
 			{
 				if (i >= j)
 				{
-					return null;
+					throw new EncodingException("Escape when end of string");
 				}
 				c = carr[i++];
 				if (c == 'r')
@@ -111,7 +112,7 @@ public class CPPTextBinEnc extends TextBinEnc
 				}
 				else
 				{
-					return null;
+					throw new EncodingException("Unsupported escape character: '"+c+"'");
 				}
 			}
 			else if (c == '"')
@@ -125,14 +126,15 @@ public class CPPTextBinEnc extends TextBinEnc
 		}
 		if (isQuote)
 		{
-			return null;
+			throw new EncodingException("End of quote not found");
 		}
 		byte buff[] = new byte[dataOfst];
 		ByteTool.copyArray(buff, 0, dataBuff, 0, dataOfst);
 		return buff;
 	}
 
-	public @Nonnull String getName()
+	@Nonnull
+	public String getName()
 	{
 		return "CPP String";		
 	}

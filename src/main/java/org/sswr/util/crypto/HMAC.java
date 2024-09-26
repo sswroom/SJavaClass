@@ -2,6 +2,8 @@ package org.sswr.util.crypto;
 
 import org.sswr.util.data.ByteTool;
 
+import jakarta.annotation.Nonnull;
+
 public class HMAC extends Hash
 {
 	private Hash hashInner;
@@ -12,7 +14,7 @@ public class HMAC extends Hash
 	private byte iPad[];
 	private byte oPad[];
 
-	public HMAC(Hash hash, byte key[], int index, int keySize)
+	public HMAC(@Nonnull Hash hash, @Nonnull byte key[], int index, int keySize)
 	{
 		this.hashInner = hash.clone();
 		this.hashOuter = hash.clone();
@@ -43,11 +45,13 @@ public class HMAC extends Hash
 		this.clear();
 	}
 
+	@Nonnull
 	public String getName()
 	{
 		return "HMAC-" + this.hashInner.getName();
 	}
 
+	@Nonnull
 	public Hash clone()
 	{
 		return new HMAC(this.hashInner, this.key, 0, this.keySize);
@@ -59,12 +63,12 @@ public class HMAC extends Hash
 		this.hashInner.calc(this.iPad, 0, this.padSize);
 	}
 
-	public void calc(byte buff[], int index, int buffSize)
+	public void calc(@Nonnull byte buff[], int index, int buffSize)
 	{
 		this.hashInner.calc(buff, index, buffSize);
 	}
 
-
+	@Nonnull
 	public byte []getValue()
 	{
 		byte buff[] = this.hashInner.getValue();

@@ -6,11 +6,13 @@ import javax.crypto.spec.SecretKeySpec;
 
 import org.sswr.util.data.ByteTool;
 
+import jakarta.annotation.Nonnull;
+
 public class AES256GCM extends Encryption
 {
 	private byte[] key;
 	private byte[] iv;
-	public AES256GCM(byte[] key, int keyOfst, int keyLeng, byte[] iv, int ivOfst)
+	public AES256GCM(@Nonnull byte[] key, int keyOfst, int keyLeng, @Nonnull byte[] iv, int ivOfst)
 	{
 		if (keyLeng != 32)
 		{
@@ -23,7 +25,8 @@ public class AES256GCM extends Encryption
 	}
 
 	@Override
-	public byte[] encrypt(byte[] inBuff, int inOfst, int inSize) {
+	@Nonnull 
+	public byte[] encrypt(@Nonnull byte[] inBuff, int inOfst, int inSize) throws EncryptionException {
 		SecretKeySpec skeySpec = new SecretKeySpec(this.key, "AES");
 		try
 		{
@@ -34,13 +37,13 @@ public class AES256GCM extends Encryption
 		}
 		catch (Exception ex)
 		{
-			ex.printStackTrace();
-			return null;
+			throw new EncryptionException(ex);
 		}
 	}
 
 	@Override
-	public byte[] decrypt(byte[] inBuff, int inOfst, int inSize) {
+	@Nonnull
+	public byte[] decrypt(@Nonnull byte[] inBuff, int inOfst, int inSize) throws EncryptionException {
 		SecretKeySpec skeySpec = new SecretKeySpec(key, "AES");
 		try
 		{
@@ -51,8 +54,7 @@ public class AES256GCM extends Encryption
 		}
 		catch (Exception ex)
 		{
-			ex.printStackTrace();
-			return null;
+			throw new EncryptionException(ex);
 		}
 	}
 
@@ -66,7 +68,7 @@ public class AES256GCM extends Encryption
 		return 16;
 	}
 
-	public void setIV(byte[] iv, int ivOfst)
+	public void setIV(@Nonnull byte[] iv, int ivOfst)
 	{
 		ByteTool.copyArray(this.iv, 0, iv, ivOfst, 12);
 	}

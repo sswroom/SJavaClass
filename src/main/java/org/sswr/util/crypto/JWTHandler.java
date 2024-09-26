@@ -7,20 +7,24 @@ import java.util.Map;
 import org.sswr.util.data.JSONBuilder;
 import org.sswr.util.data.JSONBuilder.ObjectType;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class JWTHandler
 {
 	private JWSignature.Algorithm alg;
 	private byte key[];
 	private MyX509Key.KeyType keyType;
 
-	private JWTHandler(JWSignature.Algorithm alg, byte key[], int keyOfst, int keyLen, MyX509Key.KeyType keyType)
+	private JWTHandler(@Nonnull JWSignature.Algorithm alg, @Nonnull byte key[], int keyOfst, int keyLen, @Nonnull MyX509Key.KeyType keyType)
 	{
 		this.alg = alg;
 		this.key = Arrays.copyOfRange(key, keyOfst, keyLen);
 		this.keyType = keyType;
 	}
 
-	public String generate(Map<String, String> payload, JWTParam param)
+	@Nullable
+	public String generate(@Nonnull Map<String, String> payload, @Nullable JWTParam param)
 	{
 		JSONBuilder json = new JSONBuilder(ObjectType.OT_OBJECT);
 		Iterator<String> itKey = payload.keySet().iterator();
@@ -69,7 +73,8 @@ public class JWTHandler
 		return token.toString();
 	}
 
-	public static JWTHandler createHMAC(JWSignature.Algorithm alg, byte key[])
+	@Nullable
+	public static JWTHandler createHMAC(@Nonnull JWSignature.Algorithm alg, @Nonnull byte key[])
 	{
 		switch (alg)
 		{

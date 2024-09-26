@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.Table;
 
 import org.sswr.util.data.FieldComparator;
@@ -23,7 +25,7 @@ public class SQLConnection extends ReadingConnection
 	private String errorMsg;
 	private List<String> tableNames;
 
-	public SQLConnection(Connection conn, LogTool logger)
+	public SQLConnection(@Nonnull Connection conn, @Nullable LogTool logger)
 	{
 		super(logger);
 		this.conn = conn;
@@ -49,7 +51,7 @@ public class SQLConnection extends ReadingConnection
 		}
 	}
 
-	public int getTableNames(List<String> names)
+	public int getTableNames(@Nonnull List<String> names)
 	{
 		if (this.tableNames == null)
 		{
@@ -60,7 +62,8 @@ public class SQLConnection extends ReadingConnection
 		return this.tableNames.size();
 	}
 
-	public DBReader getTableData(String name, int maxCnt, String sortString, QueryConditions<?> condition)
+	@Nullable
+	public DBReader getTableData(@Nonnull String name, int maxCnt, @Nullable String sortString, @Nullable QueryConditions<?> condition)
 	{
 /*		FileGDBTable table = this.tables.get(name);
 		if (table == null)
@@ -71,7 +74,8 @@ public class SQLConnection extends ReadingConnection
 		return null;
 	}
 
-	public <T> List<T> loadItemsAsList(Class<T> cls, Object parent, QueryConditions<T> conditions, List<String> joinFields, String sortString, int dataOfst, int dataCnt)
+	@Nullable
+	public <T> List<T> loadItemsAsList(@Nonnull Class<T> cls, @Nullable Object parent, @Nullable QueryConditions<T> conditions, @Nullable List<String> joinFields, @Nullable String sortString, int dataOfst, int dataCnt)
 	{
 		StringBuilder sb;
 		Table tableAnn = parseClassTable(cls);
@@ -186,7 +190,8 @@ public class SQLConnection extends ReadingConnection
 		}
 	}
 
-	public <T> Map<Integer, T> loadItemsIClass(Class<T> cls, Object parent, QueryConditions<T> conditions, List<String> joinFields)
+	@Nullable
+	public <T> Map<Integer, T> loadItemsIClass(@Nonnull Class<T> cls, @Nullable Object parent, @Nullable QueryConditions<T> conditions, @Nullable List<String> joinFields)
 	{
 		StringBuilder sb;
 		Table tableAnn = parseClassTable(cls);
@@ -250,12 +255,12 @@ public class SQLConnection extends ReadingConnection
 		}
 	}
 
-	public void closeReader(DBReader r)
+	public void closeReader(@Nonnull DBReader r)
 	{
 		r.close();
 	}
 
-	public void getErrorMsg(StringBuilder str)
+	public void getErrorMsg(@Nonnull StringBuilder str)
 	{
 		if (this.errorMsg != null)
 			str.append(this.errorMsg);

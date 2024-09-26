@@ -1,20 +1,23 @@
 package org.sswr.util.data.textbinenc;
 
 import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 
 public abstract class TextBinEnc
 {
-	public @Nullable String encodeBin(@Nonnull byte[] dataBuff)
+	public @Nonnull String encodeBin(@Nonnull byte[] dataBuff) throws EncodingException
 	{
 		return encodeBin(dataBuff, 0, dataBuff.length);
 	}
 
-	public abstract @Nullable String encodeBin(@Nonnull byte []dataBuff, int dataOfst, int buffSize);
-	public abstract @Nullable byte []decodeBin(@Nonnull String s);
-	public abstract @Nonnull String getName();
+	@Nonnull
+	public abstract String encodeBin(@Nonnull byte []dataBuff, int dataOfst, int buffSize) throws EncodingException;
+	@Nonnull
+	public abstract byte []decodeBin(@Nonnull String s) throws EncodingException;
+	@Nonnull
+	public abstract String getName();
 
-	public @Nonnull String toString()
+	@Nonnull
+	public String toString()
 	{
 		return getName();
 	}

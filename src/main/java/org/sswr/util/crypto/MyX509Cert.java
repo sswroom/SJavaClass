@@ -11,13 +11,17 @@ import org.sswr.util.net.ASN1Data;
 import org.sswr.util.net.ASN1Item;
 import org.sswr.util.net.ASN1Util;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class MyX509Cert extends MyX509File
 {
-	public MyX509Cert(String sourceName, byte[] buff, int ofst, int size)
+	public MyX509Cert(@Nonnull String sourceName, @Nonnull byte[] buff, int ofst, int size)
 	{
 		super(sourceName, buff, ofst, size);
 	}
 
+	@Nullable
 	public String getSubjectCN()
 	{
 		ASN1Item tmpBuff;
@@ -39,6 +43,7 @@ public class MyX509Cert extends MyX509File
 		}
 	}
 
+	@Nullable
 	public String getIssuerCN()
 	{
 		ASN1Item tmpBuff;
@@ -61,12 +66,14 @@ public class MyX509Cert extends MyX509File
 	}
 
 	@Override
+	@Nonnull
 	public FileType getFileType()
 	{
 		return FileType.Cert;
 	}
 
-	public ValidStatus isValid(MyX509Env ssl, Map<String, Certificate> trustStoreMap)
+	@Nonnull
+	public ValidStatus isValid(@Nonnull MyX509Env ssl, @Nullable Map<String, Certificate> trustStoreMap)
 	{
 		if (trustStoreMap == null)
 		{
@@ -110,7 +117,11 @@ public class MyX509Cert extends MyX509File
 			return ValidStatus.UnsupportedAlgorithm;
 		}
 	
-		Certificate issuer = trustStoreMap.get(issuerCN);
+		Certificate issuer;
+		if (trustStoreMap == null)
+			issuer = null;
+		else
+			issuer = trustStoreMap.get(issuerCN);
 		if (issuer == null)
 		{
 			if (!this.isSelfSigned())
@@ -174,12 +185,14 @@ public class MyX509Cert extends MyX509File
 	}
 
 	@Override
+	@Nonnull
 	public ASN1Data clone()
 	{
 		return new MyX509Cert(this.sourceName, this.buff, 0, this.buff.length);
 	}
 
 	@Override
+	@Nonnull
 	public String toString()
 	{
 		StringBuilder sb = new StringBuilder();
@@ -190,6 +203,7 @@ public class MyX509Cert extends MyX509File
 		return sb.toString();
 	}
 
+	@Nullable
 	public CertNames getIssuerNames()
 	{
 		ASN1Item item = ASN1Util.pduGetItem(this.buff, 0, this.buff.length, "1.1.1");
@@ -216,6 +230,7 @@ public class MyX509Cert extends MyX509File
 		return null;
 	}
 
+	@Nullable
 	public CertNames getSubjNames()
 	{
 		ASN1Item item = ASN1Util.pduGetItem(this.buff, 0, this.buff.length, "1.1.1");
@@ -242,6 +257,7 @@ public class MyX509Cert extends MyX509File
 		return null;
 	}
 
+	@Nullable
 	public MyX509Key getNewPublicKey()
 	{
 		ASN1Item item = ASN1Util.pduGetItem(this.buff, 0, this.buff.length, "1.1.1");
@@ -268,6 +284,7 @@ public class MyX509Cert extends MyX509File
 		return null;
 	}
 
+	@Nullable
 	public byte[] getKeyId() //20 bytes
 	{
 		MyX509Key key = this.getNewPublicKey();
@@ -278,6 +295,7 @@ public class MyX509Cert extends MyX509File
 		return key.getKeyId();
 	}
 
+	@Nullable
 	public ZonedDateTime getNotBefore()
 	{
 		ASN1Item tmpBuff;
@@ -296,6 +314,7 @@ public class MyX509Cert extends MyX509File
 		return null;
 	}
 
+	@Nullable
 	public ZonedDateTime getNotAfter()
 	{
 		ASN1Item tmpBuff;
@@ -327,6 +346,7 @@ public class MyX509Cert extends MyX509File
 	
 	}
 
+	@Nullable
 	public List<String> getCRLDistributionPoints()
 	{
 		ASN1Item pdu = ASN1Util.pduGetItem(this.buff, 0, this.buff.length, "1.1.1");
@@ -353,6 +373,7 @@ public class MyX509Cert extends MyX509File
 		return null;
 	}
 
+	@Nullable
 	public byte[] getSerialNumber()
 	{
 		ASN1Item pdu = ASN1Util.pduGetItem(this.buff, 0, this.buff.length, "1.1.1");

@@ -4,6 +4,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class EncodingFactory
 {
 	public static final int MAX_SHORT_LEN = 45;
@@ -15,7 +18,7 @@ public class EncodingFactory
 		public String desc;
 		public String[] internetNames;
 
-		EncodingInfo(int codePage, String dotNetName, String desc, String[] internetNames)
+		EncodingInfo(int codePage, @Nullable String dotNetName, @Nonnull String desc, @Nonnull String[] internetNames)
 		{
 			this.codePage = codePage;
 			this.dotNetName = dotNetName;
@@ -197,7 +200,7 @@ public class EncodingFactory
 		}
 	}
 
-	public int getCodePage(String shortName)
+	public int getCodePage(@Nonnull String shortName)
 	{
 		if (shortName.length() > MAX_SHORT_LEN)
 		{
@@ -214,6 +217,7 @@ public class EncodingFactory
 		}
 	}
 
+	@Nonnull
 	public static String getName(int codePage)
 	{
 		int i = 0;
@@ -240,6 +244,7 @@ public class EncodingFactory
 		return "Unknown";
 	}
 
+	@Nonnull
 	public static String getInternetName(int codePage)
 	{
 		int i = 0;
@@ -268,6 +273,7 @@ public class EncodingFactory
 		return "UTF-8";
 	}
 
+	@Nonnull
 	public static String getDotNetName(int codePage)
 	{
 		int i = 0;
@@ -306,7 +312,7 @@ public class EncodingFactory
 		return 0x0409;
 	}
 
-	public static void getCodePages(List<Integer> codePages)
+	public static void getCodePages(@Nonnull List<Integer> codePages)
 	{
 		codePages.add(1200);
 		codePages.add(1201);

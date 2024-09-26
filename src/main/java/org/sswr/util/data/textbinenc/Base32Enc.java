@@ -3,7 +3,6 @@ package org.sswr.util.data.textbinenc;
 import org.sswr.util.data.ByteTool;
 
 import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 
 public class Base32Enc extends TextBinEnc
 {
@@ -35,7 +34,7 @@ public class Base32Enc extends TextBinEnc
 	{
 	}
 
-	public @Nullable String encodeBin(@Nonnull byte []dataBuff, int dataOfst, int buffSize)
+	public @Nonnull String encodeBin(@Nonnull byte []dataBuff, int dataOfst, int buffSize)
 	{
 		StringBuilder sb = new StringBuilder();
 		char []encArr = getEncArr();
@@ -51,7 +50,7 @@ public class Base32Enc extends TextBinEnc
 			outSize = tmp1;
 		}
 		if (outSize == 0)
-			return null;
+			return "";
 		sb.ensureCapacity(outSize);
 		tmp1 = buffSize / 5;
 		tmp2 = buffSize - tmp1 * 5;
@@ -100,7 +99,7 @@ public class Base32Enc extends TextBinEnc
 		return sb.toString();
 	}
 
-	public @Nullable byte []decodeBin(@Nonnull String s)
+	public @Nonnull byte []decodeBin(@Nonnull String s)
 	{
 		char b64Str[] = s.toCharArray();
 		int i = 0;

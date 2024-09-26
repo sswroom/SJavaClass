@@ -15,6 +15,9 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class JasperUtil
 {
 	public static class JasperFont
@@ -126,18 +129,21 @@ public class JasperUtil
 			}
 		}
 
+		@Nonnull
 		public List<JasperFont> getList()
 		{
 			return this.fontList;
 		}
 	}
 
-	public static String styledCJKString(String dispStr, String cjkFont, String engFont)
+	@Nonnull
+	public static String styledCJKString(@Nonnull String dispStr, @Nonnull String cjkFont, @Nonnull String engFont)
 	{
 		return "<style fontName='"+(StringUtil.hasCJKChar(dispStr)?cjkFont:engFont)+"'>"+XmlUtil.toAttr(dispStr)+"</style>";
 	}
 
-	public static List<JasperFont> loadFontProperties(Class<?> dataClass)
+	@Nullable
+	public static List<JasperFont> loadFontProperties(@Nonnull Class<?> dataClass)
 	{
 		try
 		{
@@ -170,12 +176,14 @@ public class JasperUtil
 		}
 	}
 
-	public static String toStyled(String text, float ptSize)
+	@Nonnull
+	public static String toStyled(@Nonnull String text, float ptSize)
 	{
 		return "<style size=\""+ptSize+"\">"+XmlUtil.toXMLText(text)+"</style>";
 	}
 
-	public static String toStyled(JasperTextField txt)
+	@Nonnull
+	public static String toStyled(@Nonnull JasperTextField txt)
 	{
 		StringBuilder sb = new StringBuilder();
 		sb.append("<style size=\""+txt.size+"\">");

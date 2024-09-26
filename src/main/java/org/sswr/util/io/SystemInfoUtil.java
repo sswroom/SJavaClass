@@ -18,6 +18,9 @@ import java.util.List;
 import org.sswr.util.data.DateTimeUtil;
 import org.sswr.util.data.StringUtil;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class SystemInfoUtil
 {
 	public static class FreeSpaceEntry
@@ -138,7 +141,8 @@ public class SystemInfoUtil
 		return ret;
 	}*/
 
-	private static ZonedDateTime parseWindowDate(String s)
+	@Nullable
+	private static ZonedDateTime parseWindowDate(@Nonnull String s)
 	{
 		if (s.length() > 22)
 		{
@@ -179,7 +183,8 @@ public class SystemInfoUtil
 		}
 	}
 
-	public static List<ProcessStatus> getProcessStatus(List<String> processNames)
+	@Nonnull
+	public static List<ProcessStatus> getProcessStatus(@Nonnull List<String> processNames)
 	{
 		List<ProcessStatus> ret = new ArrayList<ProcessStatus>();
 		OSType os = OSInfo.getOSType();
@@ -276,6 +281,7 @@ public class SystemInfoUtil
 		return ret;
 	}
 
+	@Nonnull
 	public static List<FreeSpaceEntry> getFreeSpaces()
 	{
 		List<FreeSpaceEntry> ret = new ArrayList<FreeSpaceEntry>();
@@ -300,7 +306,7 @@ public class SystemInfoUtil
 		return ret;
 	}
 
-	private static long toByte(String s)
+	private static long toByte(@Nonnull String s)
 	{
 		try
 		{
@@ -319,7 +325,7 @@ public class SystemInfoUtil
 		}
 	}
 
-	public static long executeWmic(String cmdLine)
+	public static long executeWmic(@Nonnull String cmdLine)
 	{
 		long ret = 0;
 		try
@@ -357,6 +363,7 @@ public class SystemInfoUtil
 		return ret;
 	}
 
+	@Nonnull
 	public static MemoryStatus getMemoryStatus()
 	{
 		MemoryStatus status = new MemoryStatus();
@@ -420,7 +427,7 @@ public class SystemInfoUtil
 		return status;
 	}
 
-	public static boolean fillProcessStatus(ProcessStatus procStatus)
+	public static boolean fillProcessStatus(@Nonnull ProcessStatus procStatus)
 	{
 		switch (OSInfo.getOSType())
 		{

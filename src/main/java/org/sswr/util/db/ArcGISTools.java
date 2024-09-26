@@ -5,15 +5,18 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.Table;
 
 import org.sswr.util.db.DBUtil.DBType;
 
 public class ArcGISTools {
-	private static Integer getSDENextRowId(Connection conn, String dbName, String schemaName, String tableName)
+	@Nullable
+	private static Integer getSDENextRowId(@Nonnull Connection conn, @Nullable String dbName, @Nullable String schemaName, @Nonnull String tableName)
 	{
-		dbName = DBUtil.uncol(dbName);
-		schemaName = DBUtil.uncol(schemaName);
+		dbName = DBUtil.uncolOrNull(dbName);
+		schemaName = DBUtil.uncolOrNull(schemaName);
 		tableName = DBUtil.uncol(tableName);
 		DBType dbType = DBUtil.connGetDBType(conn);
 		if (dbType == DBType.MSSQL)
@@ -112,7 +115,8 @@ public class ArcGISTools {
 		}
 	}
 
-	public static Integer getSDENextRowId(Connection conn, Class<?> cls)
+	@Nullable
+	public static Integer getSDENextRowId(@Nonnull Connection conn, @Nonnull Class<?> cls)
 	{
 		Annotation anno[] = cls.getAnnotations();
 		int i = 0;
@@ -129,10 +133,11 @@ public class ArcGISTools {
 		return null;
 	}
 
-	private static Long getSDENextRowId64(Connection conn, String dbName, String schemaName, String tableName)
+	@Nullable
+	private static Long getSDENextRowId64(@Nonnull Connection conn, @Nullable String dbName, @Nullable String schemaName, @Nonnull String tableName)
 	{
-		dbName = DBUtil.uncol(dbName);
-		schemaName = DBUtil.uncol(schemaName);
+		dbName = DBUtil.uncolOrNull(dbName);
+		schemaName = DBUtil.uncolOrNull(schemaName);
 		tableName = DBUtil.uncol(tableName);
 		DBType dbType = DBUtil.connGetDBType(conn);
 		if (dbType == DBType.MSSQL)
@@ -231,7 +236,8 @@ public class ArcGISTools {
 		}
 	}
 
-	public static Long getSDENextRowId64(Connection conn, Class<?> cls)
+	@Nullable
+	public static Long getSDENextRowId64(@Nonnull Connection conn, @Nonnull Class<?> cls)
 	{
 		Annotation anno[] = cls.getAnnotations();
 		int i = 0;

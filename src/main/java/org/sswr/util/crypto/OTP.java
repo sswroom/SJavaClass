@@ -1,5 +1,7 @@
 package org.sswr.util.crypto;
 
+import jakarta.annotation.Nonnull;
+
 public abstract class OTP
 {
 	protected int nDigits;
@@ -12,8 +14,10 @@ public abstract class OTP
 	public abstract long getCounter();
 	public abstract int nextCode();
 	public abstract boolean isValid(int code);
-	public abstract String genURI(String name);
+	@Nonnull
+	public abstract String genURI(@Nonnull String name);
 
+	@Nonnull
 	public String codeString(int code)
 	{
 		if (code < 0)

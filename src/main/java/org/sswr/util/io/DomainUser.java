@@ -1,8 +1,10 @@
 package org.sswr.util.io;
 
+import jakarta.annotation.Nonnull;
+
 public class DomainUser
 {
-	public static String removeUserDomain(String username)
+	public static String removeUserDomain(@Nonnull String username)
 	{
 		int i;
 		if ((i = username.lastIndexOf("\\")) >= 0)

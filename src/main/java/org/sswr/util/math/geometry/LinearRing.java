@@ -3,22 +3,27 @@ package org.sswr.util.math.geometry;
 import org.sswr.util.data.ByteTool;
 import org.sswr.util.math.Coord2DDbl;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class LinearRing extends LineString {
 	public LinearRing(int srid, int nPoint, boolean hasZ, boolean hasM)
 	{
 		super(srid, nPoint, hasZ, hasM);
 	}
 
-	public LinearRing(int srid, Coord2DDbl[] pointArr, double[] zArr, double[] mArr)
+	public LinearRing(int srid, @Nonnull Coord2DDbl[] pointArr, @Nullable double[] zArr, @Nullable double[] mArr)
 	{
 		super(srid, pointArr, zArr, mArr);
 	}
 
+	@Nonnull
 	public VectorType getVectorType()
 	{
 		return VectorType.LinearRing;
 	}
 
+	@Nonnull
 	public Vector2D clone()
 	{
 		LinearRing lr;
@@ -35,7 +40,7 @@ public class LinearRing extends LineString {
 		return lr;
 	}
 
-	public boolean insideOrTouch(Coord2DDbl coord)
+	public boolean insideOrTouch(@Nonnull Coord2DDbl coord)
 	{
 		double thisX;
 		double thisY;
@@ -114,7 +119,8 @@ public class LinearRing extends LineString {
 		return this.pointArr[0].equals(this.pointArr[this.pointArr.length - 1]);
 	}
 
-	public static LinearRing createFromCircle(int srid, Coord2DDbl center, double radiusX, double radiusY, int nPoints)
+	@Nonnull
+	public static LinearRing createFromCircle(int srid, @Nonnull Coord2DDbl center, double radiusX, double radiusY, int nPoints)
 	{
 		LinearRing lr = new LinearRing(srid, nPoints + 1, false, false);
 		double ratio = 2 * Math.PI / nPoints;

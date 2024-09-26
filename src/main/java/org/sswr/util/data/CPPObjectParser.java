@@ -8,12 +8,15 @@ import java.util.List;
 
 import org.sswr.util.io.CharReader;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class CPPObjectParser<T>
 {
 	public Constructor<T> constructor;
 	public List<FieldSetter> setters;
 
-	public CPPObjectParser(Class<T> cls, String[] fieldNames) throws NoSuchMethodException, NoSuchFieldException
+	public CPPObjectParser(@Nonnull Class<T> cls, @Nullable String[] fieldNames) throws NoSuchMethodException, NoSuchFieldException
 	{
 		this.constructor = cls.getConstructor(new Class<?>[0]);
 		this.setters = new ArrayList<FieldSetter>();
@@ -40,7 +43,8 @@ public class CPPObjectParser<T>
 		}
 	}
 
-	public T parseObject(CharReader reader)
+	@Nullable
+	public T parseObject(@Nonnull CharReader reader)
 	{
 		int i;
 		int j;

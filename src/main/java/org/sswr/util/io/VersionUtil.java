@@ -6,9 +6,13 @@ import java.net.URL;
 import java.util.Enumeration;
 import java.util.jar.Manifest;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class VersionUtil
 {
-	public static String getFileVersion(Class<?> cls)
+	@Nullable
+	public static String getFileVersion(@Nonnull Class<?> cls)
 	{
 		String jarPath = null;
 		try

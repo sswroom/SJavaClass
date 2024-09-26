@@ -26,7 +26,8 @@ public class FormEncoding
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 	
-	public static @Nonnull String formEncode(@Nonnull String uri)
+	@Nonnull
+	public static String formEncode(@Nonnull String uri)
 	{
 		byte[] carr = uri.getBytes(StandardCharsets.UTF_8);
 		StringBuilder sb = new StringBuilder();
@@ -55,7 +56,8 @@ public class FormEncoding
 		return sb.toString();
 	}
 
-	public static @Nonnull String formDecode(@Nonnull String uri)
+	@Nonnull
+	public static String formDecode(@Nonnull String uri)
 	{
 		byte[] carr = uri.getBytes(StandardCharsets.UTF_8);
 		byte[] destBuff = new byte[carr.length];

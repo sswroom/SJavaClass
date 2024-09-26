@@ -46,6 +46,9 @@ import org.sswr.util.net.ASN1Item;
 import org.sswr.util.net.ASN1Util;
 import org.sswr.util.parser.X509Parser;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class CertUtil
 {
 	private static final boolean DEBUG = false;
@@ -65,6 +68,7 @@ public class CertUtil
 	private static KeyStore trustStore = null;
 	private static Map<String, Certificate> trustStoreMap = null;
 
+	@Nullable
 	public static KeyStore loadDefaultTrustStore()
 	{
         Path location = null;
@@ -123,7 +127,8 @@ public class CertUtil
         return trustStore;
     }
 
-	public static KeyStore loadKeyStore(String fileName, String password)
+	@Nullable
+	public static KeyStore loadKeyStore(@Nonnull String fileName, @Nonnull String password)
 	{
 		FileInputStream fis = null;
 		KeyStoreType type;
@@ -195,7 +200,7 @@ public class CertUtil
 		return trustStore;
 	}
 
-	public static boolean isKeyStoreSingleCertWithKey(KeyStore ks, String password)
+	public static boolean isKeyStoreSingleCertWithKey(@Nonnull KeyStore ks, @Nonnull String password)
 	{
 		try
 		{
@@ -223,7 +228,8 @@ public class CertUtil
 		}
 	}
 
-	public static KeyStoreType parseKeyStoreType(FileInputStream is) throws IOException
+	@Nonnull
+	public static KeyStoreType parseKeyStoreType(@Nonnull FileInputStream is) throws IOException
 	{
 		byte[] buff = new byte[12];
 		long pos = is.getChannel().position();
@@ -244,7 +250,7 @@ public class CertUtil
 		return KeyStoreType.Unknown;
 	}
 
-	public static boolean loadMyTrusts(Map<String, Certificate> certMap)
+	public static boolean loadMyTrusts(@Nonnull Map<String, Certificate> certMap)
 	{
 		File trustPath = new File("trustcerts");
 		if (DEBUG)
@@ -254,7 +260,7 @@ public class CertUtil
 		return loadTrustsFromDir(certMap, trustPath);
 	}
 
-	public static boolean loadTrustsFromDir(Map<String, Certificate> certMap, File trustPath)
+	public static boolean loadTrustsFromDir(@Nonnull Map<String, Certificate> certMap, @Nonnull File trustPath)
 	{
 		if (trustPath.isDirectory())
 		{
@@ -284,7 +290,8 @@ public class CertUtil
 		return false;
 	}
 
-	public static Map<String, Certificate> buildCNMap(KeyStore keystore)
+	@Nullable
+	public static Map<String, Certificate> buildCNMap(@Nonnull KeyStore keystore)
 	{
 		try
 		{
@@ -310,7 +317,8 @@ public class CertUtil
 		}
 	}
 
-	public static MyX509Cert toMyCert(Certificate cert)
+	@Nullable
+	public static MyX509Cert toMyCert(@Nonnull Certificate cert)
 	{
 		try
 		{
@@ -324,7 +332,8 @@ public class CertUtil
 		}
 	}
 
-	public static X509CRL loadCRL(String filePath)
+	@Nullable
+	public static X509CRL loadCRL(@Nonnull String filePath)
 	{
 		FileInputStream fis = null;
 		try
@@ -381,7 +390,8 @@ public class CertUtil
 		}
 	}
 
-	public static X509Certificate loadCertificate(File file)
+	@Nullable
+	public static X509Certificate loadCertificate(@Nonnull File file)
 	{
 		FileInputStream fis = null;
 		try
@@ -404,7 +414,8 @@ public class CertUtil
 		}
 	}
 
-	public static X509Certificate loadCertificate(InputStream stm)
+	@Nullable
+	public static X509Certificate loadCertificate(@Nonnull InputStream stm)
 	{
 		try
 		{
@@ -418,7 +429,8 @@ public class CertUtil
 		}
 	}
 
-	public static PrivateKey loadPrivateKey(File file, String password)
+	@Nullable
+	public static PrivateKey loadPrivateKey(@Nonnull File file, @Nonnull String password)
 	{
 
 		byte[] fileData;
@@ -460,6 +472,10 @@ public class CertUtil
 			return null;
 		}
 		MyX509PrivKey privKey = MyX509PrivKey.createFromKey(key);
+		if (privKey == null)
+		{
+			return null;
+		}
 		try
 		{
 			PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(privKey.getASN1Buff());
@@ -499,7 +515,8 @@ public class CertUtil
 		}
 	}
 
-	public static String nameGetCN(Principal name)
+	@Nullable
+	public static String nameGetCN(@Nonnull Principal name)
 	{
 		String str = name.getName();
 		String strs[] = str.split(",");
@@ -516,12 +533,14 @@ public class CertUtil
 		return null;
 	}
 
-	public static String getIssuerCN(X509CRL crl)
+	@Nullable
+	public static String getIssuerCN(@Nonnull X509CRL crl)
 	{
 		return nameGetCN(crl.getIssuerX500Principal());
 	}
 
-	public static CertValidStatus isValid(X509CRL crl)
+	@Nonnull
+	public static CertValidStatus isValid(@Nonnull X509CRL crl)
 	{
 //		String algName = crl.getSigAlgName();
 //		byte[] signature = crl.getSignature();
@@ -610,7 +629,8 @@ public class CertUtil
 		}
 	}
 
-	public static byte[] rsaSignDecrypt(byte[] sign, int ofst, int len, Key key)
+	@Nullable
+	public static byte[] rsaSignDecrypt(@Nonnull byte[] sign, int ofst, int len, @Nonnull Key key)
 	{
 		if (len != 256)
 		{
@@ -650,7 +670,7 @@ public class CertUtil
 		}
 	}
 
-	public static boolean verifySign(byte[] buff, int ofst, int buffSize, byte[] signature, int signOfst, int signLen, PublicKey key, HashType hashType, StringBuilder sbError, String dataName)
+	public static boolean verifySign(@Nonnull byte[] buff, int ofst, int buffSize, @Nonnull byte[] signature, int signOfst, int signLen, @Nonnull PublicKey key, @Nonnull HashType hashType, @Nullable StringBuilder sbError, @Nullable String dataName)
 	{
 		byte[] digestInfo = rsaSignDecrypt(signature, signOfst, signLen, key);
 		if (digestInfo == null)
@@ -699,7 +719,8 @@ public class CertUtil
 		}
 	}
 
-	public static byte[] signature(byte[] buff, int ofst, int buffSize, HashType hashType, PrivateKey key)
+	@Nullable
+	public static byte[] signature(@Nonnull byte[] buff, int ofst, int buffSize, @Nonnull HashType hashType, @Nonnull PrivateKey key)
 	{
 		if (key.getAlgorithm().equals("RSA"))
 		{
@@ -749,7 +770,8 @@ public class CertUtil
 		return null;
 	}
 
-	public static String getKeyStoreTypeName(KeyStoreType type)
+	@Nonnull
+	public static String getKeyStoreTypeName(@Nonnull KeyStoreType type)
 	{
 		switch (type)
 		{

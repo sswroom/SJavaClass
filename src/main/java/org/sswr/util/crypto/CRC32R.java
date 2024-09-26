@@ -2,12 +2,14 @@ package org.sswr.util.crypto;
 
 import org.sswr.util.data.ByteTool;
 
+import jakarta.annotation.Nonnull;
+
 public class CRC32R extends Hash
 {
 	private int[] crctab;
 	private int currVal;
 
-	private static void initTable(int[] tab, int rpn)
+	private static void initTable(@Nonnull int[] tab, int rpn)
 	{
 		int i = 256;
 		int j;
@@ -66,7 +68,7 @@ public class CRC32R extends Hash
 		return v2;
 	}
 
-	private static int calc(byte[] buff, int buffOfst, int buffSize, int[]tab, int currVal)
+	private static int calc(@Nonnull byte[] buff, int buffOfst, int buffSize, @Nonnull int[]tab, int currVal)
 	{
 		while (buffSize >= 16)
 		{
@@ -108,7 +110,7 @@ public class CRC32R extends Hash
 		return currVal;
 	}
 
-	private CRC32R(CRC32R crc)
+	private CRC32R(@Nonnull CRC32R crc)
 	{
 		this.crctab = new int[256 * 16];
 		this.currVal = crc.currVal;
@@ -134,11 +136,13 @@ public class CRC32R extends Hash
 		this.initTable(polynomial);
 	}
 
+	@Nonnull
 	public String getName()
 	{
 		return "CRC (32-bit Reversed)";
 	}
 	
+	@Nonnull
 	public Hash clone()
 	{
 		return new CRC32R(this);
@@ -149,11 +153,12 @@ public class CRC32R extends Hash
 		this.currVal = 0xffffffff;
 	}
 
-	public void calc(byte[] buff, int buffOfst, int buffSize)
+	public void calc(@Nonnull byte[] buff, int buffOfst, int buffSize)
 	{
 		this.currVal = calc(buff, buffOfst, buffSize, this.crctab, this.currVal);
 	}
 
+	@Nonnull
 	public byte[] getValue()
 	{
 		byte[] buff = new byte[4];

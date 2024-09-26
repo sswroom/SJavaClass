@@ -8,6 +8,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class DirStreamColl implements StreamColl
 {
 	private File file;
@@ -15,7 +18,7 @@ public class DirStreamColl implements StreamColl
 	private Map<String, File> lcaseFileMap;
 	private boolean ignoreCase;
 
-	public DirStreamColl(String path, boolean ignoreCase)
+	public DirStreamColl(@Nonnull String path, boolean ignoreCase)
 	{
 		this.ignoreCase = ignoreCase;
 		this.file = new File(path);
@@ -41,13 +44,14 @@ public class DirStreamColl implements StreamColl
 	}
 
 	@Override
+	@Nonnull
 	public Iterator<String> listFiles()
 	{
 		return this.fileMap.keySet().iterator();
 	}
 
 	@Override
-	public boolean hasFile(String fileName)
+	public boolean hasFile(@Nonnull String fileName)
 	{
 		if (this.ignoreCase)
 		{
@@ -60,7 +64,7 @@ public class DirStreamColl implements StreamColl
 	}
 
 	@Override
-	public long getStmSize(String fileName)
+	public long getStmSize(@Nonnull String fileName)
 	{
 		File file;
 		if (this.ignoreCase)
@@ -82,7 +86,8 @@ public class DirStreamColl implements StreamColl
 	}
 
 	@Override
-	public InputStream openStream(String fileName)
+	@Nullable
+	public InputStream openStream(@Nonnull String fileName)
 	{
 		File file;
 		if (this.ignoreCase)

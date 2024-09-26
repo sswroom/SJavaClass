@@ -10,9 +10,12 @@ import org.sswr.util.math.geometry.Polygon;
 import org.sswr.util.math.geometry.Polyline;
 import org.sswr.util.math.geometry.Vector2D;
 
+import jakarta.annotation.Nullable;
+
 public class MSGeography
 {
-	public static Vector2D parseBinary(byte[] buff)
+	@Nullable
+	public static Vector2D parseBinary(@Nullable byte[] buff)
 	{
 		if (buff == null || buff.length < 6)
 		{

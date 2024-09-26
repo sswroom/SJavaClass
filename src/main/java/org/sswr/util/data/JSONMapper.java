@@ -6,9 +6,12 @@ import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.Map;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class JSONMapper
 {
-	private static <T> void object2Json(StringBuilder sb, T obj)
+	private static <T> void object2Json(@Nonnull StringBuilder sb, @Nullable T obj)
 	{
 		if (obj == null)
 		{
@@ -170,7 +173,8 @@ public class JSONMapper
 		}
 	}
 
-	public static String object2Json(Object obj)
+	@Nonnull
+	public static String object2Json(@Nullable Object obj)
 	{
 		StringBuilder sb = new StringBuilder();
 		object2Json(sb, obj);

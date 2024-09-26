@@ -1,5 +1,7 @@
 package org.sswr.util.math.unit;
 
+import jakarta.annotation.Nonnull;
+
 public class Distance
 {
 	public enum DistanceUnit
@@ -29,7 +31,7 @@ public class Distance
 		Twip
 	}
 
-	public static double getUnitRatio(DistanceUnit unit)
+	public static double getUnitRatio(@Nonnull DistanceUnit unit)
 	{
 		switch (unit)
 		{
@@ -83,7 +85,8 @@ public class Distance
 		return 1;
 	}
 
-	public static String getUnitShortName(DistanceUnit unit)
+	@Nonnull
+	public static String getUnitShortName(@Nonnull DistanceUnit unit)
 	{
 		switch (unit)
 		{
@@ -137,7 +140,8 @@ public class Distance
 		return "";
 	}
 
-	public static String getUnitName(DistanceUnit unit)
+	@Nonnull
+	public static String getUnitName(@Nonnull DistanceUnit unit)
 	{
 		switch (unit)
 		{
@@ -191,7 +195,7 @@ public class Distance
 		return "";
 	}
 
-	public static double convert(DistanceUnit fromUnit, DistanceUnit toUnit, double fromValue)
+	public static double convert(@Nonnull DistanceUnit fromUnit, @Nonnull DistanceUnit toUnit, double fromValue)
 	{
 		return fromValue * getUnitRatio(fromUnit) / getUnitRatio(toUnit);
 	}

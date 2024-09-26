@@ -12,6 +12,9 @@ import org.sswr.util.data.JSONObject;
 import org.sswr.util.data.JSONString;
 import org.sswr.util.data.textbinenc.Base64Enc;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class JWToken
 {
 	public enum VerifyType
@@ -27,7 +30,7 @@ public class JWToken
 	private String payload;
 	private byte[] sign;
 
-	private JWToken(JWSignature.Algorithm alg)
+	private JWToken(@Nonnull JWSignature.Algorithm alg)
 	{
 		this.alg = alg;
 		this.header = null;
@@ -35,37 +38,41 @@ public class JWToken
 		this.sign = null;
 	}
 
-	private void setHeader(String header)
+	private void setHeader(@Nullable String header)
 	{
 		this.header = header;
 	}
 
-	private void setPayload(String payload)
+	private void setPayload(@Nullable String payload)
 	{
 		this.payload = payload;
 	}
 
-	private void setSignature(byte[] sign)
+	private void setSignature(@Nullable byte[] sign)
 	{
 		this.sign = sign;
 	}
 
+	@Nonnull
 	public JWSignature.Algorithm getAlgorithm()
 	{
 		return this.alg;
 	}
 
+	@Nullable
 	public String getHeader()
 	{
 		return this.header;
 	}
 
+	@Nullable
 	public String getPayload()
 	{
 		return this.payload;
 	}
 
-	public VerifyType getVerifyType(JWTParam param)
+	@Nonnull
+	public VerifyType getVerifyType(@Nonnull JWTParam param)
 	{
 		String s = param.getIssuer();
 		if (s != null && s.startsWith("https://login.microsoftonline.com/"))
@@ -99,7 +106,7 @@ public class JWToken
 		}
 	}
 
-	public boolean signatureValid(byte[] key, int keyOfst, int keyLeng, MyX509Key.KeyType keyType)
+	public boolean signatureValid(@Nonnull byte[] key, int keyOfst, int keyLeng, @Nonnull MyX509Key.KeyType keyType)
 	{
 		Base64Enc b64 = new Base64Enc(Base64Enc.B64Charset.URL, true);
 		StringBuilder sb = new StringBuilder();
@@ -111,7 +118,8 @@ public class JWToken
 		return sign.verifyHash(buff, 0, buff.length, this.sign, 0, this.sign.length);
 	}
 
-	public Map<String, String> parsePayload(JWTParam param, boolean keepDefault, StringBuilder sbErr)
+	@Nullable
+	public Map<String, String> parsePayload(@Nonnull JWTParam param, boolean keepDefault, @Nullable StringBuilder sbErr)
 	{
 		param.clear();
 		JSONBase payloadJson = JSONBase.parseJSONStr(this.payload);
@@ -212,6 +220,7 @@ public class JWToken
 		return retMap;
 	}
 
+	@Nonnull
 	public String toString()
 	{
 		StringBuilder sb = new StringBuilder();
@@ -224,7 +233,8 @@ public class JWToken
 		return sb.toString();
 	}
 
-	public static JWToken generate(JWSignature.Algorithm alg, String payload, byte[] key, int keyOfst, int keyLeng, MyX509Key.KeyType keyType)
+	@Nullable
+	public static JWToken generate(@Nonnull JWSignature.Algorithm alg, @Nonnull String payload, @Nonnull byte[] key, int keyOfst, int keyLeng, @Nonnull MyX509Key.KeyType keyType)
 	{
 		String header = "{\"alg\":\"" + alg.toString() + "\",\"typ\":\"JWT\"}";
 		StringBuilder sb = new StringBuilder();
@@ -245,7 +255,8 @@ public class JWToken
 		return token;
 	}
 
-	public static JWToken parse(String token, StringBuilder sbErr)
+	@Nullable
+	public static JWToken parse(@Nonnull String token, @Nullable StringBuilder sbErr)
 	{
 		int i1 = token.indexOf('.');;
 		if (i1 == -1)

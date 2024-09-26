@@ -19,6 +19,9 @@ import org.sswr.util.data.FieldSetter;
 import org.sswr.util.data.SharedInt;
 import org.sswr.util.data.UUID;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class DBDataFile<T>
 {
 	public enum ItemType
@@ -48,7 +51,8 @@ public class DBDataFile<T>
 	private ItemType []colTypes;
 	private List<FieldGetter<T>> getters;
 
-	private static ItemType getItemType(Field field)
+	@Nonnull
+	private static ItemType getItemType(@Nonnull Field field)
 	{
 		Class<?> fieldType = field.getType();
 		if (fieldType.equals(Integer.class) || fieldType.equals(int.class))
@@ -85,7 +89,7 @@ public class DBDataFile<T>
 		}
 	}
 
-	private static int readInt(byte[] buff, int ofst, SharedInt outVal)
+	private static int readInt(@Nonnull byte[] buff, int ofst, @Nonnull SharedInt outVal)
 	{
 		int val = 0;
 		byte v;
@@ -105,7 +109,7 @@ public class DBDataFile<T>
 		}
 	}
 	
-	private static int writeInt(byte[] buff, int ofst, int val)
+	private static int writeInt(@Nonnull byte[] buff, int ofst, int val)
 	{
 		if (val < 0x80) // 00 - 7f
 		{
@@ -144,7 +148,7 @@ public class DBDataFile<T>
 		}
 	}
 	
-	public DBDataFile(String fileName, Class<T> cls, String[] fieldOrder, boolean append) throws FileNotFoundException, IOException, NoSuchFieldException
+	public DBDataFile(@Nonnull String fileName, @Nonnull Class<T> cls, @Nonnull String[] fieldOrder, boolean append) throws FileNotFoundException, IOException, NoSuchFieldException
 	{
 		this.recordBuff = null;
 		this.colTypes = null;
@@ -210,7 +214,7 @@ public class DBDataFile<T>
 		}
 	}
 
-	public boolean addRecord(T obj)
+	public boolean addRecord(@Nonnull T obj)
 	{
 		try
 		{
@@ -500,7 +504,8 @@ public class DBDataFile<T>
 		}
 	}
 
-	public static <T> List<T> loadFile(String fileName, Class<T> cls, String []fieldOrder)
+	@Nullable
+	public static <T> List<T> loadFile(@Nonnull String fileName, @Nonnull Class<T> cls, @Nonnull String []fieldOrder)
 	{
 		try
 		{
@@ -765,7 +770,7 @@ public class DBDataFile<T>
 		}
 	}
 
-	public static <T> boolean saveFile(String fileName, List<T> dataList, Class<T> cls, String []fieldOrder) throws FileNotFoundException
+	public static <T> boolean saveFile(@Nonnull String fileName, @Nonnull List<T> dataList, @Nonnull Class<T> cls, @Nonnull String []fieldOrder) throws FileNotFoundException
 	{
 		try
 		{

@@ -6,6 +6,9 @@ import org.sswr.util.io.IOStream;
 import org.sswr.util.io.ProtocolDataListener;
 import org.sswr.util.io.ProtocolHandler;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class ProtoMQTTHandler implements ProtocolHandler
 {
 	class ClientData
@@ -17,12 +20,13 @@ public class ProtoMQTTHandler implements ProtocolHandler
 	}
 	private ProtocolDataListener listener;
 
-	public ProtoMQTTHandler(ProtocolDataListener listener)
+	public ProtoMQTTHandler(@Nonnull ProtocolDataListener listener)
 	{
 		this.listener = listener;
 	}
 
-	public Object createStreamData(IOStream stm)
+	@Nonnull
+	public Object createStreamData(@Nonnull IOStream stm)
 	{
 		ClientData cliData = new ClientData();
 		cliData.packetBuff = null;
@@ -32,14 +36,15 @@ public class ProtoMQTTHandler implements ProtocolHandler
 		return cliData;
 	}
 
-	public void deleteStreamData(IOStream stm, Object stmData)
+	public void deleteStreamData(@Nonnull IOStream stm, @Nullable Object stmData)
 	{
 
 	}
 	
-	public int parseProtocol(IOStream stm, Object stmObj, Object stmData, byte[] buff, int buffOfst, int buffSize)
+	public int parseProtocol(@Nonnull IOStream stm, @Nullable Object stmObj, @Nullable Object stmData, @Nonnull byte[] buff, int buffOfst, int buffSize)
 	{
-		ClientData cliData = (ClientData)stmData;
+		@SuppressWarnings("null")
+		@Nonnull ClientData cliData = (ClientData)stmData;
 		if (cliData.packetBuff != null)
 		{
 			if (cliData.packetSize - cliData.packetDataSize <= buffSize)
@@ -116,7 +121,7 @@ public class ProtoMQTTHandler implements ProtocolHandler
 		return buffSize;
 	}
 
-	public int buildPacket(byte[] buff, int buffOfst, int cmdType, int seqId, byte[] cmd, int cmdOfst, int cmdSize, Object stmData)
+	public int buildPacket(@Nonnull byte[] buff, int buffOfst, int cmdType, int seqId, @Nonnull byte[] cmd, int cmdOfst, int cmdSize, @Nullable Object stmData)
 	{
 		buff[buffOfst + 0] = (byte)(cmdType & 0xff);
 		if (cmdSize < 128)
@@ -161,7 +166,7 @@ public class ProtoMQTTHandler implements ProtocolHandler
 		}
 	}
 
-	public boolean parseUTF8Str(byte[] buff, SharedInt index, int buffSize, StringBuilder sb)
+	public boolean parseUTF8Str(@Nonnull byte[] buff, @Nonnull SharedInt index, int buffSize, @Nonnull StringBuilder sb)
 	{
 		int strSize;
 		if ((buffSize - index.value) < 2)

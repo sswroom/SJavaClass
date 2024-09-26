@@ -16,6 +16,9 @@ import org.sswr.util.data.JasperUtil.JasperFont;
 import org.sswr.util.data.JasperUtil.JasperTextField;
 import org.sswr.util.io.ResourceLoader;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class JasperFontCalculator
 {
 	private Map<String, JasperFont> fontMap;
@@ -24,7 +27,7 @@ public class JasperFontCalculator
 	private FontRenderContext frc;
 	private Class<?> dataClass;
 
-	public JasperFontCalculator(Class<?> dataClass) throws FileNotFoundException
+	public JasperFontCalculator(@Nonnull Class<?> dataClass) throws FileNotFoundException
 	{
 		this.dataClass = dataClass;
 		List<JasperFont> list = JasperUtil.loadFontProperties(dataClass);
@@ -38,7 +41,8 @@ public class JasperFontCalculator
 		this.frc = g.getFontRenderContext();
 	}
 
-	private Font loadFont(String fontName) throws IOException, FontFormatException
+	@Nonnull
+	private Font loadFont(@Nonnull String fontName) throws IOException, FontFormatException
 	{
 		JasperFont f = this.fontMap.get(fontName);
 		if (f == null)
@@ -52,13 +56,14 @@ public class JasperFontCalculator
 		}
 		return Font.createFont(Font.TRUETYPE_FONT, is);
 	}
-	public double calcStringWidth(String fontName, float ptSize, String text) throws IOException, FontFormatException
+
+	public double calcStringWidth(@Nonnull String fontName, float ptSize, @Nonnull String text) throws IOException, FontFormatException
 	{
 		Font font = loadFont(fontName).deriveFont(ptSize);
 		return font.getStringBounds(text, frc).getWidth();
 	}
 
-	public float calcFontSize(String fontName, float maxPtSize, String text, double maxWidth) throws IOException, FontFormatException
+	public float calcFontSize(@Nonnull String fontName, float maxPtSize, @Nonnull String text, double maxWidth) throws IOException, FontFormatException
 	{
 		float currSize = maxPtSize;
 		Font font = loadFont(fontName);
@@ -73,7 +78,8 @@ public class JasperFontCalculator
 		return currSize;
 	}
 
-	private List<String> splitLineText(Font font, String text, double maxWidth)
+	@Nullable
+	private List<String> splitLineText(@Nonnull Font font, @Nonnull String text, double maxWidth)
 	{
 		List<String> ret = new ArrayList<String>();
 		char []carr = text.toCharArray();
@@ -127,7 +133,8 @@ public class JasperFontCalculator
 		return ret;
 	}
 
-	public JasperTextField calcTextFieldBySize(String fontName, float maxPtSize, String text, double maxWidth, double maxHeight) throws IOException, FontFormatException
+	@Nullable
+	public JasperTextField calcTextFieldBySize(@Nonnull String fontName, float maxPtSize, @Nonnull String text, double maxWidth, double maxHeight) throws IOException, FontFormatException
 	{
 		float currSize = maxPtSize;
 		Font font = loadFont(fontName);

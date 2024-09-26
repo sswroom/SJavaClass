@@ -3,9 +3,11 @@ package org.sswr.util.data;
 import java.util.Comparator;
 import java.util.List;
 
+import jakarta.annotation.Nonnull;
+
 public class ArtificialQuickSort
 {
-	private static <T> void presort(List<T> arr, Comparator<T> func, int left, int right)
+	private static <T> void presort(@Nonnull List<T> arr, @Nonnull Comparator<T> func, int left, int right)
 	{
 		T temp = null;
 	
@@ -22,7 +24,7 @@ public class ArtificialQuickSort
 		}
 	}
 	
-	private static <T extends Comparable<T>> void presort(List<T> arr, int left, int right)
+	private static <T extends Comparable<T>> void presort(@Nonnull List<T> arr, int left, int right)
 	{
 		T temp = null;
 	
@@ -39,7 +41,7 @@ public class ArtificialQuickSort
 		}
 	}	
 
-	private static <T> void sort(List<T> arr, Comparator<T> func, int firstIndex, int lastIndex)
+	private static <T> void sort(@Nonnull List<T> arr, @Nonnull Comparator<T> func, int firstIndex, int lastIndex)
 	{
 		int levi[] = new int[32768];
 		int desni[] = new int[32768];
@@ -115,7 +117,7 @@ public class ArtificialQuickSort
 		}
 	}
 	
-	private static <T extends Comparable<T>> void sort(List<T> arr, int firstIndex, int lastIndex)
+	private static <T extends Comparable<T>> void sort(@Nonnull List<T> arr, int firstIndex, int lastIndex)
 	{
 		int levi[] = new int[32768];
 		int desni[] = new int[32768];
@@ -191,12 +193,12 @@ public class ArtificialQuickSort
 		}
 	}
 	
-	public static <T> void sort(List<T> arr, Comparator<T> func)
+	public static <T> void sort(@Nonnull List<T> arr, @Nonnull Comparator<T> func)
 	{
 		sort(arr, func, 0, arr.size() - 1);
 	}
 
-	public static <T extends Comparable<T>> void sort(List<T> arr)
+	public static <T extends Comparable<T>> void sort(@Nonnull List<T> arr)
 	{
 		sort(arr, 0, arr.size() - 1);
 	}

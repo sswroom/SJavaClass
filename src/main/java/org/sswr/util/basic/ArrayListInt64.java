@@ -2,7 +2,6 @@ package org.sswr.util.basic;
 
 import jakarta.annotation.Nullable;
 
-//NN
 public class ArrayListInt64 extends SortableArrayList<Long>
 {
 	private static final long serialVersionUID = 5314653313L;

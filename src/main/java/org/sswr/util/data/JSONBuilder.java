@@ -18,6 +18,9 @@ import org.sswr.util.math.geometry.Polyline;
 import org.sswr.util.math.geometry.Vector2D;
 import org.sswr.util.math.geometry.Vector2D.VectorType;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class JSONBuilder
 {
 	public enum ObjectType
@@ -32,7 +35,7 @@ public class JSONBuilder
 	private ObjectType currType;
 	private boolean isFirst;
 
-	private void appendStr(String val)
+	private void appendStr(@Nonnull String val)
 	{
 		char carr[] = val.toCharArray();
 		char c;
@@ -83,7 +86,7 @@ public class JSONBuilder
 		}
 	}
 
-	private void appendTSStr(Timestamp ts)
+	private void appendTSStr(@Nullable Timestamp ts)
 	{
 		if (ts == null)
 		{
@@ -95,7 +98,7 @@ public class JSONBuilder
 		}
 	}
 
-	private void appendDateStr(Date dat)
+	private void appendDateStr(@Nullable Date dat)
 	{
 		if (dat == null)
 		{
@@ -107,7 +110,7 @@ public class JSONBuilder
 		}
 	}
 
-	private void appendCoord2D(Coord2DDbl coord)
+	private void appendCoord2D(@Nonnull Coord2DDbl coord)
 	{
 		this.sb.append('[');
 		this.appendDouble(coord.x);
@@ -116,7 +119,7 @@ public class JSONBuilder
 		this.sb.append(']');
 	}
 
-	private void appendCoord2DArray(Coord2DDbl[] coordList)
+	private void appendCoord2DArray(@Nullable Coord2DDbl[] coordList)
 	{
 		this.sb.append('[');
 		if (coordList != null && coordList.length > 0)
@@ -133,7 +136,7 @@ public class JSONBuilder
 		this.sb.append(']');
 	}
 
-	private void appendCoordPL(Polyline pl)
+	private void appendCoordPL(@Nonnull Polyline pl)
 	{
 		Iterator<LineString> it = pl.iterator();
 		this.sb.append('[');
@@ -154,7 +157,7 @@ public class JSONBuilder
 		this.sb.append(']');
 	}
 
-	private void appendCoordPG(Polygon pg)
+	private void appendCoordPG(@Nonnull Polygon pg)
 	{
 		Iterator<LinearRing> it = pg.iterator();
 		this.sb.append('[');
@@ -175,7 +178,7 @@ public class JSONBuilder
 		this.sb.append(']');
 	}
 
-	private void appendGeometry(Vector2D vec)
+	private void appendGeometry(@Nonnull Vector2D vec)
 	{
 		VectorType vecType = vec.getVectorType();
 		if (vecType == VectorType.Point)
@@ -243,7 +246,7 @@ public class JSONBuilder
 		}
 	}
 
-	public JSONBuilder(ObjectType rootType)
+	public JSONBuilder(@Nonnull ObjectType rootType)
 	{
 		this.objTypes = new ArrayList<ObjectType>();
 		this.sb = new StringBuilder();
@@ -301,7 +304,7 @@ public class JSONBuilder
 		return true;
 	}
 
-	public boolean arrayAddStr(String val)
+	public boolean arrayAddStr(@Nullable String val)
 	{
 		if (this.currType != ObjectType.OT_ARRAY)
 			return false;
@@ -368,7 +371,7 @@ public class JSONBuilder
 		return true;
 	}
 
-	public boolean objectAddFloat64(String name, double val)
+	public boolean objectAddFloat64(@Nonnull String name, double val)
 	{
 		if (this.currType != ObjectType.OT_OBJECT)
 			return false;
@@ -384,7 +387,7 @@ public class JSONBuilder
 		return true;
 	}
 
-	public boolean objectAddNFloat64(String name, Double val)
+	public boolean objectAddNFloat64(@Nonnull String name, Double val)
 	{
 		if (this.currType != ObjectType.OT_OBJECT)
 			return false;
@@ -403,7 +406,7 @@ public class JSONBuilder
 		return true;
 	}
 
-	public boolean objectAddInt32(String name, int val)
+	public boolean objectAddInt32(@Nonnull String name, int val)
 	{
 		if (this.currType != ObjectType.OT_OBJECT)
 			return false;
@@ -419,7 +422,7 @@ public class JSONBuilder
 		return true;
 	}
 
-	public boolean objectAddNInt32(String name, Integer val)
+	public boolean objectAddNInt32(@Nonnull String name, @Nullable Integer val)
 	{
 		if (this.currType != ObjectType.OT_OBJECT)
 			return false;
@@ -438,7 +441,7 @@ public class JSONBuilder
 		return true;
 	}
 
-	public boolean objectAddInt64(String name, long val)
+	public boolean objectAddInt64(@Nonnull String name, long val)
 	{
 		if (this.currType != ObjectType.OT_OBJECT)
 			return false;
@@ -454,7 +457,7 @@ public class JSONBuilder
 		return true;
 	}
 
-	public boolean objectAddBool(String name, boolean val)
+	public boolean objectAddBool(@Nonnull String name, boolean val)
 	{
 		if (this.currType != ObjectType.OT_OBJECT)
 			return false;
@@ -470,7 +473,7 @@ public class JSONBuilder
 		return true;
 	}
 
-	public boolean objectAddStr(String name, String val)
+	public boolean objectAddStr(@Nonnull String name, String val)
 	{
 		if (this.currType != ObjectType.OT_OBJECT)
 			return false;
@@ -493,7 +496,7 @@ public class JSONBuilder
 		return true;
 	}
 
-	public boolean objectAddArrayStr(String name, String value, String splitChar)
+	public boolean objectAddArrayStr(@Nonnull String name, @Nonnull String value, @Nonnull String splitChar)
 	{
 		if (this.currType != ObjectType.OT_OBJECT)
 			return false;
@@ -523,7 +526,7 @@ public class JSONBuilder
 		return true;
 	}
 
-	public boolean objectAddChar(String name, char val)
+	public boolean objectAddChar(@Nonnull String name, char val)
 	{
 		if (this.currType != ObjectType.OT_OBJECT)
 			return false;
@@ -547,7 +550,7 @@ public class JSONBuilder
 	}
 
 
-	public boolean objectAddTSStr(String name, Timestamp ts)
+	public boolean objectAddTSStr(@Nonnull String name, @Nullable Timestamp ts)
 	{
 		if (this.currType != ObjectType.OT_OBJECT)
 			return false;
@@ -563,7 +566,7 @@ public class JSONBuilder
 		return true;
 	}
 
-	public boolean objectAddDateStr(String name, Date dat)
+	public boolean objectAddDateStr(@Nonnull String name, @Nullable Date dat)
 	{
 		if (this.currType != ObjectType.OT_OBJECT)
 			return false;
@@ -579,7 +582,7 @@ public class JSONBuilder
 		return true;
 	}
 
-	public boolean objectAddNull(String name)
+	public boolean objectAddNull(@Nonnull String name)
 	{
 		if (this.currType != ObjectType.OT_OBJECT)
 			return false;
@@ -594,12 +597,12 @@ public class JSONBuilder
 		return true;
 	}
 
-	public boolean objectAddGeometry(String name, Geometry geom)
+	public boolean objectAddGeometry(@Nonnull String name, @Nonnull Geometry geom)
 	{
 		return objectAddGeometry(name, GeometryUtil.toVector2D(geom));
 	}
 	
-	public boolean objectAddGeometry(String name, Vector2D vec)
+	public boolean objectAddGeometry(@Nonnull String name, @Nullable Vector2D vec)
 	{
 		if (this.currType != ObjectType.OT_OBJECT)
 			return false;
@@ -622,7 +625,7 @@ public class JSONBuilder
 		return true;
 	}
 
-	public boolean objectBeginArray(String name)
+	public boolean objectBeginArray(@Nonnull String name)
 	{
 		if (this.currType != ObjectType.OT_OBJECT)
 			return false;
@@ -640,7 +643,7 @@ public class JSONBuilder
 		return true;
 	}
 
-	public boolean objectBeginObject(String name)
+	public boolean objectBeginObject(@Nonnull String name)
 	{
 		if (this.currType != ObjectType.OT_OBJECT)
 			return false;
@@ -701,6 +704,7 @@ public class JSONBuilder
 		this.currType = ObjectType.OT_END;		
 	}
 
+	@Nonnull
 	public String toString()
 	{
 		this.endBuild();
