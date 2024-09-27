@@ -21,6 +21,9 @@ import org.sswr.util.data.StringUtil;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class StaticImage
 {
 	private BufferedImage img;
@@ -28,17 +31,19 @@ public class StaticImage
 	private boolean metadataParsed;
 	private EXIFData exif;
 
-	public StaticImage(BufferedImage img, IIOMetadata metadata)
+	public StaticImage(@Nonnull BufferedImage img, @Nullable IIOMetadata metadata)
 	{
 		this.img = img;
 		this.metadata = metadata;
 	}
 
+	@Nonnull
 	public BufferedImage getBufferedImage()
 	{
 		return this.img;
 	}
 
+	@Nullable
 	public IIOMetadata getMetadata()
 	{
 		return this.metadata;
@@ -59,6 +64,7 @@ public class StaticImage
 		return 1.0;
 	}
 
+	@Nonnull
 	public static String getBufferedImageTypeString(int type)
 	{
 		switch (type)
@@ -96,6 +102,7 @@ public class StaticImage
 		}
 	}
 
+	@Nonnull
 	public static String getTransparencyString(int transparency)
 	{
 		switch (transparency)
@@ -111,6 +118,7 @@ public class StaticImage
 		}
 	}
 
+	@Nonnull
 	public static String getTransferTypeString(int transferType)
 	{
 		switch (transferType)
@@ -132,7 +140,7 @@ public class StaticImage
 		}
 	}
 
-	public static void toICC_ProfileString(ICC_Profile profile, StringBuilder sb)
+	public static void toICC_ProfileString(@Nonnull ICC_Profile profile, @Nonnull StringBuilder sb)
 	{
 		try
 		{
@@ -145,7 +153,7 @@ public class StaticImage
 		}
 	}
 
-	public static void toColorSpaceString(ColorSpace cs, StringBuilder sb)
+	public static void toColorSpaceString(@Nonnull ColorSpace cs, @Nonnull StringBuilder sb)
 	{
 		if (cs instanceof ICC_ColorSpace)
 		{
@@ -162,7 +170,7 @@ public class StaticImage
 		}
 	}
 
-	public static void toColorModelString(ColorModel cm, StringBuilder sb)
+	public static void toColorModelString(@Nonnull ColorModel cm, @Nonnull StringBuilder sb)
 	{
 		int i;
 		int j = cm.getNumComponents();
@@ -199,7 +207,7 @@ public class StaticImage
 		}
 	}
 
-	public static void toBufferedImageString(BufferedImage bImage, StringBuilder sb)
+	public static void toBufferedImageString(@Nonnull BufferedImage bImage, @Nonnull StringBuilder sb)
 	{
 		sb.append("Type = ");
 		sb.append(getBufferedImageTypeString(bImage.getType()));
@@ -277,6 +285,7 @@ public class StaticImage
 		}
 	}
 
+	@Nullable
 	public EXIFData getExif()
 	{
 		if (this.metadata != null)
@@ -287,7 +296,7 @@ public class StaticImage
 		return this.exif;
 	}
 
-	public void toString(StringBuilder sb)
+	public void toString(@Nonnull StringBuilder sb)
 	{
 		toBufferedImageString(this.img, sb);
 		if (this.metadata != null)
@@ -303,6 +312,7 @@ public class StaticImage
 		}
 	}
 
+	@Nonnull
 	public String toString()
 	{
 		StringBuilder sb = new StringBuilder();

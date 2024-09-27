@@ -17,6 +17,9 @@ import org.sswr.util.data.textenc.URIEncoding;
 import org.sswr.util.io.IOStream;
 import org.sswr.util.io.MemoryStream;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public abstract class HTTPClient extends IOStream
 {
 	protected SocketFactory sockf;
@@ -30,7 +33,7 @@ public abstract class HTTPClient extends IOStream
 	protected String url;
 	protected int respCode;
 
-	protected HTTPClient(SocketFactory sockf, boolean kaConn)
+	protected HTTPClient(@Nullable SocketFactory sockf, boolean kaConn)
 	{
 		super("HTTPClient");
 		this.sockf = sockf;
@@ -51,14 +54,15 @@ public abstract class HTTPClient extends IOStream
 		return this.isError();
 	}
 
-	public abstract boolean connect(String url, RequestMethod method, boolean defHeaders);
+	public abstract boolean connect(@Nonnull String url, @Nonnull RequestMethod method, boolean defHeaders);
 
-	public abstract void addHeader(String name, String value);
-	public abstract void addHeaders(Map<String, String> headers);
+	public abstract void addHeader(@Nonnull String name, @Nonnull String value);
+	public abstract void addHeaders(@Nonnull Map<String, String> headers);
 	public abstract void endRequest();
 	public abstract void setReadTimeout(int timeoutMS);
 	
 	public abstract boolean isSecureConn();
+	@Nullable
 	public abstract List<MyX509Cert> getServerCerts();
 
 	public boolean formBegin()
@@ -86,7 +90,7 @@ public abstract class HTTPClient extends IOStream
 		return false;
 	}
 
-	public boolean formAdd(String name, String value)
+	public boolean formAdd(@Nonnull String name, @Nonnull String value)
 	{
 		if (this.sbForm != null)
 		{
@@ -108,7 +112,7 @@ public abstract class HTTPClient extends IOStream
 		return false;
 	}
 
-	public boolean formAddFile(String name, File filePath)
+	public boolean formAddFile(@Nonnull String name, @Nonnull File filePath)
 	{
 		if (this.boundary != null)
 		{
@@ -169,12 +173,12 @@ public abstract class HTTPClient extends IOStream
 		return false;
 	}
 
-	public void addTimeHeader(String name, ZonedDateTime dt)
+	public void addTimeHeader(@Nonnull String name, @Nonnull ZonedDateTime dt)
 	{
 		this.addHeader(name, WebUtil.date2Str(dt));
 	}
 
-	public void addContentType(String contType)
+	public void addContentType(@Nonnull String contType)
 	{
 		this.addHeader("Content-Type", contType);
 	}
@@ -186,12 +190,17 @@ public abstract class HTTPClient extends IOStream
 
 
 	public abstract int getRespHeaderCnt();
+	@Nullable
 	public abstract String getRespHeader(int index);
-	public abstract String getRespHeader(String name);
+	@Nullable
+	public abstract String getRespHeader(@Nonnull String name);
 	public abstract long getContentLength();
+	@Nullable
 	public abstract String getContentEncoding();
+	@Nullable
 	public abstract ZonedDateTime getLastModified();
 
+	@Nullable
 	public String getContentType()
 	{
 		String contType = getRespHeader("Content-Type");
@@ -203,6 +212,7 @@ public abstract class HTTPClient extends IOStream
 		return contType.substring(i + 1).trim();
 	}
 
+	@Nullable
 	public String getURL()
 	{
 		return this.url;
@@ -214,41 +224,38 @@ public abstract class HTTPClient extends IOStream
 		return this.respCode;
 	}
 
+	@Nullable
 	public InetAddress getSvrAddr()
 	{
 		return this.svrAddr;
 	}
 
-	public static HTTPClient createClient(SocketFactory sockf, SSLEngine ssl, String userAgent, boolean kaConn, boolean isSecure)
+	@Nonnull
+	public static HTTPClient createClient(@Nullable SocketFactory sockf, @Nullable SSLEngine ssl, @Nullable String userAgent, boolean kaConn, boolean isSecure)
 	{
 		return new HTTPOSClient(sockf, userAgent, kaConn);
 	}
 
-	public static HTTPClient createConnect(SocketFactory sockf, SSLEngine ssl, String url, RequestMethod method, boolean kaConn)
+	@Nonnull
+	public static HTTPClient createConnect(@Nullable SocketFactory sockf, @Nullable SSLEngine ssl, @Nonnull String url, @Nonnull RequestMethod method, boolean kaConn)
 	{
 		HTTPClient cli = createClient(sockf, ssl, null, kaConn, url.toUpperCase().startsWith("HTTPS://"));
 		cli.connect(url, method, true);
 		return cli;
 	}
 	
-	public static boolean isHTTPURL(String url)
+	public static boolean isHTTPURL(@Nonnull String url)
 	{
-		if (url == null)
-		{
-			return false;
-		}
 		return url.startsWith("http://") || url.startsWith("https://");
 	}
 
-	public static void prepareSSL(SSLEngine ssl)
+	public static void prepareSSL(@Nullable SSLEngine ssl)
 	{
 	}
 
-	public static boolean loadContent(SocketFactory sockf, SSLEngine ssl, String url, IOStream stm, long maxSize)
+	public static boolean loadContent(@Nullable SocketFactory sockf, @Nullable SSLEngine ssl, @Nonnull String url, @Nonnull IOStream stm, long maxSize)
 	{
 		HTTPClient cli = HTTPClient.createConnect(sockf, ssl, url, RequestMethod.HTTP_GET, true);
-		if (cli == null)
-			return false;
 		if (cli.getRespStatus() != 200)
 		{
 			cli.close();
@@ -270,11 +277,9 @@ public abstract class HTTPClient extends IOStream
 		return true;
 	}
 
-	public static boolean loadContent(SocketFactory sockf, SSLEngine ssl, String url, StringBuilder sb, long maxSize)
+	public static boolean loadContent(@Nullable SocketFactory sockf, @Nullable SSLEngine ssl, @Nonnull String url, @Nonnull StringBuilder sb, long maxSize)
 	{
 		HTTPClient cli = HTTPClient.createConnect(sockf, ssl, url, RequestMethod.HTTP_GET, true);
-		if (cli == null)
-			return false;
 		if (cli.getRespStatus() != 200)
 		{
 			cli.close();

@@ -1,5 +1,8 @@
 package org.sswr.util.media;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public abstract class LUT
 {
 	protected String remark;
@@ -27,11 +30,12 @@ public abstract class LUT
 		this.remark = null;
 	}
 
-	public void setRemark(String remark)
+	public void setRemark(@Nullable String remark)
 	{
 		this.remark = remark;
 	}
 
+	@Nullable
 	public String getRemark()
 	{
 		return this.remark;
@@ -52,14 +56,15 @@ public abstract class LUT
 		return this.outputCh;
 	}
 
-	public abstract void getValueUInt8(int inputVals[], int inputIndex, int outVals[], int outputIndex);
-	public abstract void getValueUInt16(int inputVals[], int inputIndex, int outVals[], int outputIndex);
-	public abstract void getValueSingle(int inputVals[], int inputIndex, float outVals[], int outputIndex);
+	public abstract void getValueUInt8(@Nonnull int inputVals[], int inputIndex, @Nonnull int outVals[], int outputIndex);
+	public abstract void getValueUInt16(@Nonnull int inputVals[], int inputIndex, @Nonnull int outVals[], int outputIndex);
+	public abstract void getValueSingle(@Nonnull int inputVals[], int inputIndex, @Nonnull float outVals[], int outputIndex);
 
+	@Nonnull
 	public abstract LUT clone();
-	public abstract boolean tableEquals(LUT lut);
+	public abstract boolean tableEquals(@Nonnull LUT lut);
 
-	public boolean equals(LUT lut)
+	public boolean equals(@Nonnull LUT lut)
 	{
 		if (!this.getClass().equals(lut.getClass()))
 			return false;

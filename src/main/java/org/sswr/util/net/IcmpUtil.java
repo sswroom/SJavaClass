@@ -12,9 +12,11 @@ import org.sswr.util.data.StringUtil;
 import org.sswr.util.io.OSInfo;
 import org.sswr.util.io.UTF8Reader;
 
+import jakarta.annotation.Nonnull;
+
 public class IcmpUtil
 {
-	public static boolean sendEcho(InetAddress addr, SharedInt respTime_us, SharedInt ttl) throws IOException
+	public static boolean sendEcho(@Nonnull InetAddress addr, @Nonnull SharedInt respTime_us, @Nonnull SharedInt ttl) throws IOException
 	{
 		switch (OSInfo.getOSType())
 		{

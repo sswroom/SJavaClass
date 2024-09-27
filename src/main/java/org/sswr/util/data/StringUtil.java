@@ -726,11 +726,11 @@ public class StringUtil
 	* @return     null if it is not valid Integer
 	*/
 	@Nullable
-	public static Integer toInteger(@Nonnull String s)
+	public static Integer toInteger(@Nullable String s)
 	{
 		try
 		{
-			if (isNullOrEmpty(s))
+			if (s == null || s.length() == 0)
 			{
 				return null;
 			}
@@ -768,11 +768,11 @@ public class StringUtil
 	* @return     null if it is not valid Long
 	*/
 	@Nullable
-	public static Long toLong(@Nonnull String s)
+	public static Long toLong(@Nullable String s)
 	{
 		try
 		{
-			if (isNullOrEmpty(s))
+			if (s == null || s.length() == 0)
 			{
 				return null;
 			}

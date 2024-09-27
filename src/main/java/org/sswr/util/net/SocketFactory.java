@@ -7,6 +7,9 @@ import java.net.Proxy.Type;
 
 import org.sswr.util.io.OSInfo;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public abstract class SocketFactory
 {
 	private String proxyHost;
@@ -20,6 +23,7 @@ public abstract class SocketFactory
 
 	public abstract InetAddress[] getDefDNS();
 
+	@Nonnull
 	public static SocketFactory create()
 	{
 		switch (OSInfo.getOSType())
@@ -37,6 +41,7 @@ public abstract class SocketFactory
 		}
 	}
 
+	@Nullable
 	public Proxy getProxy()
 	{
 		if (this.proxyHost == null || this.proxyPort == 0)
@@ -47,7 +52,7 @@ public abstract class SocketFactory
 		return proxy;
 	}
 
-	public void setProxy(String host, int port)
+	public void setProxy(@Nullable String host, int port)
 	{
 		this.proxyHost = host;
 		this.proxyPort = port;

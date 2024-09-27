@@ -9,6 +9,8 @@ import org.sswr.util.net.DNSClient;
 import org.sswr.util.net.DNSRequestAnswer;
 import org.sswr.util.net.SocketFactory;
 
+import jakarta.annotation.Nonnull;
+
 public class EmailValidator
 {
 	public enum Status
@@ -24,7 +26,7 @@ public class EmailValidator
 
 	private DNSClient dnsClient;
 
-	public EmailValidator(SocketFactory sockf)
+	public EmailValidator(@Nonnull SocketFactory sockf)
 	{
 		InetAddress[] dnsList = sockf.getDefDNS();
 		if (dnsList != null && dnsList.length > 0)
@@ -42,7 +44,8 @@ public class EmailValidator
 		}
 	}
 
-	public Status validate(String emailAddr)
+	@Nonnull
+	public Status validate(@Nonnull String emailAddr)
 	{
 		SMTPConn conn;
 		String emailDomain;
@@ -117,7 +120,8 @@ public class EmailValidator
 		return Status.S_VALID;
 	}
 
-	public static String StatusGetName(Status status)
+	@Nonnull
+	public static String StatusGetName(@Nonnull Status status)
 	{
 		switch (status)
 		{

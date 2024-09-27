@@ -1,8 +1,11 @@
 package org.sswr.util.net;
 
+import jakarta.annotation.Nonnull;
+
 public class MIME
 {
-	public static String getMIMEFromExt(String ext)
+	@Nonnull
+	public static String getMIMEFromExt(@Nonnull String ext)
 	{
 		if (ext.length() > 4 || ext.length() < 2)
 		{
@@ -188,7 +191,8 @@ public class MIME
 		}
 	}
 	
-	public static String getMIMEFromFileName(String fileName)
+	@Nonnull
+	public static String getMIMEFromFileName(@Nonnull String fileName)
 	{
 		int i = fileName.lastIndexOf('.');
 		if (i == -1)

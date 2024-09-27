@@ -1,10 +1,12 @@
 package org.sswr.util.media.cs;
 
+import jakarta.annotation.Nonnull;
+
 public class TransferFuncParam1 extends TransferFunc
 {
 	private double param2;
 
-	public TransferFuncParam1(double params[])
+	public TransferFuncParam1(@Nonnull double params[])
 	{
 		super(TransferType.PARAM1, 2.2);
 		this.param.set(TransferType.PARAM1, params);

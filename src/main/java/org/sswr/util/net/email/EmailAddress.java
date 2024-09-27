@@ -6,41 +6,45 @@ import java.util.Objects;
 
 import org.sswr.util.data.StringUtil;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class EmailAddress
 {
-	private String name;
-	private String address;
+	private @Nullable String name;
+	private @Nonnull String address;
 
-	public EmailAddress() {
-	}
-
-	public EmailAddress(String name, String address) {
+	public EmailAddress(@Nullable String name, @Nonnull String address) {
 		this.name = name;
 		this.address = address;
 	}
 
+	@Nullable
 	public String getName() {
 		return this.name;
 	}
 
-	public void setName(String name) {
+	public void setName(@Nullable String name) {
 		this.name = name;
 	}
 
+	@Nonnull
 	public String getAddress() {
 		return this.address;
 	}
 
-	public void setAddress(String address) {
+	public void setAddress(@Nonnull String address) {
 		this.address = address;
 	}
 
-	public EmailAddress name(String name) {
+	@Nonnull
+	public EmailAddress name(@Nullable String name) {
 		setName(name);
 		return this;
 	}
 
-	public EmailAddress address(String address) {
+	@Nonnull
+	public EmailAddress address(@Nonnull String address) {
 		setAddress(address);
 		return this;
 	}
@@ -64,6 +68,7 @@ public class EmailAddress
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
+		String name = this.name;
 		if (name != null && name.length() > 0)
 		{
 			if (StringUtil.isNonASCII(name))
@@ -84,7 +89,8 @@ public class EmailAddress
 		return sb.toString();
 	}
 
-	public static EmailAddress parse(String val)
+	@Nullable
+	public static EmailAddress parse(@Nonnull String val)
 	{
 		int i;
 		if (val.endsWith(">") && (i = val.indexOf("<")) >= 0)
@@ -111,7 +117,8 @@ public class EmailAddress
 		}
 	}
 
-	public static List<EmailAddress> parseList(String val)
+	@Nullable
+	public static List<EmailAddress> parseList(@Nonnull String val)
 	{
 		if (val == null || val.length() == 0)
 			return null;

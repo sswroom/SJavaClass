@@ -4,6 +4,8 @@ import java.util.Objects;
 
 import org.sswr.util.data.DataTools;
 
+import jakarta.annotation.Nullable;
+
 public class MACEntry
 {
 	private long rangeStart;
@@ -13,7 +15,7 @@ public class MACEntry
 	public MACEntry() {
 	}
 
-	public MACEntry(long rangeStart, long rangeEnd, String name) {
+	public MACEntry(long rangeStart, long rangeEnd, @Nullable String name) {
 		this.rangeStart = rangeStart;
 		this.rangeEnd = rangeEnd;
 		this.name = name;
@@ -35,11 +37,12 @@ public class MACEntry
 		this.rangeEnd = rangeEnd;
 	}
 
+	@Nullable
 	public String getName() {
 		return this.name;
 	}
 
-	public void setName(String name) {
+	public void setName(@Nullable String name) {
 		this.name = name;
 	}
 

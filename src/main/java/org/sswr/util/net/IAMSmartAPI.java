@@ -7,6 +7,7 @@ import java.time.ZonedDateTime;
 
 import org.sswr.util.crypto.AES256GCM;
 import org.sswr.util.crypto.CipherPadding;
+import org.sswr.util.crypto.EncryptionException;
 import org.sswr.util.crypto.HMAC;
 import org.sswr.util.crypto.MyX509File;
 import org.sswr.util.crypto.MyX509Key;
@@ -22,6 +23,9 @@ import org.sswr.util.data.StringUtil;
 import org.sswr.util.data.JSONBuilder.ObjectType;
 import org.sswr.util.data.textbinenc.Base64Enc;
 import org.sswr.util.data.textenc.FormEncoding;
+
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 public class IAMSmartAPI {
 	private static final boolean VERBOSE = false;
@@ -71,7 +75,7 @@ public class IAMSmartAPI {
 	private String clientSecret;
 	private RandomBytesGenerator rand;
 
-	private void initHTTPClient(HTTPClient cli, String content)
+	private void initHTTPClient(@Nonnull HTTPClient cli, @Nonnull String content)
 	{
 		byte[] buff;
 		String signatureMethod = "HmacSHA256";
@@ -105,7 +109,7 @@ public class IAMSmartAPI {
 		}		
 	}
 
-	private JSONBase postEncReq(String url, CEKInfo cek, String jsonMsg)
+	private JSONBase postEncReq(@Nonnull String url, @Nonnull CEKInfo cek, @Nonnull String jsonMsg)
 	{
 		RandomBytesGenerator byteGen = new RandomBytesGenerator();
 		byte[] jsonMsgBuff = jsonMsg.getBytes(StandardCharsets.UTF_8);
@@ -113,7 +117,16 @@ public class IAMSmartAPI {
 		ByteTool.writeMInt32(msgBuff, 0, 12);
 		ByteTool.copyArray(msgBuff, 4, byteGen.nextBytes(12), 0, 12);
 		AES256GCM aes = new AES256GCM(cek.key, 0, cek.key.length, msgBuff, 4);
-		byte[] encBuff = aes.encrypt(jsonMsgBuff);
+		byte[] encBuff;
+		try
+		{
+			encBuff = aes.encrypt(jsonMsgBuff);
+		}
+		catch (EncryptionException ex)
+		{
+			if (VERBOSE) ex.printStackTrace();
+			return null;
+		}
 		if (encBuff.length != jsonMsg.length() + 16)
 		{
 			return null;
@@ -192,7 +205,17 @@ public class IAMSmartAPI {
 			return null;
 		}
 		aes.setIV(msgBuff, 4);
-		byte[] decBuff = aes.decrypt(msgBuff, 16, msgBuff.length - 16);
+		byte[] decBuff;
+		try
+		{
+			decBuff = aes.decrypt(msgBuff, 16, msgBuff.length - 16);
+		}
+		catch (EncryptionException ex)
+		{
+			if (VERBOSE)
+				ex.printStackTrace();
+			return null;
+		}
 		if (decBuff.length != msgBuff.length - 32)
 		{
 			if (VERBOSE)
@@ -216,75 +239,77 @@ public class IAMSmartAPI {
 		return decJSON;
 	}
 
-	private String parseAddress(JSONBase json, String path)
+	@Nullable
+	private String parseAddress(@Nonnull JSONBase json, @Nonnull String path)
 	{
 		JSONBase addr;
 		if ((addr = json.getValue(path)) == null)
 			return null;
 		StringBuilder sb = new StringBuilder();
 		String s;
-		if ((json = addr.getValue("ChiPremisesAddress")) != null)
+		JSONBase obj;
+		if ((obj = addr.getValue("ChiPremisesAddress")) != null)
 		{
-			sb.append(StringUtil.orEmpty(json.getValueString("Region")));
-			sb.append(StringUtil.orEmpty(json.getValueString("ChiDistrict.Sub-district")));
-			sb.append(StringUtil.orEmpty(json.getValueString("ChiStreet.StreetName")));
-			sb.append(StringUtil.orEmpty(json.getValueString("ChiStreet.BuildingNoFrom")));
+			sb.append(StringUtil.orEmpty(obj.getValueString("Region")));
+			sb.append(StringUtil.orEmpty(obj.getValueString("ChiDistrict.Sub-district")));
+			sb.append(StringUtil.orEmpty(obj.getValueString("ChiStreet.StreetName")));
+			sb.append(StringUtil.orEmpty(obj.getValueString("ChiStreet.BuildingNoFrom")));
 			sb.append("號");
-			sb.append(StringUtil.orEmpty(json.getValueString("BuildingName")));
-			sb.append(StringUtil.orEmpty(json.getValueString("ChiBlock.BlockNo")));
-			sb.append(StringUtil.orEmpty(json.getValueString("ChiBlock.BlockDescriptor")));
-			sb.append(StringUtil.orEmpty(json.getValueString("Chi3dAddress.ChiFloor.FloorNum")));
-			sb.append(StringUtil.orEmpty(json.getValueString("Chi3dAddress.ChiUnit.UnitNo")));
-			sb.append(StringUtil.orEmpty(json.getValueString("Chi3dAddress.ChiUnit.UnitDescriptor")));
+			sb.append(StringUtil.orEmpty(obj.getValueString("BuildingName")));
+			sb.append(StringUtil.orEmpty(obj.getValueString("ChiBlock.BlockNo")));
+			sb.append(StringUtil.orEmpty(obj.getValueString("ChiBlock.BlockDescriptor")));
+			sb.append(StringUtil.orEmpty(obj.getValueString("Chi3dAddress.ChiFloor.FloorNum")));
+			sb.append(StringUtil.orEmpty(obj.getValueString("Chi3dAddress.ChiUnit.UnitNo")));
+			sb.append(StringUtil.orEmpty(obj.getValueString("Chi3dAddress.ChiUnit.UnitDescriptor")));
 			return sb.toString();
 		}
-		else if ((json = addr.getValue("EngPremisesAddress")) != null)
+		else if ((obj = addr.getValue("EngPremisesAddress")) != null)
 		{
-			if (json.getValue("Eng3dAddress.EngUnit") != null)
+			if (obj.getValue("Eng3dAddress.EngUnit") != null)
 			{
-				sb.append(StringUtil.orEmpty(json.getValueString("Eng3dAddress.EngUnit.UnitDescriptor")));
+				sb.append(StringUtil.orEmpty(obj.getValueString("Eng3dAddress.EngUnit.UnitDescriptor")));
 				sb.append(' ');
-				sb.append(StringUtil.orEmpty(json.getValueString("Eng3dAddress.EngUnit.UnitNo")));
+				sb.append(StringUtil.orEmpty(obj.getValueString("Eng3dAddress.EngUnit.UnitNo")));
 				sb.append(", ");
 			}
-			if ((s = json.getValueString("Eng3dAddress.EngFloor.FloorNum")) != null)
+			if ((s = obj.getValueString("Eng3dAddress.EngFloor.FloorNum")) != null)
 			{
 				sb.append(s);
 				sb.append("/F ");
 			}
-			if (json.getValue("EngBlock") != null)
+			if (obj.getValue("EngBlock") != null)
 			{
-				sb.append(StringUtil.orEmpty(json.getValueString("EngBlock.BlockDescriptor")));
+				sb.append(StringUtil.orEmpty(obj.getValueString("EngBlock.BlockDescriptor")));
 				sb.append(' ');
-				sb.append(StringUtil.orEmpty(json.getValueString("EngBlock.BlockNo")));
+				sb.append(StringUtil.orEmpty(obj.getValueString("EngBlock.BlockNo")));
 				sb.append(", ");
 			}
-			sb.append(StringUtil.orEmpty(json.getValueString("BuildingName")));
-			if (json.getValue("EngStreet") != null)
+			sb.append(StringUtil.orEmpty(obj.getValueString("BuildingName")));
+			if (obj.getValue("EngStreet") != null)
 			{
 				if (sb.length() > 0)
 					sb.append(", ");
 				boolean found = false;
-				if ((s = json.getValueString("EngStreet.BuildingNoFrom")) != null)
+				if ((s = obj.getValueString("EngStreet.BuildingNoFrom")) != null)
 				{
 					if (found) sb.append(' ');
 					sb.append(s);
 					found = true;
 				}
-				if ((s = json.getValueString("EngStreet.StreetName")) != null)
+				if ((s = obj.getValueString("EngStreet.StreetName")) != null)
 				{
 					if (found) sb.append(' ');
 					sb.append(s);
 					found = true;
 				}
 			}
-			if ((s = json.getValueString("EngDistrict.Sub-district")) != null)
+			if ((s = obj.getValueString("EngDistrict.Sub-district")) != null)
 			{
 				if (sb.length() > 0)
 					sb.append(", ");
 				sb.append(s);
 			}
-			if ((s = json.getValueString("Region")) != null)
+			if ((s = obj.getValueString("Region")) != null)
 			{
 				if (s.equals("KLN"))
 					sb.append(", KOWLOON");
@@ -295,18 +320,18 @@ public class IAMSmartAPI {
 			}
 			return sb.toString();
 		}
-		else if ((json = addr.getValue("FreeFormatAddress")) != null)
+		else if ((obj = addr.getValue("FreeFormatAddress")) != null)
 		{
-			sb.append(StringUtil.orEmpty(json.getValueString("AddressLine1")));
+			sb.append(StringUtil.orEmpty(obj.getValueString("AddressLine1")));
 			sb.append(", ");
-			sb.append(StringUtil.orEmpty(json.getValueString("AddressLine2")));
+			sb.append(StringUtil.orEmpty(obj.getValueString("AddressLine2")));
 			sb.append(", ");
-			sb.append(StringUtil.orEmpty(json.getValueString("AddressLine3")));
+			sb.append(StringUtil.orEmpty(obj.getValueString("AddressLine3")));
 			return sb.toString();
 		}
-		else if ((json = addr.getValue("PostBoxAddress")) != null)
+		else if ((obj = addr.getValue("PostBoxAddress")) != null)
 		{
-			if ((addr = json.getValue("EngPostBox")) != null)
+			if ((addr = obj.getValue("EngPostBox")) != null)
 			{
 				sb.append(StringUtil.orEmpty(addr.getValueString("PostOffice")));
 				sb.append(" Box ");
@@ -315,7 +340,7 @@ public class IAMSmartAPI {
 				sb.append(StringUtil.orEmpty(addr.getValueString("PostOfficeRegion")));
 				return sb.toString();
 			}
-			else if ((addr = json.getValue("ChiPostBox")) != null)
+			else if ((addr = obj.getValue("ChiPostBox")) != null)
 			{
 				sb.append(StringUtil.orEmpty(addr.getValueString("PostOfficeRegion")));
 				sb.append(StringUtil.orEmpty(addr.getValueString("PostOffice")));
@@ -328,7 +353,7 @@ public class IAMSmartAPI {
 		return null;		
 	}
 
-	public IAMSmartAPI(SocketFactory sockf, SSLEngine ssl, String domain, String clientID, String clientSecret)
+	public IAMSmartAPI(@Nullable SocketFactory sockf, @Nullable SSLEngine ssl, @Nonnull String domain, @Nonnull String clientID, @Nonnull String clientSecret)
 	{
 		this.sockf = sockf;
 		this.ssl = ssl;
@@ -338,7 +363,7 @@ public class IAMSmartAPI {
 		this.rand = new RandomBytesGenerator();
 	}
 
-	public boolean getKey(MyX509PrivKey privKey, CEKInfo cek)
+	public boolean getKey(@Nonnull MyX509PrivKey privKey, @Nonnull CEKInfo cek)
 	{
 		StringBuilder sbURL = new StringBuilder();
 		sbURL.append("https://");
@@ -499,7 +524,7 @@ public class IAMSmartAPI {
 		return succ;
 	}
 
-	public boolean getToken(String code, boolean directLogin, CEKInfo cek, TokenInfo token)
+	public boolean getToken(@Nonnull String code, boolean directLogin, @Nonnull CEKInfo cek, @Nonnull TokenInfo token)
 	{
 		JSONBuilder jsonMsg = new JSONBuilder(ObjectType.OT_OBJECT);
 		jsonMsg.objectAddStr("code", code);
@@ -526,7 +551,7 @@ public class IAMSmartAPI {
 		return false;
 	}
 
-	public boolean getProfiles(TokenInfo token, String eMEFields, String profileFields, CEKInfo cek, ProfileInfo profiles)
+	public boolean getProfiles(@Nonnull TokenInfo token, @Nonnull String eMEFields, @Nonnull String profileFields, @Nonnull CEKInfo cek, @Nonnull ProfileInfo profiles)
 	{
 		JSONBuilder jsonMsg = new JSONBuilder(ObjectType.OT_OBJECT);
 		jsonMsg.objectAddStr("accessToken", token.accessToken);

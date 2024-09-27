@@ -6,9 +6,12 @@ import org.sswr.util.data.ByteTool;
 import org.sswr.util.data.SharedInt;
 import org.sswr.util.data.StringUtil;
 
+import jakarta.annotation.Nonnull;
+
 public class SNMPUtil
 {
-	public static SNMPErrorStatus pduParseMessage(byte[] pdu, int pduOfst, int size, SharedInt reqId, List<SNMPBindingItem> itemList)
+	@Nonnull
+	public static SNMPErrorStatus pduParseMessage(@Nonnull byte[] pdu, int pduOfst, int size, @Nonnull SharedInt reqId, @Nonnull List<SNMPBindingItem> itemList)
 	{
 		int i;
 		if (pdu[pduOfst + 0] != 0x30)
@@ -194,7 +197,11 @@ public class SNMPUtil
 				itemList.add(item);
 				i += pduLen.value;
 			}
-			return SNMPErrorStatus.getStatus(err);
+			SNMPErrorStatus status = SNMPErrorStatus.getStatus(err);
+			if (status == null)
+				return SNMPErrorStatus.UNKRESP;
+			else
+				return status;
 		}
 		else
 		{
@@ -203,7 +210,8 @@ public class SNMPUtil
 		}
 	}
 	
-	public static SNMPErrorStatus pduParseTrapMessage(byte[] pdu, int pduOfst, int pduSize, SNMPTrapInfo trap, List<SNMPBindingItem> itemList)
+	@Nonnull
+	public static SNMPErrorStatus pduParseTrapMessage(@Nonnull byte[] pdu, int pduOfst, int pduSize, @Nonnull SNMPTrapInfo trap, @Nonnull List<SNMPBindingItem> itemList)
 	{
 		int i;
 		if (pdu[pduOfst + 0] != 0x30)
@@ -439,7 +447,7 @@ public class SNMPUtil
 		}
 	}
 	
-	public static int oidCompare(byte []oid1, int oid1Len, byte[] oid2, int oid2Len)
+	public static int oidCompare(@Nonnull byte []oid1, int oid1Len, @Nonnull byte[] oid2, int oid2Len)
 	{
 		int i = 0;
 		while (true)
@@ -468,7 +476,7 @@ public class SNMPUtil
 		}
 	}
 
-	public static boolean oidStartsWith(byte []oid1, int oid1Len, byte []oid2, int oid2Len)
+	public static boolean oidStartsWith(@Nonnull byte []oid1, int oid1Len, @Nonnull byte []oid2, int oid2Len)
 	{
 		if (oid1Len < oid2Len)
 			return false;
@@ -483,7 +491,7 @@ public class SNMPUtil
 	}
 
 
-	public static void oidToString(byte []pdu, int pduOfst, int pduSize, StringBuilder sb)
+	public static void oidToString(@Nonnull byte []pdu, int pduOfst, int pduSize, @Nonnull StringBuilder sb)
 	{
 		int v = 0;
 		int i = 1;
@@ -503,7 +511,7 @@ public class SNMPUtil
 		}
 	}
 
-	public static int oidCalcPDUSize(String oid)
+	public static int oidCalcPDUSize(@Nonnull String oid)
 	{
 		Integer v;
 		int retSize = 1;
@@ -533,7 +541,7 @@ public class SNMPUtil
 		return retSize;
 	}
 	
-	public static int oidText2PDU(String oid, byte[] pduBuff, int pduOfst)
+	public static int oidText2PDU(@Nonnull String oid, @Nonnull byte[] pduBuff, int pduOfst)
 	{
 		Integer v;
 		int retSize = 1;
@@ -599,6 +607,7 @@ public class SNMPUtil
 		return retSize;
 	}
 
+	@Nonnull
 	public static String typeGetName(byte type)
 	{
 		switch (type & 0xff)
@@ -640,7 +649,7 @@ public class SNMPUtil
 		}
 	}
 
-	public static boolean valueToInt32(byte type, byte[] pduBuff, int pduOfst, int valLen, SharedInt outVal)
+	public static boolean valueToInt32(byte type, @Nonnull byte[] pduBuff, int pduOfst, int valLen, @Nonnull SharedInt outVal)
 	{
 		switch (type)
 		{

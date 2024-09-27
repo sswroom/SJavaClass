@@ -9,6 +9,9 @@ import org.sswr.util.math.unit.Distance;
 import org.sswr.util.math.unit.Distance.DistanceUnit;
 import org.sswr.util.media.PaperSize.PaperType;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class PageSplitter {
 	private double drawWidth;
 	private double drawHeight;
@@ -20,13 +23,14 @@ public class PageSplitter {
 		this.drawHeight = Distance.convert(DistanceUnit.Millimeter, DistanceUnit.Meter, size.getWidth());
 	}
 
-	public void setDrawSize(double width, double height, DistanceUnit unit)
+	public void setDrawSize(double width, double height, @Nonnull DistanceUnit unit)
 	{
 		this.drawWidth = Distance.convert(unit, DistanceUnit.Meter, width);
 		this.drawHeight = Distance.convert(unit, DistanceUnit.Meter, height);
 	}
 
-	public List<RectAreaDbl> splitDrawings(RectAreaDbl objectArea, double objectBuffer, double pageOverlapBuffer, double scale)
+	@Nullable
+	public List<RectAreaDbl> splitDrawings(@Nonnull RectAreaDbl objectArea, double objectBuffer, double pageOverlapBuffer, double scale)
 	{
 		double drawMapWidth = drawWidth * scale;
 		double drawMapHeight = drawHeight * scale;

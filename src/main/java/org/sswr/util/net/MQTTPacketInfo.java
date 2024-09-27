@@ -4,6 +4,8 @@ import java.util.Objects;
 
 import org.sswr.util.data.DataTools;
 
+import jakarta.annotation.Nonnull;
+
 public class MQTTPacketInfo
 {
 	private byte packetType;
@@ -13,7 +15,7 @@ public class MQTTPacketInfo
 	public MQTTPacketInfo() {
 	}
 
-	public MQTTPacketInfo(byte packetType, byte[] content) {
+	public MQTTPacketInfo(byte packetType, @Nonnull byte[] content) {
 		this.packetType = packetType;
 		this.content = content;
 	}
@@ -26,11 +28,12 @@ public class MQTTPacketInfo
 		this.packetType = packetType;
 	}
 
+	@Nonnull
 	public byte[] getContent() {
 		return this.content;
 	}
 
-	public void setContent(byte[] content) {
+	public void setContent(@Nonnull byte[] content) {
 		this.content = content;
 	}
 

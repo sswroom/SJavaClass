@@ -4,9 +4,12 @@ import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.util.List;
 
+import jakarta.annotation.Nonnull;
+
 public class WindowsSocketFactory extends SocketFactory
 {
 	@Override
+	@Nonnull
 	public InetAddress[] getDefDNS()
 	{
 		try

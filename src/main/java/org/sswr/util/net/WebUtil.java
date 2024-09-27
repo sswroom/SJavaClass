@@ -6,9 +6,12 @@ import java.time.ZonedDateTime;
 
 import org.sswr.util.data.DateTimeUtil;
 
+import jakarta.annotation.Nonnull;
+
 public class WebUtil
 {
-	public static String date2Str(ZonedDateTime dt)
+	@Nonnull
+	public static String date2Str(@Nonnull ZonedDateTime dt)
 	{
 		String wds[] = {"Mon, ", "Tue, ", "Wed, ", "Thu, ", "Fri, ", "Sat, ", "Sun, "};
 		ZonedDateTime t = dt.withZoneSameInstant(ZoneOffset.UTC);

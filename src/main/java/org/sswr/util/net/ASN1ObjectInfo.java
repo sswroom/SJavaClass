@@ -1,51 +1,61 @@
 package org.sswr.util.net;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 import org.sswr.util.data.ByteTool;
 import org.sswr.util.data.DataTools;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class ASN1ObjectInfo
 {
 	private String objectName;
 	private String typeName;
 	private String typeVal;
-	private byte []oid;
+	private @Nonnull byte []oid;
 	private int oidLen;
-	private List<String> valName;
-	private List<String> valCont;
+	private @Nonnull List<String> valName;
+	private @Nonnull List<String> valCont;
 
 	public ASN1ObjectInfo()
 	{
 		oid = new byte[32];
 		this.oidLen = 0;
+		this.valName = new ArrayList<String>();
+		this.valCont = new ArrayList<String>();
 	}
 
+	@Nullable
 	public String getObjectName() {
 		return this.objectName;
 	}
 
-	public void setObjectName(String objectName) {
+	public void setObjectName(@Nullable String objectName) {
 		this.objectName = objectName;
 	}
 
+	@Nullable
 	public String getTypeName() {
 		return this.typeName;
 	}
 
-	public void setTypeName(String typeName) {
+	public void setTypeName(@Nullable String typeName) {
 		this.typeName = typeName;
 	}
 
+	@Nullable
 	public String getTypeVal() {
 		return this.typeVal;
 	}
 
-	public void setTypeVal(String typeVal) {
+	public void setTypeVal(@Nullable String typeVal) {
 		this.typeVal = typeVal;
 	}
 
+	@Nonnull
 	public byte []getOid() {
 		return this.oid;
 	}
@@ -75,19 +85,21 @@ public class ASN1ObjectInfo
 		this.oid[this.oidLen++] = oidByte;
 	}
 
+	@Nonnull
 	public List<String> getValName() {
 		return this.valName;
 	}
 
-	public void setValName(List<String> valName) {
+	public void setValName(@Nonnull List<String> valName) {
 		this.valName = valName;
 	}
 
+	@Nonnull
 	public List<String> getValCont() {
 		return this.valCont;
 	}
 
-	public void setValCont(List<String> valCont) {
+	public void setValCont(@Nonnull List<String> valCont) {
 		this.valCont = valCont;
 	}
 
@@ -112,7 +124,7 @@ public class ASN1ObjectInfo
 		return DataTools.toObjectString(this);
 	}
 
-	public void copyOidFrom(ASN1ObjectInfo obj)
+	public void copyOidFrom(@Nonnull ASN1ObjectInfo obj)
 	{
 		ByteTool.copyArray(this.oid, 0, obj.oid, 0, obj.oidLen);
 		this.oidLen = obj.oidLen;

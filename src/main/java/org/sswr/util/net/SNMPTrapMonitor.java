@@ -4,12 +4,15 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class SNMPTrapMonitor implements UDPPacketListener
 {
 	private UDPServer svr;
 	private SNMPTrapHandler hdlr;
 
-	public SNMPTrapMonitor(InetAddress bindaddr, SNMPTrapHandler hdlr)
+	public SNMPTrapMonitor(@Nullable InetAddress bindaddr, @Nonnull SNMPTrapHandler hdlr)
 	{
 		this.hdlr = hdlr;
 		this.svr = new UDPServer(bindaddr, 162, null, this, null, null, 2, false);
@@ -26,7 +29,7 @@ public class SNMPTrapMonitor implements UDPPacketListener
 	}
 	
 	@Override
-	public void udpPacketReceived(InetAddress addr, int port, byte[] buff, int ofst, int length)
+	public void udpPacketReceived(@Nonnull InetAddress addr, int port, @Nonnull byte[] buff, int ofst, int length)
 	{
 		SNMPTrapInfo trap = new SNMPTrapInfo();
 		List<SNMPBindingItem> itemList = new ArrayList<SNMPBindingItem>();

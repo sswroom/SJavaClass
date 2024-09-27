@@ -5,6 +5,8 @@ import java.util.Objects;
 
 import org.sswr.util.data.DataTools;
 
+import jakarta.annotation.Nonnull;
+
 public class ASN1ModuleInfo
 {
 	private String moduleName;
@@ -16,7 +18,7 @@ public class ASN1ModuleInfo
 	public ASN1ModuleInfo() {
 	}
 
-	public ASN1ModuleInfo(String moduleName, String moduleFileName, List<String> objKeys, List<ASN1ObjectInfo> objValues, List<ASN1ObjectInfo> oidList) {
+	public ASN1ModuleInfo(@Nonnull String moduleName, @Nonnull String moduleFileName, @Nonnull List<String> objKeys, @Nonnull List<ASN1ObjectInfo> objValues, @Nonnull List<ASN1ObjectInfo> oidList) {
 		this.moduleName = moduleName;
 		this.moduleFileName = moduleFileName;
 		this.objKeys = objKeys;
@@ -24,43 +26,48 @@ public class ASN1ModuleInfo
 		this.oidList = oidList;
 	}
 
+	@Nonnull
 	public String getModuleName() {
 		return this.moduleName;
 	}
 
-	public void setModuleName(String moduleName) {
+	public void setModuleName(@Nonnull String moduleName) {
 		this.moduleName = moduleName;
 	}
 
+	@Nonnull
 	public String getModuleFileName() {
 		return this.moduleFileName;
 	}
 
-	public void setModuleFileName(String moduleFileName) {
+	public void setModuleFileName(@Nonnull String moduleFileName) {
 		this.moduleFileName = moduleFileName;
 	}
 
+	@Nonnull
 	public List<String> getObjKeys() {
 		return this.objKeys;
 	}
 
-	public void setObjKeys(List<String> objKeys) {
+	public void setObjKeys(@Nonnull List<String> objKeys) {
 		this.objKeys = objKeys;
 	}
 
+	@Nonnull
 	public List<ASN1ObjectInfo> getObjValues() {
 		return this.objValues;
 	}
 
-	public void setObjValues(List<ASN1ObjectInfo> objValues) {
+	public void setObjValues(@Nonnull List<ASN1ObjectInfo> objValues) {
 		this.objValues = objValues;
 	}
 
+	@Nonnull
 	public List<ASN1ObjectInfo> getOidList() {
 		return this.oidList;
 	}
 
-	public void setOidList(List<ASN1ObjectInfo> oidList) {
+	public void setOidList(@Nonnull List<ASN1ObjectInfo> oidList) {
 		this.oidList = oidList;
 	}
 
@@ -85,7 +92,7 @@ public class ASN1ModuleInfo
 		return DataTools.toObjectString(this);
 	}
 
-	public void toString(StringBuilder sb)
+	public void toString(@Nonnull StringBuilder sb)
 	{
 		sb.append("Module ");
 		sb.append(this.moduleName);

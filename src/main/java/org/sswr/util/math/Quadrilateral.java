@@ -1,11 +1,13 @@
 package org.sswr.util.math;
 
+import jakarta.annotation.Nonnull;
+
 public class Quadrilateral
 {
-	public Coord2DDbl tl;
-	public Coord2DDbl tr;
-	public Coord2DDbl br;
-	public Coord2DDbl bl;
+	public @Nonnull Coord2DDbl tl;
+	public @Nonnull Coord2DDbl tr;
+	public @Nonnull Coord2DDbl br;
+	public @Nonnull Coord2DDbl bl;
 
 	public Quadrilateral()
 	{
@@ -15,7 +17,7 @@ public class Quadrilateral
 		this.bl = new Coord2DDbl();
 	}
 
-	public Quadrilateral(Coord2DDbl tl, Coord2DDbl tr, Coord2DDbl br, Coord2DDbl bl)
+	public Quadrilateral(@Nonnull Coord2DDbl tl, @Nonnull Coord2DDbl tr, @Nonnull Coord2DDbl br, @Nonnull Coord2DDbl bl)
 	{
 		this.tl = tl;
 		this.tr = tr;
@@ -86,7 +88,8 @@ public class Quadrilateral
 		return br.calcLengTo(bl);
 	}
 
-	public static Quadrilateral fromPolygon(Coord2DDbl []pg)
+	@Nonnull
+	public static Quadrilateral fromPolygon(@Nonnull Coord2DDbl []pg)
 	{
 		double minX = pg[3].x;
 		double minY = pg[3].y;

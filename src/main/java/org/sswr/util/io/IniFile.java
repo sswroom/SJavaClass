@@ -18,16 +18,26 @@ import jakarta.annotation.Nullable;
 
 public class IniFile
 {
-	@Nullable
+	@Nonnull
 	public static ConfigFile parse(@Nonnull InputStream stm, @Nonnull Charset charset) throws IOException
 	{
-		return parseReader(new InputStreamReader(stm, charset));
+		Reader reader = new InputStreamReader(stm, charset);
+		ConfigFile cfg = parseReader(reader);
+		reader.close();
+		if (cfg == null)
+			throw new IOException("Config content empty");
+		return cfg;
 	}
 
-	@Nullable
+	@Nonnull
 	public static ConfigFile parse(String fileName, Charset charset) throws IOException
 	{
-		return parseReader(new FileReader(FileUtil.getRealPath(fileName, false), charset));
+		Reader reader = new FileReader(FileUtil.getRealPath(fileName, false), charset);
+		ConfigFile cfg = parseReader(reader);
+		reader.close();
+		if (cfg == null)
+			throw new IOException("Config content empty");
+		return cfg;
 	}
 
 	@Nullable
@@ -81,6 +91,7 @@ public class IniFile
 				}
 			}
 		}
+		r.close();
 		if (cfg.getCateCount() == 0)
 		{
 			return null;

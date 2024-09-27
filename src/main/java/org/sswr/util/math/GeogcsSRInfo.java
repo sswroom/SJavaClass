@@ -6,6 +6,8 @@ import org.sswr.util.data.DataTools;
 import org.sswr.util.math.CoordinateSystem.PrimemType;
 import org.sswr.util.math.CoordinateSystem.UnitType;
 
+import jakarta.annotation.Nonnull;
+
 public class GeogcsSRInfo
 {
 	private int srid;
@@ -19,7 +21,7 @@ public class GeogcsSRInfo
 	public GeogcsSRInfo() {
 	}
 
-	public GeogcsSRInfo(int srid, int datum, String name, PrimemType primem, UnitType unit, double unitScale) {
+	public GeogcsSRInfo(int srid, int datum, @Nonnull String name, @Nonnull PrimemType primem, @Nonnull UnitType unit, double unitScale) {
 		this.srid = srid;
 		this.datum = datum;
 		this.name = name;
@@ -44,27 +46,30 @@ public class GeogcsSRInfo
 		this.datum = datum;
 	}
 
+	@Nonnull
 	public String getName() {
 		return this.name;
 	}
 
-	public void setName(String name) {
+	public void setName(@Nonnull String name) {
 		this.name = name;
 	}
 
+	@Nonnull
 	public PrimemType getPrimem() {
 		return this.primem;
 	}
 
-	public void setPrimem(PrimemType primem) {
+	public void setPrimem(@Nonnull PrimemType primem) {
 		this.primem = primem;
 	}
 
+	@Nonnull
 	public UnitType getUnit() {
 		return this.unit;
 	}
 
-	public void setUnit(UnitType unit) {
+	public void setUnit(@Nonnull UnitType unit) {
 		this.unit = unit;
 	}
 

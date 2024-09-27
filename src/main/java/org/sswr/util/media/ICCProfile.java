@@ -14,6 +14,7 @@ import org.sswr.util.media.cs.TransferParam;
 import org.sswr.util.media.cs.TransferType;
 
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 public class ICCProfile
 {
@@ -119,6 +120,7 @@ public class ICCProfile
 		return ByteTool.readMInt32(this.iccBuff, 128);
 	}
 
+	@Nullable
 	public LUT createRLUT()
 	{
 		int cnt = ByteTool.readMInt32(this.iccBuff, 128);
@@ -167,6 +169,7 @@ public class ICCProfile
 		return null;
 	}
 	
+	@Nullable
 	public LUT createGLUT()
 	{
 		int cnt = ByteTool.readMInt32(this.iccBuff, 128);
@@ -215,6 +218,7 @@ public class ICCProfile
 		return null;
 	}
 	
+	@Nullable
 	public LUT createBLUT()
 	{
 		int cnt = ByteTool.readMInt32(this.iccBuff, 128);
@@ -263,6 +267,7 @@ public class ICCProfile
 		return null;
 	}
 	
+	@Nullable
 	public TransferParam getRedTransferParam()
 	{
 		int cnt = ByteTool.readMInt32(this.iccBuff, 128);
@@ -296,7 +301,8 @@ public class ICCProfile
 					else
 					{
 						LUT lut = this.createRLUT();
-						param = new TransferParam(lut);
+						if (lut != null)
+							param = new TransferParam(lut);
 					}
 	
 					return param;
@@ -347,6 +353,7 @@ public class ICCProfile
 		return null;
 	}
 	
+	@Nullable
 	public TransferParam getGreenTransferParam()
 	{
 		int cnt = ByteTool.readMInt32(this.iccBuff, 128);
@@ -380,7 +387,8 @@ public class ICCProfile
 					else
 					{
 						LUT lut = this.createGLUT();
-						param = new TransferParam(lut);
+						if (lut != null)
+							param = new TransferParam(lut);
 					}
 	
 	/*				Double gamma;
@@ -435,6 +443,7 @@ public class ICCProfile
 		return null;
 	}
 	
+	@Nullable
 	public TransferParam getBlueTransferParam()
 	{
 		int cnt = ByteTool.readMInt32(this.iccBuff, 128);
@@ -468,7 +477,8 @@ public class ICCProfile
 					else
 					{
 						LUT lut = this.createBLUT();
-						param = new TransferParam(lut);
+						if (lut != null)
+							param = new TransferParam(lut);
 					}
 	
 	/*				Double gamma;
@@ -523,6 +533,7 @@ public class ICCProfile
 		return null;
 	}
 	
+	@Nullable
 	public ColorPrimaries getColorPrimaries()
 	{
 		int cnt = ByteTool.readMInt32(this.iccBuff, 128);
@@ -647,7 +658,8 @@ public class ICCProfile
 			return null;
 		}
 	}
-		
+	
+	@Nonnull
 	public String toString()
 	{
 		StringBuilder sb = new StringBuilder();
@@ -655,7 +667,7 @@ public class ICCProfile
 		return sb.toString();
 	}
 
-	public void toString(StringBuilder sb)
+	public void toString(@Nonnull StringBuilder sb)
 	{
 		LocalDateTime ldt;
 		Vector3 xyz;
@@ -827,6 +839,7 @@ public class ICCProfile
 		}
 	}
 	
+	@Nonnull
 	public static String getNameProfileClass(int val)
 	{
 		switch (val)
@@ -852,6 +865,7 @@ public class ICCProfile
 		}
 	}
 	
+	@Nonnull
 	public static String getNameDataColorspace(int val)
 	{
 		switch (val)
@@ -913,6 +927,7 @@ public class ICCProfile
 		}
 	}
 	
+	@Nonnull
 	public static String getNamePrimaryPlatform(int val)
 	{
 		switch (val)
@@ -932,6 +947,7 @@ public class ICCProfile
 		}
 	}
 	
+	@Nonnull
 	public static String getNameDeviceManufacturer(int val)
 	{
 		switch (val)
@@ -943,6 +959,7 @@ public class ICCProfile
 		}
 	}
 	
+	@Nonnull
 	public static String getNameDeviceModel(int val)
 	{
 		switch (val)
@@ -954,6 +971,7 @@ public class ICCProfile
 		}
 	}
 	
+	@Nonnull
 	public static String getNameTag(int val)
 	{
 		switch (val)
@@ -1065,6 +1083,7 @@ public class ICCProfile
 		}
 	}
 	
+	@Nonnull
 	public static String getNameStandardObserver(int val)
 	{
 		switch (val)
@@ -1080,6 +1099,7 @@ public class ICCProfile
 		}
 	}
 	
+	@Nonnull
 	public static String getNameStandardIlluminent(int val)
 	{
 		switch (val)
@@ -1107,7 +1127,7 @@ public class ICCProfile
 		}
 	}
 
-	public static void getDispCIEXYZ(StringBuilder sb, Vector3 xyz)
+	public static void getDispCIEXYZ(@Nonnull StringBuilder sb, @Nonnull Vector3 xyz)
 	{
 		sb.append("X = ");
 		sb.append(xyz.val[0]);
@@ -1126,7 +1146,7 @@ public class ICCProfile
 		}
 	}	
 
-	public static void getDispTagType(StringBuilder sb, byte buff[], int index, int leng)
+	public static void getDispTagType(@Nonnull StringBuilder sb, @Nonnull byte buff[], int index, int leng)
 	{
 		int typ = ByteTool.readMInt32(buff, index);
 		int nCh;
@@ -1373,8 +1393,8 @@ public class ICCProfile
 		}
 	}
 
-
-	public static TransferType findTransferType(int colorCount, byte[] curveColors, int ofst, SharedDouble gamma)
+	@Nonnull
+	public static TransferType findTransferType(int colorCount, @Nonnull byte[] curveColors, int ofst, @Nonnull SharedDouble gamma)
 	{
 		TransferType trans[] = new TransferType[] {TransferType.SRGB, TransferType.BT709, TransferType.GAMMA, TransferType.LINEAR, TransferType.SMPTE240};
 		int tranCnt = trans.length;

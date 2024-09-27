@@ -10,9 +10,12 @@ import java.util.List;
 import org.sswr.util.data.DataTools;
 import org.sswr.util.io.UTF8Reader;
 
+import jakarta.annotation.Nonnull;
+
 public class LinuxSocketFactory extends SocketFactory
 {
 	@Override
+	@Nonnull
 	public InetAddress[] getDefDNS() {
 		try
 		{

@@ -14,6 +14,9 @@ import org.sswr.util.io.StreamData;
 import org.sswr.util.io.stmdata.FileData;
 import org.sswr.util.io.stmdata.MemoryDataRef;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class WebBrowser
 {
 	private SocketFactory sockf;
@@ -22,7 +25,8 @@ public class WebBrowser
 	private CRC32R hash;
 	private HTTPQueue queue;
 	
-	private String getLocalFileName(String url)
+	@Nullable
+	private String getLocalFileName(@Nonnull String url)
 	{
 		String scheme;
 		StringBuilder sb = new StringBuilder();
@@ -32,7 +36,7 @@ public class WebBrowser
 			sb.append(Path.PATH_SEPERATOR);
 		}
 		scheme = URLString.getURIScheme(url);
-		if (scheme.equals("HTTP") || scheme.equals("HTTPS"))
+		if (scheme != null && (scheme.equals("HTTP") || scheme.equals("HTTPS")))
 		{
 			sb.append(scheme);
 			sb.append(Path.PATH_SEPERATOR);
@@ -53,7 +57,7 @@ public class WebBrowser
 		}
 	}
 
-	public WebBrowser(SocketFactory sockf, SSLEngine ssl, String cacheDir)
+	public WebBrowser(@Nullable SocketFactory sockf, @Nullable SSLEngine ssl, @Nonnull String cacheDir)
 	{
 		this.sockf = sockf;
 		this.ssl = ssl;
@@ -67,7 +71,7 @@ public class WebBrowser
 		this.queue.clear();
 	}
 
-	public StreamData getData(String url, boolean forceReload, SharedObject<String> contentType)
+	public StreamData getData(@Nonnull String url, boolean forceReload, @Nullable SharedObject<String> contentType)
 	{
 		String scheme;
 		PathType pt = Path.getPathType(url);
@@ -86,17 +90,26 @@ public class WebBrowser
 		if (scheme.equals("FILE"))
 		{
 			String filePath = URLString.getURLFilePath(url);
-			FileData fd = new FileData(filePath, false);
-			if (contentType != null)
+			if (filePath != null)
 			{
-				contentType.value = MIME.getMIMEFromFileName(url);
+				FileData fd = new FileData(filePath, false);
+				if (contentType != null)
+				{
+					contentType.value = MIME.getMIMEFromFileName(url);
+				}
+				return fd;
 			}
-			return fd;
+			else
+			{
+				return null;
+			}
 		}
 		else if (scheme.equals("HTTP"))
 		{
 			HTTPData data;
 			String fileName = getLocalFileName(url);
+			if (fileName == null)
+				return null;
 			data = new HTTPData(this.sockf, this.ssl, this.queue, url, fileName, forceReload);
 			return data;
 		}
@@ -104,6 +117,8 @@ public class WebBrowser
 		{
 			HTTPData data;
 			String fileName = getLocalFileName(url);
+			if (fileName == null)
+				return null;
 			data = new HTTPData(this.sockf, this.ssl, this.queue, url, fileName, forceReload);
 			return data;
 		}

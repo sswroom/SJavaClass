@@ -6,6 +6,8 @@ import org.sswr.util.math.geometry.Polyline;
 import org.sswr.util.math.geometry.Vector2D.VectorType;
 import org.sswr.util.math.unit.Distance;
 
+import jakarta.annotation.Nonnull;
+
 public class EarthEllipsoid
 {
 	public enum EarthEllipsoidType
@@ -44,7 +46,7 @@ public class EarthEllipsoid
 	private double eccentricity;
 	private EarthEllipsoidType eet;
 
-	public EarthEllipsoid(EarthEllipsoidType eet)
+	public EarthEllipsoid(@Nonnull EarthEllipsoidType eet)
 	{
 		switch (eet)
 		{
@@ -160,7 +162,7 @@ public class EarthEllipsoid
 		this.eccentricity = Math.sqrt(2 * f - f * f);
 	}
 	
-	public EarthEllipsoid(double semiMajorAxis, double inverseFlattening, EarthEllipsoidType eet)
+	public EarthEllipsoid(double semiMajorAxis, double inverseFlattening, @Nonnull EarthEllipsoidType eet)
 	{
 		this.eet = eet;
 		this.semiMajorAxis = semiMajorAxis;
@@ -170,7 +172,7 @@ public class EarthEllipsoid
 		this.eccentricity = Math.sqrt(2 * f - f * f);
 	}
 
-	public double calSurfaceDistance(double dLat1, double dLon1, double dLat2, double dLon2, Distance.DistanceUnit unit)
+	public double calSurfaceDistance(double dLat1, double dLon1, double dLat2, double dLon2, @Nonnull Distance.DistanceUnit unit)
 	{
 		double r;
 		double rLat1;
@@ -202,7 +204,7 @@ public class EarthEllipsoid
 		return d;
 	}
 	
-	public double calLineStringDistance(LineString lineString, boolean include3D, Distance.DistanceUnit unit)
+	public double calLineStringDistance(@Nonnull LineString lineString, boolean include3D, @Nonnull Distance.DistanceUnit unit)
 	{
 		int nPoint;
 		Coord2DDbl[] points;
@@ -259,7 +261,7 @@ public class EarthEllipsoid
 		}
 	}
 
-	public double calPLDistance(Polyline pl, Distance.DistanceUnit unit)
+	public double calPLDistance(@Nonnull Polyline pl, @Nonnull Distance.DistanceUnit unit)
 	{
 		LineString lineString;
 		int i = pl.getCount();
@@ -274,7 +276,7 @@ public class EarthEllipsoid
 		return totalDist;
 	}
 
-	public double calPLDistance3D(Polyline pl, Distance.DistanceUnit unit)
+	public double calPLDistance3D(@Nonnull Polyline pl, @Nonnull Distance.DistanceUnit unit)
 	{
 		LineString lineString;
 		int i = pl.getCount();
@@ -331,17 +333,18 @@ public class EarthEllipsoid
 		return this.semiMajorAxis / Math.sqrt(1.0 - ec * ec);
 	}
 
-	public boolean equals(EarthEllipsoid ellipsoid)
+	public boolean equals(@Nonnull EarthEllipsoid ellipsoid)
 	{
 		return ellipsoid.semiMajorAxis == this.semiMajorAxis && ellipsoid.inverseFlattening == this.inverseFlattening;
 	}
 
+	@Nonnull
 	public String getName()
 	{
 		return this.eet.toString();
 	}
 
-	public void set(EarthEllipsoid ellipsoid)
+	public void set(@Nonnull EarthEllipsoid ellipsoid)
 	{
 		this.semiMajorAxis = ellipsoid.semiMajorAxis;
 		this.semiMinorAxis = ellipsoid.semiMinorAxis;
@@ -350,12 +353,14 @@ public class EarthEllipsoid
 		this.eet = ellipsoid.eet;		
 	}
 
+	@Nonnull
 	public EarthEllipsoid clone()
 	{
 		return new EarthEllipsoid(this.semiMajorAxis, this.inverseFlattening, this.eet);
 	}
 
-	public Vector3 toCartesianCoordRad(Vector3 lonLatH)
+	@Nonnull
+	public Vector3 toCartesianCoordRad(@Nonnull Vector3 lonLatH)
 	{
 		double cLat = Math.cos(lonLatH.getLat());
 		double sLat = Math.sin(lonLatH.getLat());
@@ -368,7 +373,8 @@ public class EarthEllipsoid
 			((1 - e2) * v + lonLatH.getH()) * sLat);
 	}
 
-	public Vector3 fromCartesianCoordRad(Vector3 coord)
+	@Nonnull
+	public Vector3 fromCartesianCoordRad(@Nonnull Vector3 coord)
 	{
 		double e2 = this.eccentricity * this.eccentricity;
 		double rLon = Math.atan2(coord.getY(), coord.getX());
@@ -390,12 +396,14 @@ public class EarthEllipsoid
 		return new Vector3(rLon, rLat, p / Math.cos(rLat) - v);
 	}
 
-	public Vector3 toCartesianCoordDeg(Vector3 lonLatH)
+	@Nonnull
+	public Vector3 toCartesianCoordDeg(@Nonnull Vector3 lonLatH)
 	{
 		return this.toCartesianCoordRad(new Vector3(lonLatH.getLon() * Math.PI / 180.0, lonLatH.getLat() * Math.PI / 180.0, lonLatH.getH()));
 	}
 
-	public Vector3 tromCartesianCoordDeg(Vector3 coord)
+	@Nonnull
+	public Vector3 tromCartesianCoordDeg(@Nonnull Vector3 coord)
 	{
 		Vector3 lonLatH = this.fromCartesianCoordRad(coord);
 		lonLatH.val[0] = lonLatH.val[0] * 180.0 / Math.PI;

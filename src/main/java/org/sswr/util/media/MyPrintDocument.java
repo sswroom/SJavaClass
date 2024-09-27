@@ -24,6 +24,9 @@ import org.sswr.util.data.DataTools;
 import org.sswr.util.math.unit.Distance;
 import org.sswr.util.math.unit.Distance.DistanceUnit;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class MyPrintDocument implements PrintDocument, java.awt.print.Pageable, java.awt.print.Printable
 {
 	private PrintHandler hdlr;
@@ -35,7 +38,7 @@ public class MyPrintDocument implements PrintDocument, java.awt.print.Pageable, 
 	private double paperHeight;
 	private DocPrintJob job;
 
-	public MyPrintDocument(DocPrintJob job, PrintHandler hdlr)
+	public MyPrintDocument(@Nonnull DocPrintJob job, @Nonnull PrintHandler hdlr)
 	{
 		this.hdlr = hdlr;
 		this.docName = null;
@@ -58,7 +61,7 @@ public class MyPrintDocument implements PrintDocument, java.awt.print.Pageable, 
 		return false;
 	}
 
-	public void setDocName(String docName)
+	public void setDocName(@Nullable String docName)
 	{
 		this.docName = docName;
 	}

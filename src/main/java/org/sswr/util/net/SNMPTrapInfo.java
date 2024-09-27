@@ -5,6 +5,9 @@ import java.util.Objects;
 import org.sswr.util.data.ByteTool;
 import org.sswr.util.data.DataTools;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class SNMPTrapInfo
 {
 	private byte[] entOID;
@@ -20,11 +23,12 @@ public class SNMPTrapInfo
 		this.entOID = new byte[64];
 	}
 
+	@Nonnull
 	public byte[] getEntOID() {
 		return this.entOID;
 	}
 
-	public void setEntOID(byte[] entOID, int entOIDOfst, int entOIDLen) {
+	public void setEntOID(@Nonnull byte[] entOID, int entOIDOfst, int entOIDLen) {
 		ByteTool.copyArray(this.entOID, 0, entOID, entOIDOfst, entOIDLen);
 		this.entOIDLen = entOIDLen;
 	}
@@ -69,11 +73,12 @@ public class SNMPTrapInfo
 		this.timeStamp = timeStamp;
 	}
 
+	@Nullable
 	public String getCommunity() {
 		return this.community;
 	}
 
-	public void setCommunity(String community) {
+	public void setCommunity(@Nullable String community) {
 		this.community = community;
 	}
 

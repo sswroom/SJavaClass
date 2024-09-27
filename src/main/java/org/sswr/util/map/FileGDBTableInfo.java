@@ -8,6 +8,7 @@ import org.sswr.util.data.DataTools;
 import org.sswr.util.math.CoordinateSystem;
 
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 public class FileGDBTableInfo
 {
@@ -42,7 +43,7 @@ public class FileGDBTableInfo
 	public FileGDBTableInfo() {
 	}
 
-	public FileGDBTableInfo(int nullableCnt, byte geometryType, byte tableFlags, byte geometryFlags, @Nonnull List<FileGDBFieldInfo> fields, @Nonnull CoordinateSystem csys, double xOrigin, double yOrigin, double xyScale, double zOrigin, double zScale, double mOrigin, double mScale, double xyTolerance, double zTolerance, double mTolerance, double xMin, double yMin, double xMax, double yMax, double zMin, double zMax, double mMin, double mMax, int spatialGridCnt, @Nonnull double[] spatialGrid) {
+	public FileGDBTableInfo(int nullableCnt, byte geometryType, byte tableFlags, byte geometryFlags, @Nonnull List<FileGDBFieldInfo> fields, @Nullable CoordinateSystem csys, double xOrigin, double yOrigin, double xyScale, double zOrigin, double zScale, double mOrigin, double mScale, double xyTolerance, double zTolerance, double mTolerance, double xMin, double yMin, double xMax, double yMax, double zMin, double zMax, double mMin, double mMax, int spatialGridCnt, @Nonnull double[] spatialGrid) {
 		this.nullableCnt = nullableCnt;
 		this.geometryType = geometryType;
 		this.tableFlags = tableFlags;
@@ -112,12 +113,12 @@ public class FileGDBTableInfo
 		this.fields = fields;
 	}
 
-	@Nonnull
+	@Nullable
 	public CoordinateSystem getCsys() {
 		return this.csys;
 	}
 
-	public void setCsys(@Nonnull CoordinateSystem csys) {
+	public void setCsys(@Nullable CoordinateSystem csys) {
 		this.csys = csys;
 	}
 

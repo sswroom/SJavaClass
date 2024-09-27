@@ -11,6 +11,9 @@ import org.sswr.util.data.LineBreakType;
 import org.sswr.util.data.SharedInt;
 import org.sswr.util.data.StringUtil;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class ASN1Util
 {
 	public static final int IT_UNKNOWN = 0;
@@ -45,7 +48,7 @@ public class ASN1Util
 	public static final int IT_CONTEXT_SPECIFIC_2 = 0xa2;
 	public static final int IT_CONTEXT_SPECIFIC_3 = 0xa3;
 
-	public static int pduParseLen(byte[] pdu, int ofst, int endOfst, SharedInt len)
+	public static int pduParseLen(@Nonnull byte[] pdu, int ofst, int endOfst, @Nonnull SharedInt len)
 	{
 		if (ofst >= endOfst)
 		{
@@ -109,7 +112,7 @@ public class ASN1Util
 		}
 	}
 
-	public static int pduParseUInt32(byte[] pdu, int beginOfst, int endOfst, SharedInt val)
+	public static int pduParseUInt32(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull SharedInt val)
 	{
 		if (endOfst - beginOfst < 3)
 			return 0;
@@ -141,7 +144,8 @@ public class ASN1Util
 		}
 	}
 	
-	public static ZonedDateTime pduParseUTCTimeCont(byte[] pdu, int ofst, int len)
+	@Nullable
+	public static ZonedDateTime pduParseUTCTimeCont(@Nonnull byte[] pdu, int ofst, int len)
 	{
 		if (len == 13 && pdu[ofst + 12] == 'Z')
 		{
@@ -155,12 +159,12 @@ public class ASN1Util
 		return null;
 	}
 
-	public static boolean pduToString(byte[] pdu, int beginOfst, int endOfst, StringBuilder sb, int level)
+	public static boolean pduToString(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull StringBuilder sb, int level)
 	{
 		return pduToString(pdu, beginOfst, endOfst, sb, level, null);
 	}
 
-	public static boolean pduToString(byte[] pdu, int beginOfst, int endOfst, StringBuilder sb, int level, SharedInt nextOfst)
+	public static boolean pduToString(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull StringBuilder sb, int level, @Nullable SharedInt nextOfst)
 	{
 		while (beginOfst < endOfst)
 		{
@@ -572,7 +576,7 @@ public class ASN1Util
 		return true;		
 	}
 
-	public static boolean pduDSizeEnd(byte[] pdu, int beginOfst, int endOfst, SharedInt nextOfst)
+	public static boolean pduDSizeEnd(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull SharedInt nextOfst)
 	{
 		int ofst;
 		SharedInt itemLen = new SharedInt();
@@ -606,7 +610,8 @@ public class ASN1Util
 		return true;
 	}
 
-	public static ASN1Item pduGetItem(byte[] pdu, int beginOfst, int endOfst, String path)
+	@Nullable
+	public static ASN1Item pduGetItem(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nullable String path)
 	{
 		ASN1Item item;
 		SharedInt itemLen = new SharedInt();
@@ -703,7 +708,7 @@ public class ASN1Util
 		return null;
 	}
 
-	public static int pduGetItemType(byte[] pdu, int beginOfst, int endOfst, String path)
+	public static int pduGetItemType(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nullable String path)
 	{
 		ASN1Item item = pduGetItem(pdu, beginOfst, endOfst, path);
 		if (item == null)
@@ -713,7 +718,7 @@ public class ASN1Util
 		return item.itemType;
 	}
 
-	public static int pduCountItem(byte[] pdu, int beginOfst, int endOfst, String path)
+	public static int pduCountItem(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nullable String path)
 	{
 		SharedInt len = new SharedInt();
 		int size;
@@ -813,7 +818,7 @@ public class ASN1Util
 		return 0;
 	}
 
-	public static boolean pduIsValid(byte[] pdu, int beginOfst, int endOfst)
+	public static boolean pduIsValid(@Nonnull byte[] pdu, int beginOfst, int endOfst)
 	{
 		SharedInt len = new SharedInt();
 		int ofst;
@@ -836,7 +841,7 @@ public class ASN1Util
 		return true;
 	}
 
-	public static int oidCompare(byte[] oid1, int oid1Ofst, int oid1Len, byte[] oid2, int oid2Ofst, int oid2Len)
+	public static int oidCompare(@Nonnull byte[] oid1, int oid1Ofst, int oid1Len, @Nonnull byte[] oid2, int oid2Ofst, int oid2Len)
 	{
 		int i = 0;
 		while (true)
@@ -865,7 +870,7 @@ public class ASN1Util
 		}
 	}
 	
-	public static boolean oidStartsWith(byte[] oid1, int oid1Ofst, int oid1Len, byte[] oid2, int oid2Ofst, int oid2Len)
+	public static boolean oidStartsWith(@Nonnull byte[] oid1, int oid1Ofst, int oid1Len, @Nonnull byte[] oid2, int oid2Ofst, int oid2Len)
 	{
 		if (oid1Len < oid2Len)
 			return false;
@@ -879,13 +884,13 @@ public class ASN1Util
 		return true;
 	}
 	
-	public static boolean oidEqualsText(byte[] oidPDU, int oidPDUOfst, int oidPDULen, String oidText)
+	public static boolean oidEqualsText(@Nonnull byte[] oidPDU, int oidPDUOfst, int oidPDULen, @Nonnull String oidText)
 	{
 		byte oid2[] = oidText2PDU(oidText);
 		return oidCompare(oidPDU, oidPDUOfst, oidPDULen, oid2, 0, oid2.length) == 0;
 	}
 	
-	public static void oidToString(byte[] pdu, int pduOfst, int pduSize, StringBuilder sb)
+	public static void oidToString(@Nonnull byte[] pdu, int pduOfst, int pduSize, @Nonnull StringBuilder sb)
 	{
 		int v = 0;
 		int i = 1;
@@ -905,7 +910,7 @@ public class ASN1Util
 		}
 	}
 
-	public static int oidCalcPDUSize(String oidText)
+	public static int oidCalcPDUSize(@Nonnull String oidText)
 	{
 		int v;
 		int retSize = 1;
@@ -934,7 +939,8 @@ public class ASN1Util
 		return retSize;
 	}
 	
-	public static byte[] oidText2PDU(String oidText)
+	@Nonnull
+	public static byte[] oidText2PDU(@Nonnull String oidText)
 	{
 		byte[] pduBuff = new byte[32];
 		int v;
@@ -1018,7 +1024,7 @@ public class ASN1Util
 		return Arrays.copyOf(pduBuff, retSize);
 	}
 	
-	public static void booleanToString(byte[] data, int ofst, int dataLen, StringBuilder sb)
+	public static void booleanToString(@Nonnull byte[] data, int ofst, int dataLen, @Nonnull StringBuilder sb)
 	{
 		if (dataLen == 1)
 		{
@@ -1042,7 +1048,7 @@ public class ASN1Util
 		}
 	}
 	
-	public static void integerToString(byte[] data, int ofst, int dataLen, StringBuilder sb)
+	public static void integerToString(@Nonnull byte[] data, int ofst, int dataLen, @Nonnull StringBuilder sb)
 	{
 		switch (dataLen)
 		{
@@ -1064,7 +1070,7 @@ public class ASN1Util
 		}
 	}
 	
-	public static void utcTimeToString(byte[] data, int ofst, int dataLen, StringBuilder sb)
+	public static void utcTimeToString(@Nonnull byte[] data, int ofst, int dataLen, @Nonnull StringBuilder sb)
 	{
 		ZonedDateTime dt = pduParseUTCTimeCont(data, ofst, dataLen);
 		if (dt != null)
@@ -1073,7 +1079,7 @@ public class ASN1Util
 		}
 	}
 	
-	public static int str2Digit(byte[] pdu, int ofst)
+	public static int str2Digit(@Nonnull byte[] pdu, int ofst)
 	{
 		return (pdu[ofst] - 0x30) * 10 + (pdu[ofst + 1] - 0x30);
 	}

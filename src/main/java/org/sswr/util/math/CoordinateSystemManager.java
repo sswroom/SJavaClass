@@ -5,8 +5,12 @@ import org.sswr.util.math.CoordinateSystem.UnitType;
 import org.sswr.util.math.EarthEllipsoid.EarthEllipsoidType;
 import org.sswr.util.math.unit.Angle.AngleUnit;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class CoordinateSystemManager
 {
+	@Nullable
 	public static SpheroidInfo srGetSpheroid(int epsgId)
 	{
 		switch (epsgId)
@@ -22,6 +26,7 @@ public class CoordinateSystemManager
 		}
 	}
 
+	@Nullable
 	public static DatumInfo srGetDatum(int epsgId)
 	{
 		switch (epsgId)
@@ -43,6 +48,7 @@ public class CoordinateSystemManager
 		}
 	}
 
+	@Nullable
 	public static GeogcsSRInfo srGetGeogcsInfo(int epsgId)
 	{
 		switch (epsgId)
@@ -64,6 +70,7 @@ public class CoordinateSystemManager
 		}
 	}
 
+	@Nullable
 	public static CoordinateSystem srCreateCSys(int epsgId)
 	{
 		switch (epsgId)
@@ -90,6 +97,7 @@ public class CoordinateSystemManager
 		return null;
 	}
 
+	@Nonnull
 	public static CoordinateSystem srCreateCSysOrDef(int epsgId)
 	{
 		CoordinateSystem csys;
@@ -99,32 +107,41 @@ public class CoordinateSystemManager
 			return createWGS84Csys();
 	}
 
+	@Nullable
 	public static ProjectedCoordinateSystem srCreateProjCSys(int epsgId)
 	{
-		switch (epsgId)
+		try
 		{
-		case 2000:
-			return new MercatorProjectedCoordinateSystem("EPSG:"+epsgId, epsgId, "Anguilla 1957 / British West Indies Grid", 400000, 0, -62, 0, 0.9995, srCreateGeogCSys(4600), UnitType.Metre);
-		case 2001:
-			return new MercatorProjectedCoordinateSystem("EPSG:"+epsgId, epsgId, "Antigua 1943 / British West Indies Grid", 400000, 0, -62, 0, 0.9995, srCreateGeogCSys(4601), UnitType.Metre);
-		case 2002:
-			return new MercatorProjectedCoordinateSystem("EPSG:"+epsgId, epsgId, "Dominica 1945 / British West Indies Grid", 400000, 0, -62, 0, 0.9995, srCreateGeogCSys(4602), UnitType.Metre);
-		case 2003:
-			return new MercatorProjectedCoordinateSystem("EPSG:"+epsgId, epsgId, "Grenada 1953 / British West Indies Grid",  400000, 0, -62, 0, 0.9995, srCreateGeogCSys(4603), UnitType.Metre);
-		case 2326:
-			return new MercatorProjectedCoordinateSystem("EPSG:"+epsgId, epsgId, "Hong Kong 1980 Grid System", 836694.05, 819069.80, 114.17855555555555555555555555556, 22.312133333333333333333333333333, 1, srCreateGeogCSys(4611), UnitType.Metre);
-		case 3857:
-			return new Mercator1SPProjectedCoordinateSystem("EPSG:"+epsgId, epsgId, "WGS 84 / Pseudo-Mercator", 0, 0, 0, 0, 1, srCreateGeogCSys(4326), UnitType.Metre);
-		case 102100:
-			return new Mercator1SPProjectedCoordinateSystem("EPSG:"+epsgId, epsgId, "WGS 84 / Pseudo-Mercator", 0, 0, 0, 0, 1, srCreateGeogCSys(4326), UnitType.Metre);
-		case 102140:
-			return new MercatorProjectedCoordinateSystem("EPSG:"+epsgId, epsgId, "Hong Kong 1980 Grid System", 836694.05, 819069.80, 114.17855555555555555555555555556, 22.312133333333333333333333333333, 1, srCreateGeogCSys(4611), UnitType.Metre);
-		case 900913:
-			return new Mercator1SPProjectedCoordinateSystem("EPSG:"+epsgId, epsgId, "Google_Maps_Global_Mercator", 0, 0, 0, 0, 1, srCreateGeogCSys(4326), UnitType.Metre);
+			switch (epsgId)
+			{
+			case 2000:
+				return new MercatorProjectedCoordinateSystem("EPSG:"+epsgId, epsgId, "Anguilla 1957 / British West Indies Grid", 400000, 0, -62, 0, 0.9995, srCreateGeogCSysNN(4600), UnitType.Metre);
+			case 2001:
+				return new MercatorProjectedCoordinateSystem("EPSG:"+epsgId, epsgId, "Antigua 1943 / British West Indies Grid", 400000, 0, -62, 0, 0.9995, srCreateGeogCSysNN(4601), UnitType.Metre);
+			case 2002:
+				return new MercatorProjectedCoordinateSystem("EPSG:"+epsgId, epsgId, "Dominica 1945 / British West Indies Grid", 400000, 0, -62, 0, 0.9995, srCreateGeogCSysNN(4602), UnitType.Metre);
+			case 2003:
+				return new MercatorProjectedCoordinateSystem("EPSG:"+epsgId, epsgId, "Grenada 1953 / British West Indies Grid",  400000, 0, -62, 0, 0.9995, srCreateGeogCSysNN(4603), UnitType.Metre);
+			case 2326:
+				return new MercatorProjectedCoordinateSystem("EPSG:"+epsgId, epsgId, "Hong Kong 1980 Grid System", 836694.05, 819069.80, 114.17855555555555555555555555556, 22.312133333333333333333333333333, 1, srCreateGeogCSysNN(4611), UnitType.Metre);
+			case 3857:
+				return new Mercator1SPProjectedCoordinateSystem("EPSG:"+epsgId, epsgId, "WGS 84 / Pseudo-Mercator", 0, 0, 0, 0, 1, srCreateGeogCSysNN(4326), UnitType.Metre);
+			case 102100:
+				return new Mercator1SPProjectedCoordinateSystem("EPSG:"+epsgId, epsgId, "WGS 84 / Pseudo-Mercator", 0, 0, 0, 0, 1, srCreateGeogCSysNN(4326), UnitType.Metre);
+			case 102140:
+				return new MercatorProjectedCoordinateSystem("EPSG:"+epsgId, epsgId, "Hong Kong 1980 Grid System", 836694.05, 819069.80, 114.17855555555555555555555555556, 22.312133333333333333333333333333, 1, srCreateGeogCSysNN(4611), UnitType.Metre);
+			case 900913:
+				return new Mercator1SPProjectedCoordinateSystem("EPSG:"+epsgId, epsgId, "Google_Maps_Global_Mercator", 0, 0, 0, 0, 1, srCreateGeogCSysNN(4326), UnitType.Metre);
+			}
+		}
+		catch (IllegalArgumentException ex)
+		{
+			ex.printStackTrace();
 		}
 		return null;
 	}
 
+	@Nullable
 	public static GeographicCoordinateSystem srCreateGeogCSys(int epsgId)
 	{
 		GeogcsSRInfo geogcs = srGetGeogcsInfo(epsgId);
@@ -147,7 +164,31 @@ public class CoordinateSystemManager
 		return new GeographicCoordinateSystem("EPSG:"+epsgId, epsgId, geogcs.getName(), data, geogcs.getPrimem(), geogcs.getUnit());
 	}
 
-	public static DatumInfo getDatumInfoByName(String name)
+	@Nonnull
+	public static GeographicCoordinateSystem srCreateGeogCSysNN(int epsgId)
+	{
+		GeogcsSRInfo geogcs = srGetGeogcsInfo(epsgId);
+		if (geogcs == null)
+		{
+			throw new IllegalArgumentException("epsgId("+epsgId+") not found");
+		}
+		DatumInfo datum = srGetDatum(geogcs.getDatum());
+		if (datum == null)
+		{
+			throw new IllegalArgumentException("datum("+geogcs.getDatum()+") not found");
+		}
+		SpheroidInfo spheroid = srGetSpheroid(datum.getSpheroid());
+		if (spheroid == null)
+		{
+			throw new IllegalArgumentException("spheroid("+datum.getSpheroid()+") not found");
+		}
+		EarthEllipsoid ellipsoid = new EarthEllipsoid(spheroid.getEet());
+		DatumData data = fillDatumData(datum, datum.getDatumName(), ellipsoid, spheroid);
+		return new GeographicCoordinateSystem("EPSG:"+epsgId, epsgId, geogcs.getName(), data, geogcs.getPrimem(), geogcs.getUnit());
+	}
+
+	@Nullable
+	public static DatumInfo getDatumInfoByName(@Nonnull String name)
 	{
 		if (name.startsWith("D_"))
 		{
@@ -171,7 +212,8 @@ public class CoordinateSystemManager
 		return null;
 	}
 
-	public static DatumData fillDatumData(DatumInfo datum, String name, EarthEllipsoid ee, SpheroidInfo spheroid)
+	@Nonnull
+	public static DatumData fillDatumData(@Nullable DatumInfo datum, @Nonnull String name, @Nonnull EarthEllipsoid ee, @Nullable SpheroidInfo spheroid)
 	{
 		DatumData data = new DatumData();
 		if (datum != null)
@@ -218,9 +260,12 @@ public class CoordinateSystemManager
 		return data;
 	}
 
+	@Nonnull
 	public static GeographicCoordinateSystem createWGS84Csys()
 	{
 		DatumInfo datum = getDatumInfoByName("WGS_1984");
+		if (datum == null)
+			throw new NullPointerException("datum is null");
 		EarthEllipsoid ellipsoid = new EarthEllipsoid(EarthEllipsoidType.WGS84);
 		DatumData data = fillDatumData(datum, "WGS_1984", ellipsoid, srGetSpheroid(datum.getSpheroid()));
 		return new GeographicCoordinateSystem("WGS_1984", 4326, "WGS_1984", data, PrimemType.Greenwich, UnitType.Degree);

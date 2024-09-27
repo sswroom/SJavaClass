@@ -6,13 +6,16 @@ import org.sswr.util.data.ByteTool;
 import org.sswr.util.data.LineBreakType;
 import org.sswr.util.data.StringUtil;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class SNMPInfo
 {
 	public SNMPInfo()
 	{
 	}
 
-	public void pduSeqGetDetail(byte[] pdu, int pduOfst, int pduSize, int level, StringBuilder sb)
+	public void pduSeqGetDetail(@Nonnull byte[] pdu, int pduOfst, int pduSize, int level, @Nonnull StringBuilder sb)
 	{
 		if (level > 0)
 		{
@@ -36,7 +39,7 @@ public class SNMPInfo
 		sb.append("}");
 	}
 	
-	public int pduGetDetail(String name, byte[] pdu, int pduOfst, int pduSize, int level, StringBuilder sb)
+	public int pduGetDetail(@Nullable String name, @Nonnull byte[] pdu, int pduOfst, int pduSize, int level, @Nonnull StringBuilder sb)
 	{
 		if (pduSize < 2)
 		{
@@ -258,7 +261,7 @@ public class SNMPInfo
 		}
 	}
 	
-	public static void valueToString(byte type, byte[] pduBuff, int pduOfst, int valLen, StringBuilder sb)
+	public static void valueToString(byte type, @Nonnull byte[] pduBuff, int pduOfst, int valLen, @Nonnull StringBuilder sb)
 	{
 		switch (type & 0xff)
 		{

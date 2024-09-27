@@ -13,6 +13,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.http.HttpServletRequest;
@@ -30,7 +32,8 @@ public class HttpUtil
 	public static final String PART_SEPERATOR = "\t";
 	private static final int FILE_BUFFER_SIZE = 65536;
 
-	public static String getScheme(ServletRequest req)
+	@Nonnull
+	public static String getScheme(@Nonnull ServletRequest req)
 	{
 		String scheme = req.getScheme();
 		if (req instanceof HttpServletRequest)
@@ -44,7 +47,8 @@ public class HttpUtil
 		return scheme;
 	}
 
-	public static String getServerName(ServletRequest req)
+	@Nonnull
+	public static String getServerName(@Nonnull ServletRequest req)
 	{
 		String serverName = req.getServerName();
 		if (req instanceof HttpServletRequest)
@@ -58,7 +62,7 @@ public class HttpUtil
 		return serverName;
 	}
 
-	public static int getServerPort(ServletRequest req)
+	public static int getServerPort(@Nonnull ServletRequest req)
 	{
 		int port = req.getServerPort();
 		if (req instanceof HttpServletRequest)
@@ -72,7 +76,8 @@ public class HttpUtil
 		return port;	
 	}
 
-	public static String getSiteRoot(ServletRequest req)
+	@Nonnull
+	public static String getSiteRoot(@Nonnull ServletRequest req)
 	{
 		String scheme = getScheme(req);
 		int serverPort = getServerPort(req);
@@ -93,7 +98,8 @@ public class HttpUtil
 	}
 
 
-	public static String headerEscape(ServletRequest req, String fileName)
+	@Nonnull
+	public static String headerEscape(@Nonnull ServletRequest req, @Nonnull String fileName)
 	{
 		//Firefox:
 		{
@@ -122,7 +128,7 @@ public class HttpUtil
 		}
 	}
 
-	public static void addContentDisposition(ServletRequest req, HttpServletResponse resp, boolean attachment, String fileName)
+	public static void addContentDisposition(@Nonnull ServletRequest req, @Nonnull HttpServletResponse resp, boolean attachment, @Nullable String fileName)
 	{
 		if (attachment)
 		{
@@ -135,13 +141,13 @@ public class HttpUtil
 				resp.addHeader("Content-Disposition", "attachment");
 			}
 		}
-		else
+		else if (fileName != null)
 		{
 			resp.addHeader("Content-Disposition", "inline; filename="+headerEscape(req, fileName));
 		}
 	}
 
-	public static boolean responseFile(File file, boolean attachment, String fileName, HttpServletRequest req, HttpServletResponse resp) throws IOException
+	public static boolean responseFile(@Nonnull File file, boolean attachment, @Nonnull String fileName, @Nonnull HttpServletRequest req, @Nonnull HttpServletResponse resp) throws IOException
 	{
 		if (!file.exists())
 		{
@@ -153,12 +159,12 @@ public class HttpUtil
 		return ret;
 	}
 
-	public static boolean responseFileStream(InputStream stm, long lastModified, boolean attachment, String fileName, HttpServletRequest req, HttpServletResponse resp) throws IOException
+	public static boolean responseFileStream(@Nonnull InputStream stm, long lastModified, boolean attachment, @Nonnull String fileName, @Nonnull HttpServletRequest req, @Nonnull HttpServletResponse resp) throws IOException
 	{
 		return responseFileStream(stm, lastModified, attachment, fileName, fileName, req, resp);
 	}
 
-	public static boolean responseFileStream(InputStream stm, long lastModified, boolean attachment, String srcFileName, String respFileName, HttpServletRequest req, HttpServletResponse resp) throws IOException
+	public static boolean responseFileStream(@Nonnull InputStream stm, long lastModified, boolean attachment, @Nonnull String srcFileName, @Nonnull String respFileName, @Nonnull HttpServletRequest req, @Nonnull HttpServletResponse resp) throws IOException
 	{
 		long since = req.getDateHeader("If-Modified-Since");
 		if (lastModified != 0 && since >= 0 && since + 999 >= lastModified)
@@ -252,7 +258,7 @@ public class HttpUtil
 		return true;
 	}
 
-	private static boolean partialResponse(HttpServletResponse resp, InputStream stm, String srcFileName, long lastModified, String respFileName, long fileLeng, long startOfst, long endOfst) throws IOException
+	private static boolean partialResponse(@Nonnull HttpServletResponse resp, @Nonnull InputStream stm, @Nonnull String srcFileName, long lastModified, @Nonnull String respFileName, long fileLeng, long startOfst, long endOfst) throws IOException
 	{
 		resp.setStatus(HttpServletResponse.SC_PARTIAL_CONTENT);
 		resp.setContentType(URLConnection.guessContentTypeFromName(srcFileName));
@@ -297,27 +303,29 @@ public class HttpUtil
 		return true;
 	}
 
-	public static boolean responseFileContent(String filePath, HttpServletRequest req, HttpServletResponse resp) throws IOException
+	public static boolean responseFileContent(@Nonnull String filePath, @Nonnull HttpServletRequest req, @Nonnull HttpServletResponse resp) throws IOException
 	{
-		return responseFile(new File(FileUtil.getRealPath(filePath)), false, null, req, resp);
+		File file = new File(FileUtil.getRealPath(filePath));
+		return responseFile(file, false, file.getName(), req, resp);
 	}
 
-	public static boolean responseFileContent(File file, String fileName, HttpServletRequest req, HttpServletResponse resp) throws IOException
+	public static boolean responseFileContent(@Nonnull File file, @Nonnull String fileName, @Nonnull HttpServletRequest req, @Nonnull HttpServletResponse resp) throws IOException
 	{
 		return responseFile(file, false, fileName, req, resp);
 	}
 
-	public static boolean responseFileDownload(String filePath, String fileName, HttpServletRequest req, HttpServletResponse resp) throws IOException
+	public static boolean responseFileDownload(@Nonnull String filePath, @Nonnull String fileName, @Nonnull HttpServletRequest req, @Nonnull HttpServletResponse resp) throws IOException
 	{
 		return responseFile(new File(FileUtil.getRealPath(filePath)), true, fileName, req, resp);
 	}
 
-	public static boolean responseFileDownload(File file, String fileName, HttpServletRequest req, HttpServletResponse resp) throws IOException
+	public static boolean responseFileDownload(@Nonnull File file, @Nonnull String fileName, @Nonnull HttpServletRequest req, @Nonnull HttpServletResponse resp) throws IOException
 	{
 		return responseFile(file, true, fileName, req, resp);
 	}
 	
-	private static Map<String, Object> fromParamMap(Map<String, String[]> paramMap)
+	@Nonnull
+	private static Map<String, Object> fromParamMap(@Nonnull Map<String, String[]> paramMap)
 	{
 		Iterator<String> itKeys = paramMap.keySet().iterator();
 		String key;
@@ -340,7 +348,8 @@ public class HttpUtil
 
 	}
 
-	public static Map<String, Object> parseParams(HttpServletRequest req, List<Part> fileList)
+	@Nonnull
+	public static Map<String, Object> parseParams(@Nonnull HttpServletRequest req, @Nonnull List<Part> fileList)
 	{
 		if (req.getMethod().equals("GET"))
 		{

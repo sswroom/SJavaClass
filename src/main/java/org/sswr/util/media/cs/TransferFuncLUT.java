@@ -5,13 +5,15 @@ import org.sswr.util.media.LUTFloat;
 import org.sswr.util.media.LUTInt;
 import org.sswr.util.media.LUTInt.DataFormat;
 
+import jakarta.annotation.Nonnull;
+
 public class TransferFuncLUT extends TransferFunc
 {
 	private int srcCnt;
 	private double invLUT[];
 	private double fwdLUT[];
 
-	public TransferFuncLUT(LUT lut)
+	public TransferFuncLUT(@Nonnull LUT lut)
 	{
 		super(lut);
 		this.srcCnt = lut.getInputLevel();

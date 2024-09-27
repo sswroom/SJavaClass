@@ -4,6 +4,8 @@ import java.util.Objects;
 
 import org.sswr.util.data.DataTools;
 
+import jakarta.annotation.Nonnull;
+
 public class SpheroidData
 {
 	private int srid;
@@ -13,13 +15,13 @@ public class SpheroidData
 	public SpheroidData() {
 	}
 
-	public SpheroidData(int srid, String name, EarthEllipsoid ellipsoid) {
+	public SpheroidData(int srid, @Nonnull String name, @Nonnull EarthEllipsoid ellipsoid) {
 		this.srid = srid;
 		this.name = name;
 		this.ellipsoid = ellipsoid;
 	}
 
-	public SpheroidData(SpheroidData data)
+	public SpheroidData(@Nonnull SpheroidData data)
 	{
 		this.srid = data.srid;
 		this.name = data.name;
@@ -34,19 +36,21 @@ public class SpheroidData
 		this.srid = srid;
 	}
 
+	@Nonnull
 	public String getName() {
 		return this.name;
 	}
 
-	public void setName(String name) {
+	public void setName(@Nonnull String name) {
 		this.name = name;
 	}
 
+	@Nonnull
 	public EarthEllipsoid getEllipsoid() {
 		return this.ellipsoid;
 	}
 
-	public void setEllipsoid(EarthEllipsoid ellipsoid) {
+	public void setEllipsoid(@Nonnull EarthEllipsoid ellipsoid) {
 		this.ellipsoid = ellipsoid;
 	}
 

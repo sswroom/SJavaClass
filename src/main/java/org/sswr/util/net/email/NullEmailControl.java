@@ -4,16 +4,19 @@ import java.util.List;
 
 import org.sswr.util.data.StringUtil;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class NullEmailControl implements EmailControl
 {
 	@Override
-	public boolean sendMail(EmailMessage msg, String toList, String ccList)
+	public boolean sendMail(@Nonnull EmailMessage msg, @Nullable String toList, @Nullable String ccList)
 	{
 		return false;
 	}
 
 	@Override
-	public boolean sendBatchMail(EmailMessage msg, List<String> toList)
+	public boolean sendBatchMail(@Nonnull EmailMessage msg, @Nonnull List<String> toList)
 	{
 		return false;
 	}
@@ -25,13 +28,14 @@ public class NullEmailControl implements EmailControl
 	}
 
 	@Override
-	public boolean validateDestAddr(String addr)
+	public boolean validateDestAddr(@Nonnull String addr)
 	{
 		return StringUtil.isEmailAddress(addr);
 	}
 
 	@Override
-	public String sendTestingEmail(String toAddress) {
+	@Nonnull
+	public String sendTestingEmail(@Nonnull String toAddress) {
 		return "Sent";
 	}
 }

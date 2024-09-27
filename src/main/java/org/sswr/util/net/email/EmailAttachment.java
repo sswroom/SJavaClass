@@ -9,6 +9,9 @@ import org.sswr.util.io.FileStream.FileMode;
 import org.sswr.util.io.FileStream.FileShare;
 import org.sswr.util.net.MIME;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class EmailAttachment
 {
 	public byte[] content;
@@ -19,6 +22,7 @@ public class EmailAttachment
 	public boolean isInline;
 	public String contentType;
 
+	@Nonnull
 	public EmailAttachment clone()
 	{
 		EmailAttachment att = new EmailAttachment();
@@ -32,7 +36,8 @@ public class EmailAttachment
 		return att;
 	}
 
-	public static EmailAttachment createFromFile(String fileName, String contentId)
+	@Nullable
+	public static EmailAttachment createFromFile(@Nonnull String fileName, @Nonnull String contentId)
 	{
 		FileStream fs = new FileStream(fileName, FileMode.ReadOnly, FileShare.DenyNone, BufferType.Normal);
 		if (fs.isError())

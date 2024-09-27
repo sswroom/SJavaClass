@@ -21,10 +21,13 @@ import org.sswr.util.media.ImageList;
 import org.sswr.util.media.ImageUtil;
 import org.sswr.util.media.StaticImage;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class ImageParser extends FileParser {
 
 	@Override
-	public ParsedObject parseFileHdr(StreamData fd, PackageFile pkgFile, ParserType targetType, byte[] hdr, int hdrOfst, int hdrSize) {
+	public ParsedObject parseFileHdr(@Nonnull StreamData fd, @Nullable PackageFile pkgFile, @Nonnull ParserType targetType, @Nonnull byte[] hdr, int hdrOfst, int hdrSize) {
 		String fmt = ImageUtil.getImageFmt(hdr);
 		if (fmt.equals("dat"))
 			return null;
@@ -79,12 +82,13 @@ public class ImageParser extends FileParser {
 	}
 
 	@Override
+	@Nonnull
 	public String getName() {
 		return "Image";
 	}
 
 	@Override
-	public void prepareSelector(FileSelector selector, ParserType t) {
+	public void prepareSelector(@Nonnull FileSelector selector, @Nonnull ParserType t) {
 		if (t == ParserType.Unknown || t == ParserType.ImageList)
 		{
 			selector.addFilter("*.jpg", "JPEG Image");
@@ -97,6 +101,7 @@ public class ImageParser extends FileParser {
 	}
 
 	@Override
+	@Nonnull
 	public ParserType getParserType() {
 		return ParserType.ImageList;
 	}

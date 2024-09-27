@@ -7,6 +7,9 @@ import org.sswr.util.basic.MyThread;
 import org.sswr.util.io.IOWriter;
 import org.sswr.util.net.SSLEngine;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class SMTPClient
 {
 	private String host;
@@ -17,7 +20,7 @@ public class SMTPClient
 	private String authUser;
 	private String authPassword;
 
-	public SMTPClient(String host, int port, SSLEngine ssl, SMTPConnType connType, IOWriter logWriter)
+	public SMTPClient(@Nonnull String host, int port, @Nullable SSLEngine ssl, @Nonnull SMTPConnType connType, @Nullable IOWriter logWriter)
 	{
 		this.host = host;
 		this.port = port;
@@ -28,18 +31,21 @@ public class SMTPClient
 		this.authPassword = null;
 	}
 
-	public void setPlainAuth(String userName, String password)
+	public void setPlainAuth(@Nullable String userName, @Nullable String password)
 	{
 		this.authUser = userName;
 		this.authPassword = password;
 	}
 
-	public boolean send(SMTPMessage message)
+	public boolean send(@Nonnull SMTPMessage message)
 	{
 		if (!message.canSend())
 		{
 			return false;
 		}
+		String fromAddr = message.getFromAddr();
+		if (fromAddr == null)
+			return false;
 		ByteArrayOutputStream mstm = new ByteArrayOutputStream();
 		if (!message.writeMessage(mstm))
 		{
@@ -68,7 +74,7 @@ public class SMTPClient
 				return false;
 			}
 		}
-		if (!conn.sendMailFrom(message.getFromAddr()))
+		if (!conn.sendMailFrom(fromAddr))
 		{
 			conn.close();
 			return false;

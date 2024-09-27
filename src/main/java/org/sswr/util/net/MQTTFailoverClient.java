@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 public class MQTTFailoverClient implements MQTTClient
 {
@@ -17,7 +18,7 @@ public class MQTTFailoverClient implements MQTTClient
 	{
 		private MQTTStaticClient client;
 
-		public ChannelHandler(MQTTStaticClient client)
+		public ChannelHandler(@Nonnull MQTTStaticClient client)
 		{
 			this.client = client;
 		}
@@ -39,20 +40,20 @@ public class MQTTFailoverClient implements MQTTClient
 	private List<TopicInfo> topicList;
 	private List<MQTTEventHdlr> hdlrList;
 
-	public MQTTFailoverClient(FailoverType foType)
+	public MQTTFailoverClient(@Nonnull FailoverType foType)
 	{
 		this.foHdlr = new FailoverHandler<MQTTStaticClient>(foType);
 		this.topicList = new ArrayList<TopicInfo>();
 		this.hdlrList = new ArrayList<MQTTEventHdlr>();
 	}
 
-	public void addClient(MQTTStaticClient client)
+	public void addClient(@Nonnull MQTTStaticClient client)
 	{
 		client.handleEvents(new ChannelHandler(client));
 		this.foHdlr.addChannel(client);
 	}
 
-	public void subscribe(String topic, MQTTPublishMessageHdlr hdlr)
+	public void subscribe(@Nonnull String topic, @Nullable MQTTPublishMessageHdlr hdlr)
 	{
 		TopicInfo info = new TopicInfo();
 		info.topic = topic;
@@ -70,7 +71,7 @@ public class MQTTFailoverClient implements MQTTClient
 		}
 	}
 
-	public boolean publish(String topic, String message)
+	public boolean publish(@Nonnull String topic, @Nonnull String message)
 	{
 		MQTTStaticClient client = this.foHdlr.getCurrChannel();
 		if (client == null)
@@ -97,7 +98,7 @@ public class MQTTFailoverClient implements MQTTClient
 		return false;
 	}
 
-	public void handleEvents(MQTTEventHdlr hdlr)
+	public void handleEvents(@Nonnull MQTTEventHdlr hdlr)
 	{
 		synchronized(this.hdlrList)
 		{

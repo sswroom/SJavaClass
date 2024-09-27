@@ -4,6 +4,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class ReceivedEmail
 {
 	private ArrayList<String> headers;
@@ -25,7 +28,7 @@ public class ReceivedEmail
 		this.attachmentMap = new HashMap<String, EmailAttachment>();
 	}
 
-	public void addHeader(String name, String value)
+	public void addHeader(@Nonnull String name, @Nonnull String value)
 	{
 		this.headerMap.put(name, value);
 		this.headers.add(name+": "+value);
@@ -43,12 +46,12 @@ public class ReceivedEmail
 		}
 	}
 
-	public void setContent(byte[] content)
+	public void setContent(@Nonnull byte[] content)
 	{
 		this.content = content;
 	}
 
-	public void setContentType(String contentType)
+	public void setContentType(@Nonnull String contentType)
 	{
 		this.contentType = contentType;
 	}
@@ -58,7 +61,7 @@ public class ReceivedEmail
 		this.signVerified = signVerified;
 	}
 
-	public void addAttachment(boolean isInline, String fileName, String contentType, byte[] content)
+	public void addAttachment(boolean isInline, @Nonnull String fileName, @Nonnull String contentType, @Nonnull byte[] content)
 	{
 		EmailAttachment attachment = new EmailAttachment();
 		attachment.isInline = isInline;
@@ -72,16 +75,19 @@ public class ReceivedEmail
 		this.attachmentMap.put(attachment.fileName, attachment);
 	}
 
+	@Nullable
 	public byte[] getContent()
 	{
 		return this.content;
 	}
 
-	public EmailAttachment getAttachment(String fileName)
+	@Nullable
+	public EmailAttachment getAttachment(@Nonnull String fileName)
 	{
 		return this.attachmentMap.get(fileName);
 	}
 
+	@Nonnull
 	public String toString()
 	{
 		StringBuilder sb = new StringBuilder();

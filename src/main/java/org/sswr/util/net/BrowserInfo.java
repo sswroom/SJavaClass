@@ -4,6 +4,8 @@ import java.util.ArrayList;
 
 import org.sswr.util.io.OSType;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import jakarta.servlet.http.HttpServletRequest;
 
 public class BrowserInfo
@@ -75,7 +77,8 @@ public class BrowserInfo
 		public String devName;
 	}
 
-	public static UserAgentInfo parseUserAgent(String userAgent)
+	@Nullable
+	public static UserAgentInfo parseUserAgent(@Nonnull String userAgent)
 	{
 		UserAgentInfo ent = new UserAgentInfo();
 		ent.os = OSType.Unknown;
@@ -630,20 +633,26 @@ public class BrowserInfo
 		return ent;
 	}
 
-	public static UserAgentInfo parseReq(HttpServletRequest req)
+	@Nonnull
+	public static UserAgentInfo parseReq(@Nonnull HttpServletRequest req)
 	{
 		String ua = req.getHeader("User-Agent");
+		UserAgentInfo uai = null;
 		if (ua != null)
 		{
-			return parseUserAgent(ua);
+			uai = parseUserAgent(ua);
 		}
-		UserAgentInfo uai = new UserAgentInfo();
-		uai.os = OSType.Unknown;
-		uai.browser = BrowserType.Unknown;
+		if (uai == null)
+		{
+			uai = new UserAgentInfo();
+			uai.os = OSType.Unknown;
+			uai.browser = BrowserType.Unknown;
+		}
 		return uai;
 	}
 
-	public static String getBrowserTypeName(BrowserType browser)
+	@Nonnull
+	public static String getBrowserTypeName(@Nonnull BrowserType browser)
 	{
 		switch (browser)
 		{

@@ -1,8 +1,11 @@
 package org.sswr.util.media;
 
+import jakarta.annotation.Nonnull;
+
 public class Resizer
 {
-	public static Size2D calcOutputSize(double width, double height, double par, double targetWidth, double targetHeight, ResizeAspectRatio rar)
+	@Nonnull
+	public static Size2D calcOutputSize(double width, double height, double par, double targetWidth, double targetHeight, @Nonnull ResizeAspectRatio rar)
 	{
 		if (rar == ResizeAspectRatio.IGNORE_AR)
 		{

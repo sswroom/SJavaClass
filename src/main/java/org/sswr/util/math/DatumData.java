@@ -5,6 +5,8 @@ import java.util.Objects;
 import org.sswr.util.data.DataTools;
 import org.sswr.util.math.unit.Angle;
 
+import jakarta.annotation.Nonnull;
+
 public class DatumData
 {
 	private int srid;
@@ -26,7 +28,7 @@ public class DatumData
 	public DatumData() {
 	}
 
-	public DatumData(int srid, SpheroidData spheroid, String name, double x0, double y0, double z0, double cX, double cY, double cZ, double xAngle, double yAngle, double zAngle, double scale, Angle.AngleUnit aunit) {
+	public DatumData(int srid, @Nonnull SpheroidData spheroid, @Nonnull String name, double x0, double y0, double z0, double cX, double cY, double cZ, double xAngle, double yAngle, double zAngle, double scale, @Nonnull Angle.AngleUnit aunit) {
 		this.srid = srid;
 		this.spheroid = spheroid;
 		this.name = name;
@@ -51,19 +53,21 @@ public class DatumData
 		this.srid = srid;
 	}
 
+	@Nonnull
 	public SpheroidData getSpheroid() {
 		return this.spheroid;
 	}
 
-	public void setSpheroid(SpheroidData spheroid) {
+	public void setSpheroid(@Nonnull SpheroidData spheroid) {
 		this.spheroid = spheroid;
 	}
 
+	@Nonnull
 	public String getName() {
 		return this.name;
 	}
 
-	public void setName(String name) {
+	public void setName(@Nonnull String name) {
 		this.name = name;
 	}
 
@@ -147,11 +151,12 @@ public class DatumData
 		this.scale = scale;
 	}
 
+	@Nonnull
 	public Angle.AngleUnit getAunit() {
 		return this.aunit;
 	}
 
-	public void setAunit(Angle.AngleUnit aunit) {
+	public void setAunit(@Nonnull Angle.AngleUnit aunit) {
 		this.aunit = aunit;
 	}
 

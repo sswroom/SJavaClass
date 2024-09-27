@@ -4,6 +4,8 @@ import org.sswr.util.basic.Matrix3;
 import org.sswr.util.basic.Point;
 import org.sswr.util.basic.Vector3;
 
+import jakarta.annotation.Nonnull;
+
 public class ColorPrimaries
 {
 	public ColorType colorType;
@@ -17,7 +19,7 @@ public class ColorPrimaries
 		this.setByColorType(ColorType.PUNKNOWN);
 	}
 
-	public void setWhiteType(WhitePointType wpType)
+	public void setWhiteType(@Nonnull WhitePointType wpType)
 	{
 		this.w = getWhitePointXY(wpType);
 	}
@@ -27,7 +29,7 @@ public class ColorPrimaries
 		this.w = getWhitePointXY(colorTemp);
 	}
 
-	void set(ColorPrimaries primaries)
+	void set(@Nonnull ColorPrimaries primaries)
 	{
 		this.colorType = primaries.colorType;
 		this.r = primaries.r.clone();
@@ -36,7 +38,7 @@ public class ColorPrimaries
 		this.w = primaries.w.clone();
 	}
 
-	public void setByColorType(ColorType colorType)
+	public void setByColorType(@Nonnull ColorType colorType)
 	{
 		switch (colorType)
 		{
@@ -219,11 +221,13 @@ public class ColorPrimaries
 		}
 	}
 
+	@Nonnull
 	public Point getWhitexy()
 	{
 		return this.w;
 	}
 
+	@Nonnull
 	public Matrix3 getConvMatrix()
 	{
 		double Xr;
@@ -277,7 +281,7 @@ public class ColorPrimaries
 		return matrix;
 	}
 
-	public void setConvMatrix(Matrix3 matrix)
+	public void setConvMatrix(@Nonnull Matrix3 matrix)
 	{
 		double Sr = matrix.vec[1].val[0];
 		double Sg = matrix.vec[1].val[1];
@@ -302,12 +306,13 @@ public class ColorPrimaries
 		this.w.setX(X * this.w.getY());
 	}
 
-	public boolean equals(ColorPrimaries primaries)
+	public boolean equals(@Nonnull ColorPrimaries primaries)
 	{
 		return this.r.equals(primaries.r) && this.g.equals(primaries.g) && this.b.equals(primaries.b) && this.w.equals(primaries.w);
 	}
 
-	public static Point getWhitePointXY(WhitePointType wpType)
+	@Nonnull
+	public static Point getWhitePointXY(@Nonnull WhitePointType wpType)
 	{
 		switch (wpType)
 		{
@@ -406,6 +411,7 @@ public class ColorPrimaries
 			0.32902313032606192215312736485375);
 	}
 
+	@Nonnull
 	public static Point getWhitePointXY(double colorTemp)
 	{
 		double currX;
@@ -423,7 +429,8 @@ public class ColorPrimaries
 		return new Point(currX, currY);
 	}
 
-	public static Vector3 getWhitePointXYZ(WhitePointType wpType)
+	@Nonnull
+	public static Vector3 getWhitePointXYZ(@Nonnull WhitePointType wpType)
 	{
 		Point pt = getWhitePointXY(wpType);
 		Vector3 xyY = new Vector3();
@@ -431,6 +438,7 @@ public class ColorPrimaries
 		return xyYToXYZ(xyY);
 	}
 
+	@Nonnull
 	public static Matrix3 getMatrixBradford()
 	{
 		Matrix3 mat = new Matrix3();
@@ -440,6 +448,7 @@ public class ColorPrimaries
 		return mat;
 	}
 
+	@Nonnull
 	public static Matrix3 getMatrixVonKries()
 	{
 		Matrix3 mat = new Matrix3();
@@ -449,7 +458,8 @@ public class ColorPrimaries
 		return mat;
 	}
 
-	public static Vector3 xyYToXYZ(Vector3 xyY)
+	@Nonnull
+	public static Vector3 xyYToXYZ(@Nonnull Vector3 xyY)
 	{
 		Vector3 XYZ = new Vector3();
 		Double v = xyY.val[2] / xyY.val[1];
@@ -459,7 +469,8 @@ public class ColorPrimaries
 		return XYZ;
 	}
 
-	public static Vector3 XYZToxyY(Vector3 XYZ)
+	@Nonnull
+	public static Vector3 XYZToxyY(@Nonnull Vector3 XYZ)
 	{
 		Vector3 xyY = new Vector3();
 		Double sum = XYZ.val[0] + XYZ.val[1] + XYZ.val[2];
@@ -469,7 +480,8 @@ public class ColorPrimaries
 		return xyY;
 	}
 
-	public static Matrix3 getAdaptationMatrix(WhitePointType srcWP, WhitePointType destWP)
+	@Nonnull
+	public static Matrix3 getAdaptationMatrix(@Nonnull WhitePointType srcWP, @Nonnull WhitePointType destWP)
 	{
 		Matrix3 mat;
 		Matrix3 mat2 = new Matrix3();

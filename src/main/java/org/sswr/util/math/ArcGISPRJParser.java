@@ -8,8 +8,11 @@ import org.sswr.util.data.StringUtil;
 import org.sswr.util.math.CoordinateSystem.PrimemType;
 import org.sswr.util.math.CoordinateSystem.UnitType;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class ArcGISPRJParser {
-	private static boolean parsePRJString(byte []prjBuff, int ofst, SharedInt strSize)
+	private static boolean parsePRJString(@Nonnull byte []prjBuff, int ofst, @Nonnull SharedInt strSize)
 	{
 		int i;
 		byte c;
@@ -32,7 +35,8 @@ public class ArcGISPRJParser {
 		return false;
 	}
 
-	public static CoordinateSystem parsePRJFile(String fileName)
+	@Nullable
+	public static CoordinateSystem parsePRJFile(@Nonnull String fileName)
 	{
 		try
 		{
@@ -54,7 +58,8 @@ public class ArcGISPRJParser {
 		}
 	}
 
-	public static CoordinateSystem parsePRJBuff(String sourceName, byte[] prjBuff, int ofst, SharedInt parsedSize)
+	@Nullable
+	public static CoordinateSystem parsePRJBuff(@Nonnull String sourceName, @Nonnull byte[] prjBuff, int ofst, @Nullable SharedInt parsedSize)
 	{
 		SharedInt tmpInt = new SharedInt();
 		int i;

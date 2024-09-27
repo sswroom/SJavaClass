@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.sswr.util.basic.ThreadEvent;
 
+import jakarta.annotation.Nonnull;
+
 public class TCPClientMgrWorker implements Runnable
 {
 	private boolean running;
@@ -13,7 +15,7 @@ public class TCPClientMgrWorker implements Runnable
 	private TCPClientMgr me;
 	private ThreadEvent evt;
 
-	public TCPClientMgrWorker(TCPClientMgr me, boolean isPrimary)
+	public TCPClientMgrWorker(@Nonnull TCPClientMgr me, boolean isPrimary)
 	{
 		this.running = false;
 		this.toStop = false;

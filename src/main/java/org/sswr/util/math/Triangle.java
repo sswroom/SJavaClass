@@ -1,5 +1,7 @@
 package org.sswr.util.math;
 
+import jakarta.annotation.Nonnull;
+
 public class Triangle
 {
 	public Coord2DDbl []pt;
@@ -12,7 +14,7 @@ public class Triangle
 		this.pt[2] = new Coord2DDbl();
 	}
 
-	public Triangle(Coord2DDbl p1, Coord2DDbl p2, Coord2DDbl p3)
+	public Triangle(@Nonnull Coord2DDbl p1, @Nonnull Coord2DDbl p2, @Nonnull Coord2DDbl p3)
 	{
 		this.pt = new Coord2DDbl[3];
 		this.pt[0] = p1;

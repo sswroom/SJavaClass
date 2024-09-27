@@ -1,9 +1,11 @@
 package org.sswr.util.math;
 
+import jakarta.annotation.Nonnull;
+
 public class RectAreaDbl
 {
-	public Coord2DDbl min;
-	public Coord2DDbl max;
+	public @Nonnull Coord2DDbl min;
+	public @Nonnull Coord2DDbl max;
 	
 	public RectAreaDbl()
 	{
@@ -11,7 +13,7 @@ public class RectAreaDbl
 		this.max = new Coord2DDbl();
 	}
 
-	public RectAreaDbl(Coord2DDbl min, Coord2DDbl max)
+	public RectAreaDbl(@Nonnull Coord2DDbl min, @Nonnull Coord2DDbl max)
 	{
 		this.min = min;
 		this.max = max;
@@ -28,16 +30,19 @@ public class RectAreaDbl
 		return (x >= min.x && x < max.x && y >= min.y && y < max.y);
 	}
 
+	@Nonnull
 	public Coord2DDbl getMin()
 	{
 		return this.min;
 	}
 
+	@Nonnull
 	public Coord2DDbl getMax()
 	{
 		return this.max;
 	}
 
+	@Nonnull
 	public Coord2DDbl getCenter()
 	{
 		return new Coord2DDbl((this.min.x + this.max.x) * 0.5, (this.min.y + this.max.y) * 0.5);
@@ -53,6 +58,7 @@ public class RectAreaDbl
 		return this.max.y - this.min.y;
 	}
 
+	@Nonnull
 	public Coord2DDbl getSize()
 	{
 		return new Coord2DDbl(this.max.x - this.min.x, this.max.y - this.min.y);
@@ -63,53 +69,60 @@ public class RectAreaDbl
 		return this.getWidth() * this.getHeight();
 	}
 
+	@Nonnull
 	public Quadrilateral toQuadrilateral()
 	{
 		return new Quadrilateral(getMin(), new Coord2DDbl(max.x, min.y), getMax(), new Coord2DDbl(min.x, max.y));
 	}
 
+	@Nonnull
 	public RectAreaDbl reorder()
 	{
 		return new RectAreaDbl(this.min.clone().setMin(this.max), this.min.clone().setMax(this.max));
 	}
 
+	@Nonnull
 	public RectAreaDbl expand(double size)
 	{
 		return new RectAreaDbl(min.subtract(size), max.add(size));
 	}
 
-	public boolean equals(RectAreaDbl v)
+	public boolean equals(@Nonnull RectAreaDbl v)
 	{
 		return this.min.equals(v.min) && this.max.equals(v.max);
 	}
 
-	public boolean notEquals(RectAreaDbl v)
+	public boolean notEquals(@Nonnull RectAreaDbl v)
 	{
 		return !this.min.equals(v.min) || !this.max.equals(v.max);
 	}
 
+	@Nonnull
 	public RectAreaDbl multiply(double v)
 	{
 		return new RectAreaDbl(this.min.multiply(v), this.max.multiply(v));
 	}
 
+	@Nonnull
 	public RectAreaDbl divide(double v)
 	{
 		double mul = 1 / v;
 		return new RectAreaDbl(this.min.multiply(mul), this.max.multiply(mul));
 	}
 
-	public boolean overlapOrTouch(RectAreaDbl rect)
+	public boolean overlapOrTouch(@Nonnull RectAreaDbl rect)
 	{
 		return rect.min.x <= this.max.x && rect.max.x >= this.min.x && rect.min.y <= this.max.y && rect.max.y >= this.min.y;	
 	}
 
+	@Nonnull
 	public RectAreaDbl clone()
 	{
 		return new RectAreaDbl(min.clone(), max.clone());
 	}
 
-	public RectAreaDbl overlapArea(RectAreaDbl area)
+	@Nonnull
+	public RectAreaDbl overlapArea(@Nonnull RectAreaDbl area)
 	{
 		RectAreaDbl ret = area.clone();
 		if (ret.min.x <= this.min.x)
@@ -131,17 +144,20 @@ public class RectAreaDbl
 		return ret;
 	}
 	
-	public RectAreaDbl mergeArea(RectAreaDbl area)
+	@Nonnull
+	public RectAreaDbl mergeArea(@Nonnull RectAreaDbl area)
 	{
 		return new RectAreaDbl(this.min.clone().setMin(area.min), this.max.clone().setMax(area.max));
 	}
 
-	public RectAreaDbl mergePoint(Coord2DDbl pt)
+	@Nonnull
+	public RectAreaDbl mergePoint(@Nonnull Coord2DDbl pt)
 	{
 		return new RectAreaDbl(this.min.clone().setMin(pt), this.max.clone().setMax(pt));
 	}
 
-	public static RectAreaDbl getRectArea(Coord2DDbl []points)
+	@Nonnull
+	public static RectAreaDbl getRectArea(@Nonnull Coord2DDbl []points)
 	{
 		int i = points.length - 1;
 		Coord2DDbl min = points[i].clone();
@@ -154,7 +170,8 @@ public class RectAreaDbl
 		return new RectAreaDbl(min, max);
 	}
 
-	public static RectAreaDbl fromQuadrilateral(Quadrilateral quad)
+	@Nonnull
+	public static RectAreaDbl fromQuadrilateral(@Nonnull Quadrilateral quad)
 	{
 		Coord2DDbl min = quad.tl.clone().setMin(quad.tr).setMin(quad.br).setMin(quad.bl);
 		Coord2DDbl max = quad.tl.clone().setMax(quad.tr).setMax(quad.br).setMax(quad.bl);

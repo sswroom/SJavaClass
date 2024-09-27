@@ -13,6 +13,8 @@ import org.sswr.util.net.BrowserInfo;
 import org.sswr.util.net.BrowserInfo.BrowserType;
 import org.sswr.util.net.BrowserInfo.UserAgentInfo;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -88,7 +90,7 @@ public class MemoryWebSessionManager extends WebSessionManager implements Runnab
 		this.chkRunning = false;
 	}
 
-	private long getSessId(HttpServletRequest req)
+	private long getSessId(@Nonnull HttpServletRequest req)
 	{
 		try
 		{
@@ -108,7 +110,7 @@ public class MemoryWebSessionManager extends WebSessionManager implements Runnab
 		return 0;
 	}
 
-	public MemoryWebSessionManager(String path, SessionHandler hdlr, int chkInterval, String cookieName)
+	public MemoryWebSessionManager(@Nonnull String path, @Nonnull SessionHandler hdlr, int chkInterval, @Nonnull String cookieName)
 	{
 		super(hdlr);
 		this.sessIds = new ArrayListInt64();
@@ -149,7 +151,8 @@ public class MemoryWebSessionManager extends WebSessionManager implements Runnab
 	}
 
 	@Override
-	public WebSession getSession(HttpServletRequest req, HttpServletResponse resp)
+	@Nullable
+	public WebSession getSession(@Nonnull HttpServletRequest req, @Nonnull HttpServletResponse resp)
 	{
 		long sessId = this.getSessId(req);
 		if (sessId == 0)
@@ -168,7 +171,8 @@ public class MemoryWebSessionManager extends WebSessionManager implements Runnab
 	}
 
 	@Override
-	public WebSession createSession(HttpServletRequest req, HttpServletResponse resp)
+	@Nonnull
+	public WebSession createSession(@Nonnull HttpServletRequest req, @Nonnull HttpServletResponse resp)
 	{
 		WebSession sess = getSession(req, resp);
 		if (sess != null)
@@ -192,7 +196,7 @@ public class MemoryWebSessionManager extends WebSessionManager implements Runnab
 	}
 
 	@Override
-	public void deleteSession(HttpServletRequest req, HttpServletResponse resp) {
+	public void deleteSession(@Nonnull HttpServletRequest req, @Nonnull HttpServletResponse resp) {
 		long sessId = getSessId(req);
 		int i;
 		MemoryWebSession sess;
@@ -225,7 +229,7 @@ public class MemoryWebSessionManager extends WebSessionManager implements Runnab
 		}
 	}
 
-	public long genSessId(HttpServletRequest req)
+	public long genSessId(@Nonnull HttpServletRequest req)
 	{
 		byte[] buff = new byte[8];
 		buff[0] = 0;
@@ -250,6 +254,7 @@ public class MemoryWebSessionManager extends WebSessionManager implements Runnab
 		return System.currentTimeMillis() + ByteTool.readInt64(buff, 0);
 	}
 
+	@Nonnull
 	public WebSession createSession(long sessId)
 	{
 		int si;
@@ -271,6 +276,7 @@ public class MemoryWebSessionManager extends WebSessionManager implements Runnab
 		return sess;
 	}
 
+	@Nullable
 	public WebSession getSession(long sessId)
 	{
 		WebSession sess;
@@ -310,7 +316,7 @@ public class MemoryWebSessionManager extends WebSessionManager implements Runnab
 		}
 	}
 
-	public void getSessionIds(ArrayListInt64 sessIds)
+	public void getSessionIds(@Nonnull ArrayListInt64 sessIds)
 	{
 		synchronized(this)
 		{

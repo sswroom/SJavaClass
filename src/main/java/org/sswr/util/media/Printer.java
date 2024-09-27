@@ -6,10 +6,13 @@ import java.util.List;
 import javax.print.PrintService;
 import javax.print.PrintServiceLookup;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class Printer
 {
 	private PrintService printer;
-	public Printer(String printerName)
+	public Printer(@Nonnull String printerName)
 	{
 		this.printer = null;
 		PrintService printers[] = PrintServiceLookup.lookupPrintServices(null, null);
@@ -29,7 +32,8 @@ public class Printer
 		return this.printer == null;
 	}
 
-	public PrintDocument startPrint(PrintHandler hdlr)
+	@Nullable
+	public PrintDocument startPrint(@Nonnull PrintHandler hdlr)
 	{
 		if (this.printer == null)
 		{
@@ -44,11 +48,12 @@ public class Printer
 		return doc;
 	}
 
-	public void endPrint(PrintDocument doc)
+	public void endPrint(@Nonnull PrintDocument doc)
 	{
 		((MyPrintDocument)doc).close();
 	}
 
+	@Nonnull
 	public static List<String> getPrinterNames()
 	{
 		List<String> retList = new ArrayList<String>();

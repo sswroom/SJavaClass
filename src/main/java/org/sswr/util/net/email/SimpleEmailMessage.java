@@ -3,6 +3,9 @@ package org.sswr.util.net.email;
 import java.util.ArrayList;
 import java.util.List;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class SimpleEmailMessage extends EmailMessage
 {
 	private String content;
@@ -12,7 +15,7 @@ public class SimpleEmailMessage extends EmailMessage
 	private List<String> headerValue;
 	private List<EmailAttachment> attachment;
 
-	public SimpleEmailMessage(String subject, String content, boolean contentHTML)
+	public SimpleEmailMessage(@Nonnull String subject, @Nonnull String content, boolean contentHTML)
 	{
 		this.subject = subject;
 		this.content = content;
@@ -23,6 +26,7 @@ public class SimpleEmailMessage extends EmailMessage
 	}
 
 	@Override
+	@Nullable
 	public String getContent() {
 		return this.content;
 	}
@@ -33,11 +37,12 @@ public class SimpleEmailMessage extends EmailMessage
 	}
 	
 	@Override
+	@Nullable
 	public String getSubject() {
 		return this.subject;
 	}
 
-	public void addCustomHeader(String name, String value)
+	public void addCustomHeader(@Nonnull String name, @Nonnull String value)
 	{
 		this.headerName.add(name);
 		this.headerValue.add(value);
@@ -49,17 +54,19 @@ public class SimpleEmailMessage extends EmailMessage
 	}
 
 	@Override
+	@Nullable
 	public String getCustomHeaderName(int index) {
 		return this.headerName.get(index);
 	}
 
 	@Override
+	@Nullable
 	public String getCustomHeaderValue(int index) {
 		return this.headerValue.get(index);
 	}
 
 	@Override
-	public boolean addAttachmentFile(String attachmentPath) {
+	public boolean addAttachmentFile(@Nonnull String attachmentPath) {
 		EmailAttachment att = EmailAttachment.createFromFile(attachmentPath, "attach"+(this.attachment.size() + 1));
 		if (att != null)
 		{
@@ -70,7 +77,7 @@ public class SimpleEmailMessage extends EmailMessage
 	}
 
 	@Override
-	public boolean addAttachment(byte[] bytes, String contentType, String fileName) {
+	public boolean addAttachment(@Nonnull byte[] bytes, @Nonnull String contentType, @Nonnull String fileName) {
 		EmailAttachment att = new EmailAttachment();
 		att.content = bytes;
 		att.contentId = "attach"+(this.attachment.size() + 1);
@@ -80,12 +87,9 @@ public class SimpleEmailMessage extends EmailMessage
 		return true;
 	}
 
-	public void addAttachment(EmailAttachment attachment)
+	public void addAttachment(@Nonnull EmailAttachment attachment)
 	{
-		if (attachment != null)
-		{
-			this.attachment.add(attachment);
-		}
+		this.attachment.add(attachment);
 	}
 
 	@Override
@@ -94,11 +98,13 @@ public class SimpleEmailMessage extends EmailMessage
 	}
 
 	@Override
+	@Nullable
 	public EmailAttachment getAttachment(int index) {
 		return this.attachment.get(index);
 	}
 
 	@Override
+	@Nonnull
 	public List<EmailAttachment> getAttachments()
 	{
 		return this.attachment;

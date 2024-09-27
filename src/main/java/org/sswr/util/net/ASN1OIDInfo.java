@@ -4,6 +4,8 @@ import java.util.Objects;
 
 import org.sswr.util.data.DataTools;
 
+import jakarta.annotation.Nonnull;
+
 public class ASN1OIDInfo
 {
 	private String name;
@@ -13,17 +15,18 @@ public class ASN1OIDInfo
 	public ASN1OIDInfo() {
 	}
 
-	public ASN1OIDInfo(String name, int len, byte[] oid) {
+	public ASN1OIDInfo(@Nonnull String name, int len, @Nonnull byte[] oid) {
 		this.name = name;
 		this.len = len;
 		this.oid = oid;
 	}
 
+	@Nonnull
 	public String getName() {
 		return this.name;
 	}
 
-	public void setName(String name) {
+	public void setName(@Nonnull String name) {
 		this.name = name;
 	}
 
@@ -35,11 +38,12 @@ public class ASN1OIDInfo
 		this.len = len;
 	}
 
+	@Nonnull
 	public byte[] getOid() {
 		return this.oid;
 	}
 
-	public void setOid(byte[] oid) {
+	public void setOid(@Nonnull byte[] oid) {
 		this.oid = oid;
 	}
 

@@ -10,12 +10,15 @@ import org.sswr.util.io.LogLevel;
 import org.sswr.util.io.LogTool;
 import org.sswr.util.io.UTF8Reader;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class EmailTemplate2 {
 	private String subject;
 	private String content;
 	private boolean htmlContent;
 
-	private boolean parseTemplate(StringBuilder sbOut, String tpl, Map<String, String> items, LogTool log)
+	private boolean parseTemplate(@Nonnull StringBuilder sbOut, @Nonnull String tpl, @Nonnull Map<String, String> items, @Nonnull LogTool log)
 	{
 		int i;
 		int j;
@@ -98,14 +101,15 @@ public class EmailTemplate2 {
 		}
 	}
 
-	public EmailTemplate2(String subject, String content, boolean htmlContent)
+	public EmailTemplate2(@Nonnull String subject, @Nonnull String content, boolean htmlContent)
 	{
 		this.subject = subject;
 		this.content = content;
 		this.htmlContent = htmlContent;
 	}
 	
-	public EmailMessage createEmailMessage(Map<String, String> items, LogTool log)
+	@Nullable
+	public EmailMessage createEmailMessage(@Nonnull Map<String, String> items, @Nonnull LogTool log)
 	{
 		StringBuilder sbSubject = new StringBuilder();
 		if (!parseTemplate(sbSubject, this.subject, items, log))
@@ -116,7 +120,8 @@ public class EmailTemplate2 {
 		return new SimpleEmailMessage(sbSubject.toString(), sbContent.toString(), htmlContent);
 	}
 
-	public static EmailTemplate2 loadFromFile(String fileName, boolean htmlContent)
+	@Nullable
+	public static EmailTemplate2 loadFromFile(@Nonnull String fileName, boolean htmlContent)
 	{
 		try
 		{

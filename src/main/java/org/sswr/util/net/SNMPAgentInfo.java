@@ -1,11 +1,15 @@
 package org.sswr.util.net;
 
 import java.net.InetAddress;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 import org.sswr.util.data.ByteTool;
 import org.sswr.util.data.DataTools;
+
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 public class SNMPAgentInfo
 {
@@ -21,35 +25,39 @@ public class SNMPAgentInfo
 	private String vendor;
 	private String cpuName;
 	private byte[] mac;
-	private List<SNMPReadingInfo> readingList;
+	private @Nonnull List<SNMPReadingInfo> readingList;
 
 
 	public SNMPAgentInfo() {
 		this.objId = new byte[64];
 		this.mac = new byte[6];
+		this.readingList = new ArrayList<SNMPReadingInfo>();
 	}
 
+	@Nullable
 	public InetAddress getAddr() {
 		return this.addr;
 	}
 
-	public void setAddr(InetAddress addr) {
+	public void setAddr(@Nullable InetAddress addr) {
 		this.addr = addr;
 	}
 
+	@Nullable
 	public String getCommunity() {
 		return this.community;
 	}
 
-	public void setCommunity(String community) {
+	public void setCommunity(@Nullable String community) {
 		this.community = community;
 	}
 
+	@Nonnull
 	public byte[] getObjId() {
 		return this.objId;
 	}
 
-	public void setObjId(byte[] objId, int ofst, int len) {
+	public void setObjId(@Nonnull byte[] objId, int ofst, int len) {
 		ByteTool.copyArray(this.objId, 0, objId, ofst, len);
 		this.objIdLen = len;
 	}
@@ -62,75 +70,84 @@ public class SNMPAgentInfo
 		this.objIdLen = objIdLen;
 	}
 
+	@Nullable
 	public String getDescr() {
 		return this.descr;
 	}
 
-	public void setDescr(String descr) {
+	public void setDescr(@Nullable String descr) {
 		this.descr = descr;
 	}
 
+	@Nullable
 	public String getContact() {
 		return this.contact;
 	}
 
-	public void setContact(String contact) {
+	public void setContact(@Nullable String contact) {
 		this.contact = contact;
 	}
 
+	@Nullable
 	public String getName() {
 		return this.name;
 	}
 
-	public void setName(String name) {
+	public void setName(@Nullable String name) {
 		this.name = name;
 	}
 
+	@Nullable
 	public String getLocation() {
 		return this.location;
 	}
 
-	public void setLocation(String location) {
+	public void setLocation(@Nullable String location) {
 		this.location = location;
 	}
 
+	@Nullable
 	public String getModel() {
 		return this.model;
 	}
 
-	public void setModel(String model) {
+	public void setModel(@Nullable String model) {
 		this.model = model;
 	}
 
+	@Nullable
 	public String getVendor() {
 		return this.vendor;
 	}
 
-	public void setVendor(String vendor) {
+	public void setVendor(@Nullable String vendor) {
 		this.vendor = vendor;
 	}
 
+	@Nullable
 	public String getCpuName() {
 		return this.cpuName;
 	}
 
-	public void setCpuName(String cpuName) {
+	public void setCpuName(@Nullable String cpuName) {
 		this.cpuName = cpuName;
 	}
 
+	@Nonnull
 	public byte[] getMac() {
 		return this.mac;
 	}
 
-	public void setMac(byte[] mac, int ofst) {
+	public void setMac(@Nonnull byte[] mac, int ofst) {
 		ByteTool.copyArray(this.mac, 0, mac, ofst, 6);
 	}
 
+	@Nonnull
 	public List<SNMPReadingInfo> getReadingList() {
 		return this.readingList;
 	}
 
-	public void setReadingList(List<SNMPReadingInfo> readingList) {
+	public void setReadingList(@Nonnull List<SNMPReadingInfo> readingList) {
 		this.readingList = readingList;
 	}
 

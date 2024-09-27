@@ -9,6 +9,9 @@ import org.sswr.util.io.Path;
 import org.sswr.util.io.PathType;
 import org.sswr.util.io.StreamData;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class HTTPData implements StreamData, Runnable
 {
 	private static class HTTPDATAHANDLE
@@ -179,7 +182,7 @@ public class HTTPData implements StreamData, Runnable
 		}
 	}
 
-	public HTTPData(HTTPData fd, long offset, long length)
+	public HTTPData(@Nonnull HTTPData fd, long offset, long length)
 	{
 		dataOffset = offset + fd.dataOffset;
 		long endOffset = fd.dataOffset + fd.getDataSize();
@@ -197,7 +200,7 @@ public class HTTPData implements StreamData, Runnable
 		fdh.objectCnt++;
 	}
 
-	public HTTPData(SocketFactory sockf, SSLEngine ssl, HTTPQueue queue, String url, String localFile, boolean forceReload)
+	public HTTPData(@Nullable SocketFactory sockf, @Nullable SSLEngine ssl, @Nonnull HTTPQueue queue, @Nonnull String url, @Nonnull String localFile, boolean forceReload)
 	{
 		int i;
 		boolean needReload = forceReload;
@@ -304,7 +307,7 @@ public class HTTPData implements StreamData, Runnable
 		fdh = null;
 	}
 
-	public int getRealData(long offset, int length, byte[] buffer, int buffOfst)
+	public int getRealData(long offset, int length, @Nonnull byte[] buffer, int buffOfst)
 	{
 		if (fdh == null)
 			return 0;
@@ -336,13 +339,15 @@ public class HTTPData implements StreamData, Runnable
 		}
 	}
 
+	@Nonnull
 	public String getFullName()
 	{
 		if (fdh == null)
-			return null;
+			return "";
 		return fdh.url;
 	}
 
+	@Nullable
 	public String getShortName()
 	{
 		if (fdh == null)
@@ -350,7 +355,7 @@ public class HTTPData implements StreamData, Runnable
 		return fdh.fileName;
 	}
 
-	public void setFullName(String fullName)
+	public void setFullName(@Nonnull String fullName)
 	{
 		if (fdh == null || fullName.length() == 0)
 			return;
@@ -387,6 +392,7 @@ public class HTTPData implements StreamData, Runnable
 		return dataLength;
 	}
 
+	@Nonnull
 	public StreamData getPartialData(long offset, long length)
 	{
 		return new HTTPData(this, offset, length);
@@ -398,6 +404,7 @@ public class HTTPData implements StreamData, Runnable
 	}
 
 	@Override
+	@Nonnull
 	public String getFullFileName()
 	{
 		return this.getFullName();

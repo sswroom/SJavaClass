@@ -34,7 +34,7 @@ public class SSLEngine
 	class SSLTrustManager implements X509TrustManager
 	{
 		private TrustManager[] tms;
-		public SSLTrustManager(TrustManager[] tms)
+		public SSLTrustManager(@Nonnull TrustManager[] tms)
 		{
 			this.tms = tms;
 		}
@@ -134,6 +134,7 @@ public class SSLEngine
 		this.sc.init(null, newTMS, new java.security.SecureRandom());
 	}
 
+	@Nonnull
 	public SocketFactory getSocketFactory()
 	{
 		return this.sc.getSocketFactory();

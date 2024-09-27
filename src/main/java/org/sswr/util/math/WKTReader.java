@@ -15,12 +15,15 @@ import org.sswr.util.math.geometry.Polygon;
 import org.sswr.util.math.geometry.Polyline;
 import org.sswr.util.math.geometry.Vector2D;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class WKTReader
 {
 	private String lastError;
 	private int srid;
 
-	private int nextDouble(byte[] wkt, int ofst, SharedDouble val)
+	private int nextDouble(@Nonnull byte[] wkt, int ofst, @Nonnull SharedDouble val)
 	{
 		if (ofst + 3 <= wkt.length)
 		{
@@ -83,7 +86,8 @@ public class WKTReader
 		this.lastError = null;
 	}
 
-	public Vector2D parseWKT(byte[] wkt)
+	@Nullable
+	public Vector2D parseWKT(@Nonnull byte[] wkt)
 	{
 		if (StringUtil.startsWith(wkt, 0, "POINT("))
 		{
@@ -207,8 +211,10 @@ public class WKTReader
 			ByteTool.copyArray(ptArr, 0, ptList, 0, ptList.size() >> 1);
 			if (hasM)
 			{
-				double []zArr = pl.getZList();
-				double []mArr = pl.getMList();
+				@SuppressWarnings("null")
+				@Nonnull double []zArr = pl.getZList();
+				@SuppressWarnings("null")
+				@Nonnull double []mArr = pl.getMList();
 				i = zArr.length;
 				while (i-- > 0)
 				{
@@ -218,7 +224,8 @@ public class WKTReader
 			}
 			else if (hasZ)
 			{
-				double []zArr = pl.getZList();
+				@SuppressWarnings("null")
+				@Nonnull double []zArr = pl.getZList();
 				i = zArr.length;
 				while (i-- > 0)
 				{
@@ -342,8 +349,10 @@ public class WKTReader
 				ByteTool.copyArray(ptArr, 0, ptList, k, (l - k) >> 1);
 				if (hasM)
 				{
-					double[] zArr = lr.getZList();
-					double[] mArr = lr.getMList();
+					@SuppressWarnings("null")
+					@Nonnull double[] zArr = lr.getZList();
+					@SuppressWarnings("null")
+					@Nonnull double[] mArr = lr.getMList();
 					m = mArr.length;
 					while (m-- > 0)
 					{
@@ -353,7 +362,8 @@ public class WKTReader
 				}
 				else if (hasZ)
 				{
-					double[] zArr = lr.getZList();
+					@SuppressWarnings("null")
+					@Nonnull double[] zArr = lr.getZList();
 					m = zArr.length;
 					while (m-- > 0)
 					{
@@ -470,8 +480,10 @@ public class WKTReader
 			ByteTool.copyArray(ptArr, 0, ptList, 0, ptList.size() >> 1);
 			if (hasM)
 			{
-				double []zArr = lineString.getZList();
-				double []mArr = lineString.getMList();
+				@SuppressWarnings("null")
+				@Nonnull double []zArr = lineString.getZList();
+				@SuppressWarnings("null")
+				@Nonnull double []mArr = lineString.getMList();
 				i = zArr.length;
 				while (i-- > 0)
 				{
@@ -481,7 +493,8 @@ public class WKTReader
 			}
 			else if (hasZ)
 			{
-				double []zArr = lineString.getZList();
+				@SuppressWarnings("null")
+				@Nonnull double []zArr = lineString.getZList();
 				i = zArr.length;
 				while (i-- > 0)
 				{
@@ -612,8 +625,10 @@ public class WKTReader
 					ByteTool.copyArray(ptArr, 0, ptList, k, (l - k) >> 1);
 					if (hasM)
 					{
-						double[] zArr = lr.getZList();
-						double[] mArr = lr.getMList();
+						@SuppressWarnings("null")
+						@Nonnull double[] zArr = lr.getZList();
+						@SuppressWarnings("null")
+						@Nonnull double[] mArr = lr.getMList();
 						m = mArr.length;
 						while (m-- > 0)
 						{
@@ -623,7 +638,8 @@ public class WKTReader
 					}
 					else if (hasZ)
 					{
-						double[] zArr = lr.getZList();
+						@SuppressWarnings("null")
+						@Nonnull double[] zArr = lr.getZList();
 						m = zArr.length;
 						while (m-- > 0)
 						{
@@ -662,6 +678,7 @@ public class WKTReader
 		return null;
 	}
 
+	@Nullable
 	public String getLastError()
 	{
 		return this.lastError;

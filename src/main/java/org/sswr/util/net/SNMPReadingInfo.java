@@ -5,6 +5,9 @@ import java.util.Objects;
 import org.sswr.util.data.ByteTool;
 import org.sswr.util.data.DataTools;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class SNMPReadingInfo
 {
 	private String name;
@@ -20,13 +23,15 @@ public class SNMPReadingInfo
 	public SNMPReadingInfo()
 	{
 		this.objId = new byte[64];
+		this.readingType = SMonitorReadingType.UNKNOWN;
 	}
 
+	@Nullable
 	public String getName() {
 		return this.name;
 	}
 
-	public void setName(String name) {
+	public void setName(@Nullable String name) {
 		this.name = name;
 	}
 
@@ -38,11 +43,12 @@ public class SNMPReadingInfo
 		this.index = index;
 	}
 
+	@Nonnull
 	public byte[] getObjId() {
 		return this.objId;
 	}
 
-	public void setObjId(byte[] objId, int ofst, int len) {
+	public void setObjId(@Nonnull byte[] objId, int ofst, int len) {
 		ByteTool.copyArray(this.objId, 0, objId, ofst, len);
 		this.objIdLen = len;
 	}
@@ -71,11 +77,12 @@ public class SNMPReadingInfo
 		this.invVal = invVal;
 	}
 
+	@Nonnull
 	public SMonitorReadingType getReadingType() {
 		return this.readingType;
 	}
 
-	public void setReadingType(SMonitorReadingType readingType) {
+	public void setReadingType(@Nonnull SMonitorReadingType readingType) {
 		this.readingType = readingType;
 	}
 

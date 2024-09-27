@@ -1,23 +1,28 @@
 package org.sswr.util.math;
 
+import jakarta.annotation.Nonnull;
+
 public class MercatorProjectedCoordinateSystem extends ProjectedCoordinateSystem
 {
-	public MercatorProjectedCoordinateSystem(String sourceName, int srid, String projName, double falseEasting, double falseNorthing, double centralMeridian, double latitudeOfOrigin, double scaleFactor, GeographicCoordinateSystem gcs, UnitType unit)
+	public MercatorProjectedCoordinateSystem(@Nonnull String sourceName, int srid, @Nonnull String projName, double falseEasting, double falseNorthing, double centralMeridian, double latitudeOfOrigin, double scaleFactor, @Nonnull GeographicCoordinateSystem gcs, @Nonnull UnitType unit)
 	{
 		super(sourceName, srid, projName, falseEasting, falseNorthing, centralMeridian, latitudeOfOrigin, scaleFactor, gcs, unit);
 	}
 
+	@Nonnull
 	public CoordinateSystem clone()
 	{
 		return new MercatorProjectedCoordinateSystem(this.sourceName, this.srid, this.csysName, this.falseEasting, this.falseNorthing, this.getCentralMeridianDegree(), this.getLatitudeOfOriginDegree(), this.scaleFactor, (GeographicCoordinateSystem)this.gcs.clone(), this.unit);
 	}
 
+	@Nonnull
 	public CoordinateSystemType getCoordSysType()
 	{
 		return CoordinateSystemType.MercatorProjected;
 	}
 
-	public Coord2DDbl toGeographicCoordinateRad(Coord2DDbl projPos)
+	@Nonnull
+	public Coord2DDbl toGeographicCoordinateRad(@Nonnull Coord2DDbl projPos)
 	{
 		EarthEllipsoid ellipsoid = this.gcs.getEllipsoid();
 		double aF = ellipsoid.getSemiMajorAxis() * this.scaleFactor;
@@ -61,7 +66,8 @@ public class MercatorProjectedCoordinateSystem extends ProjectedCoordinateSystem
 			rLatL - ser7 * Math.pow(eDiff, 2) + ser8 * Math.pow(eDiff, 4) - ser9 * Math.pow(eDiff, 6));
 	}
 
-	public Coord2DDbl fromGeographicCoordinateRad(Coord2DDbl geoPos)
+	@Nonnull
+	public Coord2DDbl fromGeographicCoordinateRad(@Nonnull Coord2DDbl geoPos)
 	{
 		EarthEllipsoid ellipsoid = this.gcs.getEllipsoid();
 		double rLat = geoPos.getLat();

@@ -1,8 +1,10 @@
 package org.sswr.util.net;
 
+import jakarta.annotation.Nonnull;
+
 public class MQTTUtil
 {
-	public static boolean topicMatch(String topic, String subPattern)
+	public static boolean topicMatch(@Nonnull String topic, @Nonnull String subPattern)
 	{
 		if (subPattern.equals("#"))
 		{

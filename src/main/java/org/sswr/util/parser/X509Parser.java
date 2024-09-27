@@ -19,9 +19,13 @@ import org.sswr.util.io.ParsedObject;
 import org.sswr.util.io.ParserType;
 import org.sswr.util.io.StreamData;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class X509Parser extends FileParser
 {
-	public static MyX509File parseBuff(byte[] buff, int ofst, int buffSize, String fileName)
+	@Nullable
+	public static MyX509File parseBuff(@Nonnull byte[] buff, int ofst, int buffSize, @Nonnull String fileName)
 	{
 		MyX509File ret = null;
 		int lbSize;
@@ -144,7 +148,8 @@ public class X509Parser extends FileParser
 	}
 
 	@Override
-	public ParsedObject parseFileHdr(StreamData fd, PackageFile pkgFile, ParserType targetType, byte[] hdr, int hdrOfst, int hdrSize) {
+	@Nullable
+	public ParsedObject parseFileHdr(@Nonnull StreamData fd, @Nullable PackageFile pkgFile, @Nonnull ParserType targetType, @Nonnull byte[] hdr, int hdrOfst, int hdrSize) {
 		byte[] buff;
 		long len = fd.getDataSize();
 		if (targetType != ParserType.Unknown && targetType != ParserType.ASN1Data)
@@ -172,12 +177,13 @@ public class X509Parser extends FileParser
 	}
 
 	@Override
+	@Nonnull
 	public String getName() {
 		return "X509";
 	}
 
 	@Override
-	public void prepareSelector(FileSelector selector, ParserType t) {
+	public void prepareSelector(@Nonnull FileSelector selector, @Nonnull ParserType t) {
 		if (t == ParserType.Unknown || t == ParserType.ASN1Data)
 		{
 			selector.addFilter("*.crt", "X.509 Certification File");
@@ -195,6 +201,7 @@ public class X509Parser extends FileParser
 	}
 
 	@Override
+	@Nonnull
 	public ParserType getParserType() {
 		return ParserType.ASN1Data;
 	}

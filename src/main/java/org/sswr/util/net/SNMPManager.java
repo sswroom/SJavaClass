@@ -12,13 +12,16 @@ import org.sswr.util.data.ByteTool;
 import org.sswr.util.data.SharedInt;
 import org.sswr.util.data.StringUtil;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class SNMPManager
 {
 	private SNMPClient cli;
 	private List<SNMPAgentInfo> agentList;
 	private Map<Integer, SNMPAgentInfo> ipv4Agents;
 
-	public SNMPManager(InetAddress bindaddr)
+	public SNMPManager(@Nullable InetAddress bindaddr)
 	{
 		this.agentList = new ArrayList<SNMPAgentInfo>();
 		this.ipv4Agents = new HashMap<Integer, SNMPAgentInfo>();
@@ -44,6 +47,7 @@ public class SNMPManager
 		SharedInt iVal = new SharedInt();
 		List<SNMPBindingItem> itemList = new ArrayList<SNMPBindingItem>();
 		SNMPBindingItem item;
+		byte[] valBuff;
 	
 		SNMPErrorStatus err;
 		while (i-- > 0)
@@ -53,18 +57,23 @@ public class SNMPManager
 			while (j-- > 0)
 			{
 				reading = agent.getReadingList().get(j);
-				err = this.cli.v1GetRequestPDU(agent.getAddr(), agent.getCommunity(), reading.getObjId(), reading.getObjIdLen(), itemList);
-				if (err == SNMPErrorStatus.NOERROR && itemList.size() == 1)
+				InetAddress addr = agent.getAddr();
+				String community = agent.getCommunity();
+				if (addr != null && community != null)
 				{
-					item = itemList.get(0);
-					if (SNMPUtil.valueToInt32(item.getValType(), item.getValBuff(), 0, item.getValLen(), iVal))
+					err = this.cli.v1GetRequestPDU(addr, community, reading.getObjId(), reading.getObjIdLen(), itemList);
+					if (err == SNMPErrorStatus.NOERROR && itemList.size() == 1)
 					{
-						reading.setCurrVal(iVal.value * reading.getMulVal());
-						reading.setValValid(iVal.value != reading.getInvVal());
-					}
-					else
-					{
-						reading.setValValid(false);
+						item = itemList.get(0);
+						if ((valBuff = item.getValBuff()) != null && SNMPUtil.valueToInt32(item.getValType(), valBuff, 0, item.getValLen(), iVal))
+						{
+							reading.setCurrVal(iVal.value * reading.getMulVal());
+							reading.setValValid(iVal.value != reading.getInvVal());
+						}
+						else
+						{
+							reading.setValValid(false);
+						}
 					}
 				}
 				itemList.clear();
@@ -72,7 +81,7 @@ public class SNMPManager
 		}
 	}
 
-	public int getAgentList(List<SNMPAgentInfo> agentList)
+	public int getAgentList(@Nonnull List<SNMPAgentInfo> agentList)
 	{
 		int ret;
 		synchronized(this.agentList)
@@ -83,12 +92,14 @@ public class SNMPManager
 		return ret;
 	}
 
-	public SNMPAgentInfo addAgent(InetAddress addr, String community)
+	@Nullable
+	public SNMPAgentInfo addAgent(@Nonnull InetAddress addr, @Nonnull String community)
 	{
 		List<SNMPBindingItem> itemList = new ArrayList<SNMPBindingItem>();
 		SNMPErrorStatus err;
 		SNMPAgentInfo agent = null;
 		SNMPBindingItem item;
+		byte[] valBuff;
 		int i;
 		if (addr instanceof Inet4Address)
 		{
@@ -136,9 +147,9 @@ public class SNMPManager
 			if (err == SNMPErrorStatus.NOERROR && itemList.size() == 1)
 			{
 				item = itemList.get(0);
-				if (item.getValType() == 6 && item.getValLen() > 0)
+				if (item.getValType() == 6 && item.getValLen() > 0 && (valBuff = item.getValBuff()) != null)
 				{
-					agent.setObjId(item.getValBuff(), 0, item.getValLen());
+					agent.setObjId(valBuff, 0, item.getValLen());
 				}
 			}
 			itemList.clear();
@@ -183,9 +194,9 @@ public class SNMPManager
 				if (err == SNMPErrorStatus.NOERROR && itemList.size() == 1)
 				{
 					item = itemList.get(0);
-					if (item.getValType() == 4 && item.getValLen() == 6)
+					if (item.getValType() == 4 && item.getValLen() == 6 && (valBuff = item.getValBuff()) != null)
 					{
-						agent.setMac(item.getValBuff(), 0);
+						agent.setMac(valBuff, 0);
 					}
 				}
 				else if (err == SNMPErrorStatus.NOSUCHNAME)
@@ -224,7 +235,8 @@ public class SNMPManager
 						if (err == SNMPErrorStatus.NOERROR && itemList.size() == 1)
 						{
 							item = itemList.get(0);
-							SNMPUtil.valueToInt32(item.getValType(), item.getValBuff(), 0, item.getValLen(), slotCnt);
+							if ((valBuff = item.getValBuff()) != null)
+								SNMPUtil.valueToInt32(item.getValType(), valBuff, 0, item.getValLen(), slotCnt);
 						}
 						itemList.clear();
 	
@@ -243,7 +255,7 @@ public class SNMPManager
 						if (err == SNMPErrorStatus.NOERROR && itemList.size() == 1)
 						{
 							item = itemList.get(0);
-							if (SNMPUtil.valueToInt32(item.getValType(), item.getValBuff(), 0, item.getValLen(), iVal) && iVal.value > 0)
+							if ((valBuff = item.getValBuff()) != null && SNMPUtil.valueToInt32(item.getValType(), valBuff, 0, item.getValLen(), iVal) && iVal.value > 0)
 							{
 								reading = new SNMPReadingInfo();
 								reading.setName("System Temp");
@@ -263,7 +275,7 @@ public class SNMPManager
 						if (err == SNMPErrorStatus.NOERROR && itemList.size() == 1)
 						{
 							item = itemList.get(0);
-							if (SNMPUtil.valueToInt32(item.getValType(), item.getValBuff(), 0, item.getValLen(), iVal) && iVal.value > 0)
+							if ((valBuff = item.getValBuff()) != null && SNMPUtil.valueToInt32(item.getValType(), valBuff, 0, item.getValLen(), iVal) && iVal.value > 0)
 							{
 								reading = new SNMPReadingInfo();
 								reading.setName("System Fan Speed");
@@ -283,7 +295,7 @@ public class SNMPManager
 						if (err == SNMPErrorStatus.NOERROR && itemList.size() == 1)
 						{
 							item = itemList.get(0);
-							if (SNMPUtil.valueToInt32(item.getValType(), item.getValBuff(), 0, item.getValLen(), iVal) && iVal.value > 0)
+							if ((valBuff = item.getValBuff()) != null && SNMPUtil.valueToInt32(item.getValType(), valBuff, 0, item.getValLen(), iVal) && iVal.value > 0)
 							{
 								reading = new SNMPReadingInfo();
 								reading.setName("Power Fan Speed");
@@ -303,7 +315,7 @@ public class SNMPManager
 						if (err == SNMPErrorStatus.NOERROR && itemList.size() == 1)
 						{
 							item = itemList.get(0);
-							if (SNMPUtil.valueToInt32(item.getValType(), item.getValBuff(), 0, item.getValLen(), iVal) && iVal.value > 0)
+							if ((valBuff = item.getValBuff()) != null && SNMPUtil.valueToInt32(item.getValType(), valBuff, 0, item.getValLen(), iVal) && iVal.value > 0)
 							{
 								reading = new SNMPReadingInfo();
 								reading.setName("Power Temp");
@@ -331,7 +343,7 @@ public class SNMPManager
 							if (err == SNMPErrorStatus.NOERROR && itemList.size() == 1)
 							{
 								item = itemList.get(0);
-								if (SNMPUtil.valueToInt32(item.getValType(), item.getValBuff(), 0, item.getValLen(), iVal) && iVal.value > 0)
+								if ((valBuff = item.getValBuff()) != null && SNMPUtil.valueToInt32(item.getValType(), valBuff, 0, item.getValLen(), iVal) && iVal.value > 0)
 								{
 									reading = new SNMPReadingInfo();
 									reading.setName(null);
@@ -366,7 +378,7 @@ public class SNMPManager
 									if (err == SNMPErrorStatus.NOERROR && itemList.size() == 1)
 									{
 										item = itemList.get(0);
-										if (SNMPUtil.valueToInt32(item.getValType(), item.getValBuff(), 0, item.getValLen(), iVal) && iVal.value > 0)
+										if ((valBuff = item.getValBuff()) != null && SNMPUtil.valueToInt32(item.getValType(), valBuff, 0, item.getValLen(), iVal) && iVal.value > 0)
 										{
 											reading.setIndex(3 + iVal.value);
 										}
@@ -407,7 +419,7 @@ public class SNMPManager
 							if (err == SNMPErrorStatus.NOERROR && itemList.size() == 1)
 							{
 								item = itemList.get(0);
-								if (SNMPUtil.valueToInt32(item.getValType(), item.getValBuff(), 0, item.getValLen(), iVal) && iVal.value > 0)
+								if ((valBuff = item.getValBuff()) != null && SNMPUtil.valueToInt32(item.getValType(), valBuff, 0, item.getValLen(), iVal) && iVal.value > 0)
 								{
 									reading = new SNMPReadingInfo();
 									reading.setName("System Temp");
@@ -431,7 +443,7 @@ public class SNMPManager
 								if (err == SNMPErrorStatus.NOERROR && itemList.size() == 1)
 								{
 									item = itemList.get(0);
-									if (SNMPUtil.valueToInt32(item.getValType(), item.getValBuff(), 0, item.getValLen(), iVal))
+									if ((valBuff = item.getValBuff()) != null && SNMPUtil.valueToInt32(item.getValType(), valBuff, 0, item.getValLen(), iVal))
 									{
 										reading = new SNMPReadingInfo();
 										reading.setName(null);
@@ -454,11 +466,11 @@ public class SNMPManager
 											if (item.getValType() == 4 && item.getValLen() > 0)
 											{
 												sb.append(new String(item.getValBuff(), 0, item.getValLen(), StandardCharsets.UTF_8));
-												if (item.getValLen() >= 6)
+												if (item.getValLen() >= 6 && (valBuff = item.getValBuff()) != null)
 												{
-													if (item.getValBuff()[5] >= '1' && item.getValBuff()[5] <= '9')
+													if (valBuff[5] >= '1' && valBuff[5] <= '9')
 													{
-														reading.setIndex(3 + item.getValBuff()[5] - 0x30);
+														reading.setIndex(3 + valBuff[5] - 0x30);
 													}
 												}
 											}
@@ -526,7 +538,7 @@ public class SNMPManager
 							if (err == SNMPErrorStatus.NOERROR && itemList.size() == 1)
 							{
 								item = itemList.get(0);
-								if (SNMPUtil.valueToInt32(item.getValType(), item.getValBuff(), 0, item.getValLen(), iVal))
+								if ((valBuff = item.getValBuff()) != null && SNMPUtil.valueToInt32(item.getValType(), valBuff, 0, item.getValLen(), iVal))
 								{
 									reading = new SNMPReadingInfo();
 									reading.setName(null);
@@ -615,7 +627,7 @@ public class SNMPManager
 							if (err == SNMPErrorStatus.NOERROR && itemList.size() == 1)
 							{
 								item = itemList.get(0);
-								if (SNMPUtil.valueToInt32(item.getValType(), item.getValBuff(), 0, item.getValLen(), iVal))
+								if ((valBuff = item.getValBuff()) != null && SNMPUtil.valueToInt32(item.getValType(), valBuff, 0, item.getValLen(), iVal))
 								{
 									if (iVal.value == 1)
 									{
@@ -636,7 +648,7 @@ public class SNMPManager
 										if (err == SNMPErrorStatus.NOERROR && itemList.size() == 1)
 										{
 											item = itemList.get(0);
-											if (SNMPUtil.valueToInt32(item.getValType(), item.getValBuff(), 0, item.getValLen(), iVal))
+											if ((valBuff = item.getValBuff()) != null && SNMPUtil.valueToInt32(item.getValType(), valBuff, 0, item.getValLen(), iVal))
 											{
 												reading.setCurrVal(iVal.value * reading.getMulVal());
 												reading.setValValid(true);
@@ -678,7 +690,7 @@ public class SNMPManager
 							if (err == SNMPErrorStatus.NOERROR && itemList.size() == 1)
 							{
 								item = itemList.get(0);
-								if (SNMPUtil.valueToInt32(item.getValType(), item.getValBuff(), 0, item.getValLen(), iVal))
+								if ((valBuff = item.getValBuff()) != null && SNMPUtil.valueToInt32(item.getValType(), valBuff, 0, item.getValLen(), iVal))
 								{
 									if (iVal.value == 1)
 									{
@@ -699,7 +711,7 @@ public class SNMPManager
 										if (err == SNMPErrorStatus.NOERROR && itemList.size() == 1)
 										{
 											item = itemList.get(0);
-											if (SNMPUtil.valueToInt32(item.getValType(), item.getValBuff(), 0, item.getValLen(), iVal))
+											if ((valBuff = item.getValBuff()) != null && SNMPUtil.valueToInt32(item.getValType(), valBuff, 0, item.getValLen(), iVal))
 											{
 												reading.setCurrVal(iVal.value * reading.getMulVal());
 												reading.setValValid(true);
@@ -741,7 +753,7 @@ public class SNMPManager
 							if (err == SNMPErrorStatus.NOERROR && itemList.size() == 1)
 							{
 								item = itemList.get(0);
-								if (SNMPUtil.valueToInt32(item.getValType(), item.getValBuff(), 0, item.getValLen(), iVal))
+								if ((valBuff = item.getValBuff()) != null && SNMPUtil.valueToInt32(item.getValType(), valBuff, 0, item.getValLen(), iVal))
 								{
 									if (iVal.value == 1)
 									{
@@ -762,7 +774,7 @@ public class SNMPManager
 										if (err == SNMPErrorStatus.NOERROR && itemList.size() == 1)
 										{
 											item = itemList.get(0);
-											if (SNMPUtil.valueToInt32(item.getValType(), item.getValBuff(), 0, item.getValLen(), iVal))
+											if ((valBuff = item.getValBuff()) != null && SNMPUtil.valueToInt32(item.getValType(), valBuff, 0, item.getValLen(), iVal))
 											{
 												reading.setCurrVal(iVal.value * reading.getMulVal());
 												reading.setValValid(true);
@@ -839,7 +851,7 @@ public class SNMPManager
 		return agent;
 	}
 
-	public int addAgents(InetAddress addr, String community, List<SNMPAgentInfo> agentList, boolean scanIP)
+	public int addAgents(@Nonnull InetAddress addr, @Nonnull String community, @Nonnull List<SNMPAgentInfo> agentList, boolean scanIP)
 	{
 		SNMPAgentInfo agent;
 		int ret = 0;

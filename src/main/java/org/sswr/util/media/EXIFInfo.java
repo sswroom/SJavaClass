@@ -4,6 +4,8 @@ import java.util.Objects;
 
 import org.sswr.util.data.DataTools;
 
+import jakarta.annotation.Nonnull;
+
 public class EXIFInfo
 {
 	private int id;
@@ -12,7 +14,7 @@ public class EXIFInfo
 	public EXIFInfo() {
 	}
 
-	public EXIFInfo(int id, String name) {
+	public EXIFInfo(int id, @Nonnull String name) {
 		this.id = id;
 		this.name = name;
 	}
@@ -25,11 +27,12 @@ public class EXIFInfo
 		this.id = id;
 	}
 
+	@Nonnull
 	public String getName() {
 		return this.name;
 	}
 
-	public void setName(String name) {
+	public void setName(@Nonnull String name) {
 		this.name = name;
 	}
 

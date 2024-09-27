@@ -13,6 +13,9 @@ import javax.net.ssl.SSLSocketFactory;
 
 import org.sswr.util.io.IOStream;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class TCPClient extends IOStream
 {
 	private static boolean debug = false;
@@ -24,7 +27,7 @@ public class TCPClient extends IOStream
 	private int flags; //1 = shutdown send, 2 = shutdown recv, 4 = closed, 8 = connect error
 	private int timeoutMS;
 
-	public TCPClient(String hostName, int port, SSLEngine ssl, TCPClientType cliType)
+	public TCPClient(@Nonnull String hostName, int port, @Nullable SSLEngine ssl, @Nonnull TCPClientType cliType)
 	{
 		super(hostName);
 		this.ssl = ssl;
@@ -76,7 +79,7 @@ public class TCPClient extends IOStream
 		this.cliId = SocketUtil.genSocketId(s);
 	}
 
-	public TCPClient(String hostName, int port, SSLEngine ssl, TCPClientType cliType, int connTimeoutMS)
+	public TCPClient(@Nonnull String hostName, int port, @Nullable SSLEngine ssl, @Nonnull TCPClientType cliType, int connTimeoutMS)
 	{
 		super(hostName);
 		this.ssl = ssl;
@@ -128,7 +131,7 @@ public class TCPClient extends IOStream
 		this.cliId = SocketUtil.genSocketId(s);
 	}
 
-	public TCPClient(InetAddress addr, int port, SSLEngine ssl, TCPClientType cliType)
+	public TCPClient(@Nonnull InetAddress addr, int port, @Nullable SSLEngine ssl, @Nonnull TCPClientType cliType)
 	{
 		super("");
 		this.ssl = ssl;
@@ -164,7 +167,7 @@ public class TCPClient extends IOStream
 		this.cliId = SocketUtil.genSocketId(s);
 	}
 
-	public TCPClient(Socket s, SSLEngine ssl)
+	public TCPClient(@Nullable Socket s, @Nonnull SSLEngine ssl)
 	{
 		super("");
 		this.ssl = ssl;
@@ -196,7 +199,7 @@ public class TCPClient extends IOStream
 	}
 
 	@Override
-	public int read(byte[] buff, int ofst, int size)
+	public int read(@Nonnull byte[] buff, int ofst, int size)
 	{
 		if (s != null && (this.flags & 6) == 0)
 		{
@@ -223,7 +226,7 @@ public class TCPClient extends IOStream
 	}
 
 	@Override
-	public int write(byte[] buff, int ofst, int size) {
+	public int write(@Nonnull byte[] buff, int ofst, int size) {
 		if (this.s != null && (this.flags & 5) == 0)
 		{
 			try
@@ -305,6 +308,7 @@ public class TCPClient extends IOStream
 		}
 	}
 
+	@Nonnull
 	public String getRemoteName()
 	{
 		SocketAddress addr = this.s.getRemoteSocketAddress();
@@ -316,6 +320,7 @@ public class TCPClient extends IOStream
 		return addr.toString();
 	}
 
+	@Nonnull
 	public String getLocalName()
 	{
 		return this.s.getLocalAddress().getHostAddress();
@@ -326,6 +331,7 @@ public class TCPClient extends IOStream
 		return this.cliId;
 	}
 
+	@Nullable
 	public InetAddress getRemoteAddr()
 	{
 		SocketAddress addr = this.s.getRemoteSocketAddress();
@@ -396,6 +402,7 @@ public class TCPClient extends IOStream
 		return this.timeoutMS;
 	}
 
+	@Nullable
 	public Socket getSocket()
 	{
 		return this.s;

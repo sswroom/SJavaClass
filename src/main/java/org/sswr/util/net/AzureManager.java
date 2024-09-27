@@ -14,6 +14,9 @@ import org.sswr.util.data.textbinenc.Base64Enc;
 import org.sswr.util.io.LogLevel;
 import org.sswr.util.io.LogTool;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class AzureManager
 {
 	private boolean debug = true;
@@ -31,7 +34,7 @@ public class AzureManager
 		this.keyMap = null;
 	}
 
-	public AzureManager(SocketFactory sockf, SSLEngine ssl)
+	public AzureManager(@Nullable SocketFactory sockf, @Nullable SSLEngine ssl)
 	{
 		this.errLog = null;
 		if (debug) this.errLog = new LogTool().addPrintLog(System.out, LogLevel.RAW);
@@ -40,12 +43,13 @@ public class AzureManager
 		this.keyMap = null;
 	}
 
-	public void setErrorLog(LogTool log)
+	public void setErrorLog(@Nullable LogTool log)
 	{
 		this.errLog = log;
 	}
 
-	public MyX509Key createKey(String kid)
+	@Nullable
+	public MyX509Key createKey(@Nonnull String kid)
 	{
 		if (this.keyMap == null)
 		{
@@ -64,11 +68,14 @@ public class AzureManager
 						while (i < j)
 						{
 							JSONBase key = keys.getArrayValue(i);
-							String skid = key.getValueString("kid");
-							String cert = key.getValueString("x5c[0]");
-							if (skid != null && cert != null)
+							if (key != null)
 							{
-								this.keyMap.put(skid, cert);
+								String skid = key.getValueString("kid");
+								String cert = key.getValueString("x5c[0]");
+								if (skid != null && cert != null)
+								{
+									this.keyMap.put(skid, cert);
+								}
 							}
 							i++;
 						}
@@ -87,7 +94,8 @@ public class AzureManager
 		return cert.getNewPublicKey();        
 	}
 
-	public AzureToken parseToken(String token, boolean ignoreSignCheck, boolean ignoreTimeCheck)
+	@Nullable
+	public AzureToken parseToken(@Nonnull String token, boolean ignoreSignCheck, boolean ignoreTimeCheck)
 	{
 		JWToken jwt = JWToken.parse(token, null);
 		if (jwt == null)
@@ -99,7 +107,13 @@ public class AzureManager
 		{
 			if (!ignoreSignCheck)
 			{
-				JSONBase json = JSONBase.parseJSONStr(jwt.getHeader());
+				String header = jwt.getHeader();
+				if (header == null)
+				{
+					if (errLog != null) errLog.logMessage("Header not found", LogLevel.ERROR);
+					return null;
+				}
+				JSONBase json = JSONBase.parseJSONStr(header);
 				if (json == null)
 				{
 					if (errLog != null) errLog.logMessage("Error in parsing header", LogLevel.ERROR);

@@ -11,9 +11,12 @@ import java.net.UnknownHostException;
 import org.sswr.util.crypto.CRC32R;
 import org.sswr.util.data.ByteTool;
 
+import jakarta.annotation.Nonnull;
+
 public class SocketUtil
 {
-	public static String getIPv4Name(byte[] buff, int ofst)
+	@Nonnull
+	public static String getIPv4Name(@Nonnull byte[] buff, int ofst)
 	{
 		byte[] addr = new byte[4];
 		addr[0] = buff[ofst];
@@ -31,7 +34,8 @@ public class SocketUtil
 		}
 	}
 
-	public static IPType getIPType(InetAddress addr)
+	@Nonnull
+	public static IPType getIPType(@Nonnull InetAddress addr)
 	{
 		if (addr instanceof Inet4Address)
 		{
@@ -110,7 +114,7 @@ public class SocketUtil
 		}
 	}
 
-	public static long genSocketId(Socket s)
+	public static long genSocketId(@Nonnull Socket s)
 	{
 		int lPort = s.getLocalPort();
 		int rPort = 0;
@@ -121,11 +125,15 @@ public class SocketUtil
 			InetSocketAddress netAddr = (InetSocketAddress)remAddr;
 			rAddr = netAddr.getAddress();
 			rPort = netAddr.getPort();
+			return (calcCliId(rAddr) & (long)0xffffffff) | (((long)rPort) << 32) | (((long)lPort) << 48);
 		}
-		return (calcCliId(rAddr) & (long)0xffffffff) | (((long)rPort) << 32) | (((long)lPort) << 48);
+		else
+		{
+			return 0;
+		}
 	}
 
-	public static long calcCliId(InetAddress addr)
+	public static long calcCliId(@Nonnull InetAddress addr)
 	{
 		if (addr instanceof Inet4Address)
 		{

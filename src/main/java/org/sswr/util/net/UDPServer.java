@@ -19,6 +19,9 @@ import org.sswr.util.io.FileStream.BufferType;
 import org.sswr.util.io.FileStream.FileMode;
 import org.sswr.util.io.FileStream.FileShare;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class UDPServer
 {
 	private MulticastSocket socV4;
@@ -141,7 +144,7 @@ public class UDPServer
 		}
 	}
 
-	public UDPServer(InetAddress bindAddr, int port, String logPrefix, UDPPacketListener hdlr, LogTool msgLog, String msgPrefix, int workerCnt, boolean reuseAddr)
+	public UDPServer(@Nullable InetAddress bindAddr, int port, @Nullable String logPrefix, @Nonnull UDPPacketListener hdlr, @Nullable LogTool msgLog, @Nullable String msgPrefix, int workerCnt, boolean reuseAddr)
 	{
 		this.threadCnt = workerCnt;
 		this.recvCnt = 0;

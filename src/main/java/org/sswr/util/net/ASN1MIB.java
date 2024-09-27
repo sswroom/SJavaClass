@@ -11,6 +11,10 @@ import java.util.Map;
 import org.sswr.util.data.StringUtil;
 import org.sswr.util.io.FileStream;
 import org.sswr.util.io.UTF8Reader;
+
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 import org.sswr.util.io.FileStream.BufferType;
 import org.sswr.util.io.FileStream.FileMode;
 import org.sswr.util.io.FileStream.FileShare;
@@ -22,7 +26,7 @@ public class ASN1MIB
 	private Map<String, ASN1ModuleInfo> moduleMap;
 	private ASN1ModuleInfo globalModule;
 
-	private static int calcLineSpace(String txt)
+	private static int calcLineSpace(@Nonnull String txt)
 	{
 		char carr[] = txt.toCharArray();
 		int i = 0;
@@ -49,7 +53,7 @@ public class ASN1MIB
 		return ret;
 	}
 
-	private static void moduleAppendOID(ASN1ModuleInfo module, ASN1ObjectInfo obj)
+	private static void moduleAppendOID(@Nonnull ASN1ModuleInfo module, @Nonnull ASN1ObjectInfo obj)
 	{
 		int i;
 		int j;
@@ -57,7 +61,7 @@ public class ASN1MIB
 		int l;
 		ASN1ObjectInfo obj2;
 		List<ASN1ObjectInfo> oidList = module.getOidList();
-		if (obj.getOid() == null)
+		if (obj.getOidLen() == 0)
 			return;
 		i = 0;
 		j = oidList.size() - 1;
@@ -82,7 +86,7 @@ public class ASN1MIB
 		oidList.add(i, obj);
 	}
 
-	private boolean parseObjectOID(ASN1ModuleInfo module, ASN1ObjectInfo obj, String s, StringBuilder errMessage)
+	private boolean parseObjectOID(@Nonnull ASN1ModuleInfo module, @Nonnull ASN1ObjectInfo obj, @Nonnull String s, @Nonnull StringBuilder errMessage)
 	{
 		char sarr[] = s.toCharArray();
 		int sofst = 0;
@@ -163,6 +167,12 @@ public class ASN1MIB
 			obj.setOidLen(1);
 			isFirst = true;
 		}
+		else if (sb.toString().equals("joint-iso-ccitt(2)") || sb.toString().equals("joint-iso-itu-t(2)") || sb.toString().equals("joint-iso-itu-t") || sb.toString().equals("2"))
+		{
+			obj.setOid(0, (byte)80);
+			obj.setOidLen(1);
+			isFirst = true;
+		}
 		else if (sb.toString().equals("0"))
 		{
 			obj.setOid(0, (byte)0);
@@ -178,7 +188,8 @@ public class ASN1MIB
 	//			i = this.globalModule.objKeys.SortedIndexOf(sb.ToString());
 	//			if (i < 0)
 	//			{
-					errMessage.append("OID Name \"");
+					errMessage.append(obj.getObjectName());
+					errMessage.append(": OID Name \"");
 					errMessage.append(sb.toString());
 					errMessage.append("\" not found");
 					return false;
@@ -194,9 +205,10 @@ public class ASN1MIB
 			}
 			if (obj2.getOidLen() == 0)
 			{
-				if (obj2.getTypeVal() != null)
+				String typeVal;
+				if ((typeVal = obj2.getTypeVal()) != null)
 				{
-					if (!parseObjectOID(module, obj2, obj2.getTypeVal(), errMessage))
+					if (!parseObjectOID(module, obj2, typeVal, errMessage))
 					{
 						return false;
 					}
@@ -334,7 +346,7 @@ public class ASN1MIB
 		}
 	}
 
-	private boolean parseObjectBegin(UTF8Reader reader, ASN1ObjectInfo obj, StringBuilder errMessage)
+	private boolean parseObjectBegin(@Nonnull UTF8Reader reader, @Nullable ASN1ObjectInfo obj, @Nonnull StringBuilder errMessage)
 	{
 		StringBuilder sb = new StringBuilder();
 		int i;
@@ -368,7 +380,7 @@ public class ASN1MIB
 		}
 	}
 
-	private boolean parseModule(UTF8Reader reader, ASN1ModuleInfo module, StringBuilder errMessage)
+	private boolean parseModule(@Nonnull UTF8Reader reader, @Nonnull ASN1ModuleInfo module, @Nonnull StringBuilder errMessage)
 	{
 		StringBuilder sb = new StringBuilder();
 		int i;
@@ -383,6 +395,7 @@ public class ASN1MIB
 		boolean objIsBrk = false;
 		boolean succ;
 		boolean isQuotedText = false;
+		String objectName;
 		
 		while (true)
 		{
@@ -399,7 +412,7 @@ public class ASN1MIB
 				sb.setLength(i);
 			}
 			StringUtil.trimRight(sb);
-			if (currObj != null && currObj.getObjectName() != null && currObj.getObjectName().equals("PSSEQStringEntry"))
+			if (currObj != null && (objectName = currObj.getObjectName()) != null && objectName.equals("PSSEQStringEntry"))
 			{
 				i = 0;
 			}
@@ -419,14 +432,16 @@ public class ASN1MIB
 				{
 					List<ASN1ObjectInfo> objList = module.getObjValues();
 					ASN1ObjectInfo iobj;
+					String typeName;
+					String typeVal;
 					int ui = 0;
 					int uj = objList.size();
 					while (ui < uj)
 					{
 						iobj = objList.get(ui);
-						if (iobj.getTypeName() != null && iobj.getTypeVal() != null && iobj.getOidLen() == 0 && !iobj.getTypeName().equals("TRAP-TYPE") && !iobj.getTypeVal().equals("Imported Value"))
+						if ((typeName = iobj.getTypeName()) != null && (typeVal = iobj.getTypeVal()) != null && iobj.getOidLen() == 0 && !typeName.equals("TRAP-TYPE") && !typeVal.equals("Imported Value"))
 						{
-							succ = this.parseObjectOID(module, iobj, iobj.getTypeVal(), errMessage);
+							succ = this.parseObjectOID(module, iobj, typeVal, errMessage);
 							if (!succ)
 							{
 								return false;
@@ -541,8 +556,8 @@ public class ASN1MIB
 							else
 							{
 								currObj.setTypeVal(sb.toString());
-								i = currObj.getTypeVal().indexOf('{');
-								j = currObj.getTypeVal().indexOf('}');
+								i = sb.toString().indexOf('{');
+								j = sb.toString().indexOf('}');
 								if (i >= 0)
 								{
 									if (j > i)
@@ -577,14 +592,15 @@ public class ASN1MIB
 							{
 								i++;
 							}
-							currObj.setTypeVal(sb.substring(i));
-							if (currObj.getTypeName() != null && currObj.getTypeVal().endsWith("}"))
+							String typeVal;
+							currObj.setTypeVal(typeVal = sb.substring(i));
+							if (currObj.getTypeName() != null && typeVal.endsWith("}"))
 							{
 								currObj = null;
 								objIsBrk = false;
 								objIsEqual = false;
 							}							
-							else if (currObj.getTypeVal().endsWith("{"))
+							else if (typeVal.endsWith("{"))
 							{
 								objIsBrk = true;
 								objIsEqual = true;
@@ -768,7 +784,7 @@ public class ASN1MIB
 									{
 										impObj = impModule.getObjValues().get(impInd);
 										impObj2 = new ASN1ObjectInfo();
-										impObj2.setObjectName(impSarr[impCnt]);
+										impObj2.setObjectName(objectName = impSarr[impCnt]);
 										if (impObj.getTypeName() != null)
 										{
 											impObj2.setTypeName(impObj.getTypeName());
@@ -790,7 +806,7 @@ public class ASN1MIB
 											ui++;
 										}
 										
-										ui = StringUtil.sortedInsert(module.getObjKeys(), impObj2.getObjectName());
+										ui = StringUtil.sortedInsert(module.getObjKeys(), objectName);
 										module.getObjValues().add(ui, impObj2);
 									}
 									else
@@ -934,7 +950,7 @@ public class ASN1MIB
 								k = l;
 							}
 							obj = new ASN1ObjectInfo();
-							obj.setObjectName(sb.substring(0, k));
+							obj.setObjectName(objectName = sb.substring(0, k));
 							if (j > k)
 							{
 								while (sb.charAt(k) == ' ' || sb.charAt(k) == '\t')
@@ -951,11 +967,11 @@ public class ASN1MIB
 							obj.setOidLen(0);
 							obj.setValName(new ArrayList<String>());
 							obj.setValCont(new ArrayList<String>());
-							int ui = StringUtil.sortedInsert(module.getObjKeys(), obj.getObjectName());
+							int ui = StringUtil.sortedInsert(module.getObjKeys(), objectName);
 							module.getObjValues().add(ui, obj);
-							ui = StringUtil.sortedInsert(this.globalModule.getObjKeys(), obj.getObjectName());
+							ui = StringUtil.sortedInsert(this.globalModule.getObjKeys(), objectName);
 							this.globalModule.getObjValues().add(ui, obj);
-							if (obj.getObjectName().equals(DEBUGOBJ))
+							if (objectName.equals(DEBUGOBJ))
 							{
 								currObj = null;
 							}
@@ -970,24 +986,25 @@ public class ASN1MIB
 							}
 							else
 							{
+								String typeVal;
 								i += 3;
 								while (sb.charAt(i) == ' ' || sb.charAt(i) == '\t')
 								{
 									i++;
 								}
-								obj.setTypeVal(sb.substring(i));
+								obj.setTypeVal(typeVal = sb.substring(i));
 								currObj = obj;
 								sbObjValName.setLength(0);
 								sbObjValCont.setLength(0);
 								objLineSpace = lineSpace;
 								objIsEqual = false;
 								objIsBrk = false;
-								if (obj.getTypeVal().endsWith("{"))
+								if (typeVal.endsWith("{"))
 								{
 									objIsBrk = true;
 									objIsEqual = true;
 								}
-								else if (obj.getTypeVal().endsWith("}"))
+								else if (typeVal.endsWith("}"))
 								{
 									currObj = null;
 								}
@@ -1032,7 +1049,7 @@ public class ASN1MIB
 							}
 	
 							obj = new ASN1ObjectInfo();
-							obj.setObjectName(sb.substring(0, i));
+							obj.setObjectName(objectName = sb.substring(0, i));
 							while (sb.charAt(i) == ' ' || sb.charAt(i) == '\t')
 							{
 								i++;
@@ -1042,11 +1059,11 @@ public class ASN1MIB
 							obj.setOidLen(0);
 							obj.setValName(new ArrayList<String>());
 							obj.setValCont(new ArrayList<String>());
-							int ui = StringUtil.sortedInsert(module.getObjKeys(), obj.getObjectName());
+							int ui = StringUtil.sortedInsert(module.getObjKeys(), objectName);
 							module.getObjValues().add(ui, obj);
-							ui = StringUtil.sortedInsert(this.globalModule.getObjKeys(), obj.getObjectName());
+							ui = StringUtil.sortedInsert(this.globalModule.getObjKeys(), objectName);
 							this.globalModule.getObjValues().add(ui, obj);
-							if (obj.getObjectName().equals(DEBUGOBJ))
+							if (objectName.equals(DEBUGOBJ))
 							{
 								currObj = obj;
 							}
@@ -1072,12 +1089,14 @@ public class ASN1MIB
 		this.globalModule.setOidList(new ArrayList<ASN1ObjectInfo>());
 	}
 
+	@Nonnull
 	public ASN1ModuleInfo getGlobalModule()
 	{
 		return this.globalModule;		
 	}
 
-	public ASN1ModuleInfo getModuleByFileName(String fileName)
+	@Nullable
+	public ASN1ModuleInfo getModuleByFileName(@Nonnull String fileName)
 	{
 		Iterator<ASN1ModuleInfo> itMmodule = this.moduleMap.values().iterator();
 		ASN1ModuleInfo module;
@@ -1099,7 +1118,7 @@ public class ASN1MIB
 		this.globalModule.getObjValues().clear();
 	}
 
-	public boolean loadFile(String fileName, StringBuilder errMessage)
+	public boolean loadFile(@Nonnull String fileName, @Nonnull StringBuilder errMessage)
 	{
 		StringBuilder sb = new StringBuilder();
 		FileStream fs;
@@ -1186,7 +1205,7 @@ public class ASN1MIB
 		return succ;
 	}
 
-	public void toString(StringBuilder sb)
+	public void toString(@Nonnull StringBuilder sb)
 	{
 		Iterator<ASN1ModuleInfo> itModules = this.moduleMap.values().iterator();
 		while (itModules.hasNext())
@@ -1196,6 +1215,7 @@ public class ASN1MIB
 		}
 	}
 
+	@Nonnull
 	public String toString()
 	{
 		StringBuilder sb = new StringBuilder();

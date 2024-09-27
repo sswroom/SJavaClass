@@ -5,6 +5,9 @@ import org.sswr.util.crypto.MyX509Key;
 import org.sswr.util.crypto.MyX509PrivKey;
 import org.sswr.util.parser.X509Parser;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class IAMSmartClient {
 	private IAMSmartAPI api;
 	private IAMSmartAPI.CEKInfo cek;
@@ -29,7 +32,7 @@ public class IAMSmartClient {
 		return currTime < cek.expiresAt;
 	}
 
-	public IAMSmartClient(SocketFactory sockf, SSLEngine ssl, String domain, String clientID, String clientSecret, String keyFile)
+	public IAMSmartClient(@Nullable SocketFactory sockf, @Nullable SSLEngine ssl, @Nonnull String domain, @Nonnull String clientID, @Nonnull String clientSecret, @Nonnull String keyFile)
 	{
 		this.api = new IAMSmartAPI(sockf, ssl, domain, clientID, clientSecret);
 		this.cek = new IAMSmartAPI.CEKInfo();
@@ -56,14 +59,14 @@ public class IAMSmartClient {
 		return this.key == null;
 	}
 
-	public boolean getToken(String code, boolean directLogin, IAMSmartAPI.TokenInfo token)
+	public boolean getToken(@Nonnull String code, boolean directLogin, @Nonnull IAMSmartAPI.TokenInfo token)
 	{
 		if (!this.prepareCEK())
 			return false;
 		return this.api.getToken(code, directLogin, this.cek, token);
 	}
 	
-	public boolean getProfiles(IAMSmartAPI.TokenInfo token, String eMEFields, String profileFields, IAMSmartAPI.ProfileInfo profiles)
+	public boolean getProfiles(@Nonnull IAMSmartAPI.TokenInfo token, @Nonnull String eMEFields, @Nonnull String profileFields, @Nonnull IAMSmartAPI.ProfileInfo profiles)
 	{
 		if (!this.prepareCEK())
 			return false;

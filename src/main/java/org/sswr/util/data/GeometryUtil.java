@@ -177,7 +177,7 @@ public class GeometryUtil
 			int i = pl.getCount();
 			while (i-- > 0)
 			{
-				lineStrings[i] = (org.locationtech.jts.geom.LineString)fromVector2D(pl.getItem(i));
+				lineStrings[i] = (org.locationtech.jts.geom.LineString)fromVector2D(pl.getItemNN(i));
 			}
 			return factory.createMultiLineString(lineStrings);
 		}
@@ -188,7 +188,7 @@ public class GeometryUtil
 			int i = pg.getCount();
 			while (i-- > 0)
 			{
-				lineStrings[i] = (org.locationtech.jts.geom.LinearRing)fromVector2D(pg.getItem(i));
+				lineStrings[i] = (org.locationtech.jts.geom.LinearRing)fromVector2D(pg.getItemNN(i));
 			}
 			if (lineStrings.length == 1)
 			{
@@ -250,11 +250,11 @@ public class GeometryUtil
 			while (i < j)
 			{
 				coordd[i] = new Coord2DDbl(coords[i].x, coords[i].y);
-				if (hasZ)
+				if (hasZ && zList != null)
 				{
 					zList[i] = coords[i].getZ();
 				}
-				if (hasM)
+				if (hasM && mList != null)
 				{
 					mList[i] = coords[i].getM();
 				}
@@ -288,11 +288,11 @@ public class GeometryUtil
 				while (m < n)
 				{
 					coordd[m] = new Coord2DDbl(coords[m].x, coords[m].y);
-					if (hasZ)
+					if (hasZ && zList != null)
 					{
 						zList[m] = coords[m].getZ();
 					}
-					if (hasM)
+					if (hasM && mList != null)
 					{
 						mList[m] = coords[m].getM();
 					}
@@ -336,11 +336,11 @@ public class GeometryUtil
 				while (m < n)
 				{
 					coordd[m] = new Coord2DDbl(coords[m].x, coords[m].y);
-					if (hasZ)
+					if (hasZ && zList != null)
 					{
 						zList[m] = coords[m].getZ();
 					}
-					if (hasM)
+					if (hasM && mList != null)
 					{
 						mList[m] = coords[m].getM();
 					}
@@ -359,7 +359,9 @@ public class GeometryUtil
 			int j = src.getNumGeometries();
 			while (i < j)
 			{
-				dest.addGeometry((Polygon)toVector2D(src.getGeometryN(i)));
+				Vector2D vec = toVector2D(src.getGeometryN(i));
+				if (vec != null)
+					dest.addGeometry((Polygon)vec);
 				i++;
 			}
 			return dest;
@@ -449,8 +451,8 @@ public class GeometryUtil
 	@Nonnull
 	public static Polygon createCircularPolygonWGS84(double lat, double lon, double radiusMeter, int nPoints)
 	{
-		CoordinateSystem csys4326 = CoordinateSystemManager.srCreateCSys(4326);
-		CoordinateSystem csys3857 = CoordinateSystemManager.srCreateCSys(3857);
+		CoordinateSystem csys4326 = CoordinateSystemManager.srCreateCSysOrDef(4326);
+		CoordinateSystem csys3857 = CoordinateSystemManager.srCreateCSysOrDef(3857);
 		Coord2DDbl outPos = CoordinateSystem.convert(csys4326, csys3857, new Coord2DDbl(lon, lat));
 		Polygon pg = new Polygon(3857);
 		LinearRing lr = new LinearRing(3857, nPoints + 1, false, false);

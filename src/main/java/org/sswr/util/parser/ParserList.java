@@ -17,6 +17,9 @@ import org.sswr.util.net.SSLEngine;
 import org.sswr.util.net.SocketFactory;
 import org.sswr.util.net.WebBrowser;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class ParserList
 {
 	private List<FileParser> filePArr;
@@ -28,13 +31,13 @@ public class ParserList
 		this.objPArr = new ArrayList<ObjectParser>();
 	}
 
-	public void addFileParser(FileParser parser)
+	public void addFileParser(@Nonnull FileParser parser)
 	{
 		this.filePArr.add(parser);
 		parser.setParserList(this);
 	}
 	
-	public void addObjectParser(ObjectParser parser)
+	public void addObjectParser(@Nonnull ObjectParser parser)
 	{
 		this.objPArr.add(parser);
 		parser.setParserList(this);
@@ -57,7 +60,7 @@ public class ParserList
 		}
 	}
 	
-	public void setMapManager(MapManager mapMgr)
+	public void setMapManager(@Nullable MapManager mapMgr)
 	{
 		ParserBase parser;
 		int i = this.filePArr.size();
@@ -74,7 +77,7 @@ public class ParserList
 		}
 	}
 	
-	public void setEncFactory(EncodingFactory encFact)
+	public void setEncFactory(@Nullable EncodingFactory encFact)
 	{
 		ParserBase parser;
 		int i = this.filePArr.size();
@@ -91,7 +94,7 @@ public class ParserList
 		}
 	}
 	
-	public void setWebBrowser(WebBrowser browser)
+	public void setWebBrowser(@Nullable WebBrowser browser)
 	{
 		ParserBase parser;
 		int i = this.filePArr.size();
@@ -108,7 +111,7 @@ public class ParserList
 		}
 	}
 	
-	public void setSocketFactory(SocketFactory sockf)
+	public void setSocketFactory(@Nullable SocketFactory sockf)
 	{
 		ParserBase parser;
 		int i = this.filePArr.size();
@@ -125,7 +128,7 @@ public class ParserList
 		}
 	}
 	
-	public void setSSLEngine(SSLEngine ssl)
+	public void setSSLEngine(@Nullable SSLEngine ssl)
 	{
 		ParserBase parser;
 		int i = this.filePArr.size();
@@ -142,7 +145,7 @@ public class ParserList
 		}
 	}
 	
-	public void prepareSelector(FileSelector selector, ParserType t)
+	public void prepareSelector(@Nonnull FileSelector selector, @Nonnull ParserType t)
 	{
 		ParserBase parser;
 		int i;
@@ -164,7 +167,8 @@ public class ParserList
 		}
 	}
 	
-	public ParsedObject parseFile(StreamData fd, PackageFile pkgFile, ParserType targetType)
+	@Nullable
+	public ParsedObject parseFile(@Nonnull StreamData fd, @Nullable PackageFile pkgFile, @Nonnull ParserType targetType)
 	{
 		int i = 0;
 		int j = this.filePArr.size();
@@ -211,17 +215,20 @@ public class ParserList
 		return null;
 	}
 	
-	public ParsedObject parseFile(StreamData fd, PackageFile pkgFile)
+	@Nullable
+	public ParsedObject parseFile(@Nonnull StreamData fd, @Nullable PackageFile pkgFile)
 	{
 		return parseFile(fd, pkgFile, ParserType.Unknown);
 	}
 	
-	public ParsedObject parseFile(StreamData fd)
+	@Nullable
+	public ParsedObject parseFile(@Nonnull StreamData fd)
 	{
 		return parseFile(fd, null, ParserType.Unknown);
 	}
 	
-	public ParsedObject parseFileType(StreamData fd, ParserType t)
+	@Nullable
+	public ParsedObject parseFileType(@Nonnull StreamData fd, @Nonnull ParserType t)
 	{
 		ParsedObject pobj = this.parseFile(fd, null, t);
 		ParsedObject pobj2;
@@ -236,12 +243,14 @@ public class ParserList
 		return null;
 	}
 	
-	public ParsedObject parseObject(ParsedObject pobj)
+	@Nullable
+	public ParsedObject parseObject(@Nonnull ParsedObject pobj)
 	{
 		return parseObjectType(pobj, ParserType.Unknown);
 	}
 	
-	public ParsedObject parseObjectType(ParsedObject pobj, ParserType targetType)
+	@Nullable
+	public ParsedObject parseObjectType(@Nonnull ParsedObject pobj, @Nonnull ParserType targetType)
 	{
 		int i = 0;
 		int j = this.objPArr.size();

@@ -1,5 +1,7 @@
 package org.sswr.util.media;
 
+import jakarta.annotation.Nonnull;
+
 public class LUTInt extends LUT
 {
 	public enum DataFormat
@@ -11,14 +13,14 @@ public class LUTInt extends LUT
 	private int luTable[];
 	private DataFormat fmt;
 
-	public LUTInt(int inputCh, int inputLev, int outputCh, DataFormat fmt)
+	public LUTInt(int inputCh, int inputLev, int outputCh, @Nonnull DataFormat fmt)
 	{
 		super(inputCh, inputLev, outputCh);
 		this.fmt = fmt;
 		this.luTable = new int[getTableSize()];
 	}
 
-	public void getValueUInt8(int inputVals[], int inputIndex, int outVals[], int outputIndex)
+	public void getValueUInt8(@Nonnull int inputVals[], int inputIndex, @Nonnull int outVals[], int outputIndex)
 	{
 		int indexBase = 1;
 		int index = 0;
@@ -54,7 +56,7 @@ public class LUTInt extends LUT
 		}
 	}
 
-	public void getValueUInt16(int inputVals[], int inputIndex, int outVals[], int outputIndex)
+	public void getValueUInt16(@Nonnull int inputVals[], int inputIndex, @Nonnull int outVals[], int outputIndex)
 	{
 		int indexBase = 1;
 		int index = 0;
@@ -91,7 +93,7 @@ public class LUTInt extends LUT
 		}
 	}
 
-	public void getValueSingle(int inputVals[], int inputIndex, float outVals[], int outputIndex)
+	public void getValueSingle(@Nonnull int inputVals[], int inputIndex, @Nonnull float outVals[], int outputIndex)
 	{
 		int indexBase = 1;
 		int index = 0;
@@ -127,6 +129,7 @@ public class LUTInt extends LUT
 		}
 	}
 
+	@Nonnull
 	public LUT clone()
 	{
 		LUTInt newLut = new LUTInt(this.inputCh, this.inputLev, this.outputCh, this.fmt);
@@ -143,7 +146,7 @@ public class LUTInt extends LUT
 		return newLut;
 	}
 
-	public boolean tableEquals(LUT lut)
+	public boolean tableEquals(@Nonnull LUT lut)
 	{
 		LUTInt lutInt = (LUTInt)lut;
 		if (lutInt.fmt != this.fmt)
@@ -157,11 +160,13 @@ public class LUTInt extends LUT
 		return true;
 	}
 
+	@Nonnull
 	public int[] getTablePtr()
 	{
 		return this.luTable;
 	}
 
+	@Nonnull
 	public DataFormat getFormat()
 	{
 		return this.fmt;

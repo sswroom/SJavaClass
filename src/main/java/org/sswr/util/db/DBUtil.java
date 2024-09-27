@@ -1848,8 +1848,11 @@ public class DBUtil {
 	}
 
 	@Nonnull
-	public static String dbStr(@Nonnull DBType dbType, @Nonnull String val)
+	public static String dbStr(@Nonnull DBType dbType, @Nullable String s)
 	{
+		String val = s;
+		if (val == null)
+			return "NULL";
 		if (dbType == DBType.MySQL)
 		{
 			val = val.replace("\\", "\\\\");

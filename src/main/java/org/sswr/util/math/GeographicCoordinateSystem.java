@@ -5,6 +5,8 @@ import org.sswr.util.math.geometry.LineString;
 import org.sswr.util.math.unit.Angle;
 import org.sswr.util.math.unit.Distance;
 
+import jakarta.annotation.Nonnull;
+
 public class GeographicCoordinateSystem extends CoordinateSystem
 {
 	private String csysName;
@@ -12,7 +14,7 @@ public class GeographicCoordinateSystem extends CoordinateSystem
 	private PrimemType primem;
 	private UnitType unit;
 
-	public GeographicCoordinateSystem(String sourceName, int srid, String csysName, DatumData datum, PrimemType primem, UnitType unit)
+	public GeographicCoordinateSystem(@Nonnull String sourceName, int srid, @Nonnull String csysName, @Nonnull DatumData datum, @Nonnull PrimemType primem, @Nonnull UnitType unit)
 	{
 		super(sourceName, srid, csysName);
 		this.csysName = csysName;
@@ -36,21 +38,23 @@ public class GeographicCoordinateSystem extends CoordinateSystem
 		this.unit = unit;
 	}
 
-	public double calSurfaceDistance(Coord2DDbl pos1, Coord2DDbl pos2, Distance.DistanceUnit unit)
+	public double calSurfaceDistance(@Nonnull Coord2DDbl pos1, @Nonnull Coord2DDbl pos2, @Nonnull Distance.DistanceUnit unit)
 	{
 		return this.datum.getSpheroid().getEllipsoid().calSurfaceDistance(pos1.y, pos1.x, pos2.y, pos2.x, unit);
 	}
 
-	public double calLineStringDistance(LineString lineString, boolean include3D, Distance.DistanceUnit unit)
+	public double calLineStringDistance(@Nonnull LineString lineString, boolean include3D, @Nonnull Distance.DistanceUnit unit)
 	{
 		return this.datum.getSpheroid().getEllipsoid().calLineStringDistance(lineString, include3D, unit);
 	}
 
+	@Nonnull
 	public CoordinateSystem clone()
 	{
 		return new GeographicCoordinateSystem(this.sourceName, this.srid, this.csysName, this.datum, this.primem, this.unit);
 	}
 
+	@Nonnull
 	public CoordinateSystemType getCoordSysType()
 	{
 		return CoordinateSystemType.Geographic;
@@ -61,7 +65,7 @@ public class GeographicCoordinateSystem extends CoordinateSystem
 		return false;
 	}
 
-	public void toString(StringBuilder sb)
+	public void toString(@Nonnull StringBuilder sb)
 	{
 		sb.append("Geographic File Name: ");
 		sb.append(this.sourceName);
@@ -97,32 +101,38 @@ public class GeographicCoordinateSystem extends CoordinateSystem
 		sb.append(this.datum.getSpheroid().getEllipsoid().getInverseFlattening());
 	}
 
+	@Nonnull
 	public EarthEllipsoid getEllipsoid()
 	{
 		return this.datum.getSpheroid().getEllipsoid();
 	}
 
+	@Nonnull
 	public String getDatumName()
 	{
 		return this.datum.getName();
 	}
 
+	@Nonnull
 	public DatumData getDatum()
 	{
 		return this.datum;
 	}
 
+	@Nonnull
 	public PrimemType getPrimem()
 	{
 		return this.primem;
 	}
 
+	@Nonnull
 	public UnitType getUnit()
 	{
 		return this.unit;
 	}
 
-	public Vector3 toCartesianCoordRad(Vector3 lonLatH)
+	@Nonnull
+	public Vector3 toCartesianCoordRad(@Nonnull Vector3 lonLatH)
 	{
 		Vector3 tmpPos = this.datum.getSpheroid().getEllipsoid().toCartesianCoordRad(lonLatH);
 		if (this.datum.getScale() == 0 && this.datum.getXAngle() == 0 && this.datum.getYAngle() == 0 && this.datum.getZAngle() == 0)
@@ -144,7 +154,8 @@ public class GeographicCoordinateSystem extends CoordinateSystem
 		}
 	}
 
-	public Vector3 fromCartesianCoordRad(Vector3 coord)
+	@Nonnull
+	public Vector3 fromCartesianCoordRad(@Nonnull Vector3 coord)
 	{
 		Vector3 tmpPos;
 		if (this.datum.getScale() == 0 && this.datum.getXAngle() == 0 && this.datum.getYAngle() == 0 && this.datum.getZAngle() == 0)
@@ -169,12 +180,14 @@ public class GeographicCoordinateSystem extends CoordinateSystem
 		return this.datum.getSpheroid().getEllipsoid().fromCartesianCoordRad(tmpPos);
 	}
 
-	public Vector3 toCartesianCoordDeg(Vector3 lonLatH)
+	@Nonnull
+	public Vector3 toCartesianCoordDeg(@Nonnull Vector3 lonLatH)
 	{
 		return this.toCartesianCoordRad(new Vector3(lonLatH.val[0] * Math.PI / 180.0, lonLatH.val[1] * Math.PI / 180.0, lonLatH.val[2]));
 	}
 
-	public Vector3 fromCartesianCoordDeg(Vector3 coord)
+	@Nonnull
+	public Vector3 fromCartesianCoordDeg(@Nonnull Vector3 coord)
 	{
 		Vector3 lonLatH = this.fromCartesianCoordRad(coord);
 		lonLatH.val[0] = lonLatH.val[0] * 180.0 / Math.PI;

@@ -13,16 +13,18 @@ import org.sswr.util.data.StringUtil;
 import org.sswr.util.data.textenc.URIEncoding;
 import org.sswr.util.net.BrowserInfo.BrowserType;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 public class HTTPServerUtil {
 
-	public static void addDefHeaders(HttpServletResponse resp, HttpServletRequest req)
+	public static void addDefHeaders(@Nonnull HttpServletResponse resp, @Nonnull HttpServletRequest req)
 	{
 	}
 
-	public static void addCacheControl(HttpServletResponse resp, int cacheAge)
+	public static void addCacheControl(@Nonnull HttpServletResponse resp, int cacheAge)
 	{
 		if (cacheAge < 0)
 		{
@@ -38,17 +40,17 @@ public class HTTPServerUtil {
 		}
 	}
 
-	public static void addTimeHeader(HttpServletResponse resp, String name, ZonedDateTime dt)
+	public static void addTimeHeader(@Nonnull HttpServletResponse resp, @Nonnull String name, @Nonnull ZonedDateTime dt)
 	{
 		resp.addHeader(name, WebUtil.date2Str(dt));
 	}
 
-	public static void addTimeHeader(HttpServletResponse resp, String name, Timestamp ts)
+	public static void addTimeHeader(@Nonnull HttpServletResponse resp, @Nonnull String name, @Nonnull Timestamp ts)
 	{
 		addTimeHeader(resp, name, DateTimeUtil.newZonedDateTime(ts));
 	}
 
-	public static void addContentDisposition(HttpServletResponse resp, boolean isAttachment, String attFileName, BrowserType browser)
+	public static void addContentDisposition(@Nonnull HttpServletResponse resp, boolean isAttachment, @Nonnull String attFileName, @Nonnull BrowserType browser)
 	{
 		String s;
 		if (isAttachment)
@@ -75,22 +77,22 @@ public class HTTPServerUtil {
 		resp.addHeader("Content-Disposition", s);
 	}
 
-	public static void addContentLength(HttpServletResponse resp, long contentLeng)
+	public static void addContentLength(@Nonnull HttpServletResponse resp, long contentLeng)
 	{
 		resp.addHeader("Content-Length", String.valueOf(contentLeng));
 	}
 
-	public static void addContentType(HttpServletResponse resp, String contentType)
+	public static void addContentType(@Nonnull HttpServletResponse resp, @Nonnull String contentType)
 	{
 		resp.addHeader("Content-Type", contentType);
 	}
 
-	public static void addDate(HttpServletResponse resp, ZonedDateTime dt)
+	public static void addDate(@Nonnull HttpServletResponse resp, @Nonnull ZonedDateTime dt)
 	{
 		addTimeHeader(resp, "Date", dt);
 	}
 
-	public static void addExpireTime(HttpServletResponse resp, ZonedDateTime dt)
+	public static void addExpireTime(@Nonnull HttpServletResponse resp, @Nullable ZonedDateTime dt)
 	{
 		if (dt == null)
 		{
@@ -102,27 +104,27 @@ public class HTTPServerUtil {
 		}
 	}
 
-	public static void addLastModified(HttpServletResponse resp, ZonedDateTime dt)
+	public static void addLastModified(@Nonnull HttpServletResponse resp, @Nonnull ZonedDateTime dt)
 	{
 		addTimeHeader(resp, "Last-Modified", dt);
 	}
 
-	public static void addLastModified(HttpServletResponse resp, Timestamp ts)
+	public static void addLastModified(@Nonnull HttpServletResponse resp, @Nonnull Timestamp ts)
 	{
 		addTimeHeader(resp, "Last-Modified", ts);
 	}
 
-	public static void addServer(HttpServletResponse resp, String server)
+	public static void addServer(@Nonnull HttpServletResponse resp, @Nonnull String server)
 	{
 		resp.addHeader("Server", server);
 	}
 
-	public static void addAccessControlAllowOrigin(HttpServletResponse resp, String origin)
+	public static void addAccessControlAllowOrigin(@Nonnull HttpServletResponse resp, @Nonnull String origin)
 	{
 		resp.addHeader("Access-Control-Allow-Origin", origin);
 	}
 
-	public static void responseText(HttpServletRequest req, HttpServletResponse resp, String content)
+	public static void responseText(@Nonnull HttpServletRequest req, @Nonnull HttpServletResponse resp, @Nonnull String content)
 	{
 		byte[] buff = content.getBytes(StandardCharsets.UTF_8);
 		addDefHeaders(resp, req);
@@ -131,7 +133,7 @@ public class HTTPServerUtil {
 		sendContent(req, resp, "text/plain", buff);
 	}
 
-	public static boolean responseFile(HttpServletRequest req, HttpServletResponse resp, String fileName, int cacheAge)
+	public static boolean responseFile(@Nonnull HttpServletRequest req, @Nonnull HttpServletResponse resp, @Nonnull String fileName, int cacheAge)
 	{
 		String mime;
 		long sizeLeft;
@@ -276,7 +278,7 @@ public class HTTPServerUtil {
 		}
 	}
 
-	public static void sendContent(HttpServletRequest req, HttpServletResponse resp, String mime, byte[] content)
+	public static void sendContent(@Nonnull HttpServletRequest req, @Nonnull HttpServletResponse resp, @Nonnull String mime, @Nonnull byte[] content)
 	{
 		addContentLength(resp, content.length);
 		try

@@ -2,6 +2,8 @@ package org.sswr.util.media;
 
 import org.sswr.util.data.ByteTool;
 
+import jakarta.annotation.Nonnull;
+
 public class LUTFloat extends LUT
 {
 	private float luTable[];
@@ -12,7 +14,7 @@ public class LUTFloat extends LUT
 		this.luTable = new float[getTableSize()];
 	}
 
-	public void getValueUInt8(int inputVals[], int inputIndex, int outVals[], int outputIndex)
+	public void getValueUInt8(@Nonnull int inputVals[], int inputIndex, @Nonnull int outVals[], int outputIndex)
 	{
 		int indexBase = 1;
 		int index = 0;
@@ -35,7 +37,7 @@ public class LUTFloat extends LUT
 		}
 	}
 
-	public void getValueUInt16(int inputVals[], int inputIndex, int outVals[], int outputIndex)
+	public void getValueUInt16(@Nonnull int inputVals[], int inputIndex, @Nonnull int outVals[], int outputIndex)
 	{
 		int indexBase = 1;
 		int index = 0;
@@ -58,7 +60,7 @@ public class LUTFloat extends LUT
 		}
 	}
 
-	public void getValueSingle(int inputVals[], int inputIndex, float outVals[], int outputIndex)
+	public void getValueSingle(@Nonnull int inputVals[], int inputIndex, @Nonnull float outVals[], int outputIndex)
 	{
 		int indexBase = 1;
 		int index = 0;
@@ -81,6 +83,7 @@ public class LUTFloat extends LUT
 		}
 	}
 
+	@Nonnull
 	public LUT clone()
 	{
 		LUTFloat newLut = new LUTFloat(this.inputCh, this.inputLev, this.outputCh);
@@ -97,7 +100,7 @@ public class LUTFloat extends LUT
 		return newLut;
 	}
 
-	public boolean tableEquals(LUT lut)
+	public boolean tableEquals(@Nonnull LUT lut)
 	{
 		LUTFloat lutInt = (LUTFloat)lut;
 		int i = getTableSize();
@@ -109,6 +112,7 @@ public class LUTFloat extends LUT
 		return true;
 	}
 
+	@Nonnull
 	public float[] getTablePtr()
 	{
 		return this.luTable;

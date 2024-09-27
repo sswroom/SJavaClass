@@ -6,13 +6,15 @@ import org.sswr.util.io.ParserType;
 import org.sswr.util.math.geometry.LineString;
 import org.sswr.util.math.unit.Distance;
 
+import jakarta.annotation.Nonnull;
+
 public abstract class CoordinateSystem extends ParsedObject
 {
 	public enum PrimemType
 	{
 		Greenwich;
 
-		public int getId(PrimemType t)
+		public int getId(@Nonnull PrimemType t)
 		{
 			switch (t)
 			{
@@ -28,7 +30,7 @@ public abstract class CoordinateSystem extends ParsedObject
 		Metre,
 		Degree;
 
-		public int getId(UnitType t)
+		public int getId(@Nonnull UnitType t)
 		{
 			switch (t)
 			{
@@ -44,26 +46,29 @@ public abstract class CoordinateSystem extends ParsedObject
 	protected String csysName;
 	protected int srid;
 
-	protected CoordinateSystem(String sourceName, int srid, String csysName)
+	protected CoordinateSystem(@Nonnull String sourceName, int srid, @Nonnull String csysName)
 	{
 		super(sourceName);
 		this.srid = srid;
 		this.csysName = csysName;
 	}
 
-	public abstract double calSurfaceDistance(Coord2DDbl pos1, Coord2DDbl pos2, Distance.DistanceUnit unit);
-	public abstract double calLineStringDistance(LineString pl, boolean include3D, Distance.DistanceUnit unit);
+	public abstract double calSurfaceDistance(@Nonnull Coord2DDbl pos1, @Nonnull Coord2DDbl pos2, @Nonnull Distance.DistanceUnit unit);
+	public abstract double calLineStringDistance(@Nonnull LineString pl, boolean include3D, @Nonnull Distance.DistanceUnit unit);
+	@Nonnull
 	public abstract CoordinateSystem clone();
+	@Nonnull
 	public abstract CoordinateSystemType getCoordSysType();
 	public abstract boolean isProjected();
-	public abstract void toString(StringBuilder sb);
+	public abstract void toString(@Nonnull StringBuilder sb);
 
+	@Nonnull
 	public ParserType getParserType()
 	{
 		return ParserType.CoordinateSystem;
 	}
 
-	public boolean equals(CoordinateSystem csys)
+	public boolean equals(@Nonnull CoordinateSystem csys)
 	{
 		if (this == csys)
 			return true;
@@ -87,6 +92,8 @@ public abstract class CoordinateSystem extends ParsedObject
 			return pcs1.sameProjection(pcs2);
 		}
 	}
+
+	@Nonnull
 	public String getCSysName()
 	{
 		return this.csysName;
@@ -97,12 +104,14 @@ public abstract class CoordinateSystem extends ParsedObject
 		return this.srid;
 	}
 
-	public static Coord2DDbl convert(CoordinateSystem srcCoord, CoordinateSystem destCoord, Coord2DDbl coord)
+	@Nonnull
+	public static Coord2DDbl convert(@Nonnull CoordinateSystem srcCoord, @Nonnull CoordinateSystem destCoord, @Nonnull Coord2DDbl coord)
 	{
 		return convert3D(srcCoord, destCoord, new Vector3(coord, 0)).getXY();
 	}
 
-	public static Vector3 convert3D(CoordinateSystem srcCoord, CoordinateSystem destCoord, Vector3 srcPos)
+	@Nonnull
+	public static Vector3 convert3D(@Nonnull CoordinateSystem srcCoord, @Nonnull CoordinateSystem destCoord, @Nonnull Vector3 srcPos)
 	{
 		Vector3 destPos = srcPos.clone();
 		if (srcCoord.isProjected())
@@ -132,7 +141,7 @@ public abstract class CoordinateSystem extends ParsedObject
 		return destPos;
 	}
 	
-	public static void convertXYArray(CoordinateSystem srcCoord, CoordinateSystem destCoord, Coord2DDbl []srcArr, Coord2DDbl []destArr)
+	public static void convertXYArray(@Nonnull CoordinateSystem srcCoord, @Nonnull CoordinateSystem destCoord, @Nonnull Coord2DDbl []srcArr, @Nonnull Coord2DDbl []destArr)
 	{
 		int i;
 		boolean srcRad = false;

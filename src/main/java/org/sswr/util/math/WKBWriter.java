@@ -7,6 +7,9 @@ import org.sswr.util.math.geometry.LinearRing;
 import org.sswr.util.math.geometry.Polygon;
 import org.sswr.util.math.geometry.Vector2D;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class WKBWriter {
 	private boolean isoMode;
 
@@ -15,7 +18,8 @@ public class WKBWriter {
 		this.isoMode = isoMode;
 	}
 	
-	public byte[] write(Vector2D vec)
+	@Nullable
+	public byte[] write(@Nonnull Vector2D vec)
 	{
 		MemoryStream stm = new MemoryStream();
 		if (write(stm, vec))
@@ -25,7 +29,7 @@ public class WKBWriter {
 		return null;
 	}
 
-	public boolean write(IOStream stm, Vector2D vec)
+	public boolean write(@Nonnull IOStream stm, @Nonnull Vector2D vec)
 	{
 		byte[] buff = new byte[64];
 		int i;

@@ -3,19 +3,23 @@ package org.sswr.util.net;
 import java.util.ArrayList;
 import java.util.List;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class FailoverHandler<T extends FailoverChannel>
 {
 	private FailoverType foType;
 	private int lastIndex;
 	private List<T> channelList;
 
-	public FailoverHandler(FailoverType foType)
+	public FailoverHandler(@Nonnull FailoverType foType)
 	{
 		this.foType = foType;
 		this.lastIndex = 0;
 		this.channelList = new ArrayList<T>();
 	}
 
+	@Nullable
 	public synchronized T getCurrChannel()
 	{
 		if (this.channelList.size() == 0)
@@ -59,6 +63,7 @@ public class FailoverHandler<T extends FailoverChannel>
 		return null;
 	}
 
+	@Nonnull
 	public synchronized List<T> getOtherChannels()
 	{
 		List<T> chList = new ArrayList<T>();
@@ -77,7 +82,7 @@ public class FailoverHandler<T extends FailoverChannel>
 		return chList;
 	}
 
-	public synchronized void setCurrChannel(T channel)
+	public synchronized void setCurrChannel(@Nonnull T channel)
 	{
 		int i = this.channelList.indexOf(channel);
 		if (i >= 0)
@@ -86,6 +91,7 @@ public class FailoverHandler<T extends FailoverChannel>
 		}
 	}
 
+	@Nonnull
 	public synchronized List<T> getAllChannels()
 	{
 		List<T> ret = new ArrayList<T>();
@@ -93,7 +99,7 @@ public class FailoverHandler<T extends FailoverChannel>
 		return ret;
 	}
 
-	public synchronized void addChannel(T channel)
+	public synchronized void addChannel(@Nonnull T channel)
 	{
 		this.channelList.add(channel);
 	}

@@ -21,6 +21,9 @@ import org.sswr.util.crypto.MyX509Cert;
 import org.sswr.util.data.DateTimeUtil;
 import org.sswr.util.data.SharedInt;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class HTTPOSClient extends HTTPClient
 {
 	private static final boolean debug = false;
@@ -29,14 +32,14 @@ public class HTTPOSClient extends HTTPClient
 	private boolean hasContType;
 	private String userAgent;
 
-	public HTTPOSClient(SocketFactory sockf, String userAgent, boolean kaConn)
+	public HTTPOSClient(@Nullable SocketFactory sockf, @Nullable String userAgent, boolean kaConn)
 	{
 		super(sockf, kaConn);
 		this.userAgent = userAgent;
 	}
 
 	@Override
-	public boolean connect(String url, RequestMethod method, boolean defHeaders)
+	public boolean connect(@Nonnull String url, @Nonnull RequestMethod method, boolean defHeaders)
 	{
 		if (!url.startsWith("http://") && !url.startsWith("https://"))
 		{
@@ -126,7 +129,7 @@ public class HTTPOSClient extends HTTPClient
 		return this.conn == null;
 	}
 
-	public void addHeader(String name, String value)
+	public void addHeader(@Nonnull String name, @Nonnull String value)
 	{
 		if (name.equalsIgnoreCase("Content-Type"))
 		{
@@ -135,7 +138,7 @@ public class HTTPOSClient extends HTTPClient
 		this.conn.addRequestProperty(name, value);
 	}
 
-	public void addHeaders(Map<String, String> headers)
+	public void addHeaders(@Nonnull Map<String, String> headers)
 	{
 		if (headers != null)
 		{
@@ -209,6 +212,7 @@ public class HTTPOSClient extends HTTPClient
 		return this.conn instanceof HttpsURLConnection;
 	}
 
+	@Nullable
 	public List<MyX509Cert> getServerCerts()
 	{
 		try
@@ -242,6 +246,7 @@ public class HTTPOSClient extends HTTPClient
 		return this.conn.getHeaderFields().size() - 1;
 	}
 
+	@Nullable
 	public String getRespHeader(int index)
 	{
 		String name = this.conn.getHeaderFieldKey(index + 1);
@@ -255,7 +260,8 @@ public class HTTPOSClient extends HTTPClient
 		}
 	}
 
-	public String getRespHeader(String name)
+	@Nullable
+	public String getRespHeader(@Nonnull String name)
 	{
 		String val = this.conn.getHeaderField(name);
 		if (val == null)
@@ -270,11 +276,13 @@ public class HTTPOSClient extends HTTPClient
 		return this.conn.getContentLengthLong();
 	}
 
+	@Nullable
 	public String getContentEncoding()
 	{
 		return this.conn.getContentEncoding();
 	}
 	
+	@Nullable
 	public ZonedDateTime getLastModified()
 	{
 		long mod = this.conn.getLastModified();
@@ -286,7 +294,7 @@ public class HTTPOSClient extends HTTPClient
 	}
 
 	@Override
-	public int read(byte[] buff, int ofst, int size)
+	public int read(@Nonnull byte[] buff, int ofst, int size)
 	{
 		this.endRequest();
 		try
@@ -321,7 +329,7 @@ public class HTTPOSClient extends HTTPClient
 	}
 
 	@Override
-	public int write(byte[] buff, int ofst, int size) {
+	public int write(@Nonnull byte[] buff, int ofst, int size) {
 		try
 		{
 			if (this.canWrite)
@@ -360,7 +368,8 @@ public class HTTPOSClient extends HTTPClient
 		return false;
 	}
 
-	public static byte[] getAsBytes(String url, int expectedStatusCode)
+	@Nullable
+	public static byte[] getAsBytes(@Nonnull String url, int expectedStatusCode)
 	{
 		HTTPOSClient cli = new HTTPOSClient(null, null, false);
 		cli.connect(url, RequestMethod.HTTP_GET, false);
@@ -374,7 +383,8 @@ public class HTTPOSClient extends HTTPClient
 		return buff;
 	}
 
-	public static String getAsString(String url, int expectedStatusCode)
+	@Nullable
+	public static String getAsString(@Nonnull String url, int expectedStatusCode)
 	{
 		byte []ret = getAsBytes(url, expectedStatusCode);
 		if (ret == null)
@@ -384,21 +394,27 @@ public class HTTPOSClient extends HTTPClient
 		return new String(ret, StandardCharsets.UTF_8);
 	}
 
-	public static byte[] getAsBytes(String url, SharedInt statusCode)
+	@Nullable
+	public static byte[] getAsBytes(@Nonnull String url, @Nullable SharedInt statusCode)
 	{
 		return getAsBytes(null, url, null, statusCode);
 	}
 
-	public static byte[] getAsBytes(String url, Map<String, String> customHeaders, SharedInt statusCode)
+	@Nullable
+	public static byte[] getAsBytes(@Nonnull String url, @Nullable Map<String, String> customHeaders, @Nullable SharedInt statusCode)
 	{
 		return getAsBytes(null, url, customHeaders, statusCode);
 	}
 
-	public static byte[] getAsBytes(SocketFactory sockf, String url, Map<String, String> customHeaders, SharedInt statusCode)
+	@Nullable
+	public static byte[] getAsBytes(@Nullable SocketFactory sockf, @Nonnull String url, @Nullable Map<String, String> customHeaders, @Nullable SharedInt statusCode)
 	{
 		HTTPOSClient cli = new HTTPOSClient(sockf, null, false);
 		cli.connect(url, RequestMethod.HTTP_GET, true);
-		cli.addHeaders(customHeaders);
+		if (customHeaders != null)
+		{
+			cli.addHeaders(customHeaders);
+		}
 		if (cli.getRespStatus() <= 0)
 		{
 			cli.close();
@@ -413,12 +429,14 @@ public class HTTPOSClient extends HTTPClient
 		return buff;
 	}
 
-	public static String getAsString(String url, SharedInt statusCode)
+	@Nullable
+	public static String getAsString(@Nonnull String url, @Nullable SharedInt statusCode)
 	{
 		return getAsString(null, url, statusCode);
 	}
 
-	public static String getAsString(SocketFactory sockf, String url, SharedInt statusCode)
+	@Nullable
+	public static String getAsString(@Nullable SocketFactory sockf, @Nonnull String url, @Nullable SharedInt statusCode)
 	{
 		byte []ret = getAsBytes(sockf, url, null, statusCode);
 		if (ret == null)
@@ -428,18 +446,21 @@ public class HTTPOSClient extends HTTPClient
 		return new String(ret, StandardCharsets.UTF_8);
 	}
 
-	public static byte[] formPostAsBytes(String url, Map<String, String> formParams, SharedInt statusCode, int timeoutMS)
+	@Nullable 
+	public static byte[] formPostAsBytes(@Nonnull String url, @Nonnull Map<String, String> formParams, @Nullable SharedInt statusCode, int timeoutMS)
 	{
 		return formPostAsBytes(url, formParams, null, statusCode, timeoutMS);
 	}
 
-	public static byte[] formPostAsBytes(String url, Map<String, String> formParams, Map<String, String> customHeaders, SharedInt statusCode, int timeoutMS)
+	@Nullable
+	public static byte[] formPostAsBytes(@Nonnull String url, @Nonnull Map<String, String> formParams, @Nullable Map<String, String> customHeaders, @Nullable SharedInt statusCode, int timeoutMS)
 	{
 		HTTPOSClient cli = new HTTPOSClient(null, null, false);
 		cli.connect(url, RequestMethod.HTTP_POST, true);
 		if (timeoutMS != 0)
 			cli.setReadTimeout(timeoutMS);
-		cli.addHeaders(customHeaders);
+		if (customHeaders != null)
+			cli.addHeaders(customHeaders);
 		Iterator<String> names = formParams.keySet().iterator();
 		if (names != null && names.hasNext())
 		{
@@ -469,7 +490,8 @@ public class HTTPOSClient extends HTTPClient
 		return buff;
 	}
 
-	public static String formPostAsString(String url, Map<String, String> formParams, SharedInt statusCode, int timeoutMS)
+	@Nullable
+	public static String formPostAsString(@Nonnull String url, @Nonnull Map<String, String> formParams, @Nullable SharedInt statusCode, int timeoutMS)
 	{
 		byte []ret = formPostAsBytes(url, formParams, statusCode, timeoutMS);
 		if (ret == null)
@@ -479,7 +501,8 @@ public class HTTPOSClient extends HTTPClient
 		return new String(ret, StandardCharsets.UTF_8);
 	}
 
-	public static String formPostAsString(String url, Map<String, String> formParams, Map<String, String> customHeaders, SharedInt statusCode, int timeoutMS)
+	@Nullable
+	public static String formPostAsString(@Nonnull String url, @Nonnull Map<String, String> formParams, @Nullable Map<String, String> customHeaders, @Nullable SharedInt statusCode, int timeoutMS)
 	{
 		byte []ret = formPostAsBytes(url, formParams, customHeaders, statusCode, timeoutMS);
 		if (ret == null)

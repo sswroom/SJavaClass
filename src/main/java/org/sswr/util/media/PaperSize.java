@@ -6,6 +6,8 @@ import java.awt.print.Paper;
 import org.sswr.util.math.unit.Distance;
 import org.sswr.util.math.unit.Distance.DistanceUnit;
 
+import jakarta.annotation.Nonnull;
+
 public class PaperSize
 {
 	public enum PaperType
@@ -74,7 +76,7 @@ public class PaperSize
 	private double widthMM;
 	private double heightMM;
 
-	public PaperSize(PaperType paperType)
+	public PaperSize(@Nonnull PaperType paperType)
 	{
 		Size2D size = paperTypeGetSizeMM(paperType);
 		this.widthMM = size.getWidth();
@@ -91,7 +93,8 @@ public class PaperSize
 		return this.heightMM;
 	}
 
-	public PageFormat toPageForamt(PageOrientation po)
+	@Nonnull
+	public PageFormat toPageForamt(@Nonnull PageOrientation po)
 	{
 		PageFormat pf = new PageFormat();
 		Paper paper = new Paper();
@@ -110,7 +113,8 @@ public class PaperSize
 		return pf;
 	}
 
-	public static Size2D paperTypeGetSizeMM(PaperType paperType)
+	@Nonnull
+	public static Size2D paperTypeGetSizeMM(@Nonnull PaperType paperType)
 	{
 		double widthMM = 100;
 		double heightMM = 100;

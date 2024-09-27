@@ -11,13 +11,16 @@ import org.sswr.util.net.SSLEngine;
 import org.sswr.util.net.SocketFactory;
 import org.sswr.util.net.email.EmailValidator.Status;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class SMTPDirectEmailControl implements EmailControl
 {
 	private SMTPClient smtp;
 	private String smtpFrom;
 	private EmailValidator validator;
 
-	public SMTPDirectEmailControl(String smtpHost, Integer smtpPort, SSLEngine ssl, SMTPConnType connType, String username, String password, String smtpFrom, LogTool logger)
+	public SMTPDirectEmailControl(@Nonnull String smtpHost, @Nullable Integer smtpPort, @Nullable SSLEngine ssl, @Nonnull SMTPConnType connType, @Nullable String username, @Nullable String password, @Nonnull String smtpFrom, @Nonnull LogTool logger)
 	{
 		this.smtpFrom = smtpFrom;
 		this.smtp = new SMTPClient(smtpHost, (smtpPort == null)?getDefaultPort():smtpPort.intValue(), ssl, connType, new LogToolWriter(logger, LogLevel.RAW));
@@ -28,14 +31,23 @@ public class SMTPDirectEmailControl implements EmailControl
 		this.validator = new EmailValidator(SocketFactory.create());
 	}
 
-	public boolean sendMail(EmailMessage msg, String toList, String ccList)
+	public boolean sendMail(@Nonnull EmailMessage msg, @Nullable String toList, @Nullable String ccList)
 	{
 		SMTPMessage message = new SMTPMessage();
-		message.setSubject(msg.getSubject());
-		message.setContent(msg.getContent(), "text/html; charset=utf-8");
+		String subject;
+		String content;
+		if ((subject = msg.getSubject()) == null)
+			return false;
+		if ((content = msg.getContent()) == null)
+			return false;
+		message.setSubject(subject);
+		message.setContent(content, "text/html; charset=utf-8");
 		message.setSentDate(ZonedDateTime.now());
 		message.setFrom(new EmailAddress(null, this.smtpFrom));
-		message.addToList(toList);
+		if (toList != null && toList.length() > 0)
+		{
+			message.addToList(toList);
+		}
 		if (ccList != null && ccList.length() > 0)
 		{
 			message.addCcList(ccList);
@@ -55,7 +67,7 @@ public class SMTPDirectEmailControl implements EmailControl
 		return this.smtp.send(message);
 	}
 
-	public boolean sendBatchMail(EmailMessage msg, List<String> toList)
+	public boolean sendBatchMail(@Nonnull EmailMessage msg, @Nonnull List<String> toList)
 	{
 		return sendMail(msg, StringUtil.join(toList, ","), null);
 	}
@@ -65,12 +77,13 @@ public class SMTPDirectEmailControl implements EmailControl
 		return this.smtp.testServerOnline();
 	}
 
-	public boolean validateDestAddr(String addr)
+	public boolean validateDestAddr(@Nonnull String addr)
 	{
 		return this.validator.validate(addr) == Status.S_VALID;
 	}
 
-	public String sendTestingEmail(String toAddress)
+	@Nonnull
+	public String sendTestingEmail(@Nonnull String toAddress)
 	{
 		SMTPMessage message = new SMTPMessage();
 		message.setSubject("Email Testing");

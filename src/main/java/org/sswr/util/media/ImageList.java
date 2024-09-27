@@ -8,6 +8,9 @@ import org.sswr.util.data.ArtificialQuickSort;
 import org.sswr.util.io.ParsedObject;
 import org.sswr.util.io.ParserType;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class ImageList extends ParsedObject
 {
 	class ImageInfo
@@ -18,13 +21,13 @@ public class ImageList extends ParsedObject
 
 	private List<ImageInfo> imgList;
 
-	public ImageList(String sourceName)
+	public ImageList(@Nonnull String sourceName)
 	{
 		super(sourceName);
 		this.imgList = new ArrayList<ImageInfo>();
 	}
 
-	public void add(StaticImage img, int delay)
+	public void add(@Nonnull StaticImage img, int delay)
 	{
 		ImageInfo imgInfo = new ImageInfo();
 		imgInfo.img = img;
@@ -32,6 +35,7 @@ public class ImageList extends ParsedObject
 		this.imgList.add(imgInfo);
 	}
 	
+	@Nullable
 	public StaticImage getImage(int index)
 	{
 		ImageInfo imgInfo = this.imgList.get(index);
@@ -86,6 +90,7 @@ public class ImageList extends ParsedObject
 	}
 
 	@Override
+	@Nonnull
 	public ParserType getParserType() {
 		return ParserType.ImageList;
 	}

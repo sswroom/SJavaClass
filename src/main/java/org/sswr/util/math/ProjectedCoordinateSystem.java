@@ -4,6 +4,8 @@ import org.sswr.util.math.geometry.LineString;
 import org.sswr.util.math.geometry.Vector2D.VectorType;
 import org.sswr.util.math.unit.Distance;
 
+import jakarta.annotation.Nonnull;
+
 public abstract class ProjectedCoordinateSystem extends CoordinateSystem
 {
 	protected GeographicCoordinateSystem gcs;
@@ -14,7 +16,7 @@ public abstract class ProjectedCoordinateSystem extends CoordinateSystem
 	protected double scaleFactor;
 	protected UnitType unit;
 
-	public ProjectedCoordinateSystem(String sourceName, int srid, String projName, double falseEasting, double falseNorthing, double dcentralMeridian, double dlatitudeOfOrigin, double scaleFactor, GeographicCoordinateSystem gcs, UnitType unit)
+	public ProjectedCoordinateSystem(@Nonnull String sourceName, int srid, @Nonnull String projName, double falseEasting, double falseNorthing, double dcentralMeridian, double dlatitudeOfOrigin, double scaleFactor, @Nonnull GeographicCoordinateSystem gcs, @Nonnull UnitType unit)
 	{
 		super(sourceName, srid, projName);
 
@@ -27,7 +29,7 @@ public abstract class ProjectedCoordinateSystem extends CoordinateSystem
 		this.unit = unit;
 	}
 
-	public double calSurfaceDistance(Coord2DDbl pos1, Coord2DDbl pos2, Distance.DistanceUnit unit)
+	public double calSurfaceDistance(@Nonnull Coord2DDbl pos1, @Nonnull Coord2DDbl pos2, @Nonnull Distance.DistanceUnit unit)
 	{
 		Coord2DDbl diff = pos2.subtract(pos1);
 		diff = diff.multiply(diff);
@@ -39,7 +41,7 @@ public abstract class ProjectedCoordinateSystem extends CoordinateSystem
 		return d;
 	}
 
-	public double calLineStringDistance(LineString lineString, boolean include3D, Distance.DistanceUnit unit)
+	public double calLineStringDistance(@Nonnull LineString lineString, boolean include3D, @Nonnull Distance.DistanceUnit unit)
 	{
 		int nPoint;
 		Coord2DDbl[] points;
@@ -96,7 +98,9 @@ public abstract class ProjectedCoordinateSystem extends CoordinateSystem
 		}
 	}
 	
+	@Nonnull
 	public abstract CoordinateSystem clone();
+	@Nonnull
 	public abstract CoordinateSystemType getCoordSysType();
 	
 	public boolean isProjected()
@@ -104,7 +108,7 @@ public abstract class ProjectedCoordinateSystem extends CoordinateSystem
 		return true;
 	}
 
-	public void toString(StringBuilder sb)
+	public void toString(@Nonnull StringBuilder sb)
 	{
 		sb.append("Projected File Name: ");
 		sb.append(this.sourceName);
@@ -124,14 +128,18 @@ public abstract class ProjectedCoordinateSystem extends CoordinateSystem
 		this.gcs.toString(sb);
 	}
 
+	@Nonnull
 	public GeographicCoordinateSystem getGeographicCoordinateSystem()
 	{
 		return this.gcs;
 	}
 
-	public abstract Coord2DDbl toGeographicCoordinateRad(Coord2DDbl projPos);
-	public abstract Coord2DDbl fromGeographicCoordinateRad(Coord2DDbl geoPos);
-	public Coord2DDbl toGeographicCoordinateDeg(Coord2DDbl projPos)
+	@Nonnull
+	public abstract Coord2DDbl toGeographicCoordinateRad(@Nonnull Coord2DDbl projPos);
+	@Nonnull
+	public abstract Coord2DDbl fromGeographicCoordinateRad(@Nonnull Coord2DDbl geoPos);
+	@Nonnull
+	public Coord2DDbl toGeographicCoordinateDeg(@Nonnull Coord2DDbl projPos)
 	{
 		Coord2DDbl geoPos = this.toGeographicCoordinateRad(projPos);
 		geoPos.x = geoPos.x * 180 / Math.PI;
@@ -139,12 +147,13 @@ public abstract class ProjectedCoordinateSystem extends CoordinateSystem
 		return geoPos;
 	}
 
-	public Coord2DDbl fromGeographicCoordinateDeg(Coord2DDbl geoPos)
+	@Nonnull
+	public Coord2DDbl fromGeographicCoordinateDeg(@Nonnull Coord2DDbl geoPos)
 	{
 		return this.fromGeographicCoordinateRad(new Coord2DDbl(geoPos.x * Math.PI / 180.0, geoPos.y * Math.PI / 180.0));
 	}
 
-	public boolean sameProjection(ProjectedCoordinateSystem csys)
+	public boolean sameProjection(@Nonnull ProjectedCoordinateSystem csys)
 	{
 		if (this.falseEasting != csys.falseEasting)
 			return false;
@@ -194,6 +203,7 @@ public abstract class ProjectedCoordinateSystem extends CoordinateSystem
 		return this.falseNorthing;
 	}
 
+	@Nonnull
 	public UnitType getUnit()
 	{
 		return this.unit;

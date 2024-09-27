@@ -15,6 +15,9 @@ import org.sswr.util.data.ByteTool;
 import org.sswr.util.data.SharedInt;
 import org.sswr.util.data.StringUtil;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class DNSClient implements UDPPacketListener
 {
 	class RequestStatus
@@ -36,7 +39,7 @@ public class DNSClient implements UDPPacketListener
 	private HashMap<Integer, RequestStatus> reqMap;
 
 	@Override
-	public void udpPacketReceived(InetAddress addr, int port, byte[] buff, int ofst, int length) {
+	public void udpPacketReceived(@Nonnull InetAddress addr, int port, @Nonnull byte[] buff, int ofst, int length) {
 		RequestStatus req;
 		synchronized(this.reqMap)
 		{
@@ -50,6 +53,7 @@ public class DNSClient implements UDPPacketListener
 		}
 	}
 
+	@Nonnull
 	private RequestStatus newReq(int id)
 	{
 		RequestStatus req = new RequestStatus();
@@ -78,7 +82,7 @@ public class DNSClient implements UDPPacketListener
 		return this.lastID;
 	}
 
-	public DNSClient(InetAddress serverAddr)
+	public DNSClient(@Nonnull InetAddress serverAddr)
 	{
 		Random random = new Random();
 		this.serverAddr = serverAddr;
@@ -92,17 +96,17 @@ public class DNSClient implements UDPPacketListener
 		this.svr.close();
 	}
 
-	public int getByEmailDomainName(List<DNSRequestAnswer> answers, String domain)
+	public int getByEmailDomainName(@Nonnull List<DNSRequestAnswer> answers, @Nonnull String domain)
 	{
 		return this.getByType(answers, domain, 15);
 	}
 	
-	public int getByDomainName(List<DNSRequestAnswer> answers, String domain)
+	public int getByDomainName(@Nonnull List<DNSRequestAnswer> answers, @Nonnull String domain)
 	{
 		return this.getByType(answers, domain, 1);
 	}
 
-	public int getByType(List<DNSRequestAnswer> answers, String domain, int reqType)
+	public int getByType(@Nonnull List<DNSRequestAnswer> answers, @Nonnull String domain, int reqType)
 	{
 		int ret = 0;
 		byte buff[] = new byte[512];
@@ -217,7 +221,7 @@ public class DNSClient implements UDPPacketListener
 		return ret;
 	}
 
-	public int getByIPv4Name(List<DNSRequestAnswer> answers, int ip)
+	public int getByIPv4Name(@Nonnull List<DNSRequestAnswer> answers, int ip)
 	{
 		int ret = 0;
 		byte buff[] = new byte[512];
@@ -266,7 +270,7 @@ public class DNSClient implements UDPPacketListener
 		return ret;
 	}
 
-	public int getByAddrName(List<DNSRequestAnswer> answers, InetAddress addr)
+	public int getByAddrName(@Nonnull List<DNSRequestAnswer> answers, @Nonnull InetAddress addr)
 	{
 		int ret = 0;
 		byte buff[] = new byte[512];
@@ -406,22 +410,22 @@ public class DNSClient implements UDPPacketListener
 		return ret;
 	}
 
-	public int getServerName(List<DNSRequestAnswer> answers)
+	public int getServerName(@Nonnull List<DNSRequestAnswer> answers)
 	{
 		return this.getByAddrName(answers, this.serverAddr);
 	}
 
-	public int getCAARecord(List<DNSRequestAnswer> answers, String domain)
+	public int getCAARecord(@Nonnull List<DNSRequestAnswer> answers, @Nonnull String domain)
 	{
 		return this.getByType(answers, domain, 257);
 	}
 
-	public void UpdateDNSAddr(InetAddress serverAddr)
+	public void updateDNSAddr(@Nonnull InetAddress serverAddr)
 	{
 		this.serverAddr = serverAddr;
 	}
 
-	public static int parseString(byte[] sbuff, int sbuffOfst, byte[] buff, int stringOfst, int endOfst, SharedInt sbuffEndOfst)
+	public static int parseString(@Nonnull byte[] sbuff, int sbuffOfst, @Nonnull byte[] buff, int stringOfst, int endOfst, @Nullable SharedInt sbuffEndOfst)
 	{
 		boolean found = false;
 		int i = stringOfst;
@@ -484,7 +488,7 @@ public class DNSClient implements UDPPacketListener
 		return i;
 	}
 
-	public static int parseAnswers(byte[] buff, int ofst, int dataSize, List<DNSRequestAnswer> answers)
+	public static int parseAnswers(@Nonnull byte[] buff, int ofst, int dataSize, @Nonnull List<DNSRequestAnswer> answers)
 	{
 		byte[] sbuff = new byte[512];
 		DNSRequestAnswer ans;
@@ -508,7 +512,8 @@ public class DNSClient implements UDPPacketListener
 		return ansCount;
 	}
 
-	public static DNSRequestAnswer parseAnswer(byte[] buff, int dataSize, SharedInt index)
+	@Nonnull
+	public static DNSRequestAnswer parseAnswer(@Nonnull byte[] buff, int dataSize, @Nonnull SharedInt index)
 	{
 		byte[] sbuff = new byte[512];
 		SharedInt sptr = new SharedInt();

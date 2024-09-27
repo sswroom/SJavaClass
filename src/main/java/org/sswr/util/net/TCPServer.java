@@ -13,6 +13,9 @@ import org.sswr.util.basic.ThreadPriority;
 import org.sswr.util.io.LogLevel;
 import org.sswr.util.io.LogTool;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class TCPServer implements Runnable
 {
 	class SubThread implements Runnable
@@ -21,7 +24,7 @@ public class TCPServer implements Runnable
 		private boolean threadRunning;
 		private ThreadEvent threadEvt;
 
-		public SubThread(ThreadEvent threadEvt)
+		public SubThread(@Nonnull ThreadEvent threadEvt)
 		{
 			this.threadEvt = threadEvt;
 			this.toStop = false;
@@ -69,7 +72,7 @@ public class TCPServer implements Runnable
 	LinkedList<Socket> socs;
 	ThreadEvent socsEvt;
 
-	private void addLogMsg(String msg, LogLevel logLev)
+	private void addLogMsg(@Nonnull String msg, @Nonnull LogLevel logLev)
 	{
 		if (this.log != null)
 		{
@@ -217,7 +220,7 @@ public class TCPServer implements Runnable
 		return;
 	}
 
-	public TCPServer(InetAddress bindAddr, int port, LogTool log, TCPServerHandler hdlr, String logPrefix)
+	public TCPServer(@Nullable InetAddress bindAddr, int port, @Nullable LogTool log, @Nonnull TCPServerHandler hdlr, @Nullable String logPrefix)
 	{
 		this.bindAddr = bindAddr;
 		this.toStop = false;

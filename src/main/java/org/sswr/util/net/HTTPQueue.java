@@ -8,6 +8,9 @@ import org.sswr.util.basic.MyThread;
 import org.sswr.util.basic.ThreadEvent;
 import org.sswr.util.data.URLString;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class HTTPQueue
 {
 	static class DomainStatus
@@ -21,7 +24,7 @@ public class HTTPQueue
 	private Map<String, DomainStatus> statusMap;
 	private ThreadEvent statusEvt;
 
-	public HTTPQueue(SocketFactory sockf, SSLEngine ssl)
+	public HTTPQueue(@Nullable SocketFactory sockf, @Nullable SSLEngine ssl)
 	{
 		this.sockf = sockf;
 		this.ssl = ssl;
@@ -34,8 +37,8 @@ public class HTTPQueue
 		this.clear();
 	}
 
-
-	public HTTPClient makeRequest(String url, RequestMethod method, boolean noShutdown)
+	@Nonnull
+	public HTTPClient makeRequest(@Nonnull String url, @Nonnull RequestMethod method, boolean noShutdown)
 	{
 		String domain = URLString.getURLDomain(url, null);
 		boolean found = false;
@@ -72,17 +75,18 @@ public class HTTPQueue
 					found = true;
 				}
 			}
-			if (found)
-				break;
+			if (found && cli != null)
+				return cli;
 			this.statusEvt.waitEvent(1000);
 		}
-		return cli;
 	}
 	
-	public void endRequest(HTTPClient cli)
+	public void endRequest(@Nonnull HTTPClient cli)
 	{
 		DomainStatus status;
 		String url = cli.getURL();
+		if (url == null)
+			return;
 		String domain = URLString.getURLDomain(url, null);
 	
 		synchronized(this.statusEvt)

@@ -2,21 +2,24 @@ package org.sswr.util.media.cs;
 
 import org.sswr.util.media.LUT;
 
+import jakarta.annotation.Nonnull;
+
 public abstract class TransferFunc
 {
 	protected TransferParam param;
-	public TransferFunc(TransferType tranType, Double gamma)
+	public TransferFunc(@Nonnull TransferType tranType, double gamma)
 	{
 		this.param = new TransferParam(tranType, gamma);
 	}
 
-	public TransferFunc(LUT lut)
+	public TransferFunc(@Nonnull LUT lut)
 	{
 		this.param = new TransferParam(lut);
 	}
 
 	public abstract double forwardTransfer(double linearVal);
 	public abstract double inverseTransfer(double gammaVal);
+	@Nonnull
 	public TransferType getTransferType()
 	{
 		return this.param.getTranType();
@@ -27,12 +30,14 @@ public abstract class TransferFunc
 		return this.param.getGamma();
 	}
 
+	@Nonnull
 	public TransferParam getTransferParam()
 	{
 		return this.param;
 	}
 
-	public static TransferFunc createFunc(TransferParam param)
+	@Nonnull
+	public static TransferFunc createFunc(@Nonnull TransferParam param)
 	{
 		switch (param.getTranType())
 		{
@@ -67,7 +72,13 @@ public abstract class TransferFunc
 		case PROTUNE:
 			return new TransferFuncProtune();
 		case LUT:
-			return new TransferFuncLUT(param.getLUT());
+		{
+			LUT lut;
+			if ((lut = param.getLUT()) != null)
+				return new TransferFuncLUT(lut);
+			else
+				return new TransferFuncSRGB();
+		}
 		case BT2100:
 			return new TransferFuncBT2100();
 		case HLG:
@@ -81,7 +92,7 @@ public abstract class TransferFunc
 		}
 	}
 
-	public static double getRefLuminance(TransferParam param)
+	public static double getRefLuminance(@Nonnull TransferParam param)
 	{
 		if (param.getTranType() == TransferType.BT2100)
 		{
@@ -90,7 +101,8 @@ public abstract class TransferFunc
 		return 0.0;
 	}
 
-	public static String getTransferFuncName(TransferType ttype)
+	@Nonnull
+	public static String getTransferFuncName(@Nonnull TransferType ttype)
 	{
 		switch (ttype)
 		{

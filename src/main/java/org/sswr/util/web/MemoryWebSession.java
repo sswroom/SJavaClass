@@ -5,6 +5,9 @@ import java.util.HashMap;
 import org.sswr.util.io.OSType;
 import org.sswr.util.net.BrowserInfo.BrowserType;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class MemoryWebSession implements WebSession
 {
 	private BrowserType browser;
@@ -12,7 +15,7 @@ public class MemoryWebSession implements WebSession
 	private HashMap<String, Object> items;
 	private long sessId;
 
-	public MemoryWebSession(long sessId, BrowserType browser, OSType os)
+	public MemoryWebSession(long sessId, @Nonnull BrowserType browser, @Nonnull OSType os)
 	{
 		this.sessId = sessId;
 		this.browser = browser;
@@ -20,7 +23,7 @@ public class MemoryWebSession implements WebSession
 		this.items = new HashMap<String, Object>();
 	}
 	
-	public boolean requestValid(BrowserType browser, OSType os)
+	public boolean requestValid(@Nonnull BrowserType browser, @Nonnull OSType os)
 	{
 		if (this.browser != BrowserType.Unknown && this.browser != browser)
 			return false;
@@ -34,32 +37,34 @@ public class MemoryWebSession implements WebSession
 		return this.sessId;
 	}
 
-	public void setValuePtr(String name, Object val)
+	public void setValuePtr(@Nonnull String name, @Nullable Object val)
 	{
 		this.items.put(name, val);
 	}
 
-	public void setValueDbl(String name, double val)
+	public void setValueDbl(@Nonnull String name, double val)
 	{
 		this.items.put(name, val);
 	}
 
-	public void setValueInt64(String name, long val)
+	public void setValueInt64(@Nonnull String name, long val)
 	{
 		this.items.put(name, val);
 	}
 
-	public void setValueInt32(String name, int val)
+	public void setValueInt32(@Nonnull String name, int val)
 	{
 		this.items.put(name, val);
 	}
 
-	public Object getValuePtr(String name)
+	@Nullable
+	public Object getValuePtr(@Nonnull String name)
 	{
 		return this.items.get(name);
 	}
 
-	public Double getValueDbl(String name)
+	@Nullable
+	public Double getValueDbl(@Nonnull String name)
 	{
 		Object obj = this.items.get(name);
 		if (obj instanceof Double)
@@ -67,7 +72,8 @@ public class MemoryWebSession implements WebSession
 		return null;
 	}
 
-	public Long getValueInt64(String name)
+	@Nullable
+	public Long getValueInt64(@Nonnull String name)
 	{
 		Object obj = this.items.get(name);
 		if (obj instanceof Long)
@@ -75,7 +81,8 @@ public class MemoryWebSession implements WebSession
 		return null;
 	}
 
-	public Integer getValueInt32(String name)
+	@Nullable
+	public Integer getValueInt32(@Nonnull String name)
 	{
 		Object obj = this.items.get(name);
 		if (obj instanceof Integer)

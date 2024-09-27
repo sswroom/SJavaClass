@@ -1509,33 +1509,25 @@ public class DataTools {
 		return toJSONStringInner(o, 5);
 	}
 
-	@Nullable
-	public static <T> T cloneEntity(@Nonnull T o)
+	@Nonnull
+	public static <T> T cloneEntity(@Nonnull T o) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException
 	{
-		try
+		FieldGetter<T> getter;
+		FieldSetter setter;
+		Class<?> classT = o.getClass();
+		@SuppressWarnings("unchecked")
+		T newO = (T)classT.getConstructor(new Class<?>[0]).newInstance();
+		Field fields[] = classT.getDeclaredFields();
+		int i = 0;
+		int j = fields.length;
+		while (i < j)
 		{
-			FieldGetter<T> getter;
-			FieldSetter setter;
-			Class<?> classT = o.getClass();
-			@SuppressWarnings("unchecked")
-			T newO = (T)classT.getConstructor(new Class<?>[0]).newInstance();
-			Field fields[] = classT.getDeclaredFields();
-			int i = 0;
-			int j = fields.length;
-			while (i < j)
-			{
-				getter = new FieldGetter<T>(fields[i]);
-				setter = new FieldSetter(fields[i]);
-				setter.set(newO, getter.get(o));
-				i++;
-			}
-			return newO;
+			getter = new FieldGetter<T>(fields[i]);
+			setter = new FieldSetter(fields[i]);
+			setter.set(newO, getter.get(o));
+			i++;
 		}
-		catch (Exception ex)
-		{
-			ex.printStackTrace();
-			return null;
-		}
+		return newO;
 	}
 
 	public static <T> int getSize(@Nonnull Iterable<T> it)

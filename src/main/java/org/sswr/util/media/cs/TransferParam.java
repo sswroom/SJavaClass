@@ -2,6 +2,9 @@ package org.sswr.util.media.cs;
 
 import org.sswr.util.media.LUT;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class TransferParam
 {
 	private TransferType tranType;
@@ -19,7 +22,7 @@ public class TransferParam
 		this.params = null;
 	}
 
-	public TransferParam(TransferParam tran)
+	public TransferParam(@Nonnull TransferParam tran)
 	{
 		if (tran.lut != null)
 		{
@@ -43,7 +46,7 @@ public class TransferParam
 		}
 	}
 
-	public TransferParam(TransferType tranType, double gamma)
+	public TransferParam(@Nonnull TransferType tranType, double gamma)
 	{
 		this.lut = null;
 		this.tranType = tranType;
@@ -51,7 +54,7 @@ public class TransferParam
 		this.params = null;
 	}
 
-	public TransferParam(LUT lut)
+	public TransferParam(@Nonnull LUT lut)
 	{
 		this.lut = lut.clone();
 		this.tranType = TransferType.LUT;
@@ -59,7 +62,7 @@ public class TransferParam
 		this.gamma = 2.2;
 	}
 
-	public void set(TransferType tranType, double gamma)
+	public void set(@Nonnull TransferType tranType, double gamma)
 	{
 		this.tranType = tranType;
 		this.gamma = gamma;
@@ -67,7 +70,7 @@ public class TransferParam
 		this.params = null;
 	}
 
-	public void set(TransferType tranType, double params[])
+	public void set(@Nonnull TransferType tranType, double params[])
 	{
 		this.tranType = tranType;
 		this.gamma = 2.2;
@@ -80,14 +83,14 @@ public class TransferParam
 		}
 	}
 
-	public void set(LUT lut)
+	public void set(@Nonnull LUT lut)
 	{
 		this.params = null;
 		this.lut = lut.clone();
 		this.tranType = TransferType.LUT;
 	}
 
-	public void set(TransferParam tran)
+	public void set(@Nonnull TransferParam tran)
 	{
 		if (tran.lut != null)
 		{
@@ -111,6 +114,7 @@ public class TransferParam
 		}
 	}
 
+	@Nonnull
 	public TransferType getTranType()
 	{
 		return this.tranType;
@@ -121,12 +125,13 @@ public class TransferParam
 		return this.gamma;
 	}
 
+	@Nullable
 	public LUT getLUT()
 	{
 		return this.lut;
 	}
 
-	public boolean Equals(TransferParam tran)
+	public boolean Equals(@Nonnull TransferParam tran)
 	{
 		if (this.tranType != tran.tranType)
 			return false;

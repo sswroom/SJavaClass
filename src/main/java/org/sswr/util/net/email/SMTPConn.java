@@ -11,12 +11,16 @@ import org.sswr.util.data.ByteTool;
 import org.sswr.util.data.SharedInt;
 import org.sswr.util.data.StringUtil;
 import org.sswr.util.data.textbinenc.Base64Enc;
+import org.sswr.util.data.textbinenc.EncodingException;
 import org.sswr.util.io.IOWriter;
 import org.sswr.util.io.UTF8Reader;
 import org.sswr.util.io.UTF8Writer;
 import org.sswr.util.net.SSLEngine;
 import org.sswr.util.net.TCPClient;
 import org.sswr.util.net.TCPClientType;
+
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 public class SMTPConn implements Runnable
 {
@@ -117,7 +121,7 @@ public class SMTPConn implements Runnable
 		this.threadRunning = false;
 	}
 
-	private int waitForResult(SharedInt msgRetEnd)
+	private int waitForResult(@Nullable SharedInt msgRetEnd)
 	{
 		long startTime = System.currentTimeMillis();
 		while (this.threadRunning && !this.statusChg && System.currentTimeMillis() - startTime < 30000)
@@ -137,7 +141,7 @@ public class SMTPConn implements Runnable
 			return 0;
 	}
 	
-	public SMTPConn(String host, int port, SSLEngine ssl, SMTPConnType connType, IOWriter logWriter)
+	public SMTPConn(@Nonnull String host, int port, @Nullable SSLEngine ssl, @Nonnull SMTPConnType connType, @Nullable IOWriter logWriter)
 	{
 		this.threadStarted = false;
 		this.threadRunning = false;
@@ -275,7 +279,7 @@ public class SMTPConn implements Runnable
 		return this.maxSize;
 	}
 
-	public boolean sendHelo(String cliName)
+	public boolean sendHelo(@Nonnull String cliName)
 	{
 		String sbuff = "HELO" + cliName;
 		this.statusChg = false;
@@ -288,7 +292,7 @@ public class SMTPConn implements Runnable
 		return code == 250;
 	}
 
-	public boolean sendEHlo(String cliName)
+	public boolean sendEHlo(@Nonnull String cliName)
 	{
 		byte[] returnMsg = new byte[2048];
 		SharedInt returnMsgEnd = new SharedInt();
@@ -353,7 +357,7 @@ public class SMTPConn implements Runnable
 		return code == 250;
 	}
 
-	public boolean sendAuth(String userName, String password)
+	public boolean sendAuth(@Nonnull String userName, @Nonnull String password)
 	{
 		if (this.authPlain)
 		{
@@ -403,36 +407,44 @@ public class SMTPConn implements Runnable
 				}
 				return false;
 			}
-			sbCmd.setLength(0);
-			sbCmd.append(b64.encodeBin(userName.getBytes(StandardCharsets.UTF_8)));
-			this.statusChg = false;
-			this.msgRet = retBuff;
-			this.msgRetOfst = 0;
-			if (this.logWriter != null)
+			try
 			{
-				this.logWriter.writeLine(sbCmd.toString());
-			}
-			this.writer.writeLine(sbCmd.toString());
-			code = this.waitForResult(retBuffEnd);
-			if (code != 334 || !"UGFzc3dvcmQ6".equals(new String(retBuff, 0, retBuffEnd.value, StandardCharsets.UTF_8)))
-			{
-				if (VERBOSE)
+				sbCmd.setLength(0);
+				sbCmd.append(b64.encodeBin(userName.getBytes(StandardCharsets.UTF_8)));
+				this.statusChg = false;
+				this.msgRet = retBuff;
+				this.msgRetOfst = 0;
+				if (this.logWriter != null)
 				{
-					System.out.println("Error in login2: code = "+code+", msgLen = "+retBuffEnd.value+", msg = "+new String(retBuff, 0, retBuffEnd.value, StandardCharsets.UTF_8));
+					this.logWriter.writeLine(sbCmd.toString());
 				}
+				this.writer.writeLine(sbCmd.toString());
+				code = this.waitForResult(retBuffEnd);
+				if (code != 334 || !"UGFzc3dvcmQ6".equals(new String(retBuff, 0, retBuffEnd.value, StandardCharsets.UTF_8)))
+				{
+					if (VERBOSE)
+					{
+						System.out.println("Error in login2: code = "+code+", msgLen = "+retBuffEnd.value+", msg = "+new String(retBuff, 0, retBuffEnd.value, StandardCharsets.UTF_8));
+					}
+					return false;
+				}
+				sbCmd.setLength(0);
+				sbCmd.append(b64.encodeBin(password.getBytes(StandardCharsets.UTF_8)));
+				this.statusChg = false;
+				this.msgRet = retBuff;
+				if (this.logWriter != null)
+				{
+					this.logWriter.writeLine(sbCmd.toString());
+				}
+				this.writer.writeLine(sbCmd.toString());
+				code = this.waitForResult(null);
+				return code == 235;
+			}
+			catch (EncodingException ex)
+			{
+				ex.printStackTrace();
 				return false;
 			}
-			sbCmd.setLength(0);
-			sbCmd.append(b64.encodeBin(password.getBytes(StandardCharsets.UTF_8)));
-			this.statusChg = false;
-			this.msgRet = retBuff;
-			if (this.logWriter != null)
-			{
-				this.logWriter.writeLine(sbCmd.toString());
-			}
-			this.writer.writeLine(sbCmd.toString());
-			code = this.waitForResult(null);
-			return code == 235;
 		}
 		else
 		{
@@ -440,7 +452,7 @@ public class SMTPConn implements Runnable
 		}
 	}
 	
-	public boolean sendMailFrom(String fromEmail)
+	public boolean sendMailFrom(@Nonnull String fromEmail)
 	{
 		String sbuff = "MAIL FROM: <" + fromEmail + ">";
 		this.statusChg = false;
@@ -453,7 +465,7 @@ public class SMTPConn implements Runnable
 		return code == 250;
 	}
 
-	public boolean sendRcptTo(String toEmail)
+	public boolean sendRcptTo(@Nonnull String toEmail)
 	{
 		String sbuff = "RCPT TO: <" + toEmail + ">";
 		this.statusChg = false;
@@ -478,7 +490,7 @@ public class SMTPConn implements Runnable
 		return code == 221;
 	}
 
-	public boolean sendData(byte[] buff, int buffOfst, int buffSize)
+	public boolean sendData(@Nonnull byte[] buff, int buffOfst, int buffSize)
 	{
 		this.statusChg = false;
 		if (this.logWriter != null)

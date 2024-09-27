@@ -5,6 +5,9 @@ import java.util.List;
 import org.sswr.util.data.ByteTool;
 import org.sswr.util.io.ResourceLoader;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class MACInfo
 {
 	private static List<MACEntry> macList;
@@ -15,6 +18,7 @@ public class MACInfo
 		return (macList = ResourceLoader.loadObjects(MACEntry.class, "MACInfo.macList.txt", new String[] {"rangeStart", "rangeEnd", "name"})) != null;
 	}
 
+	@Nonnull
 	public static MACEntry getMACInfo(long macAddr)
 	{
 		if (macList == null && !loadMACList())
@@ -42,7 +46,9 @@ public class MACInfo
 		}
 		return uncMac;		
 	}
-	public static MACEntry getMACInfoBuff(byte[] mac, int index)
+
+	@Nonnull
+	public static MACEntry getMACInfoBuff(@Nonnull byte[] mac, int index)
 	{
 		byte buff[] = new byte[8];
 		buff[0] = 0;
@@ -56,7 +62,8 @@ public class MACInfo
 		return getMACInfo(ByteTool.readMInt64(buff, 0));
 	}
 
-	public static MACEntry getMACInfoOUI(byte[] oui, int index)
+	@Nonnull
+	public static MACEntry getMACInfoOUI(@Nonnull byte[] oui, int index)
 	{
 		byte buff[] = new byte[8];
 		buff[0] = 0;
@@ -70,6 +77,7 @@ public class MACInfo
 		return getMACInfo(ByteTool.readMInt64(buff, 0));
 	}
 
+	@Nullable
 	public static List<MACEntry> getMACEntryList()
 	{
 		if (macList == null && !loadMACList())

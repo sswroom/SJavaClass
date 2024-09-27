@@ -10,6 +10,9 @@ import org.sswr.util.basic.MyThread;
 import org.sswr.util.basic.ThreadEvent;
 import org.sswr.util.data.SharedInt;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class SNMPClient implements UDPPacketListener
 {
 	private UDPServer svr;
@@ -21,7 +24,7 @@ public class SNMPClient implements UDPPacketListener
 	private Object scanMut;
 	private List<InetAddress> scanList;
 
-	public void udpPacketReceived(InetAddress addr, int port, byte []buff, int ofst, int dataSize)
+	public void udpPacketReceived(@Nonnull InetAddress addr, int port, @Nonnull byte []buff, int ofst, int dataSize)
 	{
 		List<SNMPBindingItem> itemList = new ArrayList<SNMPBindingItem>();
 		SharedInt reqId = new SharedInt();
@@ -55,7 +58,7 @@ public class SNMPClient implements UDPPacketListener
 		this(null);
 	}
 
-	public SNMPClient(InetAddress bindaddr)
+	public SNMPClient(@Nullable InetAddress bindaddr)
 	{
 		this.scanMut = new Object();
 		this.scanList = null;
@@ -77,7 +80,8 @@ public class SNMPClient implements UDPPacketListener
 		return this.svr.isError();
 	}
 
-	public SNMPErrorStatus v1GetRequest(InetAddress agentAddr, String community, String oid, List<SNMPBindingItem> itemList)
+	@Nonnull
+	public SNMPErrorStatus v1GetRequest(@Nonnull InetAddress agentAddr, @Nonnull String community, @Nonnull String oid, @Nonnull List<SNMPBindingItem> itemList)
 	{
 		byte[] pduBuff = new byte[64];
 		int oidLen;
@@ -85,7 +89,8 @@ public class SNMPClient implements UDPPacketListener
 		return v1GetRequestPDU(agentAddr, community, pduBuff, oidLen, itemList);
 	}
 
-	public SNMPErrorStatus v1GetRequestPDU(InetAddress agentAddr, String community, byte[] oid, int oidLen, List<SNMPBindingItem> itemList)
+	@Nonnull
+	public SNMPErrorStatus v1GetRequestPDU(@Nonnull InetAddress agentAddr, @Nonnull String community, @Nonnull byte[] oid, int oidLen, @Nonnull List<SNMPBindingItem> itemList)
 	{
 		SharedInt buffSize = new SharedInt();
 		byte[] buff;
@@ -124,7 +129,8 @@ public class SNMPClient implements UDPPacketListener
 		return ret;
 	}
 
-	public SNMPErrorStatus v1GetNextRequest(InetAddress agentAddr, String community, String oid, List<SNMPBindingItem> itemList)
+	@Nonnull
+	public SNMPErrorStatus v1GetNextRequest(@Nonnull InetAddress agentAddr, @Nonnull String community, @Nonnull String oid, @Nonnull List<SNMPBindingItem> itemList)
 	{
 		byte[] pduBuff = new byte[64];
 		int oidLen;
@@ -132,7 +138,8 @@ public class SNMPClient implements UDPPacketListener
 		return v1GetNextRequestPDU(agentAddr, community, pduBuff, oidLen, itemList);
 	}
 
-	public SNMPErrorStatus v1GetNextRequestPDU(InetAddress agentAddr, String community, byte[] oid, int oidLen, List<SNMPBindingItem> itemList)
+	@Nonnull
+	public SNMPErrorStatus v1GetNextRequestPDU(@Nonnull InetAddress agentAddr, @Nonnull String community, @Nonnull byte[] oid, int oidLen, @Nonnull List<SNMPBindingItem> itemList)
 	{
 		SharedInt buffSize = new SharedInt();
 		byte[] buff;
@@ -171,7 +178,8 @@ public class SNMPClient implements UDPPacketListener
 		return ret;
 	}
 
-	public SNMPErrorStatus v1Walk(InetAddress agentAddr, String community, String oid, List<SNMPBindingItem> itemList)
+	@Nonnull
+	public SNMPErrorStatus v1Walk(@Nonnull InetAddress agentAddr, @Nonnull String community, @Nonnull String oid, @Nonnull List<SNMPBindingItem> itemList)
 	{
 		SNMPErrorStatus ret;
 		List<SNMPBindingItem> thisList = new ArrayList<SNMPBindingItem>();
@@ -213,7 +221,7 @@ public class SNMPClient implements UDPPacketListener
 		return SNMPErrorStatus.NOERROR;
 	}
 
-	public int v1ScanGetRequest(InetAddress broadcastAddr, String community, String oid, List<InetAddress> addrList, int timeoutMS, boolean scanIP)
+	public int v1ScanGetRequest(@Nonnull InetAddress broadcastAddr, @Nonnull String community, @Nonnull String oid, @Nonnull List<InetAddress> addrList, int timeoutMS, boolean scanIP)
 	{
 		byte pduBuff[] = new byte[64];
 		int oidLen;

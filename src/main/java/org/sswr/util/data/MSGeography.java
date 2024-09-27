@@ -10,6 +10,7 @@ import org.sswr.util.math.geometry.Polygon;
 import org.sswr.util.math.geometry.Polyline;
 import org.sswr.util.math.geometry.Vector2D;
 
+import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
 public class MSGeography
@@ -351,11 +352,14 @@ public class MSGeography
 						i++;
 					}
 					pointInd += j * 16;
-					i = 0;
-					while (i < j)
+					if (zList != null)
 					{
-						zList[i] = ByteTool.readDouble(buff, pointInd + i * 8);
-						i++;
+						i = 0;
+						while (i < j)
+						{
+							zList[i] = ByteTool.readDouble(buff, pointInd + i * 8);
+							i++;
+						}
 					}
 					if (nFigures > 1)
 					{
@@ -396,7 +400,8 @@ public class MSGeography
 						while (j < k)
 						{
 							points[l] = new Coord2DDbl(ByteTool.readDouble(buff, pointInd + j * 16), ByteTool.readDouble(buff, pointInd + j * 16 + 8));
-							zList[l] = ByteTool.readDouble(buff, zInd + j * 8);
+							if (zList != null)
+								zList[l] = ByteTool.readDouble(buff, zInd + j * 8);
 							j++;
 							l++;
 						}
@@ -426,7 +431,8 @@ public class MSGeography
 						while (i < j)
 						{
 							points[i] = new Coord2DDbl(ByteTool.readDouble(buff, pointInd + i * 16), ByteTool.readDouble(buff, pointInd + i * 16 + 8));
-							zArr[i] = ByteTool.readDouble(buff, zInd + i * 8);
+							if (zArr != null)
+								zArr[i] = ByteTool.readDouble(buff, zInd + i * 8);
 							i++;
 						}
 						pl.addGeometry(lineString);
@@ -452,7 +458,8 @@ public class MSGeography
 							while (l < k)
 							{
 								points[j] = new Coord2DDbl(ByteTool.readDouble(buff, pointInd + l * 16), ByteTool.readDouble(buff, pointInd + l * 16 + 8));
-								zArr[j] = ByteTool.readDouble(buff, zInd + l * 8);
+								if (zArr != null)
+									zArr[j] = ByteTool.readDouble(buff, zInd + l * 8);
 								l++;
 								j++;
 							}
@@ -506,7 +513,8 @@ public class MSGeography
 								l = ByteTool.readInt32(buff, figureInd + (k + thisFigure) * 5 + 1);
 							lr = new LinearRing(srid, l - k, true, false);
 							Coord2DDbl[] points = lr.getPointList();
-							double[] zList = lr.getZList();
+							@SuppressWarnings("null")
+							@Nonnull double[] zList = lr.getZList();
 							while (k < l)
 							{
 								points[k] = new Coord2DDbl(ByteTool.readDouble(buff, pointInd + (k + thisPtOfst) * 16), ByteTool.readDouble(buff, pointInd + (k + thisPtOfst) * 16 + 8));
@@ -583,18 +591,24 @@ public class MSGeography
 						i++;
 					}
 					pointInd += j * 16;
-					i = 0;
-					while (i < j)
+					if (zList != null)
 					{
-						zList[i] = ByteTool.readDouble(buff, pointInd + i * 8);
-						i++;
+						i = 0;
+						while (i < j)
+						{
+							zList[i] = ByteTool.readDouble(buff, pointInd + i * 8);
+							i++;
+						}
 					}
 					pointInd += j * 8;
-					i = 0;
-					while (i < j)
+					if (mList != null)
 					{
-						mList[i] = ByteTool.readDouble(buff, pointInd + i * 8);
-						i++;
+						i = 0;
+						while (i < j)
+						{
+							mList[i] = ByteTool.readDouble(buff, pointInd + i * 8);
+							i++;
+						}
 					}
 					if (nFigures > 1)
 					{
@@ -654,15 +668,15 @@ public class MSGeography
 					int k;
 					int l;
 					Coord2DDbl []points;
-					double []zArr;
-					double []mArr;
 					pl = new Polyline(srid);
 					if (nFigures <= 1)
 					{
 						lineString = new LineString(srid, nPoints, true, true);
 						points = lineString.getPointList();
-						zArr = lineString.getZList();
-						mArr = lineString.getMList();
+						@SuppressWarnings("null")
+						@Nonnull double []zArr = lineString.getZList();
+						@SuppressWarnings("null")
+						@Nonnull double []mArr = lineString.getMList();
 						i = 0;
 						j = points.length;
 						while (i < j)
@@ -690,8 +704,10 @@ public class MSGeography
 							}
 							lineString = new LineString(srid, k - l, true, true);
 							points = lineString.getPointList();
-							zArr = lineString.getZList();
-							mArr = lineString.getMList();
+							@SuppressWarnings("null")
+							@Nonnull double []zArr = lineString.getZList();
+							@SuppressWarnings("null")
+							@Nonnull double []mArr = lineString.getMList();
 							j = 0;
 							while (l < k)
 							{
@@ -736,7 +752,8 @@ public class MSGeography
 				}
 				LineString pl = new LineString(srid, 2, true, false);
 				Coord2DDbl []points = pl.getPointList();
-				double []zList = pl.getZList();
+				@SuppressWarnings("null")
+				@Nonnull double []zList = pl.getZList();
 				points[0].x = ByteTool.readDouble(buff, 6);
 				points[0].y = ByteTool.readDouble(buff, 14);
 				points[1].x = ByteTool.readDouble(buff, 22);
@@ -754,8 +771,10 @@ public class MSGeography
 				LineString pl;
 				pl = new LineString(srid, 2, true, true);
 				Coord2DDbl []points = pl.getPointList();
-				double []zList = pl.getZList();
-				double []mList = pl.getMList();
+				@SuppressWarnings("null")
+				@Nonnull double []zList = pl.getZList();
+				@SuppressWarnings("null")
+				@Nonnull double []mList = pl.getMList();
 				points[0].x = ByteTool.readDouble(buff, 6);
 				points[0].y = ByteTool.readDouble(buff, 14);
 				points[1].x = ByteTool.readDouble(buff, 22);

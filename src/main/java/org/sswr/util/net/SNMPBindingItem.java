@@ -4,6 +4,9 @@ import java.util.Objects;
 
 import org.sswr.util.data.ByteTool;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class SNMPBindingItem
 {
 	private byte[] oid;
@@ -17,6 +20,7 @@ public class SNMPBindingItem
 		this.oid = new byte[64];
 	}
 
+	@Nonnull
 	public byte[] getOid() {
 		return this.oid;
 	}
@@ -29,7 +33,7 @@ public class SNMPBindingItem
 		this.oidLen = oidLen;
 	}
 
-	public void setOid(byte[] buff, int ofst, int len)
+	public void setOid(@Nonnull byte[] buff, int ofst, int len)
 	{
 		ByteTool.copyArray(this.oid, 0, buff, ofst, len);
 		this.oidLen = len;
@@ -51,11 +55,12 @@ public class SNMPBindingItem
 		this.valLen = valLen;
 	}
 
+	@Nullable
 	public byte[] getValBuff() {
 		return this.valBuff;
 	}
 
-	public void setValBuff(byte[] valBuff) {
+	public void setValBuff(@Nullable byte[] valBuff) {
 		this.valBuff = valBuff;
 	}
 

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 public class MQTTStaticClient implements Runnable, MQTTEventHdlr, MQTTClient, FailoverChannel
 {
@@ -39,7 +40,7 @@ public class MQTTStaticClient implements Runnable, MQTTEventHdlr, MQTTClient, Fa
 	private String password;
 	private List<TopicInfo> topicList;
 
-	public MQTTStaticClient(String brokerHost, int port, SSLEngine ssl, TCPClientType cliType, int keepAliveS, String username, String password, boolean autoReconnect)
+	public MQTTStaticClient(@Nonnull String brokerHost, int port, @Nullable SSLEngine ssl, @Nonnull TCPClientType cliType, int keepAliveS, @Nullable String username, @Nullable String password, boolean autoReconnect)
 	{
 		this.packetId = 1;
 		this.keepAliveS = keepAliveS;
@@ -62,6 +63,7 @@ public class MQTTStaticClient implements Runnable, MQTTEventHdlr, MQTTClient, Fa
 		this.thread.start();
 	}
 
+	@Nonnull
 	private ConnError connect()
 	{
 		this.packetId = 1;
@@ -115,7 +117,7 @@ public class MQTTStaticClient implements Runnable, MQTTEventHdlr, MQTTClient, Fa
 		this.connError = ConnError.DISCONNECT;
 	}
 
-	public void handleEvents(MQTTEventHdlr hdlr)
+	public void handleEvents(@Nonnull MQTTEventHdlr hdlr)
 	{
 		synchronized(this.hdlrList)
 		{
@@ -128,7 +130,7 @@ public class MQTTStaticClient implements Runnable, MQTTEventHdlr, MQTTClient, Fa
 		return this.packetId++;
 	}
 
-	public void subscribe(String topic, MQTTPublishMessageHdlr hdlr)
+	public void subscribe(@Nonnull String topic, @Nullable MQTTPublishMessageHdlr hdlr)
 	{
 		TopicInfo info = new TopicInfo();
 		info.topic = topic;
@@ -144,7 +146,7 @@ public class MQTTStaticClient implements Runnable, MQTTEventHdlr, MQTTClient, Fa
 		}
 	}
 
-	public boolean publish(String topic, String message)
+	public boolean publish(@Nonnull String topic, @Nonnull String message)
 	{
 		synchronized (this)
 		{
@@ -156,6 +158,7 @@ public class MQTTStaticClient implements Runnable, MQTTEventHdlr, MQTTClient, Fa
 		}
 	}
 
+	@Nonnull
 	public synchronized ConnError getConnError()
 	{
 		return this.connError;

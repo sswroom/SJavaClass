@@ -22,6 +22,9 @@ import org.sswr.util.net.ASN1PDUBuilder;
 import org.sswr.util.net.MIME;
 import org.sswr.util.net.WebUtil;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class SMTPMessage
 {
 	public static final int LINECHARCNT = 77;
@@ -36,7 +39,7 @@ public class SMTPMessage
 	private X509Certificate signCert;
 	private PrivateKey signKey;
 
-	private int getHeaderIndex(String name)
+	private int getHeaderIndex(@Nonnull String name)
 	{
 		String header;
 		int i = 0;
@@ -53,7 +56,7 @@ public class SMTPMessage
 		return -1;
 	}
 		
-	private boolean setHeader(String name, String val)
+	private boolean setHeader(@Nonnull String name, @Nonnull String val)
 	{
 		StringBuilder sb = new StringBuilder();
 		sb.append(name);
@@ -71,13 +74,13 @@ public class SMTPMessage
 		}
 		return true;
 	}
-	private boolean appendUTF8Header(StringBuilder sb, String val)
+	private boolean appendUTF8Header(@Nonnull StringBuilder sb, @Nonnull String val)
 	{
 		sb.append(EmailTools.toUTF8Header(val));
 		return true;
 	}
 
-	private void genMultipart(OutputStream stm, String boundary) throws IOException
+	private void genMultipart(@Nonnull OutputStream stm, @Nonnull String boundary) throws IOException
 	{
 		stm.write("--".getBytes(StandardCharsets.UTF_8));
 		stm.write(boundary.getBytes(StandardCharsets.UTF_8));
@@ -196,7 +199,7 @@ public class SMTPMessage
 		stm.write("--\r\n".getBytes(StandardCharsets.UTF_8));
 	}
 
-	private void writeHeaders(OutputStream stm) throws IOException
+	private void writeHeaders(@Nonnull OutputStream stm) throws IOException
 	{
 		String header;
 		int i = 0;
@@ -210,7 +213,7 @@ public class SMTPMessage
 		}
 	}
 
-	private void writeContents(OutputStream stm) throws IOException
+	private void writeContents(@Nonnull OutputStream stm) throws IOException
 	{
 		byte[] sbuff;
 		if (this.attachments.size() > 0)
@@ -240,7 +243,8 @@ public class SMTPMessage
 		}
 	}
 	
-	private byte[] genBoundary(byte[] data)
+	@Nonnull
+	private byte[] genBoundary(@Nonnull byte[] data)
 	{
 		long ts = System.currentTimeMillis();
 		SHA1 sha1 = new SHA1();
@@ -252,12 +256,12 @@ public class SMTPMessage
 		return new Base64Enc(Base64Enc.B64Charset.URL, true).encodeBin(sha1Val, 0, sha1Val.length).getBytes(StandardCharsets.UTF_8);
 	}
 
-	private void writeB64Data(OutputStream stm, byte[] data) throws IOException
+	private void writeB64Data(@Nonnull OutputStream stm, @Nonnull byte[] data) throws IOException
 	{
 		writeB64Data(stm, data, 0, data.length);
 	}
 
-	private void writeB64Data(OutputStream stm, byte[] data, int dataOfst, int dataSize) throws IOException
+	private void writeB64Data(@Nonnull OutputStream stm, @Nonnull byte[] data, int dataOfst, int dataSize) throws IOException
 	{
 		Base64Enc b64 = new Base64Enc(Base64Enc.B64Charset.NORMAL, false);
 		byte[] sbuff;
@@ -284,7 +288,7 @@ public class SMTPMessage
 		this.attachments = new ArrayList<EmailAttachment>();
 	}
 
-	public boolean setSubject(String subject)
+	public boolean setSubject(@Nonnull String subject)
 	{
 		if (StringUtil.isNonASCII(subject))
 		{
@@ -299,7 +303,7 @@ public class SMTPMessage
 		return true;
 	}
 
-	public boolean setContent(String content, String contentType)
+	public boolean setContent(@Nonnull String content, @Nonnull String contentType)
 	{
 		this.contentType = contentType;
 		this.content = content.getBytes(StandardCharsets.UTF_8);
@@ -307,12 +311,12 @@ public class SMTPMessage
 	
 	}
 
-	public boolean setSentDate(ZonedDateTime dt)
+	public boolean setSentDate(@Nonnull ZonedDateTime dt)
 	{
 		return this.setHeader("Date", WebUtil.date2Str(dt));
 	}
 
-	public boolean setMessageId(String msgId)
+	public boolean setMessageId(@Nonnull String msgId)
 	{
 		StringBuilder sb = new StringBuilder();
 		sb.append('<');
@@ -321,14 +325,14 @@ public class SMTPMessage
 		return this.setHeader("Message-ID", sb.toString());
 	}
 
-	public boolean setFrom(EmailAddress addr)
+	public boolean setFrom(@Nonnull EmailAddress addr)
 	{
 		this.setHeader("From", addr.toString());
 		this.fromAddr = addr;
 		return true;
 	}
 
-	public boolean addTo(EmailAddress addr)
+	public boolean addTo(@Nonnull EmailAddress addr)
 	{
 		int i = this.getHeaderIndex("To");
 		if (i != -1)
@@ -347,7 +351,7 @@ public class SMTPMessage
 		return true;		
 	}
 
-	public boolean addToList(String addrs)
+	public boolean addToList(@Nonnull String addrs)
 	{
 		List<EmailAddress> addrList = EmailAddress.parseList(addrs);
 		if (addrList == null)
@@ -363,7 +367,7 @@ public class SMTPMessage
 		return true;
 	}
 
-	public boolean addCcList(String addrs)
+	public boolean addCcList(@Nonnull String addrs)
 	{
 		List<EmailAddress> addrList = EmailAddress.parseList(addrs);
 		if (addrList == null)
@@ -379,7 +383,7 @@ public class SMTPMessage
 		return true;
 	}
 
-	public boolean addCc(EmailAddress addr)
+	public boolean addCc(@Nonnull EmailAddress addr)
 	{
 		int i = this.getHeaderIndex("Cc");
 		if (i != -1)
@@ -399,13 +403,13 @@ public class SMTPMessage
 		return true;
 	}
 
-	public boolean addBcc(EmailAddress addr)
+	public boolean addBcc(@Nonnull EmailAddress addr)
 	{
 		this.recpList.add(addr);
 		return true;
 	}
 
-	public boolean addBccList(String addrs)
+	public boolean addBccList(@Nonnull String addrs)
 	{
 		List<EmailAddress> addrList = EmailAddress.parseList(addrs);
 		if (addrList == null)
@@ -421,7 +425,8 @@ public class SMTPMessage
 		return true;
 	}
 
-	public EmailAttachment addAttachment(String fileName)
+	@Nullable
+	public EmailAttachment addAttachment(@Nonnull String fileName)
 	{
 		EmailAttachment att = EmailAttachment.createFromFile(fileName, "attach"+(this.attachments.size() + 1));
 		if (att != null)
@@ -429,7 +434,8 @@ public class SMTPMessage
 		return att;
 	}
 
-	public EmailAttachment addAttachment(byte[] content, String fileName)
+	@Nonnull
+	public EmailAttachment addAttachment(@Nonnull byte[] content, @Nonnull String fileName)
 	{
 		EmailAttachment attachment = new EmailAttachment();
 		attachment.content = content;
@@ -443,12 +449,12 @@ public class SMTPMessage
 		return attachment;
 	}
 
-	public void addAttachment(EmailAttachment att)
+	public void addAttachment(@Nonnull EmailAttachment att)
 	{
 		this.attachments.add(att.clone());
 	}
 
-	public boolean addSignature(X509Certificate cert, PrivateKey key)
+	public boolean addSignature(@Nullable X509Certificate cert, @Nullable PrivateKey key)
 	{
 		this.signCert = cert;
 		this.signKey = key;
@@ -465,17 +471,19 @@ public class SMTPMessage
 		return true;
 	}
 
+	@Nullable
 	public String getFromAddr()
 	{
 		return (this.fromAddr != null)?this.fromAddr.getAddress():null;
 	}
 
+	@Nonnull
 	public List<EmailAddress> getRecpList()
 	{
 		return this.recpList;
 	}
 
-	public boolean writeToSend(OutputStream stm)
+	public boolean writeToSend(@Nonnull OutputStream stm)
 	{
 		if (!this.canSend())
 		{
@@ -483,7 +491,7 @@ public class SMTPMessage
 		}
 		return this.writeMessage(stm);
 	}
-	public boolean writeMessage(OutputStream stm)
+	public boolean writeMessage(@Nonnull OutputStream stm)
 	{
 		try
 		{
@@ -658,7 +666,7 @@ public class SMTPMessage
 		}
 	}
 
-	public static boolean generateMessageID(StringBuilder sb, String mailFrom)
+	public static boolean generateMessageID(@Nonnull StringBuilder sb, @Nonnull String mailFrom)
 	{
 		sb.append(StringUtil.toHex64(System.currentTimeMillis()));
 		sb.append('.');

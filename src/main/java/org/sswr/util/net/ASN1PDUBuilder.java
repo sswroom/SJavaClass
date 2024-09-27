@@ -7,6 +7,9 @@ import org.sswr.util.data.ByteTool;
 import org.sswr.util.data.DateTimeUtil;
 import org.sswr.util.data.SharedInt;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class ASN1PDUBuilder
 {
 	private int seqOffset[];
@@ -191,7 +194,7 @@ public class ASN1PDUBuilder
 		}
 	}
 
-	public void appendBitString(byte bitLeft, byte[] buff, int ofst, int len)
+	public void appendBitString(byte bitLeft, @Nonnull byte[] buff, int ofst, int len)
 	{
 		len++;
 		if (len < 128)
@@ -238,7 +241,7 @@ public class ASN1PDUBuilder
 		}
 	}
 	
-	public void appendOctetString(byte[] buff, int ofst, int len)
+	public void appendOctetString(@Nonnull byte[] buff, int ofst, int len)
 	{
 		this.appendOther((byte)4, buff, ofst, len);
 	}
@@ -300,12 +303,12 @@ public class ASN1PDUBuilder
 		this.currOffset += 2;
 	}
 
-	public void appendOID(byte[] oid, int len)
+	public void appendOID(@Nonnull byte[] oid, int len)
 	{
 		appendOID(oid, 0, len);
 	}
 
-	public void appendOID(byte[] oid, int ofst, int len)
+	public void appendOID(@Nonnull byte[] oid, int ofst, int len)
 	{
 		this.allocateSize(len + 2);
 		this.buff[this.currOffset] = 6;
@@ -314,7 +317,7 @@ public class ASN1PDUBuilder
 		this.currOffset += len + 2;
 	}
 
-	public void appendOIDString(String oidStr)
+	public void appendOIDString(@Nonnull String oidStr)
 	{
 		byte[] buff = ASN1Util.oidText2PDU(oidStr);
 		this.appendOID(buff, buff.length);
@@ -356,33 +359,33 @@ public class ASN1PDUBuilder
 		}
 	}
 
-	public void appendPrintableString(String s)
+	public void appendPrintableString(@Nonnull String s)
 	{
 		this.appendOther((byte)0x13, s.getBytes(StandardCharsets.UTF_8));
 	}
 
-	public void appendUTF8String(String s)
+	public void appendUTF8String(@Nonnull String s)
 	{
 		this.appendOther((byte)0x0C, s.getBytes(StandardCharsets.UTF_8));
 	}
 
-	public void appendIA5String(String s)
+	public void appendIA5String(@Nonnull String s)
 	{
 		this.appendOther((byte)0x16, s.getBytes(StandardCharsets.UTF_8));
 	}
 
-	public void appendUTCTime(ZonedDateTime t)
+	public void appendUTCTime(@Nonnull ZonedDateTime t)
 	{
 		String s = DateTimeUtil.toString(t, "yyMMddHHmmss")+"Z";
 		this.appendOther((byte)0x17, s.getBytes(StandardCharsets.UTF_8));
 	}
 
-	public void appendOther(byte type, byte[] buff)
+	public void appendOther(byte type, @Nonnull byte[] buff)
 	{
 		this.appendOther(type, buff, 0, buff.length);
 	}
 
-	public void appendOther(byte type, byte[] buff, int buffOfst, int buffSize)
+	public void appendOther(byte type, @Nonnull byte[] buff, int buffOfst, int buffSize)
 	{
 		if (buffSize == 0)
 		{
@@ -428,27 +431,29 @@ public class ASN1PDUBuilder
 		}
 	}
 
-	public void appendContentSpecific(byte n, byte[] buff)
+	public void appendContentSpecific(byte n, @Nonnull byte[] buff)
 	{
 		this.appendOther((byte)(0xA0 + n), buff, 0, buff.length);
 	}
 
-	public void appendSequence(byte[] buff)
+	public void appendSequence(@Nonnull byte[] buff)
 	{
 		this.appendOther((byte)0x30, buff, 0, buff.length);
 	}
 
-	public void appendInteger(byte[] buff)
+	public void appendInteger(@Nonnull byte[] buff)
 	{
 		this.appendOther((byte)2, buff, 0, buff.length);
 	}
 
+	@Nonnull
 	public byte[] getBuff()
 	{
 		return this.buff;
 	}
 	
-	public byte[] getBuff(SharedInt buffSize)
+	@Nonnull
+	public byte[] getBuff(@Nullable SharedInt buffSize)
 	{
 		if (buffSize != null)
 			buffSize.value = this.currOffset;

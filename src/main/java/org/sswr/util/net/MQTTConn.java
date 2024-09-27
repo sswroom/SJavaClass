@@ -11,6 +11,9 @@ import org.sswr.util.io.IOStream;
 import org.sswr.util.io.ProtocolDataListener;
 import org.sswr.util.io.protohdlr.ProtoMQTTHandler;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class MQTTConn implements Runnable, ProtocolDataListener
 {
 	private ProtoMQTTHandler protoHdlr;
@@ -24,7 +27,7 @@ public class MQTTConn implements Runnable, ProtocolDataListener
 	private List<MQTTPacketInfo> packetList;
 	private ThreadEvent packetEvt;
 
-	public void dataParsed(IOStream stm, Object stmObj, int cmdType, int seqId, byte[] cmd, int cmdOfst, int cmdSize)
+	public void dataParsed(@Nonnull IOStream stm, @Nullable Object stmObj, int cmdType, int seqId, @Nonnull byte[] cmd, int cmdOfst, int cmdSize)
 	{
 		if ((cmdType & 0xf0) == 0x30 && cmdSize >= 2)
 		{
@@ -79,7 +82,7 @@ public class MQTTConn implements Runnable, ProtocolDataListener
 		}
 	}
 
-	public void dataSkipped(IOStream stm, Object stmObj, byte[] buff, int buffOfst, int buffSize)
+	public void dataSkipped(@Nonnull IOStream stm, @Nullable Object stmObj, @Nonnull byte[] buff, int buffOfst, int buffSize)
 	{
 
 	}
@@ -116,7 +119,7 @@ public class MQTTConn implements Runnable, ProtocolDataListener
 		this.onDisconnect();
 	}
 
-	private void onPublishMessage(String topic, byte[] message, int ofst, int msgSize)
+	private void onPublishMessage(@Nonnull String topic, @Nonnull byte[] message, int ofst, int msgSize)
 	{
 		int i = this.hdlrList.size();
 		while (i-- > 0)
@@ -134,6 +137,7 @@ public class MQTTConn implements Runnable, ProtocolDataListener
 		}
 	}
 
+	@Nullable
 	private MQTTPacketInfo getNextPacket(byte packetType, int timeoutMS)
 	{
 		long initT = System.currentTimeMillis();
@@ -159,7 +163,7 @@ public class MQTTConn implements Runnable, ProtocolDataListener
 		}	
 	}
 
-	public MQTTConn(String host, int port, SSLEngine ssl, TCPClientType cliType)
+	public MQTTConn(@Nonnull String host, int port, @Nullable SSLEngine ssl, @Nonnull TCPClientType cliType)
 	{
 		this.recvRunning = false;
 		this.recvStarted = false;
@@ -204,7 +208,7 @@ public class MQTTConn implements Runnable, ProtocolDataListener
 		}
 	}
 
-	public void handleEvents(MQTTEventHdlr hdlr)
+	public void handleEvents(@Nonnull MQTTEventHdlr hdlr)
 	{
 		this.hdlrList.add(hdlr);
 	}
@@ -214,7 +218,7 @@ public class MQTTConn implements Runnable, ProtocolDataListener
 		return this.cli == null || !this.recvRunning;
 	}
 
-	public boolean sendConnect(byte protoVer, int keepAliveS, String clientId, String userName, String password)
+	public boolean sendConnect(byte protoVer, int keepAliveS, @Nonnull String clientId, @Nullable String userName, @Nullable String password)
 	{
 		byte[] packet1 = new byte[512];
 		byte[] packet2 = new byte[512];
@@ -259,7 +263,7 @@ public class MQTTConn implements Runnable, ProtocolDataListener
 		return this.cli.write(packet2, 0, j) == j;
 	}
 
-	public boolean sendPublish(String topic, String message)
+	public boolean sendPublish(@Nonnull String topic, @Nonnull String message)
 	{
 		byte[] topicBytes;
 		byte[] msgBytes;
@@ -306,7 +310,7 @@ public class MQTTConn implements Runnable, ProtocolDataListener
 		return this.cli.write(packet2, 0, j) == j;
 	}
 
-	public boolean sendSubscribe(int packetId, String topic)
+	public boolean sendSubscribe(int packetId, @Nonnull String topic)
 	{
 		byte[] sbuff = topic.getBytes(StandardCharsets.UTF_8);
 		byte[] packet1 = new byte[sbuff.length + 5];
@@ -345,6 +349,7 @@ public class MQTTConn implements Runnable, ProtocolDataListener
 		return this.cli.write(packet2, 0, j) == j;
 	}
 
+	@Nonnull
 	public MQTTConnectStatus waitConnAck(int timeoutMS)
 	{
 		MQTTPacketInfo packet = this.getNextPacket((byte)0x20, timeoutMS);
@@ -381,7 +386,7 @@ public class MQTTConn implements Runnable, ProtocolDataListener
 		}	
 	}
 
-	public static boolean publishMessage(String host, int port, SSLEngine ssl, TCPClientType cliType, String username, String password, String topic, String message)
+	public static boolean publishMessage(@Nonnull String host, int port, @Nullable SSLEngine ssl, @Nonnull TCPClientType cliType, @Nullable String username, @Nullable String password, @Nonnull String topic, @Nonnull String message)
 	{
 		MQTTConn cli = new MQTTConn(host, port, ssl, cliType);
 		if (cli.isError())

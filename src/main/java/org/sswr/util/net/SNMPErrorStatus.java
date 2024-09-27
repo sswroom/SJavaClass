@@ -1,5 +1,7 @@
 package org.sswr.util.net;
 
+import jakarta.annotation.Nullable;
+
 public enum SNMPErrorStatus
 {
 	NOERROR,
@@ -11,6 +13,7 @@ public enum SNMPErrorStatus
 	NORESP, //-1
 	UNKRESP; //-2
 
+	@Nullable
 	public static SNMPErrorStatus getStatus(int val)
 	{
 		if (val == -2)

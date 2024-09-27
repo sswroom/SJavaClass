@@ -177,7 +177,7 @@ public class WKTWriter implements VectorTextWriter
 		while (i < j)
 		{
 			if (i > 0) sb.append(',');
-			pl = cc.getItem(i);
+			pl = cc.getItemNN(i);
 			if (pl.getVectorType() == VectorType.CircularString)
 			{
 				sb.append("CIRCULARSTRING");
@@ -197,7 +197,7 @@ public class WKTWriter implements VectorTextWriter
 		while (i < j)
 		{
 			if (i > 0) sb.append(',');
-			geometry = cpg.getItem(i);
+			geometry = cpg.getItemNN(i);
 			VectorType t = geometry.getVectorType();
 			if (t == VectorType.LineString)
 			{
@@ -241,7 +241,7 @@ public class WKTWriter implements VectorTextWriter
 		while (i < j)
 		{
 			if (i > 0) sb.append(',');
-			geometry = ms.getItem(i);
+			geometry = ms.getItemNN(i);
 			VectorType t = geometry.getVectorType();
 			if (t == VectorType.CurvePolygon)
 			{

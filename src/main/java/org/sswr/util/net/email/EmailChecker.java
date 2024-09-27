@@ -6,6 +6,9 @@ import java.util.Iterator;
 
 import org.sswr.util.data.DataTools;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class EmailChecker<T extends TemplateEmailStatus> implements Runnable
 {
 	private EmailMessageCreator msgCreator;
@@ -14,7 +17,7 @@ public class EmailChecker<T extends TemplateEmailStatus> implements Runnable
 	private boolean splitDestAddr;
 	private String basePath;
 
-	public EmailChecker(EmailMessageCreator msgCreator, EmailCheckHandler<T> handler, EmailControl emailCtrl, boolean splitDestAddr, String basePath)
+	public EmailChecker(@Nonnull EmailMessageCreator msgCreator, @Nonnull EmailCheckHandler<T> handler, @Nonnull EmailControl emailCtrl, boolean splitDestAddr, @Nonnull String basePath)
 	{
 		this.msgCreator = msgCreator;
 		this.handler = handler;
@@ -23,34 +26,37 @@ public class EmailChecker<T extends TemplateEmailStatus> implements Runnable
 		this.basePath = basePath;
 	}
 
-	private void sendEmails(EmailMessage message, String toAddrs, String ccAddrs, StringBuilder sbSucc, StringBuilder sbFail)
+	private void sendEmails(@Nonnull EmailMessage message, @Nullable String toAddrs, @Nullable String ccAddrs, @Nonnull StringBuilder sbSucc, @Nonnull StringBuilder sbFail)
 	{
 		if (this.splitDestAddr)
 		{
-			String emailAddrs[] = toAddrs.split(",");
-			String emailAddr;
-			int i = 0;
-			int j = emailAddrs.length;
-			while (i < j)
+			if (toAddrs != null && toAddrs.length() > 0)
 			{
-				emailAddr = emailAddrs[i].trim();
-				if (emailCtrl.sendMail(message, emailAddr, null))
+				String emailAddrs[] = toAddrs.split(",");
+				String emailAddr;
+				int i = 0;
+				int j = emailAddrs.length;
+				while (i < j)
 				{
-					if (sbSucc.length() > 0)
+					emailAddr = emailAddrs[i].trim();
+					if (emailCtrl.sendMail(message, emailAddr, null))
 					{
-						sbSucc.append(",");
+						if (sbSucc.length() > 0)
+						{
+							sbSucc.append(",");
+						}
+						sbSucc.append(emailAddr);
 					}
-					sbSucc.append(emailAddr);
-				}
-				else
-				{
-					if (sbFail.length() > 0)
+					else
 					{
-						sbFail.append(",");
+						if (sbFail.length() > 0)
+						{
+							sbFail.append(",");
+						}
+						sbFail.append(emailAddr);
 					}
-					sbFail.append(emailAddr);
+					i++;
 				}
-				i++;
 			}
 			if (ccAddrs != null && ccAddrs.length() > 0)
 			{
@@ -88,7 +94,7 @@ public class EmailChecker<T extends TemplateEmailStatus> implements Runnable
 		}
 	}
 
-	private void doQueueEmail(EmailControl emailCtrl, TemplateEmailStatus email)
+	private void doQueueEmail(@Nonnull EmailControl emailCtrl, @Nonnull TemplateEmailStatus email)
 	{
 		try
 		{
@@ -157,9 +163,16 @@ public class EmailChecker<T extends TemplateEmailStatus> implements Runnable
 		while (itEmails.hasNext())
 		{
 			email = itEmails.next();
-			newEmail = DataTools.cloneEntity(email);
-			doQueueEmail(this.emailCtrl, newEmail);
-			this.handler.updateEmailStatus(email, newEmail);
+			try
+			{
+				newEmail = DataTools.cloneEntity(email);
+				doQueueEmail(this.emailCtrl, newEmail);
+				this.handler.updateEmailStatus(email, newEmail);
+			}
+			catch (Exception ex)
+			{
+				ex.printStackTrace();
+			}
 		}
 		this.handler.endEmailChecking(t);
 	}
@@ -169,11 +182,13 @@ public class EmailChecker<T extends TemplateEmailStatus> implements Runnable
 		return this.emailCtrl.isServerOnline();
 	}
 
-	public String sendTestingEmail(String toAddress)
+	@Nonnull
+	public String sendTestingEmail(@Nonnull String toAddress)
 	{
 		return this.emailCtrl.sendTestingEmail(toAddress);
 	}
 
+	@Nonnull
 	public EmailMessageCreator getEmailMessageCreator()
 	{
 		return this.msgCreator;

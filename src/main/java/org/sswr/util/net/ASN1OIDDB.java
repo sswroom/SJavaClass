@@ -4,6 +4,9 @@ import java.util.List;
 
 import org.sswr.util.io.ResourceLoader;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class ASN1OIDDB
 {
 	private static List<ASN1OIDInfo> oidList;
@@ -13,7 +16,7 @@ public class ASN1OIDDB
 		return (oidList = ResourceLoader.loadObjects(ASN1OIDInfo.class, "SNMPOIDDB.oidList.txt", new String[] {"name", "len", "oid"})) != null;
 	}
 
-	public static void oidToNameString(byte[] pdu, int pduOfst, int pduSize, StringBuilder sb)
+	public static void oidToNameString(@Nonnull byte[] pdu, int pduOfst, int pduSize, @Nonnull StringBuilder sb)
 	{
 		if (oidList == null && !loadOIDList())
 		{
@@ -46,7 +49,8 @@ public class ASN1OIDDB
 		}
 	}
 
-	public static ASN1OIDInfo oidGetEntry(byte[] pdu, int pduOfst, int pduSize)
+	@Nullable
+	public static ASN1OIDInfo oidGetEntry(@Nonnull byte[] pdu, int pduOfst, int pduSize)
 	{
 		if (oidList == null && !loadOIDList())
 		{

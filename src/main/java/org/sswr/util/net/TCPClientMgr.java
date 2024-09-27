@@ -12,6 +12,9 @@ import java.util.List;
 import org.sswr.util.basic.ArrayListInt64;
 import org.sswr.util.basic.SyncCircularBuff;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class TCPClientMgr implements Runnable
 {
 	private int timeOutSeconds;
@@ -26,7 +29,7 @@ public class TCPClientMgr implements Runnable
 	private List<TCPClientStatus> cliArr;
 	private SyncCircularBuff<TCPClientStatus> workerTasks;
 
-	private static void removeCliStat(List<TCPClientStatus> cliArr, ArrayListInt64 cliIdArr, TCPClientStatus cliStat)
+	private static void removeCliStat(@Nonnull List<TCPClientStatus> cliArr, @Nonnull ArrayListInt64 cliIdArr, @Nonnull TCPClientStatus cliStat)
 	{
 		int ind;
 		int i;
@@ -58,7 +61,7 @@ public class TCPClientMgr implements Runnable
 		}
 	}
 
-	private void processClient(TCPClientStatus cliStat)
+	private void processClient(@Nonnull TCPClientStatus cliStat)
 	{
 		this.workerTasks.put(cliStat);
 		int i = this.workerCnt;
@@ -72,7 +75,7 @@ public class TCPClientMgr implements Runnable
 		}
 }
 
-	public TCPClientMgr(int timeOutSeconds, TCPClientHandler hdlr, int workerCnt)
+	public TCPClientMgr(int timeOutSeconds, @Nonnull TCPClientHandler hdlr, int workerCnt)
 	{
 		this.cliIdArr = new ArrayListInt64();
 		this.cliArr = new ArrayList<TCPClientStatus>();
@@ -417,16 +420,19 @@ public class TCPClientMgr implements Runnable
 		this.clientThreadRunning = false;
 	}
 
+	@Nonnull
 	TCPClientHandler getHandler()
 	{
 		return this.hdlr;
 	}
 
+	@Nonnull
 	List<TCPClientStatus> getCliArr()
 	{
 		return this.cliArr;
 	}
 
+	@Nullable
 	TCPClientStatus getWorkerTask()
 	{
 		return this.workerTasks.get();

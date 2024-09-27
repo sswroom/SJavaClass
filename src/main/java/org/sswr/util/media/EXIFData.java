@@ -23,6 +23,9 @@ import org.sswr.util.data.StringUtil;
 import org.sswr.util.io.ResourceLoader;
 import org.sswr.util.io.StreamData;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class EXIFData
 {
 	private static List<EXIFInfo> defInfos;
@@ -43,7 +46,7 @@ public class EXIFData
 	private Map<Integer, EXIFItem> exifMap;
 	private EXIFMaker exifMaker;
 
-	private void toExifBuff(byte[] buff, Iterable<EXIFItem> exifList, SharedInt startOfst, SharedInt otherOfst)
+	private void toExifBuff(@Nonnull byte[] buff, @Nonnull Iterable<EXIFItem> exifList, @Nonnull SharedInt startOfst, @Nonnull SharedInt otherOfst)
 	{
 		int objCnt;
 		Iterator<EXIFItem> itExif = exifList.iterator();
@@ -231,7 +234,7 @@ public class EXIFData
 		otherOfst.value = k;
 	}
 
-	private void getExifBuffSize(Iterable<EXIFItem> exifList, SharedInt size, SharedInt endOfst)
+	private void getExifBuffSize(@Nonnull Iterable<EXIFItem> exifList, @Nonnull SharedInt size, @Nonnull SharedInt endOfst)
 	{
 		int i = 6;
 		int j = 6;
@@ -318,17 +321,19 @@ public class EXIFData
 		endOfst.value = i;
 	}
 
-	public EXIFData(EXIFMaker exifMaker)
+	public EXIFData(@Nonnull EXIFMaker exifMaker)
 	{
 		this.exifMaker = exifMaker;
 		this.exifMap = new HashMap<Integer, EXIFItem>();
 	}
 
+	@Nonnull
 	public EXIFMaker getEXIFMaker()
 	{
 		return this.exifMaker;
 	}
 
+	@Nonnull
 	public EXIFData clone()
 	{
 		EXIFItem item;
@@ -375,7 +380,7 @@ public class EXIFData
 		return newExif;
 	}
 
-	private void addItem(int id, int cnt, byte[] buff, int buffOfst, EXIFType type, int itemSize)
+	private void addItem(int id, int cnt, @Nonnull byte[] buff, int buffOfst, @Nonnull EXIFType type, int itemSize)
 	{
 		EXIFItem item = new EXIFItem();
 		item.id = id;
@@ -386,41 +391,41 @@ public class EXIFData
 		item = this.exifMap.put(id, item);
 	}
 
-	public void addBytes(int id, int cnt, byte[] buff, int buffOfst)
+	public void addBytes(int id, int cnt, @Nonnull byte[] buff, int buffOfst)
 	{
 		addItem(id, cnt, buff, buffOfst, EXIFType.BYTES, 1);
 	}
 
-	public void addString(int id, int cnt, byte[] buff, int buffOfst)
+	public void addString(int id, int cnt, @Nonnull byte[] buff, int buffOfst)
 	{
 		addItem(id, cnt, buff, buffOfst, EXIFType.STRING, 1);
 	}
 
-	public void addUInt16(int id, int cnt, byte[] buff, int buffOfst)
+	public void addUInt16(int id, int cnt, @Nonnull byte[] buff, int buffOfst)
 	{
 		addItem(id, cnt, buff, buffOfst, EXIFType.UINT16, 2);
 	}
 
-	public void addUInt32(int id, int cnt, byte[] buff, int buffOfst)
+	public void addUInt32(int id, int cnt, @Nonnull byte[] buff, int buffOfst)
 	{
 		addItem(id, cnt, buff, buffOfst, EXIFType.UINT32, 4);
 	}
-	public void addRational(int id, int cnt, byte[] buff, int buffOfst)
+	public void addRational(int id, int cnt, @Nonnull byte[] buff, int buffOfst)
 	{
 		addItem(id, cnt, buff, buffOfst, EXIFType.RATIONAL, 8);
 	}
 
-	public void addOther(int id, int cnt, byte[] buff, int buffOfst)
+	public void addOther(int id, int cnt, @Nonnull byte[] buff, int buffOfst)
 	{
 		addItem(id, cnt, buff, buffOfst, EXIFType.OTHER, 1);
 	}
 
-	public void addInt16(int id, int cnt, byte[] buff, int buffOfst)
+	public void addInt16(int id, int cnt, @Nonnull byte[] buff, int buffOfst)
 	{
 		addItem(id, cnt, buff, buffOfst, EXIFType.INT16, 2);
 	}
 
-	public void addSubEXIF(int id, EXIFData exif)
+	public void addSubEXIF(int id, @Nonnull EXIFData exif)
 	{
 		EXIFItem item = new EXIFItem();
 		item.id = id;
@@ -431,7 +436,7 @@ public class EXIFData
 		item = this.exifMap.put(id, item);
 	}
 
-	public void addDouble(int id, int cnt, byte[] buff, int buffOfst)
+	public void addDouble(int id, int cnt, @Nonnull byte[] buff, int buffOfst)
 	{
 		addItem(id, cnt, buff, buffOfst, EXIFType.DOUBLE, 8);
 	}
@@ -441,12 +446,13 @@ public class EXIFData
 		this.exifMap.remove(id);
 	}
 
-	public int getExifIds(List<Integer> idArr)
+	public int getExifIds(@Nonnull List<Integer> idArr)
 	{
 		idArr.addAll(this.exifMap.keySet());
 		return this.exifMap.size();
 	}
 
+	@Nonnull
 	public EXIFType getExifType(int id)
 	{
 		EXIFItem item = this.exifMap.get(id);
@@ -463,11 +469,13 @@ public class EXIFData
 		return item.size;
 	}
 
+	@Nullable
 	public EXIFItem getExifItem(int id)
 	{
 		return this.exifMap.get(id);
 	}
 
+	@Nullable
 	public byte[] getExifUInt16(int id)
 	{
 		EXIFItem item = this.exifMap.get(id);
@@ -478,6 +486,7 @@ public class EXIFData
 		return item.dataBuff;
 	}
 
+	@Nullable
 	public byte[] getExifUInt32(int id)
 	{
 		EXIFItem item = this.exifMap.get(id);
@@ -488,6 +497,7 @@ public class EXIFData
 		return item.dataBuff;
 	}
 
+	@Nullable
 	public EXIFData getExifSubexif(int id)
 	{
 		EXIFItem item = this.exifMap.get(id);
@@ -498,6 +508,7 @@ public class EXIFData
 		return item.subExif;
 	}
 
+	@Nullable
 	public byte[] getExifOther(int id)
 	{
 		EXIFItem item = this.exifMap.get(id);
@@ -508,6 +519,7 @@ public class EXIFData
 		return item.dataBuff;
 	}
 
+	@Nullable
 	public ZonedDateTime getPhotoDate()
 	{
 		EXIFItem item;
@@ -547,6 +559,7 @@ public class EXIFData
 		return null;
 	}
 
+	@Nullable
 	public String getPhotoMake()
 	{
 		EXIFItem item;
@@ -563,6 +576,7 @@ public class EXIFData
 		return null;
 	}
 
+	@Nullable
 	public String getPhotoModel()
 	{
 		EXIFItem item;
@@ -589,6 +603,7 @@ public class EXIFData
 		return null;		
 	}
 
+	@Nullable
 	public String getPhotoLens()
 	{
 		EXIFItem item;
@@ -711,7 +726,7 @@ public class EXIFData
 		return 0;
 	}
 
-	public boolean getPhotoLocation(SharedDouble lat, SharedDouble lon, SharedDouble altitude, SharedLong gpsTimeTick)
+	public boolean getPhotoLocation(@Nullable SharedDouble lat, @Nullable SharedDouble lon, @Nullable SharedDouble altitude, @Nullable SharedLong gpsTimeTick)
 	{
 		EXIFData subExif = this.getExifSubexif(34853);
 		if (subExif != null)
@@ -912,7 +927,7 @@ public class EXIFData
 		return false;
 	}
 
-	public boolean getGeoBounds(int imgW, int imgH, SharedInt srid, SharedDouble minX, SharedDouble minY, SharedDouble maxX, SharedDouble maxY)
+	public boolean getGeoBounds(int imgW, int imgH, @Nullable SharedInt srid, @Nonnull SharedDouble minX, @Nonnull SharedDouble minY, @Nonnull SharedDouble maxX, @Nonnull SharedDouble maxY)
 	{
 		EXIFItem item;
 		EXIFItem item2;
@@ -951,6 +966,7 @@ public class EXIFData
 		return true;		
 	}
 
+	@Nonnull
 	public RotateType getRotateType()
 	{
 		EXIFItem item;
@@ -1041,7 +1057,7 @@ public class EXIFData
 		}
 	}
 
-	public boolean toString(StringBuilder sb, String linePrefix)
+	public boolean toString(@Nonnull StringBuilder sb, @Nullable String linePrefix)
 	{
 		List<Integer> exifIds = new ArrayList<Integer>();
 		EXIFItem exItem;
@@ -1065,79 +1081,281 @@ public class EXIFData
 			sb.append(v);
 			sb.append(", name = ");
 			sb.append(getEXIFName(this.exifMaker, v));
-			exItem = this.getExifItem(v);
-
-			if (v == 34665)
+			if ((exItem = this.getExifItem(v)) != null)
 			{
-				v = 34665;
-			}
-
-			if (exItem.type == EXIFType.SUBEXIF)
-			{
-				List<Integer> subExIds = new ArrayList<Integer>();
-				int i2;
-				int j2;
-				int v2;
-				EXIFItem subExItem;
-				EXIFData subExif = exItem.subExif;
-				i2 = 0;
-				j2 = subExif.getExifIds(subExIds);
-				while (i2 < j2)
+				if (v == 34665)
 				{
-					v2 = subExIds.get(i2);
-					sb.append("\r\n");
-					if (linePrefix != null)
-						sb.append(linePrefix);
-					sb.append(" Subid = ");
-					sb.append(v2);
-					sb.append(", name = ");
-					sb.append(getEXIFName(this.exifMaker, v, v2));
-	
-					subExItem = subExif.getExifItem(v2);
-					if (subExItem.type == EXIFType.STRING)
+					v = 34665;
+				}
+
+				if (exItem.type == EXIFType.SUBEXIF)
+				{
+					List<Integer> subExIds = new ArrayList<Integer>();
+					int i2;
+					int j2;
+					int v2;
+					EXIFItem subExItem;
+					EXIFData subExif = exItem.subExif;
+					i2 = 0;
+					j2 = subExif.getExifIds(subExIds);
+					while (i2 < j2)
 					{
-						sb.append(", value = ");
-						sb.append(getItemString(subExItem));
-					}
-					else if (subExItem.type == EXIFType.DOUBLE)
-					{
-						k = 0;
-						while (k < subExItem.size)
+						v2 = subExIds.get(i2);
+						sb.append("\r\n");
+						if (linePrefix != null)
+							sb.append(linePrefix);
+						sb.append(" Subid = ");
+						sb.append(v2);
+						sb.append(", name = ");
+						sb.append(getEXIFName(this.exifMaker, v, v2));
+		
+						if ((subExItem = subExif.getExifItem(v2)) != null)
 						{
-							if (k == 0)
+							if (subExItem.type == EXIFType.STRING)
 							{
 								sb.append(", value = ");
+								sb.append(getItemString(subExItem));
+							}
+							else if (subExItem.type == EXIFType.DOUBLE)
+							{
+								k = 0;
+								while (k < subExItem.size)
+								{
+									if (k == 0)
+									{
+										sb.append(", value = ");
+									}
+									else
+									{
+										sb.append(", ");
+									}
+									sb.append(StringUtil.fromDouble(ByteTool.readDouble(subExItem.dataBuff, k * 8)));
+									k++;
+								}
+							}
+							else if (subExItem.type == EXIFType.BYTES)
+							{
+								byte[] valBuff = subExItem.dataBuff;
+								sb.append(", value = ");
+								if (subExItem.size > 1024)
+								{
+									sb.append(subExItem.size);
+									sb.append(" bytes: ");
+									StringUtil.appendHex(sb, valBuff, 0, 256, ' ', LineBreakType.CRLF);
+									sb.append("\r\n...\r\n");
+									StringUtil.appendHex(sb, valBuff, (subExItem.size & ~15) - 256, 256 + (subExItem.size & 15), ' ', LineBreakType.CRLF);
+								}
+								else
+								{
+									StringUtil.appendHex(sb, valBuff, 0, subExItem.size, ' ', LineBreakType.CRLF);
+								}
+							}
+							else if (subExItem.type == EXIFType.UINT16)
+							{
+								byte[] valBuff = subExItem.dataBuff;
+								k = 0;
+								while (k < subExItem.size)
+								{
+									if (k == 0)
+									{
+										sb.append(", value = ");
+									}
+									else
+									{
+										sb.append(", ");
+									}
+									sb.append(ByteTool.readUInt16(valBuff, k * 2));
+									k++;
+								}
+							}
+							else if (subExItem.type == EXIFType.UINT32)
+							{
+								byte[] valBuff = subExItem.dataBuff;
+								k = 0;
+								while (k < subExItem.size)
+								{
+									if (k == 0)
+									{
+										sb.append(", value = ");
+									}
+									else
+									{
+										sb.append(", ");
+									}
+									sb.append(ByteTool.readInt32(valBuff, k * 4));
+									k++;
+								}
+							}
+							else if (subExItem.type == EXIFType.RATIONAL)
+							{
+								byte[] valBuff;
+								valBuff = subExItem.dataBuff;
+								k = 0;
+								while (k < subExItem.size)
+								{
+									if (k == 0)
+									{
+										sb.append(", value = ");
+									}
+									else
+									{
+										sb.append(", ");
+									}
+									sb.append(ByteTool.readInt32(valBuff, k * 8));
+									sb.append(" / ");
+									sb.append(ByteTool.readInt32(valBuff, k * 8 + 4));
+									if (ByteTool.readInt32(valBuff, k * 8 + 4) != 0)
+									{
+										sb.append(" (");
+										sb.append(ByteTool.readInt32(valBuff, k * 8) / (double)ByteTool.readInt32(valBuff, k * 8 + 4));
+										sb.append(")");
+									}
+									k++;
+								}
+							}
+							else if (subExItem.type == EXIFType.INT16)
+							{
+								byte[] valBuff = subExItem.dataBuff;
+								k = 0;
+								while (k < subExItem.size)
+								{
+									if (k == 0)
+									{
+										sb.append(", value = ");
+									}
+									else
+									{
+										sb.append(", ");
+									}
+									sb.append(ByteTool.readInt16(valBuff, k * 2));
+									k++;
+								}
+							}
+							else if (subExItem.id == 37500)
+							{
+								byte[] valBuff = subExItem.dataBuff;
+								EXIFData innerExif = parseMakerNote(valBuff, 0, subExItem.size);
+								if (innerExif != null)
+								{
+									String thisPrefix;
+									sb.append(", Format = ");
+									sb.append(getEXIFMakerName(innerExif.getEXIFMaker()));
+									sb.append(", Inner ");
+									if (linePrefix != null)
+									{
+										thisPrefix = "  " + linePrefix;
+									}
+									else
+									{
+										thisPrefix = "  ";
+									}
+									innerExif.toString(sb, thisPrefix);
+								}
+								else
+								{
+									sb.append(", value (Other) = ");
+									StringUtil.appendHex(sb, valBuff, 0, subExItem.size, ' ', LineBreakType.CRLF);
+								}
+							}
+							else if (subExItem.type == EXIFType.OTHER)
+							{
+								byte[] valBuff;
+								valBuff = subExItem.dataBuff;
+								if (this.exifMaker == EXIFMaker.OLYMPUS && subExItem.id == 0)
+								{
+									sb.append(", value = ");
+									sb.append(getItemString(subExItem));
+								}
+								else
+								{
+									sb.append(", value (Other) = ");
+									StringUtil.appendHex(sb, valBuff, 0, subExItem.size, ' ', LineBreakType.CRLF);
+								}
 							}
 							else
 							{
-								sb.append(", ");
+								byte[] valBuff = subExItem.dataBuff;
+								sb.append(", value (Unk) = ");
+								StringUtil.appendHex(sb, valBuff, 0, subExItem.size, ' ', LineBreakType.CRLF);
 							}
-							sb.append(StringUtil.fromDouble(ByteTool.readDouble(subExItem.dataBuff, k * 8)));
-							k++;
 						}
+						
+						i2++;
 					}
-					else if (subExItem.type == EXIFType.BYTES)
+				}
+				else if (exItem.type == EXIFType.STRING)
+				{
+					sb.append(", value = ");
+					sb.append(getItemString(exItem));
+				}
+				else if (exItem.type == EXIFType.DOUBLE)
+				{
+					byte[] valBuff = exItem.dataBuff;
+					k = 0;
+					while (k < exItem.size)
 					{
-						byte[] valBuff = subExItem.dataBuff;
-						sb.append(", value = ");
-						if (subExItem.size > 1024)
+						if (k == 0)
 						{
-							sb.append(subExItem.size);
-							sb.append(" bytes: ");
-							StringUtil.appendHex(sb, valBuff, 0, 256, ' ', LineBreakType.CRLF);
-							sb.append("\r\n...\r\n");
-							StringUtil.appendHex(sb, valBuff, (subExItem.size & ~15) - 256, 256 + (subExItem.size & 15), ' ', LineBreakType.CRLF);
+							sb.append(", value = ");
 						}
 						else
 						{
-							StringUtil.appendHex(sb, valBuff, 0, subExItem.size, ' ', LineBreakType.CRLF);
+							sb.append(", ");
+						}
+						sb.append(ByteTool.readDouble(valBuff, k * 8));
+						k++;
+					}
+				}
+				else if (exItem.type == EXIFType.BYTES)
+				{
+					byte[] valBuff = exItem.dataBuff;
+					sb.append(", value = ");
+					if (exItem.id >= 40091 && exItem.id <= 40095)
+					{
+						if (valBuff[exItem.size - 2] == 0)
+						{
+							sb.append(StringUtil.fromUTF8Z(valBuff, 0));
+						}
+						else
+						{
+							sb.append(new String(valBuff, 0, exItem.size, StandardCharsets.UTF_16LE));
 						}
 					}
-					else if (subExItem.type == EXIFType.UINT16)
+					else
 					{
-						byte[] valBuff = subExItem.dataBuff;
+						if (exItem.size > 1024)
+						{
+							sb.append(exItem.size);
+							sb.append(" bytes: ");
+							StringUtil.appendHex(sb, valBuff, 0, 256, ' ', LineBreakType.CRLF);
+							sb.append("\r\n...\r\n");
+							StringUtil.appendHex(sb, valBuff, (exItem.size & ~15) - 256, 256 + (exItem.size & 15), ' ', LineBreakType.CRLF);
+						}
+						else
+						{
+							StringUtil.appendHex(sb, valBuff, 0, exItem.size, ' ', LineBreakType.CRLF);
+						}
+					}
+				}
+				else if (exItem.type == EXIFType.UINT16)
+				{
+					byte[] valBuff = exItem.dataBuff;
+					if (this.exifMaker == EXIFMaker.CANON && exItem.id == 1)
+					{
+						this.toStringCanonCameraSettings(sb, linePrefix, valBuff, 0, exItem.size);
+					}
+					else if (this.exifMaker == EXIFMaker.CANON && exItem.id == 2)
+					{
+						this.toStringCanonFocalLength(sb, linePrefix, valBuff, 0, exItem.size);
+					}
+					else if (this.exifMaker == EXIFMaker.CANON && exItem.id == 4)
+					{
+						this.toStringCanonShotInfo(sb, linePrefix, valBuff, 0, exItem.size);
+					}
+					else
+					{
 						k = 0;
-						while (k < subExItem.size)
+						while (k < exItem.size)
 						{
 							if (k == 0)
 							{
@@ -1151,191 +1369,10 @@ public class EXIFData
 							k++;
 						}
 					}
-					else if (subExItem.type == EXIFType.UINT32)
-					{
-						byte[] valBuff = subExItem.dataBuff;
-						k = 0;
-						while (k < subExItem.size)
-						{
-							if (k == 0)
-							{
-								sb.append(", value = ");
-							}
-							else
-							{
-								sb.append(", ");
-							}
-							sb.append(ByteTool.readInt32(valBuff, k * 4));
-							k++;
-						}
-					}
-					else if (subExItem.type == EXIFType.RATIONAL)
-					{
-						byte[] valBuff;
-						valBuff = subExItem.dataBuff;
-						k = 0;
-						while (k < subExItem.size)
-						{
-							if (k == 0)
-							{
-								sb.append(", value = ");
-							}
-							else
-							{
-								sb.append(", ");
-							}
-							sb.append(ByteTool.readInt32(valBuff, k * 8));
-							sb.append(" / ");
-							sb.append(ByteTool.readInt32(valBuff, k * 8 + 4));
-							if (ByteTool.readInt32(valBuff, k * 8 + 4) != 0)
-							{
-								sb.append(" (");
-								sb.append(ByteTool.readInt32(valBuff, k * 8) / (double)ByteTool.readInt32(valBuff, k * 8 + 4));
-								sb.append(")");
-							}
-							k++;
-						}
-					}
-					else if (subExItem.type == EXIFType.INT16)
-					{
-						byte[] valBuff = subExItem.dataBuff;
-						k = 0;
-						while (k < subExItem.size)
-						{
-							if (k == 0)
-							{
-								sb.append(", value = ");
-							}
-							else
-							{
-								sb.append(", ");
-							}
-							sb.append(ByteTool.readInt16(valBuff, k * 2));
-							k++;
-						}
-					}
-					else if (subExItem.id == 37500)
-					{
-						byte[] valBuff = subExItem.dataBuff;
-						EXIFData innerExif = parseMakerNote(valBuff, 0, subExItem.size);
-						if (innerExif != null)
-						{
-							String thisPrefix;
-							sb.append(", Format = ");
-							sb.append(getEXIFMakerName(innerExif.getEXIFMaker()));
-							sb.append(", Inner ");
-							if (linePrefix != null)
-							{
-								thisPrefix = "  " + linePrefix;
-							}
-							else
-							{
-								thisPrefix = "  ";
-							}
-							innerExif.toString(sb, thisPrefix);
-						}
-						else
-						{
-							sb.append(", value (Other) = ");
-							StringUtil.appendHex(sb, valBuff, 0, subExItem.size, ' ', LineBreakType.CRLF);
-						}
-					}
-					else if (subExItem.type == EXIFType.OTHER)
-					{
-						byte[] valBuff;
-						valBuff = subExItem.dataBuff;
-						if (this.exifMaker == EXIFMaker.OLYMPUS && subExItem.id == 0)
-						{
-							sb.append(", value = ");
-							sb.append(getItemString(subExItem));
-						}
-						else
-						{
-							sb.append(", value (Other) = ");
-							StringUtil.appendHex(sb, valBuff, 0, subExItem.size, ' ', LineBreakType.CRLF);
-						}
-					}
-					else
-					{
-						byte[] valBuff = subExItem.dataBuff;
-						sb.append(", value (Unk) = ");
-						StringUtil.appendHex(sb, valBuff, 0, subExItem.size, ' ', LineBreakType.CRLF);
-					}
-					
-					i2++;
 				}
-			}
-			else if (exItem.type == EXIFType.STRING)
-			{
-				sb.append(", value = ");
-				sb.append(getItemString(exItem));
-			}
-			else if (exItem.type == EXIFType.DOUBLE)
-			{
-				byte[] valBuff = exItem.dataBuff;
-				k = 0;
-				while (k < exItem.size)
+				else if (exItem.type == EXIFType.UINT32)
 				{
-					if (k == 0)
-					{
-						sb.append(", value = ");
-					}
-					else
-					{
-						sb.append(", ");
-					}
-					sb.append(ByteTool.readDouble(valBuff, k * 8));
-					k++;
-				}
-			}
-			else if (exItem.type == EXIFType.BYTES)
-			{
-				byte[] valBuff = exItem.dataBuff;
-				sb.append(", value = ");
-				if (exItem.id >= 40091 && exItem.id <= 40095)
-				{
-					if (valBuff[exItem.size - 2] == 0)
-					{
-						sb.append(StringUtil.fromUTF8Z(valBuff, 0));
-					}
-					else
-					{
-						sb.append(new String(valBuff, 0, exItem.size, StandardCharsets.UTF_16LE));
-					}
-				}
-				else
-				{
-					if (exItem.size > 1024)
-					{
-						sb.append(exItem.size);
-						sb.append(" bytes: ");
-						StringUtil.appendHex(sb, valBuff, 0, 256, ' ', LineBreakType.CRLF);
-						sb.append("\r\n...\r\n");
-						StringUtil.appendHex(sb, valBuff, (exItem.size & ~15) - 256, 256 + (exItem.size & 15), ' ', LineBreakType.CRLF);
-					}
-					else
-					{
-						StringUtil.appendHex(sb, valBuff, 0, exItem.size, ' ', LineBreakType.CRLF);
-					}
-				}
-			}
-			else if (exItem.type == EXIFType.UINT16)
-			{
-				byte[] valBuff = exItem.dataBuff;
-				if (this.exifMaker == EXIFMaker.CANON && exItem.id == 1)
-				{
-					this.toStringCanonCameraSettings(sb, linePrefix, valBuff, 0, exItem.size);
-				}
-				else if (this.exifMaker == EXIFMaker.CANON && exItem.id == 2)
-				{
-					this.toStringCanonFocalLength(sb, linePrefix, valBuff, 0, exItem.size);
-				}
-				else if (this.exifMaker == EXIFMaker.CANON && exItem.id == 4)
-				{
-					this.toStringCanonShotInfo(sb, linePrefix, valBuff, 0, exItem.size);
-				}
-				else
-				{
+					byte[] valBuff = exItem.dataBuff;
 					k = 0;
 					while (k < exItem.size)
 					{
@@ -1347,103 +1384,85 @@ public class EXIFData
 						{
 							sb.append(", ");
 						}
-						sb.append(ByteTool.readUInt16(valBuff, k * 2));
+						sb.append(ByteTool.readInt32(valBuff, k));
 						k++;
 					}
 				}
-			}
-			else if (exItem.type == EXIFType.UINT32)
-			{
-				byte[] valBuff = exItem.dataBuff;
-				k = 0;
-				while (k < exItem.size)
+				else if (exItem.type == EXIFType.RATIONAL)
 				{
-					if (k == 0)
+					byte[] valBuff = exItem.dataBuff;
+					k = 0;
+					while (k < exItem.size)
+					{
+						if (k == 0)
+						{
+							sb.append(", value = ");
+						}
+						else
+						{
+							sb.append(", ");
+						}
+						sb.append(ByteTool.readInt32(valBuff, k * 8));
+						sb.append(" / ");
+						sb.append(ByteTool.readInt32(valBuff, k * 8 + 4));
+						if (ByteTool.readInt32(valBuff, k * 8 + 4) != 0)
+						{
+							sb.append(" (");
+							sb.append(ByteTool.readInt32(valBuff, k * 8) / (double)ByteTool.readInt32(valBuff, k * 8 + 4));
+							sb.append(")");
+						}
+						k++;
+					}
+				}
+				else if (exItem.type == EXIFType.INT16)
+				{
+					byte[] valBuff = exItem.dataBuff;
+					k = 0;
+					while (k < exItem.size)
+					{
+						if (k == 0)
+						{
+							sb.append(", value = ");
+						}
+						else
+						{
+							sb.append(", ");
+						}
+						sb.append(ByteTool.readInt16(valBuff, k * 2));
+						k++;
+					}
+				}
+				else if (exItem.type == EXIFType.OTHER)
+				{
+					if (this.exifMaker == EXIFMaker.OLYMPUS && exItem.id == 521)
 					{
 						sb.append(", value = ");
+						sb.append(getItemString(exItem));
 					}
 					else
 					{
-						sb.append(", ");
+			//			UInt8 *valBuff;
+			//			valBuff = (UInt8*)exItem.dataBuff;
+						sb.append(", Other: size = ");
+						sb.append(exItem.size);
+			//			sb.AppendHex(valBuff, subExItem.size, ' ', Text::StringBuilder::LBT_CRLF);
 					}
-					sb.append(ByteTool.readInt32(valBuff, k));
-					k++;
-				}
-			}
-			else if (exItem.type == EXIFType.RATIONAL)
-			{
-				byte[] valBuff = exItem.dataBuff;
-				k = 0;
-				while (k < exItem.size)
-				{
-					if (k == 0)
-					{
-						sb.append(", value = ");
-					}
-					else
-					{
-						sb.append(", ");
-					}
-					sb.append(ByteTool.readInt32(valBuff, k * 8));
-					sb.append(" / ");
-					sb.append(ByteTool.readInt32(valBuff, k * 8 + 4));
-					if (ByteTool.readInt32(valBuff, k * 8 + 4) != 0)
-					{
-						sb.append(" (");
-						sb.append(ByteTool.readInt32(valBuff, k * 8) / (double)ByteTool.readInt32(valBuff, k * 8 + 4));
-						sb.append(")");
-					}
-					k++;
-				}
-			}
-			else if (exItem.type == EXIFType.INT16)
-			{
-				byte[] valBuff = exItem.dataBuff;
-				k = 0;
-				while (k < exItem.size)
-				{
-					if (k == 0)
-					{
-						sb.append(", value = ");
-					}
-					else
-					{
-						sb.append(", ");
-					}
-					sb.append(ByteTool.readInt16(valBuff, k * 2));
-					k++;
-				}
-			}
-			else if (exItem.type == EXIFType.OTHER)
-			{
-				if (this.exifMaker == EXIFMaker.OLYMPUS && exItem.id == 521)
-				{
-					sb.append(", value = ");
-					sb.append(getItemString(exItem));
 				}
 				else
 				{
-		//			UInt8 *valBuff;
-		//			valBuff = (UInt8*)exItem.dataBuff;
-					sb.append(", Other: size = ");
+		/*			UInt8 *valBuff;
+					if (exItem.size <= 4)
+					{
+						valBuff = (UInt8*)&exItem.value;
+					}
+					else
+					{
+						valBuff = (UInt8*)exItem.dataBuff;
+					}*/
+					sb.append(", Unknown: size = ");
 					sb.append(exItem.size);
 		//			sb.AppendHex(valBuff, subExItem.size, ' ', Text::StringBuilder::LBT_CRLF);
 				}
-			}
-			else
-			{
-	/*			UInt8 *valBuff;
-				if (exItem.size <= 4)
-				{
-					valBuff = (UInt8*)&exItem.value;
-				}
-				else
-				{
-					valBuff = (UInt8*)exItem.dataBuff;
-				}*/
-				sb.append(", Unknown: size = ");
-				sb.append(exItem.size);
-	//			sb.AppendHex(valBuff, subExItem.size, ' ', Text::StringBuilder::LBT_CRLF);
 			}
 	
 			i++;
@@ -1451,7 +1470,7 @@ public class EXIFData
 		return true;
 	}
 
-	public boolean toStringCanonCameraSettings(StringBuilder sb, String linePrefix, byte[] valBuff, int valOfst, int valCnt)
+	public boolean toStringCanonCameraSettings(@Nonnull StringBuilder sb, @Nullable String linePrefix, @Nonnull byte[] valBuff, int valOfst, int valCnt)
 	{
 		boolean isInt16;
 		boolean isUInt16;
@@ -2382,7 +2401,7 @@ public class EXIFData
 		return true;
 	}
 
-	public boolean toStringCanonFocalLength(StringBuilder sb, String linePrefix, byte[] valBuff, int valOfst, int valCnt)
+	public boolean toStringCanonFocalLength(@Nonnull StringBuilder sb, @Nullable String linePrefix, @Nonnull byte[] valBuff, int valOfst, int valCnt)
 	{
 		boolean isInt16;
 		boolean isUInt16;
@@ -2445,7 +2464,7 @@ public class EXIFData
 		return true;
 	}
 
-	public boolean toStringCanonShotInfo(StringBuilder sb, String linePrefix, byte[] valBuff, int valOfst, int valCnt)
+	public boolean toStringCanonShotInfo(@Nonnull StringBuilder sb, @Nullable String linePrefix, @Nonnull byte[] valBuff, int valOfst, int valCnt)
 	{
 		boolean isInt16;
 		boolean isUInt16;
@@ -2731,24 +2750,25 @@ public class EXIFData
 		return true;
 	}
 
-	public boolean toStringCanonLensType(StringBuilder sb, int lensType)
+	public boolean toStringCanonLensType(@Nonnull StringBuilder sb, int lensType)
 	{
 		sb.append("0x");
 		sb.append(StringUtil.toHex16(lensType));
 		return true;
 	}
 	
-	public void toExifBuff(byte[] buff, SharedInt startOfst, SharedInt otherOfst)
+	public void toExifBuff(@Nonnull byte[] buff, @Nonnull SharedInt startOfst, @Nonnull SharedInt otherOfst)
 	{
 		toExifBuff(buff, this.exifMap.values(), startOfst, otherOfst);
 	}
 
-	public void getExifBuffSize(SharedInt size, SharedInt endOfst)
+	public void getExifBuffSize(@Nonnull SharedInt size, @Nonnull SharedInt endOfst)
 	{
 		getExifBuffSize(this.exifMap.values(), size, endOfst);
 	}
 
-	public EXIFData parseMakerNote(byte[] buff, int buffOfst, int buffSize)
+	@Nullable
+	public EXIFData parseMakerNote(@Nonnull byte[] buff, int buffOfst, int buffSize)
 	{
 		EXIFData ret = null;
 		if (ByteTool.strEquals(buff, buffOfst, "Panasonic"))
@@ -2799,7 +2819,8 @@ public class EXIFData
 		return ret;		
 	}
 
-	private static String getItemString(EXIFItem item)
+	@Nonnull
+	private static String getItemString(@Nonnull EXIFItem item)
 	{
 		if (item.dataBuff[item.size - 1] != 0)
 		{
@@ -2812,7 +2833,8 @@ public class EXIFData
 	}
 
 
-	public static String getEXIFMakerName(EXIFMaker exifMaker)
+	@Nonnull
+	public static String getEXIFMakerName(@Nonnull EXIFMaker exifMaker)
 	{
 		switch (exifMaker)
 		{
@@ -2834,19 +2856,22 @@ public class EXIFData
 		}
 	}
 
-	public static String getEXIFName(EXIFMaker exifMaker, int id)
+	@Nonnull
+	public static String getEXIFName(@Nonnull EXIFMaker exifMaker, int id)
 	{
 		return getEXIFName(exifMaker, 0, id);
 	}
 
-	private static List<EXIFInfo> loadEXIFInfo(String name)
+	@Nonnull
+	private static List<EXIFInfo> loadEXIFInfo(@Nonnull String name)
 	{
 		List<EXIFInfo> list = ResourceLoader.loadObjects(EXIFInfo.class, "EXIFData."+name+".txt", new String[]{"id", "name"});
 		if (list == null) list = new ArrayList<EXIFInfo>();
 		return list;
 	}
 
-	public static String getEXIFName(EXIFMaker exifMaker, int id, int subId)
+	@Nonnull
+	public static String getEXIFName(@Nonnull EXIFMaker exifMaker, int id, int subId)
 	{
 		List<EXIFInfo> infos;
 		int cnt;
@@ -2974,7 +2999,8 @@ public class EXIFData
 		return "Unknown";
 	}
 
-	public static String getEXIFTypeName(EXIFType type)
+	@Nonnull
+	public static String getEXIFTypeName(@Nonnull EXIFType type)
 	{
 		switch (type)
 		{
@@ -3002,7 +3028,8 @@ public class EXIFData
 		}
 	}
 
-	public static EXIFData parseIFD(byte[] buff, int buffOfst, int buffSize, ByteIO byteIO, SharedInt nextOfst, EXIFMaker exifMaker, int readBase)
+	@Nullable
+	public static EXIFData parseIFD(@Nonnull byte[] buff, int buffOfst, int buffSize, @Nonnull ByteIO byteIO, @Nullable SharedInt nextOfst, @Nonnull EXIFMaker exifMaker, int readBase)
 	{
 		EXIFData exif;
 		int ifdEntries;
@@ -3328,7 +3355,8 @@ public class EXIFData
 		return exif;
 	}
 
-	public static EXIFData parseIFD(StreamData fd, long ofst, ByteIO byteIO, SharedInt nextOfst, long readBase)
+	@Nullable
+	public static EXIFData parseIFD(@Nonnull StreamData fd, long ofst, @Nonnull ByteIO byteIO, @Nullable SharedInt nextOfst, long readBase)
 	{
 		EXIFData exif;
 		byte[] ifdEntries;

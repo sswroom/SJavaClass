@@ -8,30 +8,37 @@ import org.sswr.util.data.StringUtil;
 import org.sswr.util.io.ParsedObject;
 import org.sswr.util.io.ParserType;
 
+import jakarta.annotation.Nonnull;
+
 public abstract class ASN1Data extends ParsedObject
 {
 	protected byte[] buff;
 
-	protected ASN1Data(String sourceName, byte[] buff, int ofst, int size)
+	protected ASN1Data(@Nonnull String sourceName, @Nonnull byte[] buff, int ofst, int size)
 	{
 		super(sourceName);
 		this.buff = Arrays.copyOfRange(buff, ofst, ofst + size);
 	}
 
+	@Nonnull
 	public ParserType getParserType()
 	{
 		return ParserType.ASN1Data;
 	}
 	
+	@Nonnull
 	public abstract ASN1Type getASN1Type();
+	@Nonnull
 	public abstract ASN1Data clone();
+	@Nonnull
 	public abstract String toString();
 
-	public boolean toASN1String(StringBuilder sb)
+	public boolean toASN1String(@Nonnull StringBuilder sb)
 	{
 		return ASN1Util.pduToString(this.buff, 0, this.buff.length, sb, 0);
 	}
 
+	@Nonnull
 	public byte[] getASN1Buff()
 	{
 		return this.buff;
@@ -42,7 +49,7 @@ public abstract class ASN1Data extends ParsedObject
 		return this.buff.length;
 	}
 
-	public static void appendInteger(StringBuilder sb, byte[] pdu, int ofst, int len)
+	public static void appendInteger(@Nonnull StringBuilder sb, @Nonnull byte[] pdu, int ofst, int len)
 	{
 		if (len == 1)
 		{

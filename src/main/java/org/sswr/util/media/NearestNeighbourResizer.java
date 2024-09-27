@@ -4,9 +4,12 @@ import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.WritableRaster;
 
+import jakarta.annotation.Nonnull;
+
 public class NearestNeighbourResizer
 {
-	public StaticImage resize(StaticImage img, Size2D newSize)
+	@Nonnull
+	public StaticImage resize(@Nonnull StaticImage img, @Nonnull Size2D newSize)
 	{
 		BufferedImage bimg = img.getBufferedImage();
 		ColorModel cm = bimg.getColorModel();

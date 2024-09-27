@@ -20,6 +20,7 @@ import org.sswr.util.db.ColumnType;
 import org.sswr.util.db.DBReader;
 import org.sswr.util.io.StreamData;
 import org.sswr.util.math.Coord2DDbl;
+import org.sswr.util.math.CoordinateSystem;
 import org.sswr.util.math.WKTWriter;
 import org.sswr.util.math.geometry.LineString;
 import org.sswr.util.math.geometry.Point2D;
@@ -495,6 +496,7 @@ public class FileGDBReader extends DBReader
 		double m = 0;
 		SharedLong v = new SharedLong();
 		int srid;
+		CoordinateSystem csys;
 	/*
 	#define SHPT_MULTIPOINT    8
 	#define SHPT_MULTIPOINTM  28
@@ -531,9 +533,9 @@ public class FileGDBReader extends DBReader
 				m = (double)(v.value - 1) / this.tableInfo.getMScale() + this.tableInfo.getMOrigin();
 			}
 			srid = 0;
-			if (this.tableInfo.getCsys() != null)
+			if ((csys = this.tableInfo.getCsys()) != null)
 			{
-				srid = this.tableInfo.getCsys().getSRID();
+				srid = csys.getSRID();
 			}
 			if ((this.tableInfo.getGeometryType() & 0x80) != 0)
 			{
@@ -577,9 +579,9 @@ public class FileGDBReader extends DBReader
 				ofst = FileGDBUtil.readVarUInt(this.rowData, ofst, v); //ymax
 				Polyline pl;
 				srid = 0;
-				if (this.tableInfo.getCsys() != null)
+				if ((csys = this.tableInfo.getCsys()) != null)
 				{
-					srid = this.tableInfo.getCsys().getSRID();
+					srid = csys.getSRID();
 				}
 				int i;
 				int j;
@@ -634,7 +636,7 @@ public class FileGDBReader extends DBReader
 						points[j] = new Coord2DDbl(x, y);
 						j++;
 					}
-					if ((this.tableInfo.getGeometryFlags() & 0x80) != 0)
+					if ((this.tableInfo.getGeometryFlags() & 0x80) != 0 && zArr != null)
 					{
 						j = 0;
 						while (j < k)
@@ -645,7 +647,7 @@ public class FileGDBReader extends DBReader
 							j++;
 						}
 					}
-					if ((this.tableInfo.getGeometryFlags() & 0x40) != 0)
+					if ((this.tableInfo.getGeometryFlags() & 0x40) != 0 && mArr != null)
 					{
 						j = 0;
 						while (j < k)
@@ -682,9 +684,9 @@ public class FileGDBReader extends DBReader
 				ofst = FileGDBUtil.readVarUInt(this.rowData, ofst, v); //ymax
 				Polygon pg;
 				srid = 0;
-				if (this.tableInfo.getCsys() != null)
+				if ((csys = this.tableInfo.getCsys()) != null)
 				{
-					srid = this.tableInfo.getCsys().getSRID();
+					srid = csys.getSRID();
 				}
 				pg = new Polygon(srid);
 				int i;
@@ -776,9 +778,9 @@ public class FileGDBReader extends DBReader
 				ofst = FileGDBUtil.readVarUInt(this.rowData, ofst, v); //ymax
 				Polyline pl;
 				srid = 0;
-				if (this.tableInfo.getCsys() != null)
+				if ((csys = this.tableInfo.getCsys()) != null)
 				{
-					srid = this.tableInfo.getCsys().getSRID();
+					srid = csys.getSRID();
 				}
 				int i;
 				int j;
@@ -834,7 +836,7 @@ public class FileGDBReader extends DBReader
 						points[j] = new Coord2DDbl(x, y);
 						j++;
 					}
-					if ((this.tableInfo.getGeometryFlags() & 0x80) != 0)
+					if ((this.tableInfo.getGeometryFlags() & 0x80) != 0 && zArr != null)
 					{
 						j = 0;
 						while (j < k)
@@ -846,7 +848,7 @@ public class FileGDBReader extends DBReader
 							j++;
 						}
 					}
-					if ((this.tableInfo.getGeometryFlags() & 0x40) != 0)
+					if ((this.tableInfo.getGeometryFlags() & 0x40) != 0 && mArr != null)
 					{
 						j = 0;
 						while (j < k)

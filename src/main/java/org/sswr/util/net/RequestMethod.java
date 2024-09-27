@@ -1,5 +1,7 @@
 package org.sswr.util.net;
 
+import jakarta.annotation.Nonnull;
+
 public enum RequestMethod
 {
 	Unknown,
@@ -21,7 +23,8 @@ public enum RequestMethod
 	RTSP_SET_PARAMETER,
 	RTSP_TEARDOWN;
 
-	public static RequestMethod fromString(String meth)
+	@Nonnull
+	public static RequestMethod fromString(@Nonnull String meth)
 	{
 		switch (meth.toUpperCase())
 		{

@@ -18,21 +18,24 @@ import org.sswr.util.math.geometry.Polygon;
 import org.sswr.util.math.geometry.Vector2D;
 import org.sswr.util.math.geometry.Vector2D.VectorType;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public class WKBReader {
 	public static abstract class ByteReader
 	{
-		public abstract int readInt32(byte[] buff, int ofst);
-		public abstract double readDouble(byte[] buff, int ofst);
+		public abstract int readInt32(@Nonnull byte[] buff, int ofst);
+		public abstract double readDouble(@Nonnull byte[] buff, int ofst);
 	}
 
 	public static class IByteReader extends ByteReader
 	{
-		public int readInt32(byte[] buff, int ofst)
+		public int readInt32(@Nonnull byte[] buff, int ofst)
 		{
 			return ByteTool.readInt32(buff, ofst);
 		}
 
-		public double readDouble(byte[] buff, int ofst)
+		public double readDouble(@Nonnull byte[] buff, int ofst)
 		{
 			return ByteTool.readDouble(buff, ofst);
 		}
@@ -40,12 +43,12 @@ public class WKBReader {
 
 	public static class MByteReader extends ByteReader
 	{
-		public int readInt32(byte[] buff, int ofst)
+		public int readInt32(@Nonnull byte[] buff, int ofst)
 		{
 			return ByteTool.readMInt32(buff, ofst);
 		}
 
-		public double readDouble(byte[] buff, int ofst)
+		public double readDouble(@Nonnull byte[] buff, int ofst)
 		{
 			return ByteTool.readMDouble(buff, ofst);
 		}
@@ -58,7 +61,8 @@ public class WKBReader {
 		this.srid = srid;
 	}
 
-	public Vector2D parseWKB(byte[] wkb, int initOfst, int len, SharedInt sizeUsed)
+	@Nullable
+	public Vector2D parseWKB(@Nonnull byte[] wkb, int initOfst, int len, @Nullable SharedInt sizeUsed)
 	{
 		if (len < 5)
 		{

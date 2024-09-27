@@ -1,5 +1,7 @@
 package org.sswr.util.net;
 
+import jakarta.annotation.Nonnull;
+
 public enum MQTTConnectStatus
 {
 	TIMEDOUT,
@@ -10,7 +12,7 @@ public enum MQTTConnectStatus
 	BAD_LOGIN,
 	NOT_AUTH;
 
-	public static int toInt(MQTTConnectStatus status)
+	public static int toInt(@Nonnull MQTTConnectStatus status)
 	{
 		switch (status)
 		{
@@ -32,6 +34,7 @@ public enum MQTTConnectStatus
 		return 0;
 	}
 
+	@Nonnull
 	public static MQTTConnectStatus fromByte(byte b)
 	{
 		switch (b)

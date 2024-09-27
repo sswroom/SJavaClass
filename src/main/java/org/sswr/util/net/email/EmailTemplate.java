@@ -12,6 +12,9 @@ import java.util.Map;
 import org.sswr.util.data.XmlUtil;
 import org.sswr.util.data.textenc.FormEncoding;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 /***
  * Template format:
  * [@xxxx] Attribute Text
@@ -66,7 +69,7 @@ public class EmailTemplate extends EmailMessage
 	private List<String> headerName;
 	private List<String> headerValue;
 
-	public EmailTemplate(InputStream templateStm, Map<String, String> vars) throws IOException, TemplateFormatException, TemplateItemException
+	public EmailTemplate(@Nonnull InputStream templateStm, @Nonnull Map<String, String> vars) throws IOException, TemplateFormatException, TemplateItemException
 	{
 		this.sbSubj = new StringBuilder();
 		this.attachments = new ArrayList<EmailAttachment>();
@@ -94,7 +97,7 @@ public class EmailTemplate extends EmailMessage
 		this.parseTemplate(this.contTemplate, this.sbPre, vars);
 	}
 
-	public EmailTemplate(String subject, String content, Map<String, String> vars) throws IOException, TemplateFormatException, TemplateItemException
+	public EmailTemplate(@Nonnull String subject, @Nonnull String content, @Nonnull Map<String, String> vars) throws IOException, TemplateFormatException, TemplateItemException
 	{
 		this.sbSubj = new StringBuilder();
 		this.groups = new ArrayList<ItemGroup>();
@@ -105,7 +108,7 @@ public class EmailTemplate extends EmailMessage
 		this.parseTemplate(this.contTemplate, this.sbPre, vars);
 	}
 
-	private String parseItemGroup(String content, Map<String, String> vars) throws IOException, TemplateFormatException, TemplateItemException
+	private String parseItemGroup(@Nonnull String content, @Nonnull Map<String, String> vars) throws IOException, TemplateFormatException, TemplateItemException
 	{
 		int itemOfst = content.indexOf("[item]");
 		if (itemOfst >= 0)
@@ -166,7 +169,7 @@ public class EmailTemplate extends EmailMessage
 		return content;
 	}
 
-	public void addItem(int itemIndex, Map<String, String> itemVars) throws IllegalArgumentException, TemplateFormatException, TemplateItemException
+	public void addItem(int itemIndex, @Nonnull Map<String, String> itemVars) throws IllegalArgumentException, TemplateFormatException, TemplateItemException
 	{
 		ItemGroup group = this.groups.get(itemIndex);
 		if (group == null)
@@ -196,12 +199,12 @@ public class EmailTemplate extends EmailMessage
 		}
 	}
 
-	public void addItem(Map<String, String> itemVars) throws IllegalArgumentException, TemplateFormatException, TemplateItemException
+	public void addItem(@Nonnull Map<String, String> itemVars) throws IllegalArgumentException, TemplateFormatException, TemplateItemException
 	{
 		addItem(0, itemVars);
 	}
 
-	public void addItems(List<Map<String, String>> itemVarsList) throws IllegalArgumentException, TemplateFormatException, TemplateItemException
+	public void addItems(@Nonnull List<Map<String, String>> itemVarsList) throws IllegalArgumentException, TemplateFormatException, TemplateItemException
 	{
 		int i = 0;
 		int j = itemVarsList.size();
@@ -212,7 +215,7 @@ public class EmailTemplate extends EmailMessage
 		}
 	}
 	
-	private void parseTemplate(String template, StringBuilder sb, Map<String, String> vars) throws TemplateFormatException, TemplateItemException
+	private void parseTemplate(@Nonnull String template, @Nonnull StringBuilder sb, @Nonnull Map<String, String> vars) throws TemplateFormatException, TemplateItemException
 	{
 		int i = 0;
 		int j;
@@ -292,11 +295,13 @@ public class EmailTemplate extends EmailMessage
 		}
 	}
 
+	@Nonnull
 	public String getSubject()
 	{
 		return this.sbSubj.toString();
 	}
 
+	@Nonnull
 	public String getContent()
 	{
 		if (this.groups.size() == 0)
@@ -338,7 +343,7 @@ public class EmailTemplate extends EmailMessage
 		return true;
 	}
 
-	public void addCustomHeader(String name, String value)
+	public void addCustomHeader(@Nonnull String name, @Nonnull String value)
 	{
 		this.headerName.add(name);
 		this.headerValue.add(value);
@@ -350,17 +355,19 @@ public class EmailTemplate extends EmailMessage
 	}
 
 	@Override
+	@Nullable
 	public String getCustomHeaderName(int index) {
 		return this.headerName.get(index);
 	}
 
 	@Override
+	@Nullable
 	public String getCustomHeaderValue(int index) {
 		return this.headerValue.get(index);
 	}
 
 	@Override
-	public boolean addAttachmentFile(String attachmentPath)
+	public boolean addAttachmentFile(@Nonnull String attachmentPath)
 	{
 		EmailAttachment att = EmailAttachment.createFromFile(attachmentPath, "attach"+(this.attachments.size() + 1));
 		if (att != null)
@@ -372,7 +379,7 @@ public class EmailTemplate extends EmailMessage
 	}
 
 	@Override
-	public boolean addAttachment(byte[] bytes, String contentType, String fileName) {
+	public boolean addAttachment(@Nonnull byte[] bytes, @Nonnull String contentType, @Nonnull String fileName) {
 		EmailAttachment att = new EmailAttachment();
 		att.content = bytes;
 		att.contentId = "attach"+(this.attachments.size() + 1);
@@ -389,12 +396,14 @@ public class EmailTemplate extends EmailMessage
 	}
 
 	@Override
+	@Nonnull
 	public List<EmailAttachment> getAttachments()
 	{
 		return this.attachments;
 	}
 
 	@Override
+	@Nullable
 	public EmailAttachment getAttachment(int index)
 	{
 		return this.attachments.get(index);
