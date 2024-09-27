@@ -22,7 +22,7 @@ public class TCPClientMgr implements Runnable
 	private boolean toStop;
 	private boolean clientThreadRunning;
 	private int workerCnt;
-	private boolean pipeHasData;
+	//private boolean pipeHasData;
 	private Pipe pipe;
 	private TCPClientMgrWorker[] workers;
 	private ArrayListInt64 cliIdArr;
@@ -207,10 +207,10 @@ public class TCPClientMgr implements Runnable
 		int pollRet;
 		int i;
 		int readSize = 0;
-		byte tmpBuff[] = new byte[16];
+		//byte tmpBuff[] = new byte[16];
 		TCPClientStatus cliStat;
 		int pollfdCap = 16;
-		Selector []pollfds = new Selector[pollfdCap];
+		//Selector []pollfds = new Selector[pollfdCap];
 		TCPClientStatus []pollCli = new TCPClientStatus[pollfdCap];
 		int pollCliCnt;
 		int pollReqCnt;
@@ -240,7 +240,7 @@ public class TCPClientMgr implements Runnable
 					{
 						pollfdCap = pollfdCap << 1;
 					}
-					pollfds = new Selector[pollfdCap];
+					//pollfds = new Selector[pollfdCap];
 					pollCli = new TCPClientStatus[pollfdCap];
 				}
 				pollReqCnt = 0;
@@ -440,7 +440,7 @@ public class TCPClientMgr implements Runnable
 
 	boolean writePipe()
 	{
-		this.pipeHasData = true;
+		//this.pipeHasData = true;
 		byte[] buff = new byte[1];
 		buff[0] = 0;
 		try
