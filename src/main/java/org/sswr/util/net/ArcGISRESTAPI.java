@@ -1,6 +1,8 @@
 package org.sswr.util.net;
 
+import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
+import java.time.Instant;
 
 import org.sswr.util.data.DateTimeUtil;
 import org.sswr.util.data.JSONArray;
@@ -14,6 +16,7 @@ import jakarta.annotation.Nullable;
 
 public class ArcGISRESTAPI
 {
+	private static boolean debug = false;
 	private String url;
 	private SocketFactory sockf;
 //	private String appSecret;
@@ -152,6 +155,41 @@ public class ArcGISRESTAPI
 		token.accessToken = json.getValueString("access_token");
 		token.expiresIn = json.getValueAsInt32("expires_in");
 		token.expireTime = DateTimeUtil.addSecond(DateTimeUtil.timestampNow(), token.expiresIn);
+		if (token.accessToken != null)
+			return token;
+		return null;
+	}
+
+	@Nullable
+	public TokenResult getUserToken(@Nonnull String userName, @Nonnull String password, @Nonnull String referer)
+	{
+		String url = this.url+"/generateToken";
+		HTTPClient cli = HTTPOSClient.createConnect(sockf, null, url, RequestMethod.HTTP_POST, false);
+		cli.formBegin();
+		cli.formAdd("username", userName);
+		cli.formAdd("password", password);
+		cli.formAdd("expiration", "60");
+		cli.formAdd("client", "referer");
+		cli.formAdd("referer", referer);
+		cli.formAdd("f", "json");
+		int code = cli.getRespStatus();
+		if (code != 200)
+		{
+			if (debug)
+			{
+				System.out.println("Response status = "+code);
+			}
+			return null;
+		}
+		JSONBase json = JSONBase.parseJSONStr(new String(cli.readToEnd(), StandardCharsets.UTF_8));
+		if (json == null)
+			return null;
+		if (!(json instanceof JSONObject))
+			return null;
+		TokenResult token = new TokenResult();
+		token.accessToken = json.getValueString("token");
+		token.expireTime = new Timestamp(json.getValueAsInt64("expires"));
+		token.expiresIn = (int)Math.round(DateTimeUtil.timeDiffSec(token.expireTime.toInstant(), Instant.now()));
 		if (token.accessToken != null)
 			return token;
 		return null;

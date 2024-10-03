@@ -1,7 +1,9 @@
 # SJavaClass
 
 # Changes:
+0.4.20241003
 - Added Nonnull/Nullable
+- Added ArcGISRESTAPI.getUserToken
 
 0.4.20240923
 - Update dependency version
