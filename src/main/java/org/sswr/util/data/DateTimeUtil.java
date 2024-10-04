@@ -19,6 +19,13 @@ import jakarta.annotation.Nullable;
 
 public class DateTimeUtil
 {
+	public static class DateValue
+	{
+		public int year;
+		public byte month;
+		public byte day;
+	}
+
 	@Nonnull
 	private static ZonedDateTime setDate(@Nonnull ZonedDateTime dt, int year, int month, int day)
 	{
@@ -825,5 +832,396 @@ public class DateTimeUtil
 		if (t1 == null || t2 == null)
 			return false;
 		return t1.equals(t2);
+	}
+
+	public static byte getTZQhr(@Nonnull ZoneOffset z)
+	{
+		int secs = z.getTotalSeconds();
+		return (byte)(secs / 900);
+	}
+
+	@Nonnull
+	public static ZoneOffset fromTZQhr(byte tzQhr)
+	{
+		return ZoneOffset.ofHoursMinutes(tzQhr / 4, (tzQhr % 4) * 15);
+	}
+
+	@Nonnull
+	public static Instant newInstant(long secs, int nanosec)
+	{
+		return Instant.ofEpochSecond(secs, nanosec);
+	}
+
+	@Nonnull
+	public static ZonedDateTime newZonedDateTime(Instant inst, byte tzQhr)
+	{
+		return ZonedDateTime.ofInstant(inst, fromTZQhr(tzQhr));
+	}
+	
+	public static long getTotalDays(@Nullable Date dat)
+	{
+		if (dat == null)
+		{
+			return getTotalDays((LocalDate)null);
+		}
+		else
+		{
+			return getTotalDays(dat.toLocalDate());
+		}
+	}
+
+	public static long getTotalDays(@Nullable LocalDate dat)
+	{
+		if (dat == null)
+		{
+			return -1234567;
+		}
+		else
+		{
+			return date2TotalDays(dat.getYear(), dat.getMonthValue(), dat.getDayOfMonth());
+		}
+	}
+
+	@Nullable
+	public static LocalDate newLocalDate(long totalDays)
+	{
+		if (totalDays == -1234567)
+		{
+			return null;
+		}
+		else
+		{
+			DateValue d = new DateValue();
+			totalDays2DateValue(totalDays, d);
+			return LocalDate.of(d.year, d.month, d.day);
+		}
+	}
+
+	public static boolean isYearLeap(int year)
+	{
+		return ((year & 3) == 0) && ((year % 100) != 0 || (year % 400) == 0);
+	}
+	
+	public static long date2TotalDays(int year, int month, int day)
+	{
+		int totalDays;
+		int leapDays;
+		int yearDiff;
+		int yearDiff100;
+		int yearDiff400;
+	
+		int currYear = year;
+		int currMonth = month;
+		int currDay = day;
+	
+		if (currYear <= 2000)
+		{
+			yearDiff = 2000 - currYear;
+		}
+		else
+		{
+			yearDiff = currYear - 2000 - 1;
+		}
+		yearDiff100 = yearDiff / 100;
+		yearDiff400 = yearDiff100 >> 2;
+		yearDiff >>= 2;
+		leapDays = yearDiff - yearDiff100 + yearDiff400;
+	
+		if (currYear <= 2000)
+		{
+			totalDays = 10957 - (2000 - currYear) * 365 - leapDays;
+		}
+		else
+		{
+			totalDays = 10958 + (currYear - 2000) * 365 + leapDays;
+		}
+	
+		switch (currMonth)
+		{
+		case 12:
+			totalDays += 30;
+		case 11:
+			totalDays += 31;
+		case 10:
+			totalDays += 30;
+		case 9:
+			totalDays += 31;
+		case 8:
+			totalDays += 31;
+		case 7:
+			totalDays += 30;
+		case 6:
+			totalDays += 31;
+		case 5:
+			totalDays += 30;
+		case 4:
+			totalDays += 31;
+		case 3:
+			if (isYearLeap(year))
+				totalDays += 29;
+			else
+				totalDays += 28;
+		case 2:
+			totalDays += 31;
+		case 1:
+			break;
+		default:
+			break;
+		}
+		totalDays += currDay - 1;
+		return totalDays;
+	}
+
+	public static void totalDays2DateValue(long totalDays, @Nonnull DateValue d)
+	{
+		if (totalDays < 0)
+		{
+			d.year = 1970;
+			while (totalDays < 0)
+			{
+				d.year--;
+				if (isYearLeap(d.year))
+				{
+					totalDays += 366;
+				}
+				else
+				{
+					totalDays += 365;
+				}
+			}
+		}
+		else
+		{
+			if (totalDays < 10957)
+			{
+				d.year = 1970;
+				while (true)
+				{
+					if (isYearLeap(d.year))
+					{
+						if (totalDays < 366)
+						{
+							break;
+						}
+						else
+						{
+							d.year++;
+							totalDays -= 366;
+						}
+					}
+					else
+					{
+						if (totalDays < 365)
+						{
+							break;
+						}
+						else
+						{
+							d.year++;
+							totalDays -= 365;
+						}
+					}
+				}
+			}
+			else
+			{
+				totalDays -= 10957;
+				d.year = (int)(2000 + ((totalDays / 1461) << 2));
+				totalDays = totalDays % 1461;
+				if (totalDays >= 366)
+				{
+					totalDays--;
+					d.year = (int)(d.year + totalDays / 365);
+					totalDays = totalDays % 365;
+				}
+			}
+		}
+	
+		if (isYearLeap(d.year))
+		{
+			if (totalDays < 121)
+			{
+				if (totalDays < 60)
+				{
+					if (totalDays < 31)
+					{
+						d.month = 1;
+						d.day = (byte)(totalDays + 1);
+					}
+					else
+					{
+						d.month = 2;
+						d.day = (byte)(totalDays - 31 + 1);
+					}
+				}
+				else
+				{
+					if (totalDays < 91)
+					{
+						d.month = 3;
+						d.day = (byte)(totalDays - 60 + 1);
+					}
+					else
+					{
+						d.month = 4;
+						d.day = (byte)(totalDays - 91 + 1);
+					}
+				}
+			}
+			else
+			{
+				if (totalDays < 244)
+				{
+					if (totalDays < 182)
+					{
+						if (totalDays < 152)
+						{
+							d.month = 5;
+							d.day = (byte)(totalDays - 121 + 1);
+						}
+						else
+						{
+							d.month = 6;
+							d.day = (byte)(totalDays - 152 + 1);
+						}
+					}
+					else
+					{
+						if (totalDays < 213)
+						{
+							d.month = 7;
+							d.day = (byte)(totalDays - 182 + 1);
+						}
+						else
+						{
+							d.month = 8;
+							d.day = (byte)(totalDays - 213 + 1);
+						}
+					}
+				}
+				else
+				{
+					if (totalDays < 305)
+					{
+						if (totalDays < 274)
+						{
+							d.month = 9;
+							d.day = (byte)(totalDays - 244 + 1);
+						}
+						else
+						{
+							d.month = 10;
+							d.day = (byte)(totalDays - 274 + 1);
+						}
+					}
+					else
+					{
+						if (totalDays < 335)
+						{
+							d.month = 11;
+							d.day = (byte)(totalDays - 305 + 1);
+						}
+						else
+						{
+							d.month = 12;
+							d.day = (byte)(totalDays - 335 + 1);
+						}
+					}
+				}
+			}
+		}
+		else
+		{
+			if (totalDays < 120)
+			{
+				if (totalDays < 59)
+				{
+					if (totalDays < 31)
+					{
+						d.month = 1;
+						d.day = (byte)(totalDays + 1);
+					}
+					else
+					{
+						d.month = 2;
+						d.day = (byte)(totalDays - 31 + 1);
+					}
+				}
+				else
+				{
+					if (totalDays < 90)
+					{
+						d.month = 3;
+						d.day = (byte)(totalDays - 59 + 1);
+					}
+					else
+					{
+						d.month = 4;
+						d.day = (byte)(totalDays - 90 + 1);
+					}
+				}
+			}
+			else
+			{
+				if (totalDays < 243)
+				{
+					if (totalDays < 181)
+					{
+						if (totalDays < 151)
+						{
+							d.month = 5;
+							d.day = (byte)(totalDays - 120 + 1);
+						}
+						else
+						{
+							d.month = 6;
+							d.day = (byte)(totalDays - 151 + 1);
+						}
+					}
+					else
+					{
+						if (totalDays < 212)
+						{
+							d.month = 7;
+							d.day = (byte)(totalDays - 181 + 1);
+						}
+						else
+						{
+							d.month = 8;
+							d.day = (byte)(totalDays - 212 + 1);
+						}
+					}
+				}
+				else
+				{
+					if (totalDays < 304)
+					{
+						if (totalDays < 273)
+						{
+							d.month = 9;
+							d.day = (byte)(totalDays - 243 + 1);
+						}
+						else
+						{
+							d.month = 10;
+							d.day = (byte)(totalDays - 273 + 1);
+						}
+					}
+					else
+					{
+						if (totalDays < 334)
+						{
+							d.month = 11;
+							d.day = (byte)(totalDays - 304 + 1);
+						}
+						else
+						{
+							d.month = 12;
+							d.day = (byte)(totalDays - 334 + 1);
+						}
+					}
+				}
+			}
+		}
 	}
 }

@@ -1,6 +1,16 @@
 # SJavaClass
 
 # Changes:
+- Added BinaryBuilder
+- Added BinaryParser
+- Added StringUtil.writeChar
+- Added DateTimeUtil.getTZQhr, fromTZQhr
+- Added DateTimeUtil.newInstant
+- Added DateTimeUtil.newZonedDateTime(Instant, byte tzQhr)
+- Added DateTimeUtil.getTotalDays, newLocalDate
+- Added DateTimeUtil.isYearLeap
+- Added DateTimeUtil.date2TotalDays, totalDays2DateValue
+
 0.4.20241003
 - Added Nonnull/Nullable
 - Added ArcGISRESTAPI.getUserToken

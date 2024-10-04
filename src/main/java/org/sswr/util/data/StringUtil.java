@@ -1905,4 +1905,71 @@ public class StringUtil
 		ret.add(s.substring(i));
 		return ret;
 	}
+
+	/**
+	 * Write a UTF-32 char into UTF-8 byte array
+	 * @param buff byte array to write
+	 * @param ofst offset of byte array to write
+	 * @param c the UTF-32 char to write
+	 * @return size written
+	 */
+	public static int writeChar(@Nonnull byte[] buff, int ofst, int c)
+	{
+		if (c < 0)
+		{
+			buff[ofst + 0] = (byte)(0xfc | ((c >> 30) & 3));
+			c = c & 0x3fffffff;
+			buff[ofst + 1] = (byte)(0x80 | ((c >> 24) & 0x3f));
+			buff[ofst + 2] = (byte)(0x80 | ((c >> 18) & 0x3f));
+			buff[ofst + 3] = (byte)(0x80 | ((c >> 12) & 0x3f));
+			buff[ofst + 4] = (byte)(0x80 | ((c >> 6) & 0x3f));
+			buff[ofst + 5] = (byte)(0x80 | (c & 0x3f));
+			return 6;
+		}
+		else if (c < 0x80)
+		{
+			buff[ofst + 0] = (byte)c;
+			return 1;
+		}
+		else if (c < 0x800)
+		{
+			buff[ofst + 0] = (byte)(0xc0 | (c >> 6));
+			buff[ofst + 1] = (byte)(0x80 | (c & 0x3f));
+			return 2;
+		}
+		else if (c < 0x10000)
+		{
+			buff[ofst + 0] = (byte)(0xe0 | (c >> 12));
+			buff[ofst + 1] = (byte)(0x80 | ((c >> 6) & 0x3f));
+			buff[ofst + 2] = (byte)(0x80 | (c & 0x3f));
+			return 3;
+		}
+		else if (c < 0x200000)
+		{
+			buff[ofst + 0] = (byte)(0xf0 | (c >> 18));
+			buff[ofst + 1] = (byte)(0x80 | ((c >> 12) & 0x3f));
+			buff[ofst + 2] = (byte)(0x80 | ((c >> 6) & 0x3f));
+			buff[ofst + 3] = (byte)(0x80 | (c & 0x3f));
+			return 4;
+		}
+		else if (c < 0x4000000)
+		{
+			buff[ofst + 0] = (byte)(0xf8 | (c >> 24));
+			buff[ofst + 1] = (byte)(0x80 | ((c >> 18) & 0x3f));
+			buff[ofst + 2] = (byte)(0x80 | ((c >> 12) & 0x3f));
+			buff[ofst + 3] = (byte)(0x80 | ((c >> 6) & 0x3f));
+			buff[ofst + 4] = (byte)(0x80 | (c & 0x3f));
+			return 5;
+		}
+		else
+		{
+			buff[ofst + 0] = (byte)(0xfc | (c >> 30));
+			buff[ofst + 1] = (byte)(0x80 | ((c >> 24) & 0x3f));
+			buff[ofst + 2] = (byte)(0x80 | ((c >> 18) & 0x3f));
+			buff[ofst + 3] = (byte)(0x80 | ((c >> 12) & 0x3f));
+			buff[ofst + 4] = (byte)(0x80 | ((c >> 6) & 0x3f));
+			buff[ofst + 5] = (byte)(0x80 | (c & 0x3f));
+			return 6;
+		}
+	}
 }
