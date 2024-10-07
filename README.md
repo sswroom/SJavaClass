@@ -10,6 +10,8 @@
 - Added DateTimeUtil.getTotalDays, newLocalDate
 - Added DateTimeUtil.isYearLeap
 - Added DateTimeUtil.date2TotalDays, totalDays2DateValue
+- Added DateTimeUtil.toDate
+- Added CRC32R.calcDirect
 
 0.4.20241003
 - Added Nonnull/Nullable

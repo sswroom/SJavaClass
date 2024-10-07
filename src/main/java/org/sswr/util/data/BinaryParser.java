@@ -53,6 +53,7 @@ public class BinaryParser
 		return ret;
 	}
 
+	@Nullable
 	public Integer nextNI32()
 	{
 		if (this.error)

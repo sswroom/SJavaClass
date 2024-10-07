@@ -175,4 +175,14 @@ public class CRC32R extends Hash
 	{
 		return 4;
 	}
+
+	public int calcDirect(@Nonnull byte[] buff)
+	{
+		return ~calc(buff, 0, buff.length, this.crctab, 0xffffffff);
+	}
+
+	public int calcDirect(@Nonnull byte[] buff, int buffOfst, int buffSize)
+	{
+		return ~calc(buff, buffOfst, buffSize, this.crctab, 0xffffffff);
+	}
 }

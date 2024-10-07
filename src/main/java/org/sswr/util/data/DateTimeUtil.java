@@ -273,6 +273,13 @@ public class DateTimeUtil
 		return Timestamp.from(dt.toInstant());
 	}
 
+	@Nullable
+	public static Date toDate(@Nullable LocalDate dat)
+	{
+		if (dat == null) return null;
+		return Date.valueOf(dat);
+	}
+
 	public static boolean isDayStart(@Nonnull Timestamp ts)
 	{
 		return ts.equals(clearTime(ts));
