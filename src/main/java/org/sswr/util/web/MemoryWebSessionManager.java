@@ -10,6 +10,7 @@ import org.sswr.util.basic.ThreadEvent;
 import org.sswr.util.data.ByteTool;
 import org.sswr.util.io.OSType;
 import org.sswr.util.net.BrowserInfo;
+import org.sswr.util.net.HTTPServerUtil;
 import org.sswr.util.net.BrowserInfo.BrowserType;
 import org.sswr.util.net.BrowserInfo.UserAgentInfo;
 
@@ -181,7 +182,7 @@ public class MemoryWebSessionManager extends WebSessionManager implements Runnab
 		Cookie cookie = new Cookie(this.cookieName, String.valueOf(sessId));
 		cookie.setPath(this.path);
 		cookie.setHttpOnly(true);
-		cookie.setSecure(req.isSecure());
+		cookie.setSecure(req.isSecure() || HTTPServerUtil.isForwardedSSL(req));
 		cookie.setAttribute("SameSite", "Strict");
 		resp.addCookie(cookie);
 		int i;

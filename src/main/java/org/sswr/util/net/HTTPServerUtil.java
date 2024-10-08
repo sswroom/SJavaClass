@@ -288,4 +288,30 @@ public class HTTPServerUtil {
 			ex.printStackTrace();
 		}
 	}
+
+	public static boolean isForwardedSSL(@Nonnull HttpServletRequest req)
+	{
+		String s;
+		if ((s = req.getHeader("Forwarded")) != null)
+		{
+			return s.indexOf("proto=https") >= 0;
+		}
+		if ((s = req.getHeader("X-Forwarded-Proto")) != null)
+		{
+			return s.equals("https");
+		}
+		if ((s = req.getHeader("X-Forwarded-Ssl")) != null)
+		{
+			return s.equals("on");
+		}
+		if ((s = req.getHeader("Front-End-Https")) != null)
+		{
+			return s.equals("on");
+		}
+		if ((s = req.getHeader("X-Url-Scheme")) != null)
+		{
+			return s.equals("https");
+		}
+		return false;
+	}
 }
