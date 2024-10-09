@@ -349,7 +349,7 @@ public class HttpUtil
 	}
 
 	@Nonnull
-	public static Map<String, Object> parseParams(@Nonnull HttpServletRequest req, @Nonnull List<Part> fileList)
+	public static Map<String, Object> parseParams(@Nonnull HttpServletRequest req, @Nullable List<Part> fileList)
 	{
 		if (req.getMethod().equals("GET"))
 		{
