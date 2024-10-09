@@ -1,6 +1,7 @@
 # SJavaClass
 
 # Changes:
+0.4.20241009
 - Added BinaryBuilder
 - Added BinaryParser
 - Added StringUtil.writeChar
