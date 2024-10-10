@@ -133,10 +133,15 @@ public class BinaryBuilder
 		this.baos.write(buff, 0, 8);
 	}
 	
-	public void appendIPAddr(@Nonnull InetAddress addr)
+	public void appendIPAddr(@Nullable InetAddress addr)
 	{
 		byte[] buff = new byte[1];
-		if (addr instanceof Inet4Address)
+		if (addr == null)
+		{
+			buff[0] = 0; //Net::AddrType::Unknown;
+			this.baos.write(buff, 0, 1);
+		}
+		else if (addr instanceof Inet4Address)
 		{
 			Inet4Address iaddr = (Inet4Address)addr;
 			byte[] addrbuff = iaddr.getAddress();

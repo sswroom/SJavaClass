@@ -1,6 +1,13 @@
 # SJavaClass
 
 # Changes:
+0.5.20241010
+- Change Bcrypt to Nonnull with throwing IllegalArgumentException
+- Change CertUtil.loadPrivateKey to allow null password
+- Change BinaryBuilder.appendIPAddr to allow null
+- Added DataTools.createStringMapOrNull
+- Change JasperFontCalculator.calcTextFieldBySize to Nonnull
+
 0.4.20241009
 - Added BinaryBuilder
 - Added BinaryParser

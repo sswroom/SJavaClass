@@ -430,7 +430,7 @@ public class CertUtil
 	}
 
 	@Nullable
-	public static PrivateKey loadPrivateKey(@Nonnull File file, @Nonnull String password)
+	public static PrivateKey loadPrivateKey(@Nonnull File file, @Nullable String password)
 	{
 
 		byte[] fileData;

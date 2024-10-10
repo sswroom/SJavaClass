@@ -277,6 +277,14 @@ public class DataTools {
 		}
 	}
 
+	@Nullable 
+	public static <T> Map<String, T> createStringMapOrNull(@Nullable Iterator<T> it, @Nonnull String fieldName, @Nullable QueryConditions<T> cond)
+	{
+		if (it == null)
+			return null;
+		return createStringMap(it, fieldName, cond);
+	}
+
 	@Nullable
 	public static <T> Map<String, T> createStringMap(@Nonnull Iterator<T> it, @Nonnull String fieldName, @Nullable QueryConditions<T> cond)
 	{

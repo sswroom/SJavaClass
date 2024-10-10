@@ -6,7 +6,6 @@ import org.sswr.util.data.StringUtil;
 import org.sswr.util.data.textbinenc.Radix64Enc;
 
 import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 
 public class Bcrypt
 {
@@ -71,27 +70,27 @@ public class Bcrypt
 		}
 	}
 
-	@Nullable
+	@Nonnull
 	public String genHash(int cost, @Nonnull String password)
 	{
 		if (cost < 4 || cost > 31)
 		{
-			return null;
+			throw new IllegalArgumentException("cost is out of range (4-31), value is "+cost);
 		}
 		RandomBytesGenerator rand = new RandomBytesGenerator();
 		return this.genHash(cost, rand.nextBytes(16), password);
 	}
 
-	@Nullable
+	@Nonnull
 	public String genHash(int cost, @Nonnull byte[] salt, @Nonnull String password)
 	{
-		if (salt == null || salt.length != 16)
+		if (salt.length != 16)
 		{
-			return null;
+			throw new IllegalArgumentException("salt must be 16 bytes long, current length is "+salt.length);
 		}
 		if (cost < 4 || cost > 31)
 		{
-			return null;
+			throw new IllegalArgumentException("cost is out of range (4-31), value is "+cost);
 		}
 		StringBuilder sb = new StringBuilder();
 		sb.append("$2a$");

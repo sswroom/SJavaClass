@@ -133,7 +133,7 @@ public class JasperFontCalculator
 		return ret;
 	}
 
-	@Nullable
+	@Nonnull
 	public JasperTextField calcTextFieldBySize(@Nonnull String fontName, float maxPtSize, @Nonnull String text, double maxWidth, double maxHeight) throws IOException, FontFormatException
 	{
 		float currSize = maxPtSize;
@@ -160,6 +160,9 @@ public class JasperFontCalculator
 			}*/
 			currSize -= 0.5f;
 		}
-		return null;
+		JasperTextField ret = new JasperTextField();
+		ret.lines = new String[]{text};
+		ret.size = currSize;
+		return ret;
 	}
 }
