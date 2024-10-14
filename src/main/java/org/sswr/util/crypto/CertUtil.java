@@ -71,61 +71,58 @@ public class CertUtil
 	@Nullable
 	public static KeyStore loadDefaultTrustStore()
 	{
-        Path location = null;
-        String type = null;
-        String password = null;
+		Path location = null;
+		String type = null;
 
-        String locationProperty = System.getProperty("javax.net.ssl.trustStore");
-        if ((null != locationProperty) && (locationProperty.length() > 0)) {
-            Path p = Paths.get(locationProperty);
-            File f = p.toFile();
-            if (f.exists() && f.isFile() && f.canRead()) {
-                location = p;
-            }
-        } else {
-            String javaHome = System.getProperty("java.home");
-            location = Paths.get(javaHome, "lib", "security", "jssecacerts");
-            if (!location.toFile().exists()) {
-                location = Paths.get(javaHome, "lib", "security", "cacerts");
-            }
-        }
+		String locationProperty = System.getProperty("javax.net.ssl.trustStore");
+		if ((null != locationProperty) && (locationProperty.length() > 0)) {
+			Path p = Paths.get(locationProperty);
+			File f = p.toFile();
+			if (f.exists() && f.isFile() && f.canRead()) {
+				location = p;
+			}
+		} else {
+			String javaHome = System.getProperty("java.home");
+			location = Paths.get(javaHome, "lib", "security", "jssecacerts");
+			if (!location.toFile().exists()) {
+				location = Paths.get(javaHome, "lib", "security", "cacerts");
+			}
+		}
 
-        String passwordProperty = System.getProperty("javax.net.ssl.trustStorePassword");
-        if ((null != passwordProperty) && (passwordProperty.length() > 0)) {
-            password = passwordProperty;
-        } else {
-            password = "changeit";
-        }
+		String passwordProperty = System.getProperty("javax.net.ssl.trustStorePassword");
+		String typeProperty = System.getProperty("javax.net.ssl.trustStoreType");
+		if ((null != typeProperty) && (typeProperty.length() > 0)) {
+			type = typeProperty;
+		} else {
+			type = KeyStore.getDefaultType();
+		}
 
-        String typeProperty = System.getProperty("javax.net.ssl.trustStoreType");
-        if ((null != typeProperty) && (typeProperty.length() > 0)) {
-            type = passwordProperty;
-        } else {
-            type = KeyStore.getDefaultType();
-        }
-
-        KeyStore trustStore = null;
-        try
+		KeyStore trustStore = null;
+		try
 		{
-            trustStore = KeyStore.getInstance(type, Security.getProvider("SUN"));
-        }
+			trustStore = KeyStore.getInstance(type, Security.getProvider("SUN"));
+		}
 		catch (KeyStoreException e)
 		{
 			e.printStackTrace();
 			return null;
-        }
+		}
 
-        try (InputStream is = Files.newInputStream(location))
+		try (InputStream is = Files.newInputStream(location))
 		{
-            trustStore.load(is, password.toCharArray());
-        }
+			if ((null != passwordProperty) && (passwordProperty.length() > 0)) {
+				trustStore.load(is, passwordProperty.toCharArray());
+			} else {
+				trustStore.load(is, null);//"changeit".toCharArray());
+			}
+		}
 		catch (IOException | CertificateException | NoSuchAlgorithmException e)
 		{
 			e.printStackTrace();
 			return null;
-        }
-        return trustStore;
-    }
+		}
+		return trustStore;
+	}
 
 	@Nullable
 	public static KeyStore loadKeyStore(@Nonnull String fileName, @Nonnull String password)
@@ -153,11 +150,11 @@ public class CertUtil
 			}
 			return null;
 		}
-        KeyStore trustStore = null;
-        try
+		KeyStore trustStore = null;
+		try
 		{
-            trustStore = KeyStore.getInstance(getKeyStoreTypeName(type), Security.getProvider("SUN"));
-        }
+			trustStore = KeyStore.getInstance(getKeyStoreTypeName(type), Security.getProvider("SUN"));
+		}
 		catch (KeyStoreException e)
 		{
 			e.printStackTrace();
@@ -170,12 +167,12 @@ public class CertUtil
 				
 			}
 			return null;
-        }
+		}
 
-        try
+		try
 		{
-            trustStore.load(fis, password.toCharArray());
-        }
+			trustStore.load(fis, password.toCharArray());
+		}
 		catch (IOException | CertificateException | NoSuchAlgorithmException e)
 		{
 			e.printStackTrace();
@@ -188,7 +185,7 @@ public class CertUtil
 				
 			}
 			return null;
-        }
+		}
 		try
 		{
 			fis.close();

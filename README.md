@@ -2,6 +2,7 @@
 
 # Changes:
 - Added HTTPServerUtil.getForwardedAddr
+- Remove default password
 
 0.5.20241010
 - Change Bcrypt to Nonnull with throwing IllegalArgumentException
