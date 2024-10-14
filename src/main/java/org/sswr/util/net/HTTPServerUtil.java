@@ -314,4 +314,31 @@ public class HTTPServerUtil {
 		}
 		return false;
 	}
+
+	@Nullable
+	public static String getForwardedAddr(@Nonnull HttpServletRequest req)
+	{
+		String s;
+		if ((s = req.getHeader("Forwarded")) != null)
+		{
+			String[] sarr = StringUtil.split(s, ";");
+			int i = 0;
+			int j = sarr.length;
+			while (i < j)
+			{
+				if (sarr[i].startsWith("for="))
+				{
+					String[] sarr2 = StringUtil.split(sarr[i].substring(4), ",");
+					return sarr2[0].trim();
+				}
+				i++;
+			}
+		}
+		if ((s = req.getHeader("X-Forwarded-For")) != null)
+		{
+			String[] sarr = StringUtil.split(s, ",");
+			return sarr[0].trim();
+		}
+		return req.getRemoteAddr();
+	}
 }

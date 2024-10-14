@@ -1,6 +1,8 @@
 # SJavaClass
 
 # Changes:
+- Added HTTPServerUtil.getForwardedAddr
+
 0.5.20241010
 - Change Bcrypt to Nonnull with throwing IllegalArgumentException
 - Change CertUtil.loadPrivateKey to allow null password
