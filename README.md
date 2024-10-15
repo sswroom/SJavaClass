@@ -1,6 +1,7 @@
 # SJavaClass
 
 # Changes:
+0.5.20241015
 - Added HTTPServerUtil.getForwardedAddr
 - Remove default password
 
