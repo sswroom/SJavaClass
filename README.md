@@ -1,6 +1,8 @@
 # SJavaClass
 
 # Changes:
+- Enhance Image parsing
+
 0.5.20241015
 - Added HTTPServerUtil.getForwardedAddr
 - Remove default password

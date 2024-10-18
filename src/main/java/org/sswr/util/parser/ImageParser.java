@@ -45,7 +45,15 @@ public class ImageParser extends FileParser {
 				try
 				{
 					BufferedImage bimg = reader.read(i, null);
-					IIOMetadata metadata = reader.getImageMetadata(i);
+					IIOMetadata metadata = null;
+					try
+					{
+						reader.getImageMetadata(i);
+					}
+					catch (IIOException ex3)
+					{
+						//ex3.printStackTrace();
+					}
 					imgList.add(new StaticImage(bimg, metadata), 0);
 					if (fmt.equals("jpg"))
 					{
