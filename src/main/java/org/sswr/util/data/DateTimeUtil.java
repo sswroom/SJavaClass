@@ -710,6 +710,12 @@ public class DateTimeUtil
 	}
 
 	@Nonnull
+	public static String toString(@Nonnull LocalDate dat, @Nonnull String format)
+	{
+		return toString(dat.atStartOfDay(ZoneId.systemDefault()), format);
+	}
+
+	@Nonnull
 	public static String toString(@Nonnull Time tim, @Nonnull String format)
 	{
 		return toString(ZonedDateTime.of(tim.toLocalTime().atDate(LocalDate.now()), ZoneId.systemDefault()), format);

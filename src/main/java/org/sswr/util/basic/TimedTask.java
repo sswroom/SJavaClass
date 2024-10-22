@@ -8,12 +8,14 @@ import jakarta.annotation.Nullable;
 public abstract class TimedTask implements Runnable
 {
 	private int intervalMS;
-	private Thread thread;
-	private LogTool logger;
+	private @Nonnull Thread thread;
+	private @Nullable LogTool logger;
+	private boolean toStop;
 
 	protected TimedTask(@Nonnull String threadName, int intervalMS)
 	{
 		this.intervalMS = intervalMS;
+		this.toStop = false;
 		this.thread = new Thread(this, threadName);
 		this.thread.start();
 		this.logger = null;
@@ -30,7 +32,7 @@ public abstract class TimedTask implements Runnable
 	{
 		long nextTriggerTime = System.currentTimeMillis();
 		long currTime;
-		while (true)
+		while (!this.toStop)
 		{
 			currTime = System.currentTimeMillis();
 			if (currTime >= nextTriggerTime || nextTriggerTime > currTime + this.intervalMS)
@@ -71,6 +73,26 @@ public abstract class TimedTask implements Runnable
 		synchronized(this)
 		{
 			this.notify();
+		}
+	}
+
+	public void close()
+	{
+		if (!toStop)
+		{
+			this.toStop = true;
+			try
+			{
+				this.thread.interrupt();
+				while (this.thread.isAlive())
+				{
+					MyThread.sleep(10);
+				}
+			}
+			catch (SecurityException ex)
+			{
+				ex.printStackTrace();
+			}
 		}
 	}
 }

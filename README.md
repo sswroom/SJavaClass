@@ -2,6 +2,8 @@
 
 # Changes:
 - Enhance Image parsing
+- Added DateTimeUtil.toString(LocalDate, String)
+- Added TimedTask.close
 
 0.5.20241015
 - Added HTTPServerUtil.getForwardedAddr
