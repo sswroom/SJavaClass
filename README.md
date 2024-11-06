@@ -4,6 +4,8 @@
 - Enhance Image parsing
 - Added DateTimeUtil.toString(LocalDate, String)
 - Added TimedTask.close
+- Fix BinaryParser.nextStr problem
+- Enhance DateTimeUtil.newInstance exception message
 
 0.5.20241015
 - Added HTTPServerUtil.getForwardedAddr

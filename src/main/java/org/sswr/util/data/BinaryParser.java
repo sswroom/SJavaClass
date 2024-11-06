@@ -133,7 +133,7 @@ public class BinaryParser
 				return null;
 			}
 			String s = new String(this.buff, this.currOfst + 2, b1, StandardCharsets.UTF_8);
-			this.currOfst = b1 + 2;
+			this.currOfst += b1 + 2;
 			return s;
 		}
 		if (this.currOfst + 6 > this.buff.length)
@@ -148,7 +148,7 @@ public class BinaryParser
 			return null;
 		}
 		String s = new String(this.buff, this.currOfst + 6, len, StandardCharsets.UTF_8);
-		this.currOfst = len + 6;
+		this.currOfst += len + 6;
 		return s;
 	}
 

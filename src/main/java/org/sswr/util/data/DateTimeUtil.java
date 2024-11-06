@@ -3,6 +3,7 @@ package org.sswr.util.data;
 import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.time.DateTimeException;
 import java.time.DayOfWeek;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -862,7 +863,14 @@ public class DateTimeUtil
 	@Nonnull
 	public static Instant newInstant(long secs, int nanosec)
 	{
-		return Instant.ofEpochSecond(secs, nanosec);
+		try
+		{
+			return Instant.ofEpochSecond(secs, nanosec);
+		}
+		catch (DateTimeException ex)
+		{
+			throw new IllegalArgumentException("Unsupported values: secs = "+secs+", nanosec = "+nanosec, ex);
+		}
 	}
 
 	@Nonnull
