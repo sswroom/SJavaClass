@@ -1,10 +1,12 @@
 # SJavaClass
 
 # Changes:
+0.5.20241107
 - Enhance Image parsing
 - Added DateTimeUtil.toString(LocalDate, String)
 - Added TimedTask.close
 - Fix BinaryParser.nextStr problem
+- Fix BinaryParser.nextBool problem
 - Enhance DateTimeUtil.newInstance exception message
 
 0.5.20241015

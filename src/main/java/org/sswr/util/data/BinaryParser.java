@@ -178,7 +178,7 @@ public class BinaryParser
 		boolean b;
 		if (this.buff[this.currOfst] == 0)
 			b = false;
-		else if (this.buff[this.currOfst] == 0xff)
+		else if ((this.buff[this.currOfst] & 0xff) == 0xff)
 			b = true;
 		else
 		{
