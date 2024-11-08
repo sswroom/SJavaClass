@@ -6,8 +6,11 @@ import java.util.Map;
 
 import org.sswr.util.basic.MyThread;
 import org.sswr.util.data.StringUtil;
+import org.sswr.util.io.LogLevel;
+import org.sswr.util.io.LogTool;
 
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 public class TaskMQTTManager implements MQTTEventHdlr
 {
@@ -20,6 +23,7 @@ public class TaskMQTTManager implements MQTTEventHdlr
 	private String checkTaskId;
 	private long checkTaskTime;
 	private boolean taskExists;
+	private LogTool log;
 
 	public static enum TaskStatus
 	{
@@ -34,8 +38,14 @@ public class TaskMQTTManager implements MQTTEventHdlr
 		this.client = client;
 		this.controlTopic = controlTopic;
 		this.machineId = machineId;
+		this.log = null;
 		this.taskMut = new Object();
 		this.client.handleEvents(this);
+	}
+
+	public void setLog(@Nullable LogTool log)
+	{
+		this.log = log;
 	}
 
 	@Override
@@ -45,12 +55,14 @@ public class TaskMQTTManager implements MQTTEventHdlr
 			String content = new String(buff, buffOfst, buffSize, StandardCharsets.UTF_8);
 			String[] contents = StringUtil.split(content, "|");
 			Integer machine = StringUtil.toInteger(contents[0]);
+			if (this.log != null) this.log.logMessage("Received "+contents.length+" cols: "+content, LogLevel.COMMAND);
 			if (machine == null || machine == this.machineId)
 				return;
 			if (contents.length <= 1)
 				return;
 			if (contents[1].equals("0") && contents.length == 4)
 			{
+				if (this.log != null) this.log.logMessage("Received BeginTask: "+contents[2]+", "+contents[3], LogLevel.COMMAND);
 				long time;
 				try
 				{
@@ -58,10 +70,12 @@ public class TaskMQTTManager implements MQTTEventHdlr
 				}
 				catch (Exception ex)
 				{
+					if (this.log != null) this.log.logException(ex);
 					return;
 				}
 				synchronized(this.taskMap)
 				{
+					if (this.log != null) this.log.logMessage("Checking "+contents[2], LogLevel.COMMAND);
 					if (taskMap.get(contents[3]) != null)
 					{
 						sendTaskRunning(contents[3]);

@@ -1,6 +1,9 @@
 # SJavaClass
 
 # Changes:
+- Added LogTool.logStackTrace
+- Added TaskMQTTManager.setLog
+
 0.5.20241107
 - Enhance Image parsing
 - Added DateTimeUtil.toString(LocalDate, String)

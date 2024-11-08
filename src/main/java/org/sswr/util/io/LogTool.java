@@ -136,6 +136,22 @@ public class LogTool
 		ex.printStackTrace(new PrintWriter(writer));
 		this.logMessage(writer.toString(), LogLevel.ERR_DETAIL);
 	}
+
+	public void logStackTrace(@Nonnull LogLevel level)
+	{
+		StringBuilder sb = new StringBuilder();
+		StackTraceElement[] stacks = Thread.currentThread().getStackTrace();
+		sb.append("Stack trace of "+Thread.currentThread().getName() + ":");
+		int i = 0;
+		int j = stacks.length;
+		while (i < j)
+		{
+			sb.append("\r\n\t");
+			sb.append(stacks[i].toString());
+			i++;
+		}
+		this.logMessage(sb.toString(), level);
+	}
 	
 	public void skipStarted()
 	{
