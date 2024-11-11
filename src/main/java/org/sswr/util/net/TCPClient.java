@@ -19,13 +19,13 @@ import jakarta.annotation.Nullable;
 public class TCPClient extends IOStream
 {
 	private static boolean debug = false;
-	private Socket s;
-	private SSLEngine ssl;
-	private long totalRecvSize;
-	private long totalSendSize;
-	private long cliId;
-	private int flags; //1 = shutdown send, 2 = shutdown recv, 4 = closed, 8 = connect error
-	private int timeoutMS;
+	protected Socket s;
+	protected SSLEngine ssl;
+	protected long totalRecvSize;
+	protected long totalSendSize;
+	protected long cliId;
+	protected int flags; //1 = shutdown send, 2 = shutdown recv, 4 = closed, 8 = connect error
+	protected int timeoutMS;
 
 	public TCPClient(@Nonnull String hostName, int port, @Nullable SSLEngine ssl, @Nonnull TCPClientType cliType)
 	{
@@ -167,7 +167,7 @@ public class TCPClient extends IOStream
 		this.cliId = SocketUtil.genSocketId(s);
 	}
 
-	public TCPClient(@Nullable Socket s, @Nonnull SSLEngine ssl)
+	public TCPClient(@Nullable Socket s, @Nullable SSLEngine ssl)
 	{
 		super("");
 		this.ssl = ssl;

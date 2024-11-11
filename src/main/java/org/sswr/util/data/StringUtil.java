@@ -1708,15 +1708,40 @@ public class StringUtil
 	{
 		if (s == null)
 			return 0;
-		byte[] bytes = s.getBytes(StandardCharsets.UTF_16);
-		if (bytes.length >= 2 && (bytes[0] & 0xff) == 0xfe && (bytes[1] & 0xff) == 0xff)
+		return s.length();
+	}
+
+
+	/**
+	 * Count number of char in UTF-32
+	 * 
+	 * @param s string to count
+	 * @return 	number of UTF-16 char
+	 * 			0 if s is null
+	 */
+	public static int utf32CharCnt(@Nullable String s)
+	{
+		if (s == null)
+			return 0;
+		int len = 0;
+		int ofst = 0;
+		int slen = s.length();
+		char c;
+		char c2;
+		while (ofst < slen)
 		{
-			return bytes.length / 2 - 1;
+			c = s.charAt(ofst);
+			if (ofst + 1 < slen && c >= 0xd800 && c < 0xdc00 && (c2 = s.charAt(ofst + 1)) >= 0xdc00 && c2 < 0xe000)
+			{
+				ofst += 2;
+			}
+			else
+			{
+				ofst++;
+			}
+			len++;
 		}
-		else
-		{
-			return bytes.length / 2;
-		}
+		return len;
 	}
 
 	/**

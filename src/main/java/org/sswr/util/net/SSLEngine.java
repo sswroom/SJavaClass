@@ -212,6 +212,17 @@ public class SSLEngine
 		HttpsURLConnection.setDefaultHostnameVerifier(validHosts);
 	}
 
+/*	public TCPClient createClientConn(@Nonnull Socket s, @Nonnull String hostName)
+	{
+		try
+		{
+			s.setTcpNoDelay(true);
+			s.setSoTimeout(2000);
+			SSLSocketFactory factory = sc.getSocketFactory();
+			factory.
+		}
+	}*/
+
 	public static void setTrustStore(@Nonnull String path, @Nonnull String password)
 	{
 		System.setProperty("javax.net.ssl.trustStore", path);

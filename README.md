@@ -1,6 +1,11 @@
 # SJavaClass
 
 # Changes:
+- Added StringUtil.utf32CharCnt
+- Added UTF32Reader
+- Added HTTPProxyTCPClient
+- Change TCPClient values to protected
+
 0.5.20241111
 - Fix MQTTClient event handling
 
