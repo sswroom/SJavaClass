@@ -6,7 +6,7 @@ import java.util.List;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
-public class MQTTStaticClient implements Runnable, MQTTEventHdlr, MQTTClient, FailoverChannel
+public final class MQTTStaticClient implements Runnable, MQTTEventHdlr, MQTTClient, FailoverChannel
 {
 	public enum ConnError
 	{
@@ -57,9 +57,9 @@ public class MQTTStaticClient implements Runnable, MQTTEventHdlr, MQTTClient, Fa
 		this.password = password;
 
 		this.conn = null;
-		this.connError = this.connect();
 		this.threadToStop = false;
 		this.thread = new Thread(this);
+		this.connError = this.connect();
 		this.thread.start();
 	}
 

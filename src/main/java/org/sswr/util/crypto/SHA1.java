@@ -4,7 +4,7 @@ import org.sswr.util.data.ByteTool;
 
 import jakarta.annotation.Nonnull;
 
-public class SHA1 extends Hash
+public final class SHA1 extends Hash
 {
 	private int intermediateHash[];
 	private byte messageBlock[];

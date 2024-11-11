@@ -4,7 +4,7 @@ import org.sswr.util.data.ByteTool;
 
 import jakarta.annotation.Nonnull;
 
-public class HMAC extends Hash
+public final class HMAC extends Hash
 {
 	private Hash hashInner;
 	private Hash hashOuter;

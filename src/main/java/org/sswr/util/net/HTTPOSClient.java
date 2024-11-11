@@ -4,7 +4,8 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.Proxy;
-import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.security.cert.Certificate;
 import java.time.ZonedDateTime;
@@ -55,16 +56,16 @@ public class HTTPOSClient extends HTTPClient
 			{
 				proxy = this.sockf.getProxy();
 			}
-			URL targetURL = new URL(url);
+			URI targetURL = new URI(url);
 			HttpURLConnection.setFollowRedirects(false);
 			this.svrAddr = InetAddress.getByName(targetURL.getHost());
 			if (proxy == null)
 			{
-				this.conn = (HttpURLConnection)targetURL.openConnection();
+				this.conn = (HttpURLConnection)targetURL.toURL().openConnection();
 			}
 			else
 			{
-				this.conn = (HttpURLConnection)targetURL.openConnection(proxy);
+				this.conn = (HttpURLConnection)targetURL.toURL().openConnection(proxy);
 			}
 			this.respCode = 0;
 			switch (this.method)
@@ -109,7 +110,7 @@ public class HTTPOSClient extends HTTPClient
 			}
 			return true;
 		}
-		catch (IOException ex)
+		catch (IOException|URISyntaxException ex)
 		{
 			if (debug)
 			{

@@ -65,7 +65,7 @@ public class BinaryParser
 		}
 		int ret = ByteTool.readInt32(this.buff, this.currOfst);
 		this.currOfst += 4;
-		if (ret == (int)0x80000000)
+		if (ret == 0x80000000)
 			return null;
 		return ret;
 	}
@@ -291,7 +291,7 @@ public class BinaryParser
 				this.error = true;
 				return null;
 			}
-			size = (((int)(b & 0x1f) << 6) | (int)(this.buff[this.currOfst + 1] & 0x3f));
+			size = (((b & 0x1f) << 6) | (this.buff[this.currOfst + 1] & 0x3f));
 			this.currOfst += 2;
 		}
 		else if ((b & 0xf0) == 0xe0)
@@ -301,7 +301,7 @@ public class BinaryParser
 				this.error = true;
 				return null;
 			}
-			size = (((int)(b & 0x0f) << 12) | ((int)(this.buff[this.currOfst + 1] & 0x3f) << 6) | (int)(this.buff[this.currOfst + 2] & 0x3f));
+			size = (((b & 0x0f) << 12) | ((this.buff[this.currOfst + 1] & 0x3f) << 6) | (this.buff[this.currOfst + 2] & 0x3f));
 			this.currOfst += 3;
 		}
 		else if ((b & 0xf8) == 0xf0)
@@ -311,7 +311,7 @@ public class BinaryParser
 				this.error = true;
 				return null;
 			}
-			size = (((int)(b & 0x7) << 18) | ((int)(this.buff[this.currOfst + 1] & 0x3f) << 12) | ((int)(this.buff[this.currOfst + 2] & 0x3f) << 6) | (int)(this.buff[this.currOfst + 3] & 0x3f));
+			size = (((b & 0x7) << 18) | ((this.buff[this.currOfst + 1] & 0x3f) << 12) | ((this.buff[this.currOfst + 2] & 0x3f) << 6) | (this.buff[this.currOfst + 3] & 0x3f));
 			this.currOfst += 4;
 		}
 		else if ((b & 0xfc) == 0xf8)
@@ -321,7 +321,7 @@ public class BinaryParser
 				this.error = true;
 				return null;
 			}
-			size = (((int)(b & 0x3) << 24) | ((int)(this.buff[this.currOfst + 1] & 0x3f) << 18) | ((int)(this.buff[this.currOfst + 2] & 0x3f) << 12) | ((int)(this.buff[this.currOfst + 3] & 0x3f) << 6) | (int)(this.buff[this.currOfst + 4] & 0x3f));
+			size = (((b & 0x3) << 24) | ((this.buff[this.currOfst + 1] & 0x3f) << 18) | ((this.buff[this.currOfst + 2] & 0x3f) << 12) | ((this.buff[this.currOfst + 3] & 0x3f) << 6) | (this.buff[this.currOfst + 4] & 0x3f));
 			this.currOfst += 5;
 		}
 		else if ((b & 0xfe) == 0xfc)
@@ -331,7 +331,7 @@ public class BinaryParser
 				this.error = true;
 				return null;
 			}
-			size = (((int)(b & 0x1) << 30) | ((int)(this.buff[this.currOfst + 1] & 0x3f) << 24) | ((int)(this.buff[this.currOfst + 2] & 0x3f) << 18) | ((int)(this.buff[this.currOfst + 3] & 0x3f) << 12) | ((int)(this.buff[this.currOfst + 4] & 0x3f) << 6) | (int)(this.buff[this.currOfst + 5] & 0x3f));
+			size = (((b & 0x1) << 30) | ((this.buff[this.currOfst + 1] & 0x3f) << 24) | ((this.buff[this.currOfst + 2] & 0x3f) << 18) | ((this.buff[this.currOfst + 3] & 0x3f) << 12) | ((this.buff[this.currOfst + 4] & 0x3f) << 6) | (this.buff[this.currOfst + 5] & 0x3f));
 			this.currOfst += 6;
 		}
 		else

@@ -735,7 +735,7 @@ public class FileGDBReader extends DBReader
 					while (i < nPoints.value)
 					{
 						ofst = FileGDBUtil.readVarInt(this.rowData, ofst, iv);
-						dx += iv.value;
+						dx += (int)iv.value;
 						zArr[i] = (double)(dx) / this.tableInfo.getZScale() + this.tableInfo.getZOrigin();
 						i++;
 					}
@@ -747,7 +747,7 @@ public class FileGDBReader extends DBReader
 					while (i < nPoints.value)
 					{
 						ofst = FileGDBUtil.readVarInt(this.rowData, ofst, iv);
-						dx += iv.value;
+						dx += (int)iv.value;
 						mArr[i] = (double)(dx) / this.tableInfo.getMScale() + this.tableInfo.getMOrigin();
 						i++;
 					}

@@ -4,7 +4,7 @@ import org.sswr.util.data.ByteTool;
 
 import jakarta.annotation.Nonnull;
 
-public class MD5 extends Hash
+public final class MD5 extends Hash
 {
 	private long msgLeng;
 	private int[] h;
@@ -158,9 +158,9 @@ public class MD5 extends Hash
 	{
 		this.h = new int[4];
 		this.buff = new byte[64];
-		this.clear();
 		this.msgLeng = 0;
 		this.buffSize = 0;
+		this.clear();
 	}
 
 	@Override
@@ -214,7 +214,7 @@ public class MD5 extends Hash
 		if (buffSize >= 64)
 		{
 			calcBlock(this.h, buff, ofst, buffSize >> 6);
-			ofst += buffSize & (int)~63;
+			ofst += buffSize & ~63;
 			buffSize = buffSize & 63;
 		}
 		if (buffSize > 0)

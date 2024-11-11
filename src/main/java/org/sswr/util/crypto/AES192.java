@@ -4,7 +4,7 @@ import org.sswr.util.data.ByteTool;
 
 import jakarta.annotation.Nonnull;
 
-public class AES192 extends BlockCipher
+public final class AES192 extends BlockCipher
 {
 	private int encRK[];
 	private int decRK[];

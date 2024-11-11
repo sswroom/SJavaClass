@@ -4,7 +4,7 @@ import org.sswr.util.basic.Point;
 
 import jakarta.annotation.Nonnull;
 
-public class ColorCoordinate
+public final class ColorCoordinate
 {
 	private double X;
 	private double Y;

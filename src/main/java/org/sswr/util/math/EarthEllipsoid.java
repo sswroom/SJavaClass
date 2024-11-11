@@ -8,7 +8,7 @@ import org.sswr.util.math.unit.Distance;
 
 import jakarta.annotation.Nonnull;
 
-public class EarthEllipsoid
+public final class EarthEllipsoid
 {
 	public enum EarthEllipsoidType
 	{

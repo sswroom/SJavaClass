@@ -1,8 +1,10 @@
 # SJavaClass
 
 # Changes:
+0.5.20241109
 - Added LogTool.logStackTrace
 - Added TaskMQTTManager.setLog
+- Remove some warnings
 
 0.5.20241107
 - Enhance Image parsing

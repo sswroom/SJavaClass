@@ -75,7 +75,7 @@ public class TaskMQTTManager implements MQTTEventHdlr
 				}
 				synchronized(this.taskMap)
 				{
-					if (this.log != null) this.log.logMessage("Checking "+contents[2], LogLevel.COMMAND);
+					if (this.log != null) this.log.logMessage("Checking \""+contents[2]+"\"", LogLevel.COMMAND);
 					if (taskMap.get(contents[3]) != null)
 					{
 						sendTaskRunning(contents[3]);
@@ -154,6 +154,7 @@ public class TaskMQTTManager implements MQTTEventHdlr
 
 		synchronized(this.taskMap)
 		{
+			if (this.log != null) this.log.logMessage("Begin task: \""+taskId+"\", "+time, LogLevel.COMMAND);
 			this.taskMap.put(taskId, time);
 		}
 		return TaskStatus.TaskBegin;
@@ -163,6 +164,7 @@ public class TaskMQTTManager implements MQTTEventHdlr
 	{
 		synchronized(this.taskMap)
 		{
+			if (this.log != null) this.log.logMessage("End task: \""+taskId+"\"", LogLevel.COMMAND);
 			this.taskMap.remove(taskId);
 		}
 	}

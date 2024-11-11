@@ -14,7 +14,7 @@ import org.sswr.util.io.protohdlr.ProtoMQTTHandler;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
-public class MQTTConn implements Runnable, ProtocolDataListener
+public final class MQTTConn implements Runnable, ProtocolDataListener
 {
 	private ProtoMQTTHandler protoHdlr;
 	private TCPClient cli;
@@ -243,7 +243,7 @@ public class MQTTConn implements Runnable, ProtocolDataListener
 		i += j + 2;
 		if (userName != null)
 		{
-			packet1[7] |= 0x80;
+			packet1[7] |= (byte)0x80;
 			sbuff = userName.getBytes(StandardCharsets.UTF_8);
 			j = sbuff.length;
 			ByteTool.writeMInt16(packet1, i, j);

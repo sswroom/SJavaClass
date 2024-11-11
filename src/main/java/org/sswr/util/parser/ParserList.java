@@ -31,13 +31,13 @@ public class ParserList
 		this.objPArr = new ArrayList<ObjectParser>();
 	}
 
-	public void addFileParser(@Nonnull FileParser parser)
+	public final void addFileParser(@Nonnull FileParser parser)
 	{
 		this.filePArr.add(parser);
 		parser.setParserList(this);
 	}
 	
-	public void addObjectParser(@Nonnull ObjectParser parser)
+	public final void addObjectParser(@Nonnull ObjectParser parser)
 	{
 		this.objPArr.add(parser);
 		parser.setParserList(this);

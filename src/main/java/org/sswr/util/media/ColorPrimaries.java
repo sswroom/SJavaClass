@@ -6,7 +6,7 @@ import org.sswr.util.basic.Vector3;
 
 import jakarta.annotation.Nonnull;
 
-public class ColorPrimaries
+public final class ColorPrimaries
 {
 	public ColorType colorType;
 	public Point r;

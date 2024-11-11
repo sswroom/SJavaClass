@@ -271,7 +271,7 @@ public class MemoryWebSessionManager extends WebSessionManager implements Runnab
 			{
 				sess = new MemoryWebSession(sessId, BrowserType.Unknown, OSType.Unknown);
 				int i = this.sessIds.sortedInsert(sessId);
-				this.sesses.add(i, (MemoryWebSession)sess);
+				this.sesses.add(i, sess);
 			}
 		}
 		return sess;

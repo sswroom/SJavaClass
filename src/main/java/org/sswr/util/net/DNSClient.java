@@ -18,7 +18,7 @@ import org.sswr.util.data.StringUtil;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
-public class DNSClient implements UDPPacketListener
+public final class DNSClient implements UDPPacketListener
 {
 	class RequestStatus
 	{

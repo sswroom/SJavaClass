@@ -8,7 +8,7 @@ import org.sswr.util.data.ByteTool;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
-public class Blowfish extends BlockCipher
+public final class Blowfish extends BlockCipher
 {
 	private static final int N = 16;
 	private static final int origP[] = {
