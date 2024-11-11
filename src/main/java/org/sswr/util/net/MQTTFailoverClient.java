@@ -144,21 +144,18 @@ public class MQTTFailoverClient implements MQTTClient
 				}
 			}
 		}
-		else
+		synchronized (this.hdlrList)
 		{
-			synchronized (this.hdlrList)
+			i = this.hdlrList.size();
+			while (i-- > 0)
 			{
-				i = this.hdlrList.size();
-				while (i-- > 0)
+				try
 				{
-					try
-					{
-						this.hdlrList.get(i).onPublishMessage(topic, buff, buffOfst, buffSize);
-					}
-					catch (Exception ex)
-					{
-						ex.printStackTrace();
-					}
+					this.hdlrList.get(i).onPublishMessage(topic, buff, buffOfst, buffSize);
+				}
+				catch (Exception ex)
+				{
+					ex.printStackTrace();
 				}
 			}
 		}

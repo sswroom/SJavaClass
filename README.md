@@ -1,6 +1,9 @@
 # SJavaClass
 
 # Changes:
+0.5.20241111
+- Fix MQTTClient event handling
+
 0.5.20241109
 - Added LogTool.logStackTrace
 - Added TaskMQTTManager.setLog
