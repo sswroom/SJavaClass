@@ -1897,6 +1897,30 @@ public class StringUtil
 	}
 
 	/**
+	 * Output UTF32 char to StringBuilder
+	 * 
+	 * @param sb StringBuilder to output
+	 * @param c UTF-32 char code
+	 */
+	public static void appendUTF32Char(@Nonnull StringBuilder sb, int c)
+	{
+		if (c < 0x10000)
+		{
+			sb.append((char)c);
+		}
+		else
+		{
+			char carr[] = new char[2];
+			carr[0] = (char)(0xd800 + ((c - 0x10000) >> 10));
+			carr[1] = (char)((c & 0x3ff) + 0xdc00);
+			String s = new String(carr);
+			sb.append(s);
+			//sb.append("0x"+StringUtil.toHex16(0xd800 + (c >> 10)));
+			//sb.append("0x"+StringUtil.toHex16((c & 0x3ff) + 0xdc00));
+		}
+	}
+
+	/**
 	 * Output non-null string
 	 * 
 	 * @param s string or null string

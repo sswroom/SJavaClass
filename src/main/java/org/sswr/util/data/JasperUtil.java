@@ -142,6 +142,74 @@ public class JasperUtil
 		return "<style fontName='"+(StringUtil.hasCJKChar(dispStr)?cjkFont:engFont)+"'>"+XmlUtil.toAttr(dispStr)+"</style>";
 	}
 
+	@Nonnull
+	public static String styledCJKBString(@Nonnull String dispStr, @Nonnull String cjkFont, @Nonnull String cjkbFont, @Nonnull String engFont)
+	{
+		if (StringUtil.hasCJKChar(dispStr))
+		{
+			int type = 0;
+			StringBuilder sb = new StringBuilder();
+			UTF32Reader reader = new UTF32Reader(dispStr);
+			int c;
+			while (true)
+			{
+				c = reader.nextChar();
+				if (c == 0)
+					break;
+				if (c < 0x10000)
+				{
+					if (type == 2)
+					{
+						sb.append("</style>");
+						type = 0;
+					}
+					if (type != 1)
+					{
+						sb.append("<style fontName='"+cjkFont+"'>");
+						type = 1;
+					}
+					if (c == '&')
+						sb.append("&amp;");
+					else if (c == '<')
+						sb.append("&lt;");
+					else if (c == '>')
+						sb.append("&gt;");
+					else if (c == '\'')
+						sb.append("&apos;");
+					else if (c == '\"')
+						sb.append("&quot;");
+					else if (c == '\n')
+						sb.append("&#10;");
+					else
+						sb.append((char)c);
+				}
+				else
+				{
+					if (type == 1)
+					{
+						sb.append("</style>");
+						type = 0;
+					}
+					if (type != 2)
+					{
+						sb.append("<style fontName='"+cjkbFont+"'>");
+						type = 2;
+					}
+					StringUtil.appendUTF32Char(sb, c);
+				}
+			}
+			if (type != 0)
+			{
+				sb.append("</style>");
+			}
+			return sb.toString();
+		}
+		else
+		{
+			return "<style fontName='"+engFont+"'>"+XmlUtil.toAttr(dispStr)+"</style>";
+		}
+	}
+
 	@Nullable
 	public static List<JasperFont> loadFontProperties(@Nonnull Class<?> dataClass)
 	{

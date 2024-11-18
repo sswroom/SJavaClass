@@ -2,8 +2,10 @@
 
 # Changes:
 - Added StringUtil.utf32CharCnt
+- Added StringUtil.appendUTF32Char
 - Added UTF32Reader
 - Added HTTPProxyTCPClient
+- Added JasperUtil.styledCJKBString
 - Change TCPClient values to protected
 
 0.5.20241111
