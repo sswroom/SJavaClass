@@ -7,11 +7,13 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import org.sswr.util.basic.HiResClock;
 import org.sswr.util.crypto.MyX509Cert;
+import org.sswr.util.data.SharedDouble;
 import org.sswr.util.data.textenc.FormEncoding;
 import org.sswr.util.data.textenc.URIEncoding;
 import org.sswr.util.io.IOStream;
@@ -22,29 +24,39 @@ import jakarta.annotation.Nullable;
 
 public abstract class HTTPClient extends IOStream
 {
-	protected SocketFactory sockf;
+	@Nonnull protected TCPClientFactory clif;
 	protected HiResClock clk;
 
 	protected InetAddress svrAddr;
 	protected boolean canWrite;
 	protected StringBuilder sbForm;
-	protected String boundary;
-	protected MemoryStream mstm;
-	protected String url;
+
+	protected long contLeng;
 	protected int respCode;
 
-	protected HTTPClient(@Nullable SocketFactory sockf, boolean kaConn)
+	protected String boundary;
+	protected MemoryStream mstm;
+
+	protected boolean kaConn;
+	protected String url;
+	protected long totalUpload;
+	protected long totalDownload;
+
+	protected HTTPClient(@Nonnull TCPClientFactory clif, boolean kaConn)
 	{
 		super("HTTPClient");
-		this.sockf = sockf;
+		this.clif = clif;
 		this.canWrite = false;
-		this.svrAddr = null;
+		this.contLeng = 0;
+		this.respCode = 0;
+		this.url = null;
 		this.sbForm = null;
 		this.boundary = null;
 		this.mstm = null;
-		this.url = null;
-		this.respCode = 0;
-//		this.kaConn = kaConn;
+		this.totalUpload = 0;
+		this.totalDownload = 0;
+		this.kaConn = kaConn;
+		this.svrAddr = null;
 	}
 
 	public abstract boolean isError();
@@ -57,8 +69,17 @@ public abstract class HTTPClient extends IOStream
 	public abstract boolean connect(@Nonnull String url, @Nonnull RequestMethod method, boolean defHeaders);
 
 	public abstract void addHeader(@Nonnull String name, @Nonnull String value);
-	public abstract void addHeaders(@Nonnull Map<String, String> headers);
-	public abstract void endRequest();
+	public void addHeaders(@Nonnull Map<String, String> headers)
+	{
+		Iterator<String> hdrNames = headers.keySet().iterator();
+		while (hdrNames.hasNext())
+		{
+			String name = hdrNames.next();
+			this.addHeader(name, headers.get(name));
+		}
+	}
+
+	public abstract void endRequest(@Nullable SharedDouble timeReq, @Nullable SharedDouble timeResp);
 	public abstract void setReadTimeout(int timeoutMS);
 	
 	public abstract boolean isSecureConn();
@@ -194,7 +215,13 @@ public abstract class HTTPClient extends IOStream
 	public abstract String getRespHeader(int index);
 	@Nullable
 	public abstract String getRespHeader(@Nonnull String name);
-	public abstract long getContentLength();
+
+	public long getContentLength()
+	{
+		this.endRequest(null, null);
+		return this.contLeng;
+	}
+
 	@Nullable
 	public abstract String getContentEncoding();
 	@Nullable
@@ -220,7 +247,7 @@ public abstract class HTTPClient extends IOStream
 
 	public int getRespStatus()
 	{
-		this.endRequest();
+		this.endRequest(null, null);
 		return this.respCode;
 	}
 

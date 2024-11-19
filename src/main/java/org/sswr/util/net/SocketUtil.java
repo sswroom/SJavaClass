@@ -35,6 +35,38 @@ public class SocketUtil
 	}
 
 	@Nonnull
+	public static String getIPv4Name(int ip)
+	{
+		byte[] addr = new byte[4];
+		ByteTool.writeMInt32(addr, 0, ip);
+		try
+		{
+			return Inet4Address.getByAddress(addr).getHostAddress();
+		}
+		catch (UnknownHostException ex)
+		{
+			ex.printStackTrace();
+			return "0.0.0.0";
+		}
+	}
+
+	@Nonnull
+	public static InetAddress getAddr(int ipv4)
+	{
+		byte[] addr = new byte[4];
+		ByteTool.writeMInt32(addr, 0, ipv4);
+		try
+		{
+			return Inet4Address.getByAddress(addr);
+		}
+		catch (UnknownHostException ex)
+		{
+			ex.printStackTrace();
+			return Inet4Address.getLoopbackAddress();
+		}
+	}
+
+	@Nonnull
 	public static IPType getIPType(@Nonnull InetAddress addr)
 	{
 		if (addr instanceof Inet4Address)

@@ -7,7 +7,10 @@ import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.security.cert.Certificate;
+import java.util.List;
 
+import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
@@ -29,54 +32,7 @@ public class TCPClient extends IOStream
 
 	public TCPClient(@Nonnull String hostName, int port, @Nullable SSLEngine ssl, @Nonnull TCPClientType cliType)
 	{
-		super(hostName);
-		this.ssl = ssl;
-		this.totalRecvSize = 0;
-		this.totalSendSize = 0;
-		this.flags = 0;
-		this.s = null;
-		this.timeoutMS = 0;
-	
-		InetAddress addr;
-		try
-		{
-			addr = InetAddress.getByName(hostName);
-		}
-		catch (UnknownHostException ex)
-		{
-			//ex.printStackTrace();
-			this.flags = 12;
-			return;
-		}
-		try
-		{
-			if (cliType == TCPClientType.SSL)
-			{
-				javax.net.SocketFactory factory;
-				if (ssl != null)
-					factory = ssl.getSocketFactory();
-				else
-					factory = SSLSocketFactory.getDefault();
-				this.s = factory.createSocket(addr, port);
-				((SSLSocket)this.s).startHandshake();
-			}
-			else
-			{
-				this.s = new Socket();
-				this.s.connect(new InetSocketAddress(addr, port));
-			}
-		}
-		catch (IOException ex)
-		{
-			if (debug)
-			{
-				ex.printStackTrace();
-			}
-			this.flags = 12;
-			return;
-		}
-		this.setSourceName(this.getRemoteName());
-		this.cliId = SocketUtil.genSocketId(s);
+		this(hostName, port, ssl, cliType, 0);
 	}
 
 	public TCPClient(@Nonnull String hostName, int port, @Nullable SSLEngine ssl, @Nonnull TCPClientType cliType, int connTimeoutMS)
@@ -115,7 +71,14 @@ public class TCPClient extends IOStream
 			else
 			{
 				this.s = new Socket();
-				this.s.connect(new InetSocketAddress(addr, port), connTimeoutMS);
+				if (connTimeoutMS <= 0)
+				{
+					this.s.connect(new InetSocketAddress(addr, port));
+				}
+				else
+				{
+					this.s.connect(new InetSocketAddress(addr, port), connTimeoutMS);
+				}
 			}
 		}
 		catch (IOException ex)
@@ -132,6 +95,11 @@ public class TCPClient extends IOStream
 	}
 
 	public TCPClient(@Nonnull InetAddress addr, int port, @Nullable SSLEngine ssl, @Nonnull TCPClientType cliType)
+	{
+		this(addr, port, ssl, cliType, 0);
+	}
+
+	public TCPClient(@Nonnull InetAddress addr, int port, @Nullable SSLEngine ssl, @Nonnull TCPClientType cliType, int connTimeoutMS)
 	{
 		super("");
 		this.ssl = ssl;
@@ -154,7 +122,15 @@ public class TCPClient extends IOStream
 			}
 			else
 			{
-				this.s = new Socket(addr, port);
+				this.s = new Socket();
+				if (connTimeoutMS <= 0)
+				{
+					this.s.connect(new InetSocketAddress(addr, port));
+				}
+				else
+				{
+					this.s.connect(new InetSocketAddress(addr, port), connTimeoutMS);
+				}
 			}
 		}
 		catch (IOException ex)
@@ -446,5 +422,29 @@ public class TCPClient extends IOStream
 			}
 		}
 		return false;
+	}
+
+	public boolean isSSL()
+	{
+		return this.s instanceof SSLSocket;
+	}
+
+	@Nullable
+	public List<Certificate> getRemoteCerts()
+	{
+		if (this.s instanceof SSLSocket)
+		{
+			SSLSocket s = (SSLSocket)this.s;
+			try
+			{
+				return List.of(s.getSession().getPeerCertificates());
+			}
+			catch (SSLPeerUnverifiedException ex)
+			{
+				ex.printStackTrace();
+				return null;
+			}
+		}
+		return null;
 	}
 }

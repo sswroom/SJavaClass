@@ -7,6 +7,14 @@
 - Added HTTPProxyTCPClient
 - Added JasperUtil.styledCJKBString
 - Change TCPClient values to protected
+- Adding HTTPMyClient
+- Enhance HTTPClient
+- Added SocketUtil.getIPv4Name(int)
+- Added SocketUtil.getAddr
+- Added SSLEngine.clientSetCertASN1
+- Enhance TCPClient to support timeout
+- Added TCPClient.isSSL, getRemoteCerts
+- Added TCPClientFactory
 
 0.5.20241111
 - Fix MQTTClient event handling

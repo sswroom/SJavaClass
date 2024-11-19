@@ -20,6 +20,7 @@ import javax.net.ssl.SSLPeerUnverifiedException;
 import org.sswr.util.crypto.CertUtil;
 import org.sswr.util.crypto.MyX509Cert;
 import org.sswr.util.data.DateTimeUtil;
+import org.sswr.util.data.SharedDouble;
 import org.sswr.util.data.SharedInt;
 
 import jakarta.annotation.Nonnull;
@@ -35,7 +36,7 @@ public class HTTPOSClient extends HTTPClient
 
 	public HTTPOSClient(@Nullable SocketFactory sockf, @Nullable String userAgent, boolean kaConn)
 	{
-		super(sockf, kaConn);
+		super(new TCPClientFactory(sockf), kaConn);
 		this.userAgent = userAgent;
 	}
 
@@ -52,13 +53,15 @@ public class HTTPOSClient extends HTTPClient
 		try
 		{
 			Proxy proxy = null;
-			if (this.sockf != null)
+			SocketFactory sockf;
+			if ((sockf = this.clif.getSocketFactory()) != null)
 			{
-				proxy = this.sockf.getProxy();
+				proxy = sockf.getProxy();
 			}
 			URI targetURL = new URI(url);
 			HttpURLConnection.setFollowRedirects(false);
 			this.svrAddr = InetAddress.getByName(targetURL.getHost());
+			this.clk.start();
 			if (proxy == null)
 			{
 				this.conn = (HttpURLConnection)targetURL.toURL().openConnection();
@@ -139,20 +142,7 @@ public class HTTPOSClient extends HTTPClient
 		this.conn.addRequestProperty(name, value);
 	}
 
-	public void addHeaders(@Nonnull Map<String, String> headers)
-	{
-		if (headers != null)
-		{
-			Iterator<String> hdrNames = headers.keySet().iterator();
-			while (hdrNames.hasNext())
-			{
-				String name = hdrNames.next();
-				this.addHeader(name, headers.get(name));
-			}
-		}
-	}
-
-	public void endRequest()
+	public void endRequest(@Nullable SharedDouble timeReq, @Nullable SharedDouble timeResp)
 	{
 		if (this.canWrite && this.sbForm != null)
 		{
@@ -191,12 +181,18 @@ public class HTTPOSClient extends HTTPClient
 				}
 			}
 		}
+		double t1 = this.clk.getTimeDiff();
+		if (timeReq != null)
+		{
+			timeReq.value = t1;
+		}
 
 		if (this.respCode == 0)
 		{
 			try
 			{
 				this.respCode = this.conn.getResponseCode();
+				this.contLeng = this.conn.getContentLengthLong();
 			}
 			catch (IOException ex)
 			{
@@ -204,6 +200,11 @@ public class HTTPOSClient extends HTTPClient
 				{
 					ex.printStackTrace();
 				}
+			}
+			t1 = this.clk.getTimeDiff();
+			if (timeResp != null)
+			{
+				timeResp.value = t1;
 			}
 		}
 	}
@@ -272,11 +273,6 @@ public class HTTPOSClient extends HTTPClient
 		return name+": "+this.conn.getHeaderField(name);
 	}
 
-	public long getContentLength()
-	{
-		return this.conn.getContentLengthLong();
-	}
-
 	@Nullable
 	public String getContentEncoding()
 	{
@@ -297,7 +293,7 @@ public class HTTPOSClient extends HTTPClient
 	@Override
 	public int read(@Nonnull byte[] buff, int ofst, int size)
 	{
-		this.endRequest();
+		this.endRequest(null, null);
 		try
 		{
 			int ret;

@@ -21,6 +21,8 @@ import javax.net.ssl.X509TrustManager;
 import javax.security.auth.x500.X500Principal;
 
 import org.sswr.util.crypto.CertUtil;
+import org.sswr.util.crypto.MyX509Cert;
+import org.sswr.util.crypto.MyX509File;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
@@ -158,6 +160,12 @@ public class SSLEngine
 			this.certList.add(cert);
 			return true;
 		}
+		return false;
+	}
+
+	public boolean clientSetCertASN1(@Nonnull MyX509Cert cert, @Nonnull MyX509File key)
+	{
+		//this.sc.getDefaultSSLParameters().
 		return false;
 	}
 
