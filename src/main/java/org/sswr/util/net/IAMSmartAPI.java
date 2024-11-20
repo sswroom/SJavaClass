@@ -68,7 +68,7 @@ public class IAMSmartAPI {
 		public char educationLevel;
 	};
 
-	private SocketFactory sockf;
+	private TCPClientFactory clif;
 	private SSLEngine ssl;
 	private String domain;
 	private String clientID;
@@ -142,7 +142,7 @@ public class IAMSmartAPI {
 			System.out.println("PostEncReq.Url: "+url);
 			System.out.println("PostEncReq.Req: "+sb.toString());
 		}
-		HTTPClient cli = HTTPClient.createConnect(this.sockf, this.ssl, url, RequestMethod.HTTP_POST, false);
+		HTTPClient cli = HTTPClient.createConnect(this.clif, this.ssl, url, RequestMethod.HTTP_POST, false);
 		this.initHTTPClient(cli, sb.toString());
 		byte[] dataBuff = cli.readToEnd();
 		int code = cli.getRespStatus();
@@ -353,9 +353,9 @@ public class IAMSmartAPI {
 		return null;		
 	}
 
-	public IAMSmartAPI(@Nullable SocketFactory sockf, @Nullable SSLEngine ssl, @Nonnull String domain, @Nonnull String clientID, @Nonnull String clientSecret)
+	public IAMSmartAPI(@Nonnull TCPClientFactory clif, @Nullable SSLEngine ssl, @Nonnull String domain, @Nonnull String clientID, @Nonnull String clientSecret)
 	{
-		this.sockf = sockf;
+		this.clif = clif;
 		this.ssl = ssl;
 		this.domain = domain;
 		this.clientID = clientID;
@@ -369,7 +369,7 @@ public class IAMSmartAPI {
 		sbURL.append("https://");
 		sbURL.append(this.domain);
 		sbURL.append("/api/v1/security/getKey");
-		HTTPClient cli = HTTPClient.createConnect(this.sockf, this.ssl, sbURL.toString(), RequestMethod.HTTP_POST, false);
+		HTTPClient cli = HTTPClient.createConnect(this.clif, this.ssl, sbURL.toString(), RequestMethod.HTTP_POST, false);
 		this.initHTTPClient(cli, "");
 		byte[] dataBuff = cli.readToEnd();
 		int code = cli.getRespStatus();
@@ -492,7 +492,7 @@ public class IAMSmartAPI {
 		sbURL.append("https://");
 		sbURL.append(this.domain);
 		sbURL.append("/api/v1/security/revokeKey");
-		HTTPClient cli = HTTPClient.createConnect(this.sockf, this.ssl, sbURL.toString(), RequestMethod.HTTP_POST, false);
+		HTTPClient cli = HTTPClient.createConnect(this.clif, this.ssl, sbURL.toString(), RequestMethod.HTTP_POST, false);
 		this.initHTTPClient(cli, "");
 		byte[] dataBuff = cli.readToEnd();
 		int code = cli.getRespStatus();

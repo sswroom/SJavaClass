@@ -32,9 +32,9 @@ public class IAMSmartClient {
 		return currTime < cek.expiresAt;
 	}
 
-	public IAMSmartClient(@Nullable SocketFactory sockf, @Nullable SSLEngine ssl, @Nonnull String domain, @Nonnull String clientID, @Nonnull String clientSecret, @Nonnull String keyFile)
+	public IAMSmartClient(@Nonnull TCPClientFactory clif, @Nullable SSLEngine ssl, @Nonnull String domain, @Nonnull String clientID, @Nonnull String clientSecret, @Nonnull String keyFile)
 	{
-		this.api = new IAMSmartAPI(sockf, ssl, domain, clientID, clientSecret);
+		this.api = new IAMSmartAPI(clif, ssl, domain, clientID, clientSecret);
 		this.cek = new IAMSmartAPI.CEKInfo();
 		this.cek.issueAt = 0;
 		this.cek.expiresAt = 0;

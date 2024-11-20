@@ -25,6 +25,7 @@
 - UTF8Reader support IOStream
 - Added RequestMethod.HTTP_HEAD, HTTP_OPTIONS, HTTP_TRACE
 - Added SSLEngine.clientConnect
+- Change IAMSmartAPI to use TCPClientFactory
 
 0.5.20241111
 - Fix MQTTClient event handling
