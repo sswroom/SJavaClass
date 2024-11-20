@@ -20,6 +20,7 @@ import org.sswr.util.net.RequestMethod;
 import org.sswr.util.net.SSLEngine;
 import org.sswr.util.net.SocketFactory;
 import org.sswr.util.net.StatusCode;
+import org.sswr.util.net.TCPClientFactory;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
@@ -101,8 +102,8 @@ public class OSMCacheHandler {
 		{
 			System.out.println("OSMCacheHandler: load from url: "+osmURL);
 		}
-		HTTPClient cli = HTTPClient.createClient(this.sockf, this.ssl, "OSMTileMap/1.0 SSWR/1.0", true, osmURL.startsWith("https://"));
-		cli.connect(osmURL, RequestMethod.HTTP_GET, true);
+		HTTPClient cli = HTTPClient.createClient(new TCPClientFactory(this.sockf), this.ssl, "OSMTileMap/1.0 SSWR/1.0", true, osmURL.startsWith("https://"));
+		cli.connect(osmURL, RequestMethod.HTTP_GET, null, null, true);
 	
 		if (cli.getRespStatus() == 304)
 		{

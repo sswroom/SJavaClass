@@ -5,12 +5,18 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.ProcessHandle.Info;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.sswr.util.io.FileStream.BufferType;
+import org.sswr.util.io.FileStream.FileMode;
+import org.sswr.util.io.FileStream.FileShare;
+
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 public class FileUtil {
 	@Nonnull
@@ -314,5 +320,96 @@ public class FileUtil {
 		{
 			return false;
 		}
+	}
+
+	public static void parseCmdLine(@Nonnull List<String> args, @Nonnull String cmdLine)
+	{
+		int i = 0;
+		int j = cmdLine.length();
+		char c;
+		StringBuilder sb = new StringBuilder();
+		boolean lastIsSpace = true;
+		boolean quoted = false;
+		while (i < j)
+		{
+			c = cmdLine.charAt(i);
+			if (c == '"')
+			{
+				lastIsSpace = false;
+				if (!quoted)
+				{
+					quoted = true;
+				}
+				else if (i + 1 < j && cmdLine.charAt(i + 1) == '"')
+				{
+					sb.append(c);
+					i++;
+				}
+				else
+				{
+					quoted = false;
+				}
+			}
+			else if (quoted)
+			{
+				sb.append(c);
+			}
+			else if (c == ' ')
+			{
+				if (!lastIsSpace)
+				{
+					args.add(sb.toString());
+					sb.setLength(0);
+					lastIsSpace = true;
+				}
+			}
+			else
+			{
+				lastIsSpace = false;
+				sb.append(c);
+			}
+			i++;
+		}
+		if (!lastIsSpace)
+		{
+			args.add(sb.toString());
+		}
+	}
+
+	private static void loadArgFile(@Nonnull List<String> args, @Nonnull String filePath)
+	{
+		File file = new File(filePath);
+		if (!file.exists())
+		{
+			System.out.println("File "+filePath+" not exist");
+			return;
+		}
+		UTF8Reader reader = new UTF8Reader(new FileStream(filePath, FileMode.ReadOnly, FileShare.DenyNone, BufferType.Normal));
+		StringBuilder sb = new StringBuilder();
+		if (reader.readToEnd(sb))
+		{
+			parseCmdLine(args, sb.toString());
+		}
+	}
+
+	@Nullable
+	public static List<String> getArgs()
+	{
+		Info info = ProcessHandle.current().info();
+		String[] args = info.arguments().orElse(null);
+		if (args == null)
+			return null;
+		List<String> ret = new ArrayList<String>();
+		int i = 0;
+		int j = args.length;
+		while (i < j)
+		{
+			if (args[i].startsWith("@"))
+				loadArgFile(ret, args[i].substring(1));
+			else
+				ret.add(args[i]);
+			i++;
+		}
+		return ret;
 	}
 }

@@ -3,18 +3,28 @@
 # Changes:
 - Added StringUtil.utf32CharCnt
 - Added StringUtil.appendUTF32Char
+- Added StringUtil.indexOfUTF8
 - Added UTF32Reader
 - Added HTTPProxyTCPClient
 - Added JasperUtil.styledCJKBString
 - Change TCPClient values to protected
-- Adding HTTPMyClient
+- Added HTTPMyClient
 - Enhance HTTPClient
 - Added SocketUtil.getIPv4Name(int)
 - Added SocketUtil.getAddr
 - Added SSLEngine.clientSetCertASN1
 - Enhance TCPClient to support timeout
-- Added TCPClient.isSSL, getRemoteCerts
+- Added TCPClient.isSSL, getRemoteCerts, replaceSocket
 - Added TCPClientFactory
+- Added ByteTool.intOr
+- Added FileUtil.parseCmdLine
+- Added FileUtil.getArgs
+- Added MyStream
+- Added Path.getProcessFileName
+- Added Path.appendPath
+- UTF8Reader support IOStream
+- Added RequestMethod.HTTP_HEAD, HTTP_OPTIONS, HTTP_TRACE
+- Added SSLEngine.clientConnect
 
 0.5.20241111
 - Fix MQTTClient event handling

@@ -11,6 +11,9 @@ public enum RequestMethod
 	HTTP_PATCH,
 	HTTP_DELETE,
 	HTTP_CONNECT,
+	HTTP_HEAD,
+	HTTP_OPTIONS,
+	HTTP_TRACE,
 	RTSP_DESCRIBE,
 	RTSP_ANNOUNCE,
 	RTSP_GET_PARAMETER,
@@ -38,6 +41,12 @@ public enum RequestMethod
 			return HTTP_DELETE;
 		case "CONNECT":
 			return HTTP_CONNECT;
+		case "HEAD":
+			return HTTP_HEAD;
+		case "OPTIONS":
+			return HTTP_OPTIONS;
+		case "TRACE":
+			return HTTP_TRACE;
 		default:
 			return HTTP_GET;
 		}

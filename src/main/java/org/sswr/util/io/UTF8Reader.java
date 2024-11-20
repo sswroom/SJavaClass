@@ -14,7 +14,7 @@ public class UTF8Reader
 {
 	private static final int BUFFSIZE = 65536;
 
-	private InputStream stm;
+	private IOStream stm;
 	private byte []buff;
 	private int buffSize;
 	private int currOfst;
@@ -33,17 +33,10 @@ public class UTF8Reader
 			this.buffSize -= this.currOfst;
 			this.currOfst = 0;
 		}
-		try
+		int readSize = this.stm.read(this.buff, this.buffSize, BUFFSIZE - this.buffSize);
+		if (readSize >= 0)
 		{
-			int readSize = this.stm.read(this.buff, this.buffSize, BUFFSIZE - this.buffSize);
-			if (readSize >= 0)
-			{
-				this.buffSize += readSize;
-			}
-		}
-		catch (IOException ex)
-		{
-
+			this.buffSize += readSize;
 		}
 	}
 
@@ -51,14 +44,7 @@ public class UTF8Reader
 	{
 		if (this.buffSize != 0)
 			return;
-		try
-		{
-			this.buffSize += this.stm.read(this.buff, this.buffSize, 4 - this.buffSize);
-		}
-		catch (IOException ex)
-		{
-			
-		}
+		this.buffSize += this.stm.read(this.buff, this.buffSize, 4 - this.buffSize);
 		if (this.buffSize >= 3 && (this.buff[0] & 0xff) == 0xef && (this.buff[1] & 0xff) == 0xbb && (this.buff[2] & 0xff) == 0xbf)
 		{
 			this.buff[0] = this.buff[3];
@@ -68,6 +54,11 @@ public class UTF8Reader
 	}
 
 	public UTF8Reader(@Nonnull InputStream stm)
+	{
+		this(new MyStream(stm, null));
+	}
+
+	public UTF8Reader(@Nonnull IOStream stm)
 	{
 		this.stm = stm;
 		this.buff = new byte[BUFFSIZE];

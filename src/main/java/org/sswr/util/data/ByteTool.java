@@ -6,6 +6,7 @@ import java.util.List;
 import org.sswr.util.math.Coord2DDbl;
 
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 public class ByteTool {
 	public static int readInt32(@Nonnull byte buff[], int index)
@@ -616,11 +617,13 @@ public class ByteTool {
 		}
 	}
 
+	@Nonnull
 	public static byte[] toByteArray(@Nonnull Coord2DDbl[] arr, boolean lsb)
 	{
 		return toByteArray(arr, 0, arr.length, lsb);
 	}
 
+	@Nonnull
 	public static byte[] toByteArray(@Nonnull Coord2DDbl[] arr, int ofst, int len, boolean lsb)
 	{
 		byte[] ret = new byte[len * 16];
@@ -644,5 +647,13 @@ public class ByteTool {
 			}
 		}
 		return ret;
+	}
+
+	public static int intOr(@Nullable Integer val, int nullVal)
+	{
+		if (val == null)
+			return nullVal;
+		else
+			return val.intValue();
 	}
 }

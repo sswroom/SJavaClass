@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Iterator;
 import java.util.List;
@@ -13,7 +14,9 @@ import java.util.Map;
 
 import org.sswr.util.basic.HiResClock;
 import org.sswr.util.crypto.MyX509Cert;
+import org.sswr.util.data.DateTimeUtil;
 import org.sswr.util.data.SharedDouble;
+import org.sswr.util.data.StringUtil;
 import org.sswr.util.data.textenc.FormEncoding;
 import org.sswr.util.data.textenc.URIEncoding;
 import org.sswr.util.io.IOStream;
@@ -25,7 +28,7 @@ import jakarta.annotation.Nullable;
 public abstract class HTTPClient extends IOStream
 {
 	@Nonnull protected TCPClientFactory clif;
-	protected HiResClock clk;
+	@Nonnull protected HiResClock clk;
 
 	protected InetAddress svrAddr;
 	protected boolean canWrite;
@@ -33,28 +36,33 @@ public abstract class HTTPClient extends IOStream
 
 	protected long contLeng;
 	protected int respCode;
+	protected int hdrLen;
 
 	protected String boundary;
 	protected MemoryStream mstm;
 
 	protected boolean kaConn;
 	protected String url;
+	protected @Nullable String forceHost;
 	protected long totalUpload;
 	protected long totalDownload;
 
 	protected HTTPClient(@Nonnull TCPClientFactory clif, boolean kaConn)
 	{
 		super("HTTPClient");
+		this.clk = new HiResClock();
 		this.clif = clif;
 		this.canWrite = false;
 		this.contLeng = 0;
 		this.respCode = 0;
 		this.url = null;
 		this.sbForm = null;
+		this.hdrLen = 0;
 		this.boundary = null;
 		this.mstm = null;
 		this.totalUpload = 0;
 		this.totalDownload = 0;
+		this.forceHost = null;
 		this.kaConn = kaConn;
 		this.svrAddr = null;
 	}
@@ -66,7 +74,7 @@ public abstract class HTTPClient extends IOStream
 		return this.isError();
 	}
 
-	public abstract boolean connect(@Nonnull String url, @Nonnull RequestMethod method, boolean defHeaders);
+	public abstract boolean connect(@Nonnull String url, @Nonnull RequestMethod method, @Nullable SharedDouble timeDNS, @Nullable SharedDouble timeConn, boolean defHeaders);
 
 	public abstract void addHeader(@Nonnull String name, @Nonnull String value);
 	public void addHeaders(@Nonnull Map<String, String> headers)
@@ -209,6 +217,13 @@ public abstract class HTTPClient extends IOStream
 		this.addHeader("Content-Length", String.valueOf(leng));
 	}
 
+	public void forceHostName(@Nonnull String hostName)
+	{
+		if (hostName.length() > 0)
+			this.forceHost = hostName;
+		else
+			this.forceHost = null;
+	}
 
 	public abstract int getRespHeaderCnt();
 	@Nullable
@@ -251,26 +266,133 @@ public abstract class HTTPClient extends IOStream
 		return this.respCode;
 	}
 
+	public double getTotalTime()
+	{
+		return this.clk.getTimeDiff();
+	}
+
+	public int getHdrLen()
+	{
+		return this.hdrLen;
+	}
+
+	public long getTotalUpload()
+	{
+		return this.totalUpload;
+	}
+
+	public long getTotalDownload()
+	{
+		return this.totalDownload;
+	}
+
 	@Nullable
 	public InetAddress getSvrAddr()
 	{
 		return this.svrAddr;
 	}
 
-	@Nonnull
-	public static HTTPClient createClient(@Nullable SocketFactory sockf, @Nullable SSLEngine ssl, @Nullable String userAgent, boolean kaConn, boolean isSecure)
+	public static ZonedDateTime parseDateStr(@Nonnull String dateStr)
 	{
-		return new HTTPOSClient(sockf, userAgent, kaConn);
+		String tmps;
+		String[] ptrs;
+		String[] ptrs2;
+		String[] ptrs3;
+		int i;
+		if ((i = dateStr.indexOf(", ")) != -1)
+		{
+			tmps = dateStr.substring(i + 2);
+			if (tmps.indexOf('-') == -1)
+			{
+				ptrs = StringUtil.split(tmps, " ");
+				if (ptrs.length >= 4)
+				{
+					ptrs2 = StringUtil.split(ptrs[3], ":");
+					if (ptrs2.length == 3)
+					{
+						return ZonedDateTime.of(StringUtil.toIntegerS(ptrs[2], 0),
+							DateTimeUtil.parseMonthStr(ptrs[1]),
+							StringUtil.toIntegerS(ptrs[0], 0),
+							StringUtil.toIntegerS(ptrs2[0], 0),
+							StringUtil.toIntegerS(ptrs2[1], 0),
+							StringUtil.toIntegerS(ptrs2[2], 0),
+							0,
+							ZoneOffset.ofHours(0));
+					}
+				}
+			}
+			else
+			{
+				ptrs = StringUtil.split(tmps, " ");
+				if (ptrs.length >= 2)
+				{
+					ptrs2 = StringUtil.split(ptrs[1], ":");
+					ptrs3 = StringUtil.split(ptrs[0], "-");
+					if (ptrs2.length >= 3 && ptrs3.length >= 3)
+					{
+						return ZonedDateTime.of(StringUtil.toIntegerS(ptrs3[2], 0) + ((2000 / 100) * 100),
+							DateTimeUtil.parseMonthStr(ptrs3[1]),
+							StringUtil.toIntegerS(ptrs3[0], 0),
+							StringUtil.toIntegerS(ptrs2[0], 0),
+							StringUtil.toIntegerS(ptrs2[1], 0),
+							StringUtil.toIntegerS(ptrs2[2], 0),
+							0,
+							ZoneOffset.ofHours(0));
+					}
+					else
+					{
+						return null;
+					}
+				}
+			}
+		}
+		else
+		{
+			ptrs = StringUtil.split(dateStr, " ");
+			if (ptrs.length > 3)
+			{
+				ptrs2 = StringUtil.split(ptrs[ptrs.length - 2], ":");
+				if (ptrs2.length == 3)
+				{
+					return ZonedDateTime.of(StringUtil.toIntegerS(ptrs[ptrs.length - 1], 0),
+						DateTimeUtil.parseMonthStr(ptrs[1]),
+						StringUtil.toIntegerS(ptrs[ptrs.length - 3], 0),
+						StringUtil.toIntegerS(ptrs2[0], 0),
+						StringUtil.toIntegerS(ptrs2[1], 0),
+						StringUtil.toIntegerS(ptrs2[2], 0),
+						0,
+						ZoneOffset.ofHours(0));
+				}
+			}
+		}
+		return null;
+	}
+
+	@Nonnull
+	public static HTTPClient createClient(@Nonnull TCPClientFactory clif, @Nullable SSLEngine ssl, @Nullable String userAgent, boolean kaConn, boolean isSecure)
+	{
+		if (isSecure && ssl == null)
+			return new HTTPOSClient(clif, userAgent, kaConn);
+		else
+			return new HTTPMyClient(clif, ssl, userAgent, kaConn);
 	}
 
 	@Nonnull
 	public static HTTPClient createConnect(@Nullable SocketFactory sockf, @Nullable SSLEngine ssl, @Nonnull String url, @Nonnull RequestMethod method, boolean kaConn)
 	{
-		HTTPClient cli = createClient(sockf, ssl, null, kaConn, url.toUpperCase().startsWith("HTTPS://"));
-		cli.connect(url, method, true);
+		HTTPClient cli = createClient(new TCPClientFactory(sockf), ssl, null, kaConn, url.toUpperCase().startsWith("HTTPS://"));
+		cli.connect(url, method, null, null, true);
 		return cli;
 	}
-	
+
+	@Nonnull
+	public static HTTPClient createConnect(@Nonnull TCPClientFactory clif, @Nullable SSLEngine ssl, @Nonnull String url, @Nonnull RequestMethod method, boolean kaConn)
+	{
+		HTTPClient cli = createClient(clif, ssl, null, kaConn, url.toUpperCase().startsWith("HTTPS://"));
+		cli.connect(url, method, null, null, true);
+		return cli;
+	}
+
 	public static boolean isHTTPURL(@Nonnull String url)
 	{
 		return url.startsWith("http://") || url.startsWith("https://");

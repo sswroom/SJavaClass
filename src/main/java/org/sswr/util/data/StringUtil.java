@@ -2021,4 +2021,42 @@ public class StringUtil
 			return 6;
 		}
 	}
+
+	/**
+	 * Index of using UTF8 bytes
+	 * @param buff byte array to search
+	 * @param ofst offset of byte array to search
+	 * @param buffSize size of byte array to size
+	 * @param searchStr string to search
+	 * @return index of first match counting from ofst or -1 if not found
+	 */
+	public static int indexOfUTF8(@Nonnull byte[] buff, int ofst, int buffSize, @Nonnull String searchStr)
+	{
+		byte[] searchBuff = searchStr.getBytes(StandardCharsets.UTF_8);
+		int i = ofst;
+		int j = ofst + buffSize - searchBuff.length;
+		int k;
+		int l = searchBuff.length;
+		boolean match;
+		while (i < j)
+		{
+			match = true;
+			k = 0;
+			while (k < l)
+			{
+				if (buff[i + k] != searchBuff[k])
+				{
+					match = false;
+					break;
+				}
+				k++;
+			}
+			if (match)
+			{
+				return i - ofst;
+			}
+			i++;
+		}
+		return -1;
+	}
 }

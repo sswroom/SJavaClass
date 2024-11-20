@@ -356,7 +356,6 @@ public class TCPClient extends IOStream
 		}
 		catch (IOException ex)
 		{
-			ex.printStackTrace();
 		}
 	}
 
@@ -384,6 +383,11 @@ public class TCPClient extends IOStream
 		return this.s;
 	}
 
+	public void replaceSocket(@Nonnull Socket s)
+	{
+		this.s = s;
+	}
+	
 	public long getTotalRecvSize()
 	{
 		return this.totalRecvSize;

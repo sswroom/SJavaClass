@@ -8,36 +8,49 @@ import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.security.cert.Certificate;
 import java.time.Duration;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
-import javax.xml.crypto.Data;
 
 import org.sswr.util.basic.ArrayListStr;
 import org.sswr.util.crypto.CertUtil;
 import org.sswr.util.crypto.MyX509Cert;
 import org.sswr.util.crypto.MyX509File;
 import org.sswr.util.data.ByteTool;
-import org.sswr.util.data.LineBreakType;
 import org.sswr.util.data.SharedDouble;
 import org.sswr.util.data.StringUtil;
 import org.sswr.util.data.textenc.URIEncoding;
 import org.sswr.util.io.FileStream;
 import org.sswr.util.io.MemoryStream;
+import org.sswr.util.io.Path;
 import org.sswr.util.io.FileStream.BufferType;
 import org.sswr.util.io.FileStream.FileMode;
 import org.sswr.util.io.FileStream.FileShare;
-import org.w3c.dom.Text;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
 public class HTTPMyClient extends HTTPClient{
-	private static final boolean LOGREPLY = false;
-	private static final boolean SHOWDEBUG = false;
-	private static final boolean DEBUGSPEED = false;
+	private static boolean LOGREPLY = false;
+	private static boolean SHOWDEBUG = false;
+	private static boolean DEBUGSPEED = false;
 	private static final int BUFFSIZE = 8192;
+
+	public static void setLogReply(boolean logReply)
+	{
+		LOGREPLY = logReply;
+	}
+
+	public static void setShowDebug(boolean showDebug)
+	{
+		SHOWDEBUG = showDebug;
+	}
+
+	public static void setDebugSpeed(boolean debugSpeed)
+	{
+		DEBUGSPEED = debugSpeed;
+	}
 
 	@Nullable private FileStream clsDataFS;
 	@Nullable protected SSLEngine ssl;
@@ -51,6 +64,7 @@ public class HTTPMyClient extends HTTPClient{
 	protected long contRead;
 	protected int contEnc;
 	protected int chunkSizeLeft;
+	protected List<String> headers;
 
 	@Nonnull protected byte[] dataBuff;
 	protected int buffSize;
@@ -59,6 +73,7 @@ public class HTTPMyClient extends HTTPClient{
 		
 	protected int readRAWInternal(@Nonnull byte[] buff, int ofst, int size)
 	{
+		FileStream clsDataFS;
 		TCPClient cli;
 		if (size > BUFFSIZE)
 		{
@@ -91,7 +106,7 @@ public class HTTPMyClient extends HTTPClient{
 			{
 				if (chunkSizeLeft > this.buffSize && BUFFSIZE - 1 - this.buffSize > 0)
 				{
-					if (this.cli == null)
+					if ((cli = this.cli) == null)
 					{
 						return 0;
 					}
@@ -102,9 +117,9 @@ public class HTTPMyClient extends HTTPClient{
 						{
 							System.out.println("Return Read size(1) = "+0);
 						}
-						if (this.cli.isClosed())
+						if (cli.isClosed())
 						{
-							this.cli.dispose();
+							cli.dispose();
 							this.cli = null;
 						}
 						return 0;
@@ -113,30 +128,30 @@ public class HTTPMyClient extends HTTPClient{
 					{
 						System.out.println("Read from remote(1) = "+i);
 					}
-					if (LOGREPLY)
+					if (LOGREPLY && (clsDataFS = this.clsDataFS) != null)
 					{
 						if (i > 0)
 						{
-							this.clsDataFS.write(this.dataBuff, this.buffSize, i);
+							clsDataFS.write(this.dataBuff, this.buffSize, i);
 						}
 					}
 					this.totalDownload += i;
 					this.buffSize += i;
 				}
-				if (this.chunkSizeLeft <= 2 && this.cli != null)
+				if (this.chunkSizeLeft <= 2 && (cli = this.cli) != null)
 				{
 					while (this.chunkSizeLeft > this.buffSize)
 					{
-						i = this.cli.read(this.dataBuff, this.buffSize, BUFFSIZE - 1 - this.buffSize);
+						i = cli.read(this.dataBuff, this.buffSize, BUFFSIZE - 1 - this.buffSize);
 						if (i == 0)
 						{
 							if (SHOWDEBUG)
 							{
 								System.out.println("Return Read size(1.2) = "+0);
 							}
-							if (this.cli.isClosed())
+							if (cli.isClosed())
 							{
-								this.cli.dispose();
+								cli.dispose();
 								this.cli = null;
 							}
 							return 0;
@@ -145,11 +160,11 @@ public class HTTPMyClient extends HTTPClient{
 						{
 							System.out.println("Read from remote(1.2) = "+i);
 						}
-						if (LOGREPLY)
+						if (LOGREPLY && (clsDataFS = this.clsDataFS) != null)
 						{
 							if (i > 0)
 							{
-								this.clsDataFS.write(this.dataBuff, this.buffSize, i);
+								clsDataFS.write(this.dataBuff, this.buffSize, i);
 							}
 						}
 						this.totalDownload += i;
@@ -234,19 +249,19 @@ public class HTTPMyClient extends HTTPClient{
 				{
 					System.out.println("Read from remote(2) = "+i);
 				}
-				if (LOGREPLY)
+				if (LOGREPLY && (clsDataFS = this.clsDataFS) != null)
 				{
 					if (i > 0)
 					{
-						this.clsDataFS.write(this.dataBuff, this.buffSize, i);
+						clsDataFS.write(this.dataBuff, this.buffSize, i);
 					}
 				}
 				this.totalDownload += i;
 				this.buffSize += i;
 			}
-			while (-1 == (i = StringUtil.indexOf(this.dataBuff, 0, this.buffSize, "\r\n")))
+			while (-1 == (i = StringUtil.indexOfUTF8(this.dataBuff, 0, this.buffSize, "\r\n")))
 			{
-				if (this.cli == null)
+				if ((cli = this.cli) == null)
 				{
 					return 0;
 				}
@@ -258,16 +273,16 @@ public class HTTPMyClient extends HTTPClient{
 					}
 					return 0;
 				}
-				i = this.cli.read(this.dataBuff, this.buffSize, BUFFSIZE - 1 - this.buffSize);
+				i = cli.read(this.dataBuff, this.buffSize, BUFFSIZE - 1 - this.buffSize);
 				if (i == 0)
 				{
 					if (SHOWDEBUG)
 					{
 						System.out.println("Return read size(6) = "+0);
 					}
-					if (this.cli.isClosed())
+					if (cli.isClosed())
 					{
-						this.cli.dispose();
+						cli.dispose();
 						this.cli = null;
 					}
 					return 0;
@@ -276,9 +291,9 @@ public class HTTPMyClient extends HTTPClient{
 				{
 					System.out.println("Read from remote(3) = "+i);
 				}
-				if (LOGREPLY)
+				if (LOGREPLY && (clsDataFS = this.clsDataFS) != null)
 				{
-					this.clsDataFS.write(this.dataBuff, this.buffSize, i);
+					clsDataFS.write(this.dataBuff, this.buffSize, i);
 				}
 				this.totalDownload += i;
 				this.buffSize += i;
@@ -294,7 +309,8 @@ public class HTTPMyClient extends HTTPClient{
 			{
 				System.out.println("Chunk size "+new String(this.dataBuff, 0, i, StandardCharsets.UTF_8));
 			}
-			j = Text.StrHex2UInt32C(this.dataBuff);
+			String s = new String(this.dataBuff, 0, i, StandardCharsets.UTF_8);
+			j = ByteTool.intOr(StringUtil.hex2Int(s), 0);
 			if (j == 0 && i == 1 && this.dataBuff[0] == '0')
 			{
 				i = 3;
@@ -329,10 +345,10 @@ public class HTTPMyClient extends HTTPClient{
 				System.out.println("set chunkSizeLeft = "+this.chunkSizeLeft);
 			}
 			i += 2;
-			if (this.buffSize == i && this.cli != null)
+			if (this.buffSize == i && (cli = this.cli) != null)
 			{
 				this.buffSize = 0;
-				i = this.cli.read(this.dataBuff, 0, BUFFSIZE - 1);
+				i = cli.read(this.dataBuff, 0, BUFFSIZE - 1);
 				if (i == 0)
 				{
 					if (SHOWDEBUG)
@@ -345,11 +361,11 @@ public class HTTPMyClient extends HTTPClient{
 				{
 					System.out.println("Read from remote(2.2) = "+i);
 				}
-				if (LOGREPLY)
+				if (LOGREPLY && (clsDataFS = this.clsDataFS) != null)
 				{
 					if (i > 0)
 					{
-						this.clsDataFS.write(this.dataBuff, this.buffSize, i);
+						clsDataFS.write(this.dataBuff, this.buffSize, i);
 					}
 				}
 				this.totalDownload += i;
@@ -425,11 +441,11 @@ public class HTTPMyClient extends HTTPClient{
 		{
 			if (this.buffSize == 0)
 			{
-				if (this.cli == null)
+				if ((cli = this.cli) == null)
 				{
 					return 0;
 				}
-				this.buffSize = this.cli.read(this.dataBuff, 0, size);
+				this.buffSize = cli.read(this.dataBuff, 0, size);
 				this.totalDownload += this.buffSize;
 				if (SHOWDEBUG)
 				{
@@ -439,16 +455,16 @@ public class HTTPMyClient extends HTTPClient{
 						System.out.println("WSA Error code=0x%X\r\n", WSAGetLastError());
 					}*/
 				}
-				if (LOGREPLY)
+				if (LOGREPLY && (clsDataFS = this.clsDataFS) != null)
 				{
 					if (this.buffSize > 0)
 					{
-						this.clsDataFS.write(this.dataBuff, 0, this.buffSize);
+						clsDataFS.write(this.dataBuff, 0, this.buffSize);
 					}
 				}
-				if (this.cli.isClosed())
+				if (cli.isClosed())
 				{
-					this.cli.dispose();
+					cli.dispose();
 					this.cli = null;
 				}
 			}
@@ -482,26 +498,20 @@ public class HTTPMyClient extends HTTPClient{
 		}
 	}
 
-	public HTTPMyClient(@Nonnull TCPClientFactory clif, @Nullable SSLEngine ssl, @Nullable String userAgent, bool kaConn)
+	public HTTPMyClient(@Nonnull TCPClientFactory clif, @Nullable SSLEngine ssl, @Nullable String userAgent, boolean kaConn)
 	{
 		super(clif, kaConn);
+		this.headers = new ArrayList<String>();
 		this.reqMstm = new MemoryStream();
+		this.reqHeaders = new ArrayListStr();
 		if (userAgent == null)
 		{
 			userAgent = "sswr/1.0";
 		}
 		if (LOGREPLY)
 		{
-			UTF8Char sbuff[512];
-			UnsafeArray<UTF8Char> sptr;
-			Data.DateTime dt;
-			this.clsData = MemAlloc(ClassData, 1);
-			sptr = IO.Path.GetProcessFileName(sbuff);
-			sptr = IO.Path.AppendPath(sbuff, sptr, CSTR("HTTPClient_"));
-			dt.SetCurrTimeUTC();
-			sptr = Text.StrInt64(sptr, dt.ToTicks());
-			sptr = Text.StrConcatC(sptr, UTF8STRC(".dat"));
-			this.clsDataFS = new FileStream(CSTRP(sbuff, sptr), FileMode.Create, FileShare.DenyNone, BufferType.Normal);
+			String fileName = Path.appendPath(Path.getProcessFileName(), "HTTPClient_"+System.currentTimeMillis()+".dat");
+			this.clsDataFS = new FileStream(fileName, FileMode.Create, FileShare.DenyNone, BufferType.Normal);
 		}
 		this.ssl = ssl;
 		this.cli = null;
@@ -517,6 +527,7 @@ public class HTTPMyClient extends HTTPClient{
 
 	public void dispose()
 	{
+		FileStream clsDataFS;
 		TCPClient cli;
 		if ((cli = this.cli) != null)
 		{
@@ -536,9 +547,9 @@ public class HTTPMyClient extends HTTPClient{
 			cli.dispose();
 			this.cli = null;
 		}
-		if (LOGREPLY)
+		if (LOGREPLY && (clsDataFS = this.clsDataFS) != null)
 		{
-			this.clsDataFS.dispose();
+			clsDataFS.dispose();
 		}
 	}
 
@@ -586,7 +597,8 @@ public class HTTPMyClient extends HTTPClient{
 
 	public void close()
 	{
-		if (this.cli != null)
+		TCPClient cli;
+		if ((cli = this.cli) != null)
 		{
 			cli.shutdownSend();
 			cli.close();
@@ -601,13 +613,13 @@ public class HTTPMyClient extends HTTPClient{
 
 	public boolean connect(@Nonnull String url, @Nonnull RequestMethod method, @Nullable SharedDouble timeDNS, @Nullable SharedDouble timeConn, boolean defHeaders)
 	{
+		FileStream clsDataFS;
 		String urltmp;
 		String svrname;
 		String host;
 		TCPClient cli;
 
 		int i;
-		int hostLen;
 		String ptr1;
 		String optptr2;
 		String[] ptrs;
@@ -750,21 +762,21 @@ public class HTTPMyClient extends HTTPClient{
 			this.svrAddr = addr;
 			if (SHOWDEBUG)
 			{
-				System.out.println("Server IP: "+addr.toString()+":"+port+", t = "+addr.getClass().getName());
+				System.out.println("Server IP: "+addr.getHostAddress()+":"+port+", t = "+addr.getClass().getName());
 			}
 			SSLEngine ssl;
 			if (secure && (ssl = this.ssl) != null)
 			{
 				//Net.SSLEngine.ErrorType err;
-				this.cli = new TCPClient(cliHost, port, ssl, TCPClientType.SSL, (int)this.timeout.toMillis());
-				if (SHOWDEBUG)
+				this.cli = cli = ssl.clientConnect(clif, cliHost, port, this.timeout);
+				if (cli == null || cli.isConnectError())
 				{
-					if (this.cli.isConnectError())
+					if (SHOWDEBUG)
 					{
 						System.out.println("Connect error: ");
-						this.cli.dispose();
-						this.cli = null;
 					}
+					if (cli != null) cli.dispose();
+					this.cli = null;
 				}
 			}
 			else
@@ -795,7 +807,7 @@ public class HTTPMyClient extends HTTPClient{
 				{
 					System.out.println("Error in connect to server");
 				}
-				this.cli.dispose();
+				cli.dispose();
 				this.cli = null;
 
 				this.writing = true;
@@ -838,23 +850,17 @@ public class HTTPMyClient extends HTTPClient{
 					if (timeConn != null) timeConn.value = -1;
 					return false;
 				}
-				if (LOGREPLY)
+				if (LOGREPLY && (clsDataFS = this.clsDataFS) != null)
 				{
-					this.clsDataFS.write(this.dataBuff, 0, size);
+					clsDataFS.write(this.dataBuff, 0, size);
 				}
 				this.contRead += size;
 			}
 			if (timeDNS != null) timeDNS.value = 0;
 			if (timeConn != null) timeConn.value = 0;
 			this.contRead = 0;
-			i = this.headers.GetCount();
-			while (i-- > 0)
-			{
-				OPTSTR_DEL(this.headers.RemoveAt(i));
-			}
-			this.headers.Clear();
-			LIST_FREE_STRING(&this.reqHeaders);
-			this.reqHeaders.Clear();
+			this.headers.clear();
+			this.reqHeaders.clear();
 		}
 		else
 		{
@@ -899,6 +905,7 @@ public class HTTPMyClient extends HTTPClient{
 		case HTTP_CONNECT:
 		case Unknown:
 		case HTTP_GET:
+		default:
 			this.canWrite = false;
 			this.writing = false;
 			reqStr = "GET "+ptr2+" HTTP/1.1\r\n";
@@ -931,8 +938,8 @@ public class HTTPMyClient extends HTTPClient{
 		this.reqMstm.write(tmpbuff, 0, tmpbuff.length);
 		if (SHOWDEBUG)
 		{
-			System.out.println("Resquest Data: "+reqStr);
-			System.out.println("Add Header: "+host);
+			System.out.print("Request Data: "+reqStr);
+			System.out.print("Add Header: "+host);
 		}
 
 		if (defHeaders)
@@ -954,7 +961,6 @@ public class HTTPMyClient extends HTTPClient{
 
 	public void addHeader(@Nonnull String name, @Nonnull String value)
 	{
-		TCPClient cli;
 		if (this.reqHeaders.sortedIndexOf(name) >= 0)
 		{
 			if (SHOWDEBUG)
@@ -964,7 +970,7 @@ public class HTTPMyClient extends HTTPClient{
 			return;
 		}
 
-		if ((cli = this.cli) != null && !this.writing)
+		if (this.cli != null && !this.writing)
 		{
 			this.reqMstm.write((name + ": "+value+"\r\n").getBytes(StandardCharsets.UTF_8));
 			if (SHOWDEBUG)
@@ -984,9 +990,10 @@ public class HTTPMyClient extends HTTPClient{
 
 	public void endRequest(@Nullable SharedDouble timeReq, @Nullable SharedDouble timeResp)
 	{
+		FileStream clsDataFS;
 		TCPClient cli;
 		Socket soc;
-		if ((this.writing && !this.canWrite) || !this.cli.SetTo(cli) || !cli.GetSocket().SetTo(soc))
+		if ((this.writing && !this.canWrite) || (cli = this.cli) == null || (soc = cli.getSocket()) == null)
 		{
 			if (timeReq != null) timeReq.value = -1;
 			if (timeResp != null) timeResp.value = -1;
@@ -1010,7 +1017,7 @@ public class HTTPMyClient extends HTTPClient{
 			this.canWrite = false;
 			this.writing = true;
 
-			this.reqMstm.Write(Data.ByteArrayR((UInt8*)"\r\n", 2));
+			this.reqMstm.write("\r\n".getBytes(StandardCharsets.UTF_8), 0, 2);
 			int writeSize = 0;
 			int currSize = 0;
 			byte[] reqBuff = this.reqMstm.getBuff();
@@ -1050,11 +1057,11 @@ public class HTTPMyClient extends HTTPClient{
 				{
 					System.out.println("Read from remote(6) = "+recvSize);
 				}
-				if (LOGREPLY)
+				if (LOGREPLY && (clsDataFS = this.clsDataFS) != null)
 				{
 					if (recvSize > 0)
 					{
-						this.clsDataFS.write(this.dataBuff, this.buffSize, recvSize);
+						clsDataFS.write(this.dataBuff, this.buffSize, recvSize);
 					}
 				}
 				this.totalDownload += recvSize;
@@ -1076,126 +1083,124 @@ public class HTTPMyClient extends HTTPClient{
 				System.out.println("Read buffSize = "+this.buffSize);
 			}
 			this.dataBuff[this.buffSize] = 0;
-			if (Text.StrStartsWithC(this.dataBuff, this.buffSize, UTF8STRC("HTTP/")))
+			if (StringUtil.startsWithC(this.dataBuff, 0, this.buffSize, "HTTP/"))
 			{
-				UTF8Char buff[256];
+				String lineBuff;
 				String[] ptrs;
-				UnsafeArray<UTF8Char> ptr;
-				UnsafeArray<UTF8Char> ptrEnd;
-				NN<Text.String> s;
-				UOSInt i;
-				i = Text.StrIndexOfC(this.dataBuff, this.buffSize, UTF8STRC("\r\n"));
-				MemCopyNO(buff, this.dataBuff.Ptr(), i);
-				buff[i] = 0;
+				int ptr;
+				int ptrEnd;
+				String s;
+				int i;
+				i = StringUtil.indexOfUTF8(this.dataBuff, 0, this.buffSize, "\r\n");
+				lineBuff = new String(this.dataBuff, 0, i, StandardCharsets.UTF_8);
 				if (SHOWDEBUG)
 				{
-					System.out.println("Read HTTP response: "+new String(buff, 0, i, StandardCharsets.UTF_8));
+					System.out.println("Read HTTP response: "+lineBuff);
 				}
-				ptrs = StringUtil.split(buff, ' ');
+				ptrs = StringUtil.split(lineBuff, " ");
 				this.respCode = (ptrs.length >= 2)?StringUtil.toIntegerS(ptrs[1], 0):0;
 
 				if (this.respCode == StatusCode.UNKNOWN)
 				{
 					if (SHOWDEBUG)
 					{
-						System.out.println("Unhandled HTTP response: "+new String(buff, 0, i, StandardCharsets.UTF_8));
+						System.out.println("Unhandled HTTP response: "+lineBuff);
 					}
 					this.respCode = StatusCode.UNKNOWN;
 				}
 
-				ptr = (UTF8Char*)&this.dataBuff[i + 2];
-				ptrEnd = &this.dataBuff[this.buffSize];
+				ptr = i + 2;
+				ptrEnd = this.buffSize;
 				this.contLeng = 0x7fffffff;
 				this.contRead = 0;
-				Bool header = true;
-				Bool eventStream = false;
-				UInt32 keepAliveTO = 0;
+				boolean header = true;
+				boolean eventStream = false;
+				int keepAliveTO = 0;
 				while (header)
 				{
-					while ((i = Text.StrIndexOfCharC(ptr, (UOSInt)(ptrEnd - ptr), '\n')) != INVALID_INDEX && i > 0)
+					while ((i = StringUtil.indexOfUTF8(this.dataBuff, ptr, ptrEnd - ptr, "\n")) != -1 && i > 0)
 					{
-						if (i == 1 && ptr[0] == '\r')
+						if (i == 1 && this.dataBuff[ptr] == '\r')
 						{
 							ptr++;
 							i = 0;
 							break;
 						}
-						if (ptr[i - 1] == '\r')
+						if (this.dataBuff[ptr + i - 1] == '\r')
 						{
-							s = Text.String.New(ptr, i - 1);
+							s = new String(this.dataBuff, ptr, i - 1, StandardCharsets.UTF_8);
 						}
 						else
 						{
-							s = Text.String.New(ptr, i);
+							s = new String(this.dataBuff, ptr, i, StandardCharsets.UTF_8);
 						}
 						if (SHOWDEBUG)
 						{
 							System.out.println("Read Header: "+s);
 						}
-						this.headers.Add(s);
+						this.headers.add(s);
 
-						if (s.StartsWithICase(UTF8STRC("Transfer-Encoding: ")))
+						String ls = s.toLowerCase();
+						if (ls.startsWith("transfer-encoding: "))
 						{
-							if (Text.StrStartsWithC(&s.v[19], s.leng - 19, UTF8STRC("chunked")))
+							if (s.startsWith("chunked", 19))
 							{
 								this.contEnc = 1;
 								this.chunkSizeLeft = 0;
 							}
 						}
-						else if (s.StartsWithICase(UTF8STRC("Content-")))
+						else if (ls.startsWith("content-"))
 						{
-							if (s.StartsWithICase(8, UTF8STRC("Length: ")))
+							if (ls.startsWith("length: ", 8))
 							{
-								s.leng = (UOSInt)(Text.StrTrimC(&s.v[16], s.leng - 16) - s.v);
-								Text.StrToUInt64S(&s.v[16], this.contLeng, 0);
+								this.contLeng = StringUtil.toLongS(s.substring(16).trim(), 0);
 							}
-							else if (s.StartsWithICase(8, UTF8STRC("Type: text/event-stream")))
+							else if (ls.startsWith("type: text/event-stream", 8))
 							{
 								eventStream = true;
 							}
-							else if (s.StartsWithICase(8, UTF8STRC("Disposition: ")))
+							else if (ls.startsWith("disposition: ", 8))
 							{
-								UOSInt i = s.IndexOf(UTF8STRC("filename="), 21);
-								if (i >= 0)
+								int si = s.indexOf("filename=", 21);
+								if (si >= 0)
 								{
-									if (s.v[i + 9] == '"')
+									if (s.charAt(si + 9) == '"')
 									{
-										UOSInt j = s.IndexOf('"', i + 10);
-										if (j > 0)
+										int sj = s.indexOf('"', si + 10);
+										if (sj > 0)
 										{
-											NN<Text.String> tmpS = Text.String.New(&s.v[i + 10], j - i - 10);
-											this.SetSourceName(tmpS);
-											tmpS.Release();
+											String tmpS = s.substring(si + 10, sj);
+											this.setSourceName(tmpS);
 										}
 									}
 									else
 									{
-										this.SetSourceName(s.ToCString().Substring(i + 9));
+										this.setSourceName(s.substring(si + 9));
 									}
 								}
 							}
 						}
-						else if (s.StartsWithICase(UTF8STRC("Keep-Alive: timeout=")))
+						else if (ls.startsWith("keep-alive: timeout="))
 						{
-							keepAliveTO = Text.StrToUInt32(&s.v[20]);
+							keepAliveTO = StringUtil.toIntegerS(s.substring(20), 0);
 						}
 
-						ptr = &ptr[i + 1];
+						ptr += i + 1;
 					}
 					if (i == 0)
 					{
-						ptr = &ptr[1];
-						this.hdrLen += (UOSInt)(ptr - this.dataBuff);
-						this.buffSize -= (UOSInt)(ptr - this.dataBuff);
-						MemCopyO(this.dataBuff.Ptr(), ptr.Ptr(), this.buffSize);
+						ptr += 1;
+						this.hdrLen += ptr;
+						this.buffSize -= ptr;
+						ByteTool.copyArray(this.dataBuff, 0, this.dataBuff, ptr, this.buffSize);
 
 						header = false;
 						break;
 					}
-					this.hdrLen += (UOSInt)(ptr - this.dataBuff);
-					this.buffSize = (UOSInt)(ptrEnd - ptr);
-					MemCopyO(this.dataBuff.Ptr(), ptr.Ptr(), this.buffSize);
-					i = cli.Read(Data.ByteArray(&this.dataBuff[this.buffSize], BUFFSIZE - 1 - this.buffSize));
+					this.hdrLen += ptr;
+					this.buffSize = ptrEnd - ptr;
+					ByteTool.copyArray(this.dataBuff, 0, this.dataBuff, ptr, this.buffSize);
+					i = cli.read(this.dataBuff, this.buffSize, BUFFSIZE - 1 - this.buffSize);
 					if (i <= 0)
 					{
 						header = false;
@@ -1207,20 +1212,20 @@ public class HTTPMyClient extends HTTPClient{
 						{
 							System.out.println("Read from remote(7) = "+i);
 						}
-						if (LOGREPLY)
+						if (LOGREPLY && (clsDataFS = this.clsDataFS) != null)
 						{
-							this.clsData.fs.Write(&this.dataBuff[this.buffSize], i);
+							clsDataFS.write(this.dataBuff, this.buffSize, i);
 						}
 						this.totalDownload += i;
 						this.buffSize += i;
 						this.dataBuff[this.buffSize] = 0;
-						ptr = this.dataBuff;
-						ptrEnd = &this.dataBuff[this.buffSize];
+						ptr = 0;
+						ptrEnd = this.buffSize;
 					}
 				}
 				if (eventStream && keepAliveTO != 0)
 				{
-					cli.SetTimeout((Int32)keepAliveTO * 1000);
+					cli.setTimeout((int)keepAliveTO * 1000);
 				}
 			}
 			else
@@ -1230,21 +1235,79 @@ public class HTTPMyClient extends HTTPClient{
 					System.out.println("No reply HTTP header");
 					System.out.println("Reply: "+new String(this.dataBuff, 0, this.buffSize));
 				}
-				this.respStatus = Net.WebStatus.SC_UNKNOWN;
+				this.respCode = StatusCode.UNKNOWN;
 			}
 			if (SHOWDEBUG)
 			{
-				System.out.println("End Request end status = "+this.respStatus);
+				System.out.println("End Request end status = "+this.respCode);
 			}
 		}
 	}
 
+	public int getRespHeaderCnt()
+	{
+		return this.headers.size();
+	}
+
+	@Nullable
+	public String getRespHeader(int index)
+	{
+		if (index < 0 || index >= this.headers.size())
+			return null;
+		return this.headers.get(index);
+	}
+
+	@Nullable
+	public String getRespHeader(@Nonnull String name)
+	{
+		String s2 = (name+": ").toLowerCase();
+		String s;
+		String ls;
+		Iterator<String> it = this.headers.iterator();
+		while (it.hasNext())
+		{
+			s = it.next();
+			ls = s.toLowerCase();
+			if (ls.startsWith(s2))
+			{
+				return s.substring(s2.length());
+			}
+		}
+		return null;
+	}
+
+	@Nullable
+	public String getContentEncoding()
+	{
+		return this.getRespHeader("Content-Encoding");
+	}
+
+	@Nullable
+	public ZonedDateTime getLastModified()
+	{
+		this.endRequest(null, null);
+		String t;
+		if ((t = this.getRespHeader("Last-Modified")) != null)
+		{
+			return HTTPClient.parseDateStr(t);
+		}
+		return null;
+	}
+
 	public void setTimeout(@Nonnull Duration timeout)
 	{
-		NN<Net.TCPClient> cli;
+		TCPClient cli;
 		this.timeout = timeout;
-		if (this.cli.SetTo(cli))
-			cli.SetTimeout(timeout);
+		if ((cli = this.cli) != null)
+			cli.setTimeout((int)timeout.toMillis());
+	}
+
+	public void setReadTimeout(int timeoutMS)
+	{
+		TCPClient cli;
+		this.timeout = Duration.ofMillis(timeoutMS);
+		if ((cli = this.cli) != null)
+			cli.setTimeout(timeoutMS);
 	}
 
 	public boolean isSecureConn()
@@ -1259,17 +1322,19 @@ public class HTTPMyClient extends HTTPClient{
 
 	public boolean setClientCert(@Nonnull MyX509Cert cert, @Nonnull MyX509File key)
 	{
-		if (this.ssl == null)
+		SSLEngine ssl;
+		if ((ssl = this.ssl) == null)
 			return false;
-		return this.ssl.clientSetCertASN1(cert, key);
+		return ssl.clientSetCertASN1(cert, key);
 	}
 
 	@Nullable
 	public List<MyX509Cert> getServerCerts()
 	{
-		if (this.cli != null && this.cli.isSSL())
+		TCPClient cli;
+		if ((cli = this.cli) != null && cli.isSSL())
 		{
-			List<Certificate> certList = this.cli.getRemoteCerts();
+			List<Certificate> certList = cli.getRemoteCerts();
 			if (certList == null)
 			{
 				return null;

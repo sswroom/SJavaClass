@@ -40,11 +40,19 @@ public class HTTPOSClient extends HTTPClient
 		this.userAgent = userAgent;
 	}
 
+	public HTTPOSClient(@Nonnull TCPClientFactory clif, @Nullable String userAgent, boolean kaConn)
+	{
+		super(clif, kaConn);
+		this.userAgent = userAgent;
+	}
+
 	@Override
-	public boolean connect(@Nonnull String url, @Nonnull RequestMethod method, boolean defHeaders)
+	public boolean connect(@Nonnull String url, @Nonnull RequestMethod method, @Nullable SharedDouble timeDNS, @Nullable SharedDouble timeConn, boolean defHeaders)
 	{
 		if (!url.startsWith("http://") && !url.startsWith("https://"))
 		{
+			if (timeDNS != null) timeDNS.value = -1;
+			if (timeConn != null) timeConn.value = -1;
 			return false;
 		}
 		this.hasContType = false;
@@ -70,6 +78,7 @@ public class HTTPOSClient extends HTTPClient
 			{
 				this.conn = (HttpURLConnection)targetURL.toURL().openConnection(proxy);
 			}
+			if (timeDNS != null) timeDNS.value = this.clk.getTimeDiff();
 			this.respCode = 0;
 			switch (this.method)
 			{
@@ -111,6 +120,7 @@ public class HTTPOSClient extends HTTPClient
 			{
 				this.conn.setRequestProperty("User-Agent", this.userAgent);
 			}
+			if (timeConn != null) timeConn.value = this.clk.getTimeDiff();
 			return true;
 		}
 		catch (IOException|URISyntaxException ex)
@@ -119,6 +129,8 @@ public class HTTPOSClient extends HTTPClient
 			{
 				ex.printStackTrace();
 			}
+			if (timeDNS != null) timeDNS.value = -1;
+			if (timeConn != null) timeConn.value = -1;
 			return false;
 		}
 	}
@@ -368,8 +380,8 @@ public class HTTPOSClient extends HTTPClient
 	@Nullable
 	public static byte[] getAsBytes(@Nonnull String url, int expectedStatusCode)
 	{
-		HTTPOSClient cli = new HTTPOSClient(null, null, false);
-		cli.connect(url, RequestMethod.HTTP_GET, false);
+		HTTPOSClient cli = new HTTPOSClient((SocketFactory)null, null, false);
+		cli.connect(url, RequestMethod.HTTP_GET, null, null, false);
 		if (cli.getRespStatus() != expectedStatusCode)
 		{
 			cli.close();
@@ -407,7 +419,7 @@ public class HTTPOSClient extends HTTPClient
 	public static byte[] getAsBytes(@Nullable SocketFactory sockf, @Nonnull String url, @Nullable Map<String, String> customHeaders, @Nullable SharedInt statusCode)
 	{
 		HTTPOSClient cli = new HTTPOSClient(sockf, null, false);
-		cli.connect(url, RequestMethod.HTTP_GET, true);
+		cli.connect(url, RequestMethod.HTTP_GET, null, null, true);
 		if (customHeaders != null)
 		{
 			cli.addHeaders(customHeaders);
@@ -452,8 +464,8 @@ public class HTTPOSClient extends HTTPClient
 	@Nullable
 	public static byte[] formPostAsBytes(@Nonnull String url, @Nonnull Map<String, String> formParams, @Nullable Map<String, String> customHeaders, @Nullable SharedInt statusCode, int timeoutMS)
 	{
-		HTTPOSClient cli = new HTTPOSClient(null, null, false);
-		cli.connect(url, RequestMethod.HTTP_POST, true);
+		HTTPOSClient cli = new HTTPOSClient((SocketFactory)null, null, false);
+		cli.connect(url, RequestMethod.HTTP_POST, null, null, true);
 		if (timeoutMS != 0)
 			cli.setReadTimeout(timeoutMS);
 		if (customHeaders != null)

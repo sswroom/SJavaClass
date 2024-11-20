@@ -22,6 +22,11 @@ public class HTTPProxyTCPClient extends TCPClient
 		Basic
 	}
 
+	public static void setDebug(boolean debug)
+	{
+		HTTPProxyTCPClient.debug = debug;
+	}
+
 	public HTTPProxyTCPClient(@Nonnull SocketFactory sockf, @Nonnull String proxyHost, int proxyPort, @Nonnull PasswordType pt, @Nullable String userName, @Nullable String pwd, @Nonnull String destHost, int destPort)
 	{
 		super(null, null);
@@ -30,7 +35,7 @@ public class HTTPProxyTCPClient extends TCPClient
 		InetAddress addr;
 		try
 		{
-			addr = InetAddress.getByName(destHost);
+			addr = InetAddress.getByName(proxyHost);
 		}
 		catch (UnknownHostException ex)
 		{
@@ -67,6 +72,7 @@ public class HTTPProxyTCPClient extends TCPClient
 			this.flags |= 12;
 			return;
 		}
+		this.s = s;
 		this.flags = 0;
 		this.cliId = SocketUtil.genSocketId(s);
 		
@@ -90,7 +96,7 @@ public class HTTPProxyTCPClient extends TCPClient
 		this.setTimeout(4000);
 		byte[] reqBuff = new byte[512];
 		int respSize = this.read(reqBuff, 0, 512);
-		this.setTimeout(-1);
+		this.setTimeout(60000);
 	
 		String reqStr = new String(reqBuff, 0, respSize, StandardCharsets.UTF_8);
 		if (debug)

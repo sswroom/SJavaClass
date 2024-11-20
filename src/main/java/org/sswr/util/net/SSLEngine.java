@@ -1,12 +1,14 @@
 package org.sswr.util.net;
 
 import java.io.File;
+import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,6 +17,8 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
@@ -220,16 +224,33 @@ public class SSLEngine
 		HttpsURLConnection.setDefaultHostnameVerifier(validHosts);
 	}
 
-/*	public TCPClient createClientConn(@Nonnull Socket s, @Nonnull String hostName)
+	@Nullable
+	public TCPClient clientConnect(@Nonnull TCPClientFactory clif, @Nonnull String host, int port, @Nonnull Duration timeout)
 	{
+		TCPClient cli = clif.create(host, port, timeout);
+		if (cli.isConnectError())
+		{
+			cli.dispose();
+			return null;
+		}
 		try
 		{
-			s.setTcpNoDelay(true);
-			s.setSoTimeout(2000);
-			SSLSocketFactory factory = sc.getSocketFactory();
-			factory.
+			SSLSocketFactory factory = this.sc.getSocketFactory();
+			SSLSocket soc = (SSLSocket)factory.createSocket(cli.getSocket(), null, false);
+			cli.replaceSocket(soc);
+			soc.setSoTimeout(5000);
+			soc.setUseClientMode(true);
+			soc.startHandshake();
+			return cli;
 		}
-	}*/
+		catch (IOException ex)
+		{
+			ex.printStackTrace();
+			cli.dispose();
+			return null;
+		}
+		
+	}
 
 	public static void setTrustStore(@Nonnull String path, @Nonnull String password)
 	{
