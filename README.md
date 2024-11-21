@@ -1,6 +1,7 @@
 # SJavaClass
 
 # Changes:
+0.5.20241121
 - Added StringUtil.utf32CharCnt
 - Added StringUtil.appendUTF32Char
 - Added StringUtil.indexOfUTF8
