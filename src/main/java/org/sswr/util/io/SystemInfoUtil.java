@@ -6,6 +6,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.ProcessHandle.Info;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -493,6 +495,25 @@ public class SystemInfoUtil
 			}
 		default:
 			return false;
+		}
+	}
+
+	@Nonnull
+	public static String getComputerName()
+	{
+ 		try
+		{
+			return InetAddress.getLocalHost().getHostName();
+		}
+		catch (UnknownHostException ex)
+		{
+			String host = System.getenv("COMPUTERNAME");
+			if (host != null && host.length() > 0)
+				return host;
+			host = System.getenv("HOST");
+			if (host != null && host.length() > 0)
+				return host;
+			return "Unknown";
 		}
 	}
 }

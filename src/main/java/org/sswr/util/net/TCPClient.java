@@ -29,6 +29,10 @@ public class TCPClient extends IOStream
 	protected long cliId;
 	protected int flags; //1 = shutdown send, 2 = shutdown recv, 4 = closed, 8 = connect error
 	protected int timeoutMS;
+	public static void setDebug(boolean debug)
+	{
+		TCPClient.debug = debug;
+	}
 
 	public TCPClient(@Nonnull String hostName, int port, @Nullable SSLEngine ssl, @Nonnull TCPClientType cliType)
 	{
@@ -135,7 +139,10 @@ public class TCPClient extends IOStream
 		}
 		catch (IOException ex)
 		{
-			ex.printStackTrace();
+			if (debug)
+			{
+				ex.printStackTrace();
+			}
 			this.flags = 12;
 			return;
 		}

@@ -1,6 +1,8 @@
 # SJavaClass
 
 # Changes:
+- Added SystemInfoUtil.getComputerName
+
 0.5.20241121
 - Added StringUtil.utf32CharCnt
 - Added StringUtil.appendUTF32Char
