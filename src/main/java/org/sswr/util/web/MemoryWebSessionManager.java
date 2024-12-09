@@ -56,10 +56,18 @@ public class MemoryWebSessionManager extends WebSessionManager implements Runnab
 					i = this.sesses.size();
 					while (i-- > 0)
 					{
-						synchronized(this)
+						try
 						{
-							sess = this.sesses.get(i);
-							sessId = this.sessIds.get(i);
+							synchronized(this)
+							{
+								sess = this.sesses.get(i);
+								sessId = this.sessIds.get(i);
+							}
+						}
+						catch (IndexOutOfBoundsException ex)
+						{
+							sess = null;
+							sessId = 0;
 						}
 						if (sess != null)
 						{

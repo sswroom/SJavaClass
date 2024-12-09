@@ -2,6 +2,7 @@
 
 # Changes:
 - Added SystemInfoUtil.getComputerName
+- Fix MemorySessionManager error
 
 0.5.20241121
 - Added StringUtil.utf32CharCnt
