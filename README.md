@@ -3,6 +3,8 @@
 # Changes:
 - Added SystemInfoUtil.getComputerName
 - Fix MemorySessionManager error
+- BinaryParser.nextTS support null
+- Fixed BinaryBuilder.appendBArr for large buffer
 
 0.5.20241121
 - Added StringUtil.utf32CharCnt

@@ -199,8 +199,28 @@ public class BinaryParser
 			this.error = true;
 			return null;
 		}
-		Instant inst = DateTimeUtil.newInstant(ByteTool.readInt64(this.buff, this.currOfst), ByteTool.readInt32(this.buff, this.currOfst + 8));
-		ZonedDateTime ret = DateTimeUtil.newZonedDateTime(inst, this.buff[this.currOfst + 12]);
+		long seconds = ByteTool.readInt64(this.buff, this.currOfst);
+		int nanosec = ByteTool.readInt32(this.buff, this.currOfst + 8);
+		byte tzQhr = this.buff[this.currOfst + 12];
+		ZonedDateTime ret;
+		if (seconds == 0 && nanosec == 0 && tzQhr == 127)
+		{
+			ret = null;			
+		}
+		else
+		{
+			Instant inst = DateTimeUtil.newInstant(seconds, nanosec);
+			try
+			{
+				ret = DateTimeUtil.newZonedDateTime(inst, tzQhr);
+			}
+			catch (Exception ex)
+			{
+				this.error = true;
+				ex.printStackTrace();
+				return null;
+			}
+		}
 		this.currOfst += 13;
 		return ret;
 	}

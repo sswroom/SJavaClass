@@ -169,7 +169,7 @@ public class BinaryBuilder
 	public void appendBArr(@Nonnull byte[] barr)
 	{
 		byte[] buff = new byte[6];
-		int size = StringUtil.writeChar(buff, 0, (char)barr.length);
+		int size = StringUtil.writeChar(buff, 0, barr.length);
 		this.baos.write(buff, 0, size);
 		this.baos.write(barr, 0, barr.length);
 	}
