@@ -5,6 +5,8 @@
 - Fix MemorySessionManager error
 - BinaryParser.nextTS support null
 - Fixed BinaryBuilder.appendBArr for large buffer
+- Added DBUtil.genObjSQL
+- Added DBUtil.setFailLogger
 
 0.5.20241121
 - Added StringUtil.utf32CharCnt

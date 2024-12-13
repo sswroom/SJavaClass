@@ -78,9 +78,14 @@ public class DBUtil {
 		PostgreSQLESRI
 	}
 
+	public static interface SQLFailLogger {
+		public void sqlFail(@Nonnull String failedSQL);
+	}
+
 	public static final int MAX_SQL_ITEMS = 100;
 	private static List<DBUpdateHandler> updateHandlers = null;
 	static LogTool sqlLogger = new LogTool();
+	private static SQLFailLogger sqlFailLogger = null;
 
 	public static void addUpdateHandler(@Nonnull DBUpdateHandler updateHandler)
 	{
@@ -97,6 +102,11 @@ public class DBUtil {
 		{
 			DBUtil.sqlLogger = sqlLogger;
 		}
+	}
+
+	public static void setFailLogger(@Nullable SQLFailLogger sqlFailLogger)
+	{
+		DBUtil.sqlFailLogger = sqlFailLogger;
 	}
 
 	@Nonnull
@@ -2648,6 +2658,164 @@ public class DBUtil {
 		return update(conn, table, oriObj, newObj, options);
 	}
 
+	@Nullable
+	public static <T> String genObjSQL(@Nonnull DBType dbType, @Nullable T oriObj, @Nullable T newObj)
+	{
+		TableInfo table = null;
+		if (oriObj != null)
+		{
+			table = parseTableInfo(oriObj.getClass());
+		}
+		else if (newObj != null)
+		{
+			table = parseTableInfo(newObj.getClass());
+		}
+		else
+		{
+			return null;
+		}
+		if (dbType == DBType.PostgreSQL && (table.tableAnn != null) && "sde".equals(table.tableAnn.schema()))
+		{
+			dbType = DBType.PostgreSQLESRI;
+		}
+		StringBuilder sb;
+		DBColumnInfo col;
+		int i;
+		int j;
+		try
+		{
+			if (newObj == null)
+			{
+				if (table.idCols.size() == 0)
+				{
+					return null;
+				}
+				sb = new StringBuilder();
+				sb.append("delete from ");
+				sb.append(getTableName(table.tableAnn, dbType));
+				sb.append(" where ");
+				i = 0;
+				j = table.idCols.size();
+				while (i < j)
+				{
+					col = table.idCols.get(i);
+					if (i > 0)
+					{
+						sb.append(" and ");
+					}
+					dbCol(sb, dbType, col.colName);
+					sb.append(" = ");
+					sb.append(dbVal(dbType, col, col.getter.get(oriObj)));
+					i++;
+				}
+				return sb.toString();
+			}
+			else if (oriObj == null)
+			{
+				sb = new StringBuilder();
+				sb.append("insert into ");
+				sb.append(getTableName(table.tableAnn, dbType));
+				sb.append(" (");
+				boolean found = false;
+				i = 0;
+				j = table.allCols.size();
+				while (i < j)
+				{
+					col = table.allCols.get(i);
+					if (col.genType != GenerationType.IDENTITY)
+					{
+						if (found)
+						{
+							sb.append(", ");
+						}
+						found = true;
+						sb.append(dbCol(dbType, col.colName));
+					}
+					i++;
+				}
+				sb.append(") values (");
+				found = false;
+				i = 0;
+				while (i < j)
+				{
+					col = table.allCols.get(i);
+					if (col.genType != GenerationType.IDENTITY)
+					{
+						if (found)
+						{
+							sb.append(", ");
+						}
+						found = true;
+						sb.append(dbVal(dbType, col, col.getter.get(newObj)));
+					}
+					i++;
+				}
+				sb.append(")");
+				return sb.toString();
+			}
+			else
+			{
+				Object o1;
+				Object o2;
+				boolean found = false;
+				sb = new StringBuilder();
+				sb.append("update ");
+				sb.append(getTableName(table.tableAnn, dbType));
+				sb.append(" set ");
+				i = 0;
+				j = table.allCols.size();
+				while (i < j)
+				{
+					col = table.allCols.get(i);
+					o1 = col.getter.get(oriObj);
+					o2 = col.getter.get(newObj);
+					if (!Objects.equals(o1, o2))
+					{
+						if (found)
+						{
+							sb.append(", ");
+						}
+						sb.append(dbCol(dbType, col.colName));
+						sb.append(" = ");
+						sb.append(dbVal(dbType, col, o2));
+						found = true;
+					}
+					i++;
+				}
+				if (!found)
+				{
+					return null;
+				}
+				sb.append(" where ");
+				i = 0;
+				j = table.idCols.size();
+				while (i < j)
+				{
+					col = table.idCols.get(i);
+					if (i > 0)
+					{
+						sb.append(" and ");
+					}
+					sb.append(dbCol(dbType, col.colName));
+					sb.append(" = ");
+					sb.append(dbVal(dbType, col, col.getter.get(oriObj)));
+					i++;
+				}
+				return sb.toString();
+			}
+		}
+		catch (IllegalAccessException ex)
+		{
+			sqlLogger.logException(ex);
+			return null;
+		}
+		catch (InvocationTargetException ex)
+		{
+			sqlLogger.logException(ex);
+			return null;
+		}
+	}
+
 	public static boolean executeNonQuery(@Nonnull Connection conn, @Nonnull String sql, @Nullable DBOptions options)
 	{
 		try
@@ -2666,6 +2834,10 @@ public class DBUtil {
 			if (options == null || !options.skipLog)
 			{
 				sqlLogger.logException(ex);
+			}
+			if (sqlFailLogger != null)
+			{
+				sqlFailLogger.sqlFail(sql);
 			}
 			return false;
 		}
