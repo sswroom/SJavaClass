@@ -7,6 +7,9 @@
 - Fixed BinaryBuilder.appendBArr for large buffer
 - Added DBUtil.genObjSQL
 - Added DBUtil.setFailLogger
+- Enhance IAMSmartAPI logging
+- Added IAMSmartClient.CEKUpdateListener
+- Added IAMSmartClient.updateCEK
 
 0.5.20241121
 - Added StringUtil.utf32CharCnt

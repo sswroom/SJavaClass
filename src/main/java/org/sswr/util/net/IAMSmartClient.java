@@ -3,15 +3,24 @@ package org.sswr.util.net;
 import org.sswr.util.crypto.MyX509File;
 import org.sswr.util.crypto.MyX509Key;
 import org.sswr.util.crypto.MyX509PrivKey;
+import org.sswr.util.data.StringUtil;
+import org.sswr.util.io.LogLevel;
+import org.sswr.util.io.LogTool;
 import org.sswr.util.parser.X509Parser;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
 public class IAMSmartClient {
+	public static interface CEKUpdateListener
+	{
+		public void cekUpdated(IAMSmartAPI.CEKInfo cek);
+	}
 	private IAMSmartAPI api;
 	private IAMSmartAPI.CEKInfo cek;
 	private MyX509PrivKey key;
+	private LogTool log;
+	private CEKUpdateListener cekListener;
 
 	private boolean prepareCEK()
 	{
@@ -29,6 +38,8 @@ public class IAMSmartClient {
 		}
 		if (!this.api.getKey(key, cek))
 			return false;
+		if (this.log != null) this.log.logMessage("CEK updated: exp="+cek.issueAt+", byte="+StringUtil.toHex(cek.key), LogLevel.ACTION);
+		if (this.cekListener != null) this.cekListener.cekUpdated(this.cek);
 		return currTime < cek.expiresAt;
 	}
 
@@ -54,6 +65,16 @@ public class IAMSmartClient {
 		}
 	}
 
+	public void setLog(@Nullable LogTool log)
+	{
+		this.log = log;
+	}
+
+	public void setCEKUpdateListener(CEKUpdateListener cekListener)
+	{
+		this.cekListener = cekListener;
+	}
+
 	public boolean isError()
 	{
 		return this.key == null;
@@ -63,13 +84,24 @@ public class IAMSmartClient {
 	{
 		if (!this.prepareCEK())
 			return false;
-		return this.api.getToken(code, directLogin, this.cek, token);
+		boolean succ = this.api.getToken(code, directLogin, this.cek, token);
+		if (!succ && this.log != null) this.log.logMessage("Failed to getToken", LogLevel.ERROR);
+		return succ;
 	}
 	
 	public boolean getProfiles(@Nonnull IAMSmartAPI.TokenInfo token, @Nonnull String eMEFields, @Nonnull String profileFields, @Nonnull IAMSmartAPI.ProfileInfo profiles)
 	{
 		if (!this.prepareCEK())
 			return false;
-		return this.api.getProfiles(token, eMEFields, profileFields, this.cek, profiles);
+		boolean succ = this.api.getProfiles(token, eMEFields, profileFields, this.cek, profiles);
+		if (!succ && this.log != null) this.log.logMessage("Failed to getProfiles", LogLevel.ERROR);
+		return succ;
+	}
+
+	public void updateCEK(@Nonnull byte[] key, long issueAt, long expiresAt)
+	{
+		this.cek.key = key;
+		this.cek.issueAt = issueAt;
+		this.cek.expiresAt = expiresAt;
 	}
 }

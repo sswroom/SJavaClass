@@ -23,12 +23,19 @@ import org.sswr.util.data.StringUtil;
 import org.sswr.util.data.JSONBuilder.ObjectType;
 import org.sswr.util.data.textbinenc.Base64Enc;
 import org.sswr.util.data.textenc.FormEncoding;
+import org.sswr.util.io.LogLevel;
+import org.sswr.util.io.LogTool;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
 public class IAMSmartAPI {
-	private static final boolean VERBOSE = false;
+	private static LogTool logger = null;
+	public static void setLog(LogTool log)
+	{
+		logger = log;
+	}
+
 	public static class CEKInfo
 	{
 		public byte[] key;
@@ -124,7 +131,7 @@ public class IAMSmartAPI {
 		}
 		catch (EncryptionException ex)
 		{
-			if (VERBOSE) ex.printStackTrace();
+			if (logger != null) logger.logException(ex);
 			return null;
 		}
 		if (encBuff.length != jsonMsg.length() + 16)
@@ -137,52 +144,52 @@ public class IAMSmartAPI {
 		sb.append("{\"content\":\"");
 		b64.encodeBin(sb, msgBuff, 0, jsonMsgBuff.length + 32);
 		sb.append("\"}");
-		if (VERBOSE)
+		if (logger != null)
 		{
-			System.out.println("PostEncReq.Url: "+url);
-			System.out.println("PostEncReq.Req: "+sb.toString());
+			logger.logMessage("PostEncReq.Url: "+url, LogLevel.RAW);
+			logger.logMessage("PostEncReq.Req: "+sb.toString(), LogLevel.RAW);
 		}
 		HTTPClient cli = HTTPClient.createConnect(this.clif, this.ssl, url, RequestMethod.HTTP_POST, false);
 		this.initHTTPClient(cli, sb.toString());
 		byte[] dataBuff = cli.readToEnd();
 		int code = cli.getRespStatus();
 		cli.close();
-		if (VERBOSE)
+		if (logger != null)
 		{
-			System.out.println("PostEncReq.Status: "+code);
-			System.out.println("PostEncReq.Content: "+new String(dataBuff, StandardCharsets.UTF_8));
+			logger.logMessage("PostEncReq.Status: "+code, LogLevel.RAW);
+			logger.logMessage("PostEncReq.Content: "+new String(dataBuff, StandardCharsets.UTF_8), LogLevel.RAW);
 		}
 		if (code != 200)
 		{
-			if (VERBOSE)
+			if (logger != null)
 			{
-				System.out.println("Status is not OK");
+				logger.logMessage("Status is not OK: "+code, LogLevel.ACTION);
 			}
 			return null;
 		}
 		JSONBase json;
 		if ((json = JSONBase.parseJSONStr(new String(dataBuff, StandardCharsets.UTF_8))) == null)
 		{
-			if (VERBOSE)
+			if (logger != null)
 			{
-				System.out.println("Response is not JSON");
+				logger.logMessage("Response is not JSON", LogLevel.ACTION);
 			}
 			return null;
 		}
 		String s;
 		if ((s = json.getValueString("message")) == null || !s.equals("SUCCESS"))
 		{
-			if (VERBOSE)
+			if (logger != null)
 			{
-				System.out.println("Response is not success");
+				logger.logMessage("Response is not success", LogLevel.ACTION);
 			}
 			return null;
 		}
 		if ((s = json.getValueString("content")) == null)
 		{
-			if (VERBOSE)
+			if (logger != null)
 			{
-				System.out.println("Response content not found");
+				logger.logMessage("Response content not found", LogLevel.ACTION);
 			}
 			return null;
 		}
@@ -190,17 +197,17 @@ public class IAMSmartAPI {
 		msgBuff = b64.decodeBin(s);
 		if (msgBuff == null || msgBuff.length < 32)
 		{
-			if (VERBOSE)
+			if (logger != null)
 			{
-				System.out.println("Response content too short");
+				logger.logMessage("Response content too short", LogLevel.ACTION);
 			}
 			return null;
 		}
 		if (ByteTool.readMInt32(msgBuff, 0) != 12)
 		{
-			if (VERBOSE)
+			if (logger != null)
 			{
-				System.out.println("Response content IV not found");
+				logger.logMessage("Response content IV not found", LogLevel.ACTION);
 			}
 			return null;
 		}
@@ -212,28 +219,27 @@ public class IAMSmartAPI {
 		}
 		catch (EncryptionException ex)
 		{
-			if (VERBOSE)
-				ex.printStackTrace();
+			if (logger != null) logger.logException(ex);
 			return null;
 		}
 		if (decBuff.length != msgBuff.length - 32)
 		{
-			if (VERBOSE)
+			if (logger != null)
 			{
-				System.out.println("Decrypted length not valid");
+				logger.logMessage("Decrypted length not valid", LogLevel.ACTION);
 			}
 			return null;
 		}
-		if (VERBOSE)
+		if (logger != null)
 		{
-			System.out.println("PostEncReq.Dec Content = "+new String(decBuff, StandardCharsets.UTF_8));
+			logger.logMessage("PostEncReq.Dec Content = "+new String(decBuff, StandardCharsets.UTF_8), LogLevel.ACTION);
 		}
 		JSONBase decJSON = JSONBase.parseJSONStr(new String(decBuff, StandardCharsets.UTF_8));
-		if (VERBOSE)
+		if (logger != null)
 		{
 			if (decJSON == null)
 			{
-				System.out.println("Decrypted content is not JSON");
+				logger.logMessage("Decrypted content is not JSON", LogLevel.ACTION);
 			}
 		}
 		return decJSON;
@@ -374,25 +380,25 @@ public class IAMSmartAPI {
 		byte[] dataBuff = cli.readToEnd();
 		int code = cli.getRespStatus();
 		cli.close();
-		if (VERBOSE)
+		if (logger != null)
 		{
-			System.out.println("GetKey.Status: "+code);
-			System.out.println("GetKey.Content: "+new String(dataBuff, StandardCharsets.UTF_8));
+			logger.logMessage("GetKey.Status: "+code, LogLevel.RAW);
+			logger.logMessage("GetKey.Content: "+new String(dataBuff, StandardCharsets.UTF_8), LogLevel.RAW);
 		}
 		if (code != 200)
 		{
-			if (VERBOSE)
+			if (logger != null)
 			{
-				System.out.println("Status is not OK");
+				logger.logMessage("Status is not OK: "+code, LogLevel.ACTION);
 			}
 			return false;
 		}
 		JSONBase json;
 		if ((json = JSONBase.parseJSONStr(new String(dataBuff, StandardCharsets.UTF_8))) == null)
 		{
-			if (VERBOSE)
+			if (logger != null)
 			{
-				System.out.println("Response is not JSON");
+				logger.logMessage("Response is not JSON", LogLevel.ACTION);
 			}
 			return false;
 		}
@@ -405,9 +411,9 @@ public class IAMSmartAPI {
 			((issueAt = json.getValueAsInt64("content.issueAt")) == 0) ||
 			((expiresIn = json.getValueAsInt64("content.expiresIn")) == 0))
 		{
-			if (VERBOSE)
+			if (logger != null)
 			{
-				System.out.println("Response content is not valid");
+				logger.logMessage("Response content is not valid", LogLevel.ACTION);
 			}
 			return false;
 		}
@@ -417,9 +423,9 @@ public class IAMSmartAPI {
 		pubKeyBuff = b64.decodeBin(pubKey);
 		if (!MyX509File.isPublicKeyInfo(pubKeyBuff, 0, pubKeyBuff.length, "1"))
 		{
-			if (VERBOSE)
+			if (logger != null)
 			{
-				System.out.println("PubKey is not valid");
+				logger.logMessage("PubKey is not valid", LogLevel.ACTION);
 			}
 			return false;
 		}
@@ -429,17 +435,17 @@ public class IAMSmartAPI {
 		byte[] pubKeyId = pk.getKeyId();
 		if (pubKeyId == null || privKeyId == null)
 		{
-			if (VERBOSE)
+			if (logger != null)
 			{
-				System.out.println("Error in getting key id");
+				logger.logMessage("Error in getting key id", LogLevel.ACTION);
 			}
 			return false;
 		}
 		if (!ByteTool.byteEquals(pubKeyId, 0, privKeyId, 0, 20))
 		{
-			if (VERBOSE)
+			if (logger != null)
 			{
-				System.out.println("PubKey and PrivKey is not the same");
+				logger.logMessage("PubKey and PrivKey is not the same", LogLevel.ACTION);
 			}
 			return false;
 		}
@@ -448,37 +454,37 @@ public class IAMSmartAPI {
 		cekBuff1 = b64.decodeBin(secretKey);
 		if (cekBuff1 == null || cekBuff1.length != 256)
 		{
-			if (VERBOSE)
+			if (logger != null)
 			{
-				System.out.println("secretKey length is not valid");
+				logger.logMessage("secretKey length is not valid", LogLevel.ACTION);
 			}
 			return false;
 		}
 		MyX509Key prkey = privKey.createKey();
 		if (prkey == null)
 		{
-			if (VERBOSE)
+			if (logger != null)
 			{
-				System.out.println("Error in converting PrivKey to Key");
+				logger.logMessage("Error in converting PrivKey to Key", LogLevel.ACTION);
 			}
 			return false;
 		}
 		cekBuff2 = prkey.decrypt(cekBuff1, 0, cekBuff1.length, CipherPadding.PKCS1);
 		if (cekBuff2 == null || cekBuff2.length != 32)
 		{
-			if (VERBOSE)
+			if (logger != null)
 			{
-				System.out.println("Decrypted key length is not valid");
+				logger.logMessage("Decrypted key length is not valid", LogLevel.ACTION);
 			}
 			return false;
 		}
-		if (VERBOSE)
+		if (logger != null)
 		{
 			sbURL.setLength(0);
 			StringUtil.appendHex(sbURL, cekBuff2, 0, cekBuff2.length, ' ', LineBreakType.CRLF);
-			System.out.println("CEK = "+ sbURL.toString());
-			System.out.println("IssueAt = "+ZonedDateTime.ofInstant(Instant.ofEpochMilli(issueAt), ZoneId.systemDefault()));
-			System.out.println("ExpiresAt = "+ZonedDateTime.ofInstant(Instant.ofEpochMilli(issueAt + expiresIn), ZoneId.systemDefault()));
+			logger.logMessage("CEK = "+ sbURL.toString(), LogLevel.RAW);
+			logger.logMessage("IssueAt = "+ZonedDateTime.ofInstant(Instant.ofEpochMilli(issueAt), ZoneId.systemDefault()), LogLevel.RAW);
+			logger.logMessage("ExpiresAt = "+ZonedDateTime.ofInstant(Instant.ofEpochMilli(issueAt + expiresIn), ZoneId.systemDefault()), LogLevel.RAW);
 		}
 		cek.key = cekBuff2;
 		cek.issueAt = issueAt;
@@ -497,25 +503,25 @@ public class IAMSmartAPI {
 		byte[] dataBuff = cli.readToEnd();
 		int code = cli.getRespStatus();
 		cli.close();
-		if (VERBOSE)
+		if (logger != null)
 		{
-			System.out.println("RevokeKey.Status: "+code);
-			System.out.println("RevokeKey.Content: "+new String(dataBuff, StandardCharsets.UTF_8));
+			logger.logMessage("RevokeKey.Status: "+code, LogLevel.RAW);
+			logger.logMessage("RevokeKey.Content: "+new String(dataBuff, StandardCharsets.UTF_8), LogLevel.RAW);
 		}
 		if (code != 200)
 		{
-			if (VERBOSE)
+			if (logger != null)
 			{
-				System.out.println("Status is not OK");
+				logger.logMessage("Status is not OK", LogLevel.ACTION);
 			}
 			return false;
 		}
 		JSONBase json;
 		if ((json = JSONBase.parseJSONStr(new String(dataBuff, StandardCharsets.UTF_8))) == null)
 		{
-			if (VERBOSE)
+			if (logger != null)
 			{
-				System.out.println("Response is not JSON");
+				logger.logMessage("Response is not JSON", LogLevel.ACTION);
 			}
 			return false;
 		}
