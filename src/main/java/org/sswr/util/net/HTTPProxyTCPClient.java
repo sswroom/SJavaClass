@@ -9,22 +9,30 @@ import java.nio.charset.StandardCharsets;
 
 import org.sswr.util.data.textbinenc.Base64Enc;
 import org.sswr.util.data.textbinenc.Base64Enc.B64Charset;
+import org.sswr.util.io.LogLevel;
+import org.sswr.util.io.LogTool;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
 public class HTTPProxyTCPClient extends TCPClient
 {
-	private static boolean debug = false;
+	private static LogTool log = null;
+	private static int tunnelConnectTO = 4000;
 	public enum PasswordType
 	{
 		None,
 		Basic
 	}
 
-	public static void setDebug(boolean debug)
+	public static void setLog(LogTool log)
 	{
-		HTTPProxyTCPClient.debug = debug;
+		HTTPProxyTCPClient.log = log;
+	}
+
+	public static void setTunnelConnectTimeout(int ms)
+	{
+		tunnelConnectTO = ms;
 	}
 
 	public HTTPProxyTCPClient(@Nonnull SocketFactory sockf, @Nonnull String proxyHost, int proxyPort, @Nonnull PasswordType pt, @Nullable String userName, @Nullable String pwd, @Nonnull String destHost, int destPort)
@@ -39,10 +47,10 @@ public class HTTPProxyTCPClient extends TCPClient
 		}
 		catch (UnknownHostException ex)
 		{
-			if (debug)
+			if (log != null)
 			{
-				System.out.println("HTTPProxyTCP: Error in resolving host: "+proxyHost);
-				ex.printStackTrace();
+				log.logMessage("HTTPProxyTCP: Error in resolving host: "+proxyHost, LogLevel.ERROR);
+				log.logException(ex);
 			}
 			this.flags |= 12;
 			return;
@@ -55,10 +63,10 @@ public class HTTPProxyTCPClient extends TCPClient
 		}
 		catch (Exception ex)
 		{
-			if (debug)
+			if (log != null)
 			{
-				System.out.println("HTTPProxyTCP: Error in connecting to proxy server");
-				ex.printStackTrace();
+				log.logMessage("HTTPProxyTCP: Error in connecting to proxy server", LogLevel.ERROR);
+				log.logException(ex);
 			}
 			try
 			{
@@ -66,7 +74,7 @@ public class HTTPProxyTCPClient extends TCPClient
 			}
 			catch (IOException ex2)
 			{
-				ex2.printStackTrace();
+				log.logException(ex2);
 			}
 			this.s = null;
 			this.flags |= 12;
@@ -88,34 +96,31 @@ public class HTTPProxyTCPClient extends TCPClient
 			sbReq.append("Proxy-Authorization: Basic "+b64.encodeBin(b, 0, b.length)+"\r\n");
 		}
 		sbReq.append("\r\n");
-		if (debug)
+		if (log != null)
 		{
-			System.out.println("HTTPProxyTCP: Sending:\r\n"+sbReq.toString());
+			log.logMessage("HTTPProxyTCP: Sending:\r\n"+sbReq.toString(), LogLevel.RAW);
 		}
 		this.write(sbReq.toString().getBytes(StandardCharsets.UTF_8));
-		this.setTimeout(4000);
+		this.setTimeout(tunnelConnectTO);
 		byte[] reqBuff = new byte[512];
 		int respSize = this.read(reqBuff, 0, 512);
 		this.setTimeout(60000);
 	
 		String reqStr = new String(reqBuff, 0, respSize, StandardCharsets.UTF_8);
-		if (debug)
-		{
-			reqBuff[respSize] = 0;
-			System.out.println("HTTPProxyTCP: Recv:\r\n"+reqStr);
-		}
-	
 		if (reqStr.startsWith("HTTP/1.1 200"))
 		{
+			if (log != null) log.logMessage("HTTPProxyTCP: Recv:\r\n"+reqStr, LogLevel.RAW);
 		}
 		else if (reqStr.startsWith("HTTP/1.0 200"))
 		{
+			if (log != null) log.logMessage("HTTPProxyTCP: Recv:\r\n"+reqStr, LogLevel.RAW);
 		}
 		else
 		{
-			if (debug)
+			if (log != null)
 			{
-				System.out.println("HTTPProxyTCP: Unknown response\r\n");
+				log.logMessage("HTTPProxyTCP: Recv: \r\n"+reqStr, LogLevel.ACTION);
+				log.logMessage("HTTPProxyTCP: Unknown response", LogLevel.ERROR);
 			}
 			try
 			{

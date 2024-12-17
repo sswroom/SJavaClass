@@ -163,7 +163,7 @@ public class IAMSmartAPI {
 		{
 			if (logger != null)
 			{
-				logger.logMessage("Status is not OK: "+code, LogLevel.ACTION);
+				logger.logMessage("PostEncReq: Status is not OK: "+code, LogLevel.ACTION);
 			}
 			return null;
 		}
@@ -172,7 +172,7 @@ public class IAMSmartAPI {
 		{
 			if (logger != null)
 			{
-				logger.logMessage("Response is not JSON", LogLevel.ACTION);
+				logger.logMessage("PostEncReq: Response is not JSON", LogLevel.ACTION);
 			}
 			return null;
 		}
@@ -181,7 +181,7 @@ public class IAMSmartAPI {
 		{
 			if (logger != null)
 			{
-				logger.logMessage("Response is not success", LogLevel.ACTION);
+				logger.logMessage("PostEncReq: Response is not success", LogLevel.ACTION);
 			}
 			return null;
 		}
@@ -189,7 +189,7 @@ public class IAMSmartAPI {
 		{
 			if (logger != null)
 			{
-				logger.logMessage("Response content not found", LogLevel.ACTION);
+				logger.logMessage("PostEncReq: Response content not found", LogLevel.ACTION);
 			}
 			return null;
 		}
@@ -199,7 +199,7 @@ public class IAMSmartAPI {
 		{
 			if (logger != null)
 			{
-				logger.logMessage("Response content too short", LogLevel.ACTION);
+				logger.logMessage("PostEncReq: Response content too short", LogLevel.ACTION);
 			}
 			return null;
 		}
@@ -207,7 +207,7 @@ public class IAMSmartAPI {
 		{
 			if (logger != null)
 			{
-				logger.logMessage("Response content IV not found", LogLevel.ACTION);
+				logger.logMessage("PostEncReq: Response content IV not found", LogLevel.ACTION);
 			}
 			return null;
 		}
@@ -226,20 +226,20 @@ public class IAMSmartAPI {
 		{
 			if (logger != null)
 			{
-				logger.logMessage("Decrypted length not valid", LogLevel.ACTION);
+				logger.logMessage("PostEncReq: Decrypted length not valid", LogLevel.ACTION);
 			}
 			return null;
 		}
 		if (logger != null)
 		{
-			logger.logMessage("PostEncReq.Dec Content = "+new String(decBuff, StandardCharsets.UTF_8), LogLevel.ACTION);
+			logger.logMessage("PostEncReq.Dec Content = "+new String(decBuff, StandardCharsets.UTF_8), LogLevel.RAW);
 		}
 		JSONBase decJSON = JSONBase.parseJSONStr(new String(decBuff, StandardCharsets.UTF_8));
 		if (logger != null)
 		{
 			if (decJSON == null)
 			{
-				logger.logMessage("Decrypted content is not JSON", LogLevel.ACTION);
+				logger.logMessage("PostEncReq: Decrypted content is not JSON", LogLevel.ACTION);
 			}
 		}
 		return decJSON;
@@ -389,7 +389,7 @@ public class IAMSmartAPI {
 		{
 			if (logger != null)
 			{
-				logger.logMessage("Status is not OK: "+code, LogLevel.ACTION);
+				logger.logMessage("getKey: Status is not OK: "+code, LogLevel.ACTION);
 			}
 			return false;
 		}
@@ -398,7 +398,7 @@ public class IAMSmartAPI {
 		{
 			if (logger != null)
 			{
-				logger.logMessage("Response is not JSON", LogLevel.ACTION);
+				logger.logMessage("getKey: Response is not JSON", LogLevel.ACTION);
 			}
 			return false;
 		}
@@ -413,7 +413,7 @@ public class IAMSmartAPI {
 		{
 			if (logger != null)
 			{
-				logger.logMessage("Response content is not valid", LogLevel.ACTION);
+				logger.logMessage("getKey: Response content is not valid", LogLevel.ACTION);
 			}
 			return false;
 		}
@@ -425,7 +425,7 @@ public class IAMSmartAPI {
 		{
 			if (logger != null)
 			{
-				logger.logMessage("PubKey is not valid", LogLevel.ACTION);
+				logger.logMessage("getKey: PubKey is not valid", LogLevel.ACTION);
 			}
 			return false;
 		}
@@ -437,7 +437,7 @@ public class IAMSmartAPI {
 		{
 			if (logger != null)
 			{
-				logger.logMessage("Error in getting key id", LogLevel.ACTION);
+				logger.logMessage("getKey: Error in getting key id", LogLevel.ACTION);
 			}
 			return false;
 		}
@@ -445,7 +445,7 @@ public class IAMSmartAPI {
 		{
 			if (logger != null)
 			{
-				logger.logMessage("PubKey and PrivKey is not the same", LogLevel.ACTION);
+				logger.logMessage("getKey: PubKey and PrivKey is not the same", LogLevel.ACTION);
 			}
 			return false;
 		}
@@ -456,7 +456,7 @@ public class IAMSmartAPI {
 		{
 			if (logger != null)
 			{
-				logger.logMessage("secretKey length is not valid", LogLevel.ACTION);
+				logger.logMessage("getKey: secretKey length is not valid", LogLevel.ACTION);
 			}
 			return false;
 		}
@@ -465,7 +465,7 @@ public class IAMSmartAPI {
 		{
 			if (logger != null)
 			{
-				logger.logMessage("Error in converting PrivKey to Key", LogLevel.ACTION);
+				logger.logMessage("getKey: Error in converting PrivKey to Key", LogLevel.ACTION);
 			}
 			return false;
 		}
@@ -474,7 +474,7 @@ public class IAMSmartAPI {
 		{
 			if (logger != null)
 			{
-				logger.logMessage("Decrypted key length is not valid", LogLevel.ACTION);
+				logger.logMessage("getKey: Decrypted key length is not valid", LogLevel.ACTION);
 			}
 			return false;
 		}
@@ -482,9 +482,9 @@ public class IAMSmartAPI {
 		{
 			sbURL.setLength(0);
 			StringUtil.appendHex(sbURL, cekBuff2, 0, cekBuff2.length, ' ', LineBreakType.CRLF);
-			logger.logMessage("CEK = "+ sbURL.toString(), LogLevel.RAW);
-			logger.logMessage("IssueAt = "+ZonedDateTime.ofInstant(Instant.ofEpochMilli(issueAt), ZoneId.systemDefault()), LogLevel.RAW);
-			logger.logMessage("ExpiresAt = "+ZonedDateTime.ofInstant(Instant.ofEpochMilli(issueAt + expiresIn), ZoneId.systemDefault()), LogLevel.RAW);
+			logger.logMessage("getKey: CEK = "+ sbURL.toString(), LogLevel.RAW);
+			logger.logMessage("getKey: IssueAt = "+ZonedDateTime.ofInstant(Instant.ofEpochMilli(issueAt), ZoneId.systemDefault()), LogLevel.RAW);
+			logger.logMessage("getKey: ExpiresAt = "+ZonedDateTime.ofInstant(Instant.ofEpochMilli(issueAt + expiresIn), ZoneId.systemDefault()), LogLevel.RAW);
 		}
 		cek.key = cekBuff2;
 		cek.issueAt = issueAt;
@@ -512,7 +512,7 @@ public class IAMSmartAPI {
 		{
 			if (logger != null)
 			{
-				logger.logMessage("Status is not OK", LogLevel.ACTION);
+				logger.logMessage("revokeKey: Status is not OK", LogLevel.ACTION);
 			}
 			return false;
 		}
@@ -521,7 +521,7 @@ public class IAMSmartAPI {
 		{
 			if (logger != null)
 			{
-				logger.logMessage("Response is not JSON", LogLevel.ACTION);
+				logger.logMessage("revokeKey: Response is not JSON", LogLevel.ACTION);
 			}
 			return false;
 		}

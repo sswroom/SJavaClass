@@ -10,6 +10,8 @@
 - Enhance IAMSmartAPI logging
 - Added IAMSmartClient.CEKUpdateListener
 - Added IAMSmartClient.updateCEK
+- Enhance HTTPProxyTCPClient logging
+- Added HTTPProxyTCPClient.setTunnelConnectTimeout
 
 0.5.20241121
 - Added StringUtil.utf32CharCnt
