@@ -39,7 +39,7 @@ public class EmailChecker<T extends TemplateEmailStatus> implements Runnable
 				while (i < j)
 				{
 					emailAddr = emailAddrs[i].trim();
-					if (emailCtrl.sendMail(message, emailAddr, null))
+					if (emailCtrl.sendMail(message, emailAddr, null, null))
 					{
 						if (sbSucc.length() > 0)
 						{
@@ -65,7 +65,7 @@ public class EmailChecker<T extends TemplateEmailStatus> implements Runnable
 		}
 		else
 		{
-			if (emailCtrl.sendMail(message, toAddrs, ccAddrs))
+			if (emailCtrl.sendMail(message, toAddrs, ccAddrs, null))
 			{
 				if (sbSucc.length() > 0)
 				{

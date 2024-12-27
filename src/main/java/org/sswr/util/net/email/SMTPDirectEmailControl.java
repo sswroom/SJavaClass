@@ -31,7 +31,7 @@ public class SMTPDirectEmailControl implements EmailControl
 		this.validator = new EmailValidator(SocketFactory.create());
 	}
 
-	public boolean sendMail(@Nonnull EmailMessage msg, @Nullable String toList, @Nullable String ccList)
+	public boolean sendMail(@Nonnull EmailMessage msg, @Nullable String toList, @Nullable String ccList, @Nullable String bccList)
 	{
 		SMTPMessage message = new SMTPMessage();
 		String subject;
@@ -52,6 +52,10 @@ public class SMTPDirectEmailControl implements EmailControl
 		{
 			message.addCcList(ccList);
 		}
+		if (bccList != null && bccList.length() > 0)
+		{
+			message.addBccList(bccList);
+		}
 		int i = 0;
 		int j = msg.getAttachmentCount();
 		while (i < j)
@@ -69,7 +73,7 @@ public class SMTPDirectEmailControl implements EmailControl
 
 	public boolean sendBatchMail(@Nonnull EmailMessage msg, @Nonnull List<String> toList)
 	{
-		return sendMail(msg, StringUtil.join(toList, ","), null);
+		return sendMail(msg, StringUtil.join(toList, ","), null, null);
 	}
 
 	public boolean isServerOnline()

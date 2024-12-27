@@ -10,7 +10,7 @@ import jakarta.annotation.Nullable;
 public class NullEmailControl implements EmailControl
 {
 	@Override
-	public boolean sendMail(@Nonnull EmailMessage msg, @Nullable String toList, @Nullable String ccList)
+	public boolean sendMail(@Nonnull EmailMessage msg, @Nullable String toList, @Nullable String ccList, @Nullable String bccList)
 	{
 		return false;
 	}
