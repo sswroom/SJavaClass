@@ -39,7 +39,12 @@ public class NearestNeighbourResizer
 			i++;
 		}
 		boolean isAlphaPremultiplied = cm.isAlphaPremultiplied();
-		StaticImage newImg = new StaticImage(new BufferedImage(cm, raster, isAlphaPremultiplied, null), img.getMetadata());
+		StaticImage newImg = new StaticImage(new BufferedImage(cm, raster, isAlphaPremultiplied, null));
+		EXIFData exif = img.getExif();
+		if (exif != null)
+		{
+			newImg.setExif(exif.clone());
+		}
 		return newImg;
 	}
 }

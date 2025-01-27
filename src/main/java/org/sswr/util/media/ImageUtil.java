@@ -69,8 +69,17 @@ public class ImageUtil
 				try
 				{
 					BufferedImage bimg = reader.read(i, null);
-					IIOMetadata metadata = reader.getImageMetadata(i);
-					imgList.add(new StaticImage(bimg, metadata), 0);
+					StaticImage simg;
+					imgList.add(simg = new StaticImage(bimg), 0);
+					try
+					{
+						IIOMetadata metadata = reader.getImageMetadata(i);
+						simg.setMetadata(metadata);
+					}
+					catch (IIOException ex3)
+					{
+						
+					}
 					if (fmt.equals("jpg"))
 					{
 						break;
