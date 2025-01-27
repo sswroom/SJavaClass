@@ -29,5 +29,6 @@
 	{27, "GPSProcessingMethod"},
 	{28, "GPSAreaInformation"},
 	{29, "GPSDateStamp"},
-	{30, "GPSDifferential"}
+	{30, "GPSDifferential"},
+	{31, "GPSHPositioningError"}
 }
