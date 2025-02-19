@@ -1,6 +1,7 @@
 # SJavaClass
 
 # Changes:
+0.5.20250219
 - Added SystemInfoUtil.getComputerName
 - Fix MemorySessionManager error
 - BinaryParser.nextTS support null
@@ -13,6 +14,7 @@
 - Enhance HTTPProxyTCPClient logging
 - Added HTTPProxyTCPClient.setTunnelConnectTimeout
 - EmailControl support BCC
+- DBUtil.dbVal support Long
 
 0.5.20241121
 - Added StringUtil.utf32CharCnt

@@ -2137,6 +2137,13 @@ public class DBUtil {
 				return ((Integer)val).toString();
 			}
 		}
+		else if (fieldType.equals(Long.class) || fieldType.equals(long.class))
+		{
+			if (val instanceof Long)
+			{
+				return ((Long)val).toString();
+			}
+		}
 		else if (fieldType.equals(Double.class) || fieldType.equals(double.class))
 		{
 			if (val instanceof Double)
