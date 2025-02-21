@@ -1,6 +1,8 @@
 # SJavaClass
 
 # Changes:
+- Added ClamdClient
+
 0.5.20250219
 - Added SystemInfoUtil.getComputerName
 - Fix MemorySessionManager error
