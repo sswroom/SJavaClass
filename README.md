@@ -1,9 +1,10 @@
 # SJavaClass
 
 # Changes:
+0.6.20250224
 - Added ClamdClient
 
-0.5.20250219
+0.6.20250219
 - Added SystemInfoUtil.getComputerName
 - Fix MemorySessionManager error
 - BinaryParser.nextTS support null
