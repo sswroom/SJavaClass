@@ -1,6 +1,9 @@
 # SJavaClass
 
 # Changes:
+0.6.20250305
+- Auto retry on PoolConnection
+
 0.6.20250224
 - Added ClamdClient
 

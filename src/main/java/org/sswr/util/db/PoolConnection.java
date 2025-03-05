@@ -337,7 +337,7 @@ public class PoolConnection implements Connection
 		catch (SQLException ex)
 		{
 			this.endConn();
-			throw ex;
+			getConn().setAutoCommit(arg0);
 		}
 	}
 
