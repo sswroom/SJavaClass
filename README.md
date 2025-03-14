@@ -1,6 +1,10 @@
 # SJavaClass
 
 # Changes:
+0.6.20250314
+- Enhance IAMSmart Address string
+- TaskMQTTManager added TaskPublishFailed
+
 0.6.20250305
 - Auto retry on PoolConnection
 

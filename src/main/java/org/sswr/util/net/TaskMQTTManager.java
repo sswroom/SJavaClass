@@ -29,7 +29,8 @@ public class TaskMQTTManager implements MQTTEventHdlr
 	{
 		TaskBegin,
 		TaskAlreadyRunnng,
-		TaskStartedByOther
+		TaskStartedByOther,
+		TaskPublishFailed
 	}
 
 	public TaskMQTTManager(@Nonnull MQTTClient client, @Nonnull String controlTopic, int machineId)
@@ -116,14 +117,14 @@ public class TaskMQTTManager implements MQTTEventHdlr
 	public void onDisconnect() {
 	}
 
-	private void sendBeginTask(@Nonnull String taskId, long time)
+	private boolean sendBeginTask(@Nonnull String taskId, long time)
 	{
-		this.client.publish(this.controlTopic, this.machineId+"|0|"+time+"|"+taskId);
+		return this.client.publish(this.controlTopic, this.machineId+"|0|"+time+"|"+taskId);
 	}
 
-	private void sendTaskRunning(@Nonnull String taskId)
+	private boolean sendTaskRunning(@Nonnull String taskId)
 	{
-		this.client.publish(this.controlTopic, this.machineId+"|1|"+taskId);
+		return this.client.publish(this.controlTopic, this.machineId+"|1|"+taskId);
 	}
 
 	@Nonnull
@@ -141,7 +142,14 @@ public class TaskMQTTManager implements MQTTEventHdlr
 			this.checkTaskId = taskId;
 			this.checkTaskTime = time;
 		}
-		sendBeginTask(taskId, time);
+		if (!sendBeginTask(taskId, time))
+		{
+			synchronized(this.taskMut)
+			{
+				this.checkTaskId = null;
+			}
+			return TaskStatus.TaskPublishFailed;
+		}
 		MyThread.sleep(1000);
 		synchronized(this.taskMut)
 		{

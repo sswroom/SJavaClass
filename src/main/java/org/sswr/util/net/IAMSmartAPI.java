@@ -261,10 +261,21 @@ public class IAMSmartAPI {
 			sb.append(StringUtil.orEmpty(obj.getValueString("ChiStreet.StreetName")));
 			sb.append(StringUtil.orEmpty(obj.getValueString("ChiStreet.BuildingNoFrom")));
 			sb.append("號");
-			sb.append(StringUtil.orEmpty(obj.getValueString("BuildingName")));
+			sb.append(StringUtil.orEmpty(obj.getValueString("ChiEstate.EstateName")));
+			if ((s = obj.getValueString("ChiEstate.ChiPhase.PhaseNo")) != null)
+			{
+				sb.append("第");
+				sb.append(s);
+				sb.append("期");
+			}
 			sb.append(StringUtil.orEmpty(obj.getValueString("ChiBlock.BlockNo")));
 			sb.append(StringUtil.orEmpty(obj.getValueString("ChiBlock.BlockDescriptor")));
-			sb.append(StringUtil.orEmpty(obj.getValueString("Chi3dAddress.ChiFloor.FloorNum")));
+			sb.append(StringUtil.orEmpty(obj.getValueString("BuildingName")));
+			if ((s = obj.getValueString("Chi3dAddress.ChiFloor.FloorNum")) != null)
+			{
+				sb.append(s);
+				sb.append("樓");
+			}
 			sb.append(StringUtil.orEmpty(obj.getValueString("Chi3dAddress.ChiUnit.UnitNo")));
 			sb.append(StringUtil.orEmpty(obj.getValueString("Chi3dAddress.ChiUnit.UnitDescriptor")));
 			return sb.toString();
@@ -291,6 +302,24 @@ public class IAMSmartAPI {
 				sb.append(", ");
 			}
 			sb.append(StringUtil.orEmpty(obj.getValueString("BuildingName")));
+			if (obj.getValue("EngEstate") != null)
+			{
+				if (sb.length() > 0)
+					sb.append(", ");
+				boolean found = false;
+				if ((s = obj.getValueString("EngEstate.EstateName")) != null)
+				{
+					if (found) sb.append(' ');
+					sb.append(s);
+					found = true;
+				}
+				if ((s = obj.getValueString("EngEstate.EngPhase.PhaseNo")) != null)
+				{
+					if (found) sb.append(' ');
+					sb.append(s);
+					found = true;
+				}
+			}
 			if (obj.getValue("EngStreet") != null)
 			{
 				if (sb.length() > 0)
