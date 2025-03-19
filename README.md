@@ -1,6 +1,8 @@
 # SJavaClass
 
 # Changes:
+- Enhance IAMSmart Address string
+
 0.6.20250314
 - Enhance IAMSmart Address string
 - TaskMQTTManager added TaskPublishFailed

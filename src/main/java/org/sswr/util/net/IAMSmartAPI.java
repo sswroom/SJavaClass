@@ -257,27 +257,56 @@ public class IAMSmartAPI {
 		if ((obj = addr.getValue("ChiPremisesAddress")) != null)
 		{
 			sb.append(StringUtil.orEmpty(obj.getValueString("Region")));
-			sb.append(StringUtil.orEmpty(obj.getValueString("ChiDistrict.Sub-district")));
-			sb.append(StringUtil.orEmpty(obj.getValueString("ChiStreet.StreetName")));
-			sb.append(StringUtil.orEmpty(obj.getValueString("ChiStreet.BuildingNoFrom")));
-			sb.append("號");
-			sb.append(StringUtil.orEmpty(obj.getValueString("ChiEstate.EstateName")));
+			if ((s = obj.getValueString("ChiDistrict.Sub-district")) != null)
+			{
+				sb.append(" ");
+				sb.append(s);
+			}
+			if ((s = obj.getValueString("ChiStreet.StreetName")) != null)
+			{
+				sb.append(" ");
+				sb.append(s);
+			}
+			if ((s = obj.getValueString("ChiStreet.BuildingNoFrom")) != null)
+			{
+				sb.append(" ");
+				sb.append(s);
+				sb.append("號");
+			}
+			if ((s = obj.getValueString("ChiEstate.EstateName")) != null)
+			{
+				sb.append(" ");
+				sb.append(s);
+			}
 			if ((s = obj.getValueString("ChiEstate.ChiPhase.PhaseNo")) != null)
 			{
-				sb.append("第");
+				sb.append(" 第");
 				sb.append(s);
 				sb.append("期");
 			}
-			sb.append(StringUtil.orEmpty(obj.getValueString("ChiBlock.BlockNo")));
-			sb.append(StringUtil.orEmpty(obj.getValueString("ChiBlock.BlockDescriptor")));
-			sb.append(StringUtil.orEmpty(obj.getValueString("BuildingName")));
+			if ((s = obj.getValueString("ChiBlock.BlockNo")) != null)
+			{
+				sb.append(" ");
+				sb.append(s);
+				sb.append(StringUtil.orEmpty(obj.getValueString("ChiBlock.BlockDescriptor")));
+			}
+			if ((s = obj.getValueString("BuildingName")) != null)
+			{
+				sb.append(" ");
+				sb.append(s);
+			}
 			if ((s = obj.getValueString("Chi3dAddress.ChiFloor.FloorNum")) != null)
 			{
+				sb.append(" ");
 				sb.append(s);
 				sb.append("樓");
 			}
-			sb.append(StringUtil.orEmpty(obj.getValueString("Chi3dAddress.ChiUnit.UnitNo")));
-			sb.append(StringUtil.orEmpty(obj.getValueString("Chi3dAddress.ChiUnit.UnitDescriptor")));
+			if ((s = obj.getValueString("Chi3dAddress.ChiUnit.UnitNo")) != null)
+			{
+				sb.append(" ");
+				sb.append(s);
+				sb.append(StringUtil.orEmpty(obj.getValueString("Chi3dAddress.ChiUnit.UnitDescriptor")));
+			}
 			return sb.toString();
 		}
 		else if ((obj = addr.getValue("EngPremisesAddress")) != null)
