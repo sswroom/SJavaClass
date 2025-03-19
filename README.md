@@ -1,6 +1,7 @@
 # SJavaClass
 
 # Changes:
+0.6.20250319
 - Enhance IAMSmart Address string
 
 0.6.20250314
