@@ -1,6 +1,16 @@
 # SJavaClass
 
 # Changes:
+- Added Encoding
+- Added StringBuilderUTF8
+- Added XMLAttrib
+- Added XMLNode
+- Adding XMLReader
+- Added XmlUtil.parseStr
+- Adding SAMLHandler
+- Adding SAMLIdpConfig
+- Added URL
+
 0.6.20250319
 - Enhance IAMSmart Address string
 

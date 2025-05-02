@@ -1,0 +1,240 @@
+package org.sswr.util.net;
+
+import java.nio.charset.StandardCharsets;
+
+import org.sswr.util.crypto.MyX509Cert;
+import org.sswr.util.crypto.MyX509File;
+import org.sswr.util.data.EncodingFactory;
+import org.sswr.util.data.XMLAttrib;
+import org.sswr.util.data.XMLReader;
+import org.sswr.util.data.textbinenc.Base64Enc;
+import org.sswr.util.io.IOStream;
+import org.sswr.util.io.LogTool;
+import org.sswr.util.parser.X509Parser;
+
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
+public class SAMLIdpConfig {
+	String serviceDispName;
+	String signOnLocation;
+	String logoutLocation;
+	MyX509Cert encryptionCert;
+	MyX509Cert signingCert;
+
+	public SAMLIdpConfig(@Nonnull String serviceDispName, @Nonnull String signOnLocation, @Nonnull String logoutLocation, @Nullable MyX509Cert encryptionCert, @Nullable MyX509Cert signingCert)
+	{
+		this.serviceDispName = serviceDispName;
+		this.signOnLocation = signOnLocation;
+		this.logoutLocation = logoutLocation;
+		this.encryptionCert = encryptionCert;
+		this.signingCert = signingCert;
+	}
+
+	@Nullable
+	public static SAMLIdpConfig parseMetadata(@Nonnull TCPClientFactory clif, @Nullable SSLEngine ssl, @Nonnull EncodingFactory encFact, String path)
+	{
+		LogTool log = new LogTool();
+		IOStream stm;
+		String s;
+		int i;
+		int j;
+		XMLAttrib attr;
+		StringBuilder sb = new StringBuilder();
+		byte[] buff;
+		int buffSize;
+		MyX509File file;
+		if ((stm = URL.openStream(path, null, clif, ssl, 10000, log)) == null)
+		{
+			return null;
+		}
+		XMLReader reader = new XMLReader(encFact, stm, XMLReader.ParseMode.XML);
+		if ((s = reader.nextElementName()) != null)
+		{
+			if (s.equals("EntityDescriptor"))
+			{
+				String serviceDispName = null;
+				String signOnLocation = null;
+				String logoutLocation = null;
+				MyX509Cert encryptionCert = null;
+				MyX509Cert signingCert = null;
+				int type;
+				while (reader.NextElementName().SetTo(s))
+				{
+					if (s.equals("RoleDescriptor"))
+					{
+						i = 0;
+						j = reader.GetAttribCount();
+						while (i < j)
+						{
+							attr = reader.GetAttribNoCheck(i);
+							if ((s = attr.name) != null && s.equals("ServiceDisplayName"))
+							{
+								if (attr.value != null)
+								{
+									serviceDispName = attr.value;
+								}
+							}
+							i++;
+						}
+						reader.skipElement();
+					}
+					else if (s.equals("IDPSSODescriptor"))
+					{
+						while ((s = reader.nextElementName()) != null)
+						{
+							if (s.equals("KeyDescriptor"))
+							{
+								type = 0;
+								i = 0;
+								j = reader.GetAttribCount();
+								while (i < j)
+								{
+									attr = reader.GetAttribNoCheck(i);
+									if (attr.name.SetTo(s) && s.equals("use"))
+									{
+										if (attr.value.SetTo(s) && s.equals("encryption"))
+										{
+											type = 1;
+										}
+										else if (attr.value.SetTo(s) && s.equals("signing"))
+										{
+											type = 2;
+										}
+									}
+									i++;
+								}
+								while (reader.NextElementName().SetTo(s))
+								{
+									if (s.equals("KeyInfo"))
+									{
+										while (reader.NextElementName().SetTo(s))
+										{
+											if (s.equals("X509Data"))
+											{
+												while (reader.NextElementName().SetTo(s))
+												{
+													if (s.equals("X509Certificate"))
+													{
+														sb.setLength(0);
+														reader.ReadNodeText(sb);
+														if (type == 1)
+														{
+															Base64Enc b64 = new Base64Enc();
+															buff = b64.decodeBin(sb.toString());
+															if ((file = X509Parser.parseBinary(buff, 0, buff.length)) != null)
+															{
+																if (file.getFileType() == MyX509File.FileType.Cert)
+																{
+																	encryptionCert = (MyX509Cert)file;
+																}
+															}
+														}
+														else if (type == 2)
+														{
+															Base64Enc b64 = new Base64Enc();
+															b64.decodeBin(sb.toString());
+															if ((file = X509Parser.parseBinary(buff, 0, buff.length)) != null)
+															{
+																if (file.getFileType() == MyX509File.FileType.Cert)
+																{
+																	signingCert = (MyX509Cert)file;
+																}
+															}
+														}
+													}
+													else
+													{
+														reader.SkipElement();
+													}
+												}
+											}
+											else
+											{
+												reader.SkipElement();
+											}
+										}
+									}
+									else
+									{
+										reader.SkipElement();
+									}
+								}
+							}
+							else if (s.equals("SingleLogoutService"))
+							{
+								type = 0;
+								i = 0;
+								j = reader.GetAttribCount();
+								while (i < j)
+								{
+									attr = reader.GetAttribNoCheck(i);
+									if (attr.name.SetTo(s) && s.equals("Binding"))
+									{
+										if (attr.value.SetTo(s) && s.equals("urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect"))
+										{
+											type = 1;
+										}
+									}
+									else if (attr.name.SetTo(s) && s.equals("Location"))
+									{
+										if (type == 1 && attr.value.SetTo(s))
+										{
+											OPTSTR_DEL(logoutLocation);
+											logoutLocation = s.Clone();
+										}
+									}
+									i++;
+								}
+								reader.SkipElement();
+							}
+							else if (s.equals("SingleSignOnService")))
+							{
+								type = 0;
+								i = 0;
+								j = reader.GetAttribCount();
+								while (i < j)
+								{
+									attr = reader.GetAttribNoCheck(i);
+									if (attr.name.SetTo(s) && s.equals("Binding"))
+									{
+										if (attr.value.SetTo(s) && s.equals("urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect"))
+										{
+											type = 1;
+										}
+									}
+									else if (attr.name.SetTo(s) && s.equals("Location"))
+									{
+										if (type == 1 && attr.value.SetTo(s))
+										{
+											OPTSTR_DEL(signOnLocation);
+											signOnLocation = s.Clone();
+										}
+									}
+									i++;
+								}
+								reader.SkipElement();
+							}
+							else
+							{
+								reader.SkipElement();
+							}
+						}
+					}
+					else
+					{
+						reader.SkipElement();
+					}
+				}
+				if (serviceDispName != null && signOnLocation != null && logoutLocation != null)
+				{
+					SAMLIdpConfig cfg = new SAMLIdpConfig(serviceDispName, signOnLocation, logoutLocation, encryptionCert, signingCert);
+					stm.close();
+					return cfg;
+				}
+			}
+		}
+		stm.close();
+		return null;
+	}
+}
