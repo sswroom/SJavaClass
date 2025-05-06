@@ -2,7 +2,7 @@ package org.sswr.util.net;
 
 import java.nio.charset.StandardCharsets;
 
-import org.sswr.util.crypto.CRC32R;
+import org.sswr.util.crypto.hash.CRC32R;
 import org.sswr.util.data.SharedObject;
 import org.sswr.util.data.StringUtil;
 import org.sswr.util.data.URLString;

@@ -1,16 +1,13 @@
 package org.sswr.util.data;
 
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
-
-import javax.xml.crypto.Data;
 
 import org.sswr.util.data.XMLNode.NodeType;
 import org.sswr.util.io.IOStream;
-import org.w3c.dom.Text;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
@@ -162,6 +159,47 @@ public class XMLReader {
 		}
 	}
 
+	private void parseElementNS()
+	{
+		XMLAttrib attr;
+		String name;
+		String value;
+		int i = 0;
+		int j = this.attrList.size();
+		while (i < j)
+		{
+			attr = this.attrList.get(i);
+			if ((name = attr.name) != null && (value = attr.value) != null)
+			{
+				if (name.equals("xmlns"))
+				{
+					this.nsMap.put("", value);
+				}
+				else if (name.startsWith("xmlns:"))
+				{
+					this.nsMap.put(name.substring(6), value);
+				}
+			}
+			i++;
+		}
+		if ((name = this.nodeText) != null)
+		{
+			i = name.indexOf(':');
+			if (i == -1)
+			{
+				this.ns = this.nsMap.get("");
+			}
+			else
+			{
+				this.ns = this.nsMap.get(name.substring(0, i));
+			}
+		}
+		else
+		{
+			this.ns = this.nsMap.get("");
+		}
+	}
+
 	public XMLReader(@Nullable EncodingFactory encFact, @Nonnull IOStream stm, @Nonnull ParseMode mode)
 	{
 		this.encFact = encFact;
@@ -185,6 +223,109 @@ public class XMLReader {
 		this.nsMap = new HashMap<String, String>();
 		this.sbTmp = new StringBuilderUTF8();
 		this.initBuffer();
+	}
+
+	@Nonnull
+	public String getCurrPath()
+	{
+		Iterator<String> it = this.pathList.iterator();
+		if (!it.hasNext())
+		{
+			return "/";
+		}
+		StringBuilder sb = new StringBuilder();
+		while (it.hasNext())
+		{
+			sb.append('/');
+			sb.append(it.next());
+		}
+		return sb.toString();
+	}
+
+	public int getPathLev()
+	{
+		return this.pathList.size();
+	}
+
+	@Nonnull
+	public NodeType getNodeType()
+	{
+		return this.nt;
+	}
+
+	@Nullable
+	public String getNodeText()
+	{
+		return this.nodeText;
+	}
+
+	@Nonnull
+	public String getNodeTextNN()
+	{
+		String s;
+		if ((s = this.nodeText) == null)
+			return "";
+		return s;
+	}
+
+	@Nullable 
+	public String getNodeOriText()
+	{
+		return this.nodeOriText;
+	}
+
+	@Nullable
+	public String getNamespace()
+	{
+		return this.ns;
+	}
+
+	@Nonnull
+	public String getElementName()
+	{
+		String s;
+		if ((this.nt == NodeType.Element || this.nt == NodeType.ElementEnd) && (s = this.nodeText) != null)
+		{
+			int i = s.indexOf(':');
+			return s.substring(i + 1);
+		}
+		else
+		{
+			return "";
+		}
+	}
+
+	public int getAttribCount()
+	{
+		return this.attrList.size();
+	}
+
+	@Nonnull
+	public XMLAttrib getAttribNoCheck(int index)
+	{
+		return this.attrList.get(index);
+	}
+
+	@Nullable
+	public XMLAttrib getAttrib(int index)
+	{
+		if (index >= this.attrList.size())
+			return null;
+		return this.attrList.get(index);
+	}
+
+	@Nullable
+	public XMLAttrib getAttrib(@Nonnull String name)
+	{
+		int i = this.attrList.size();
+		XMLAttrib attr;
+		while (i-- > 0)
+		{
+			attr = this.attrList.get(i);
+			if (attr.name != null && attr.name.equals(name))
+				return attr;
+		}
+		return null;
 	}
 
 	public boolean readNext()
@@ -413,7 +554,7 @@ public class XMLReader {
 									}
 									else if (this.readBuff[parseOfst + 1] == '#')
 									{
-										sb.AppendUTF8Char(StringUtil.hex2UInt8C(this.readBuff, parseOfst + 2));
+										sb.appendUTF8Char(StringUtil.hex2UInt8C(this.readBuff, parseOfst + 2));
 										parseOfst += 4;
 									}
 									else
@@ -541,8 +682,6 @@ public class XMLReader {
 						}
 						parseOfst++;
 					}
-					this.parseError = 52;
-					return false;
 				}
 				else
 				{
@@ -786,8 +925,6 @@ public class XMLReader {
 					}
 					parseOfst++;
 				}
-				this.parseError = 16;
-				return false;
 			}
 			else if (lenLeft >= 2 && this.readBuff[parseOfst + 1] == '/')
 			{
@@ -843,7 +980,6 @@ public class XMLReader {
 						}
 						String nodeText;
 						String s;
-						String opts;
 						if ((nodeText = this.nodeText) == null)
 						{
 							this.parseError = 20;
@@ -857,7 +993,7 @@ public class XMLReader {
 						}
 						if ((s = this.pathList.get(this.pathList.size() - 1)) != null && s.equals(nodeText))
 						{
-							opts = this.pathList.remove(this.pathList.size() - 1);
+							this.pathList.remove(this.pathList.size() - 1);
 							if (this.mode == ParseMode.XML)
 							{
 								int i = nodeText.indexOf(':');
@@ -890,8 +1026,6 @@ public class XMLReader {
 					}
 					parseOfst++;
 				}
-				this.parseError = 23;
-				return false;
 			}
 			else
 			{
@@ -986,7 +1120,7 @@ public class XMLReader {
 								{
 									int wcs;
 									this.readBuff[parseOfst + 3] = 0;
-									wcs = (int)StringUtil.toInt32(this.readBuff, parseOfst + 2);
+									wcs = (int)StringUtil.toUInt32(this.readBuff, parseOfst + 2);
 									sbText.appendUTF8Char((byte)wcs);
 									parseOfst += 3;
 								}
@@ -1019,7 +1153,7 @@ public class XMLReader {
 									}
 									else
 									{
-										wcs = (int)StringUtil.toInt32(this.readBuff, parseOfst + 2);
+										wcs = (int)StringUtil.toUInt32(this.readBuff, parseOfst + 2);
 									}
 									sbText.appendUTF8Char((byte)wcs);
 									parseOfst += 4;
@@ -1058,7 +1192,7 @@ public class XMLReader {
 									}
 									else
 									{
-										wcs = (int)StringUtil.toInt32(this.readBuff, parseOfst + 2);
+										wcs = (int)StringUtil.toUInt32(this.readBuff, parseOfst + 2);
 									}
 									sbText.appendUTF8Char((byte)wcs);
 									parseOfst += 5;
@@ -1103,94 +1237,92 @@ public class XMLReader {
 					}
 					else if (c == ' ' || c == '\r' || c == '\n' || c == '\t')
 					{
-						if (sbText.GetLength() > 0)
+						if (sbText.getLength() > 0)
 						{
-							if (this.nodeText.IsNull())
+							if (this.nodeText == null)
 							{
-								this.nodeText = Text::String::New(sbText.ToCString());
-								this.nodeOriText = Text::String::New(sbOri.ToCString());
+								this.nodeText = sbText.toString();
+								this.nodeOriText = sbOri.toString();
 							}
 							else if (isEqual)
 							{
-								NN<Text::Encoding> enc;
-								NN<Text::XMLAttrib> attr = this.attrList.GetItemNoCheck(this.attrList.size() - 1);
-								OPTSTR_DEL(attr.value);
-								if (this.enc.SetTo(enc) && !this.stmEnc)
+								Encoding enc;
+								XMLAttrib attr = this.attrList.get(this.attrList.size() - 1);
+								attr.value = null;
+								if ((enc = this.enc) != null && !this.stmEnc)
 								{
-									UOSInt len = enc.CountUTF8Chars(sbText.ToString(), sbText.GetLength());
-									attr.value = nns = Text::String::New(len);
-									enc.UTF8FromBytes(nns.v, sbText.ToString(), sbText.GetLength(), 0);
-									nns.v[len] = 0;
+									int len = enc.countUTF8Chars(sbText.getBytes(), 0, sbText.getLength());
+									byte[] utf8s = new byte[len + 1];
+									enc.utf8FromBytes(utf8s, 0, sbText.getBytes(), 0, sbText.getLength(), null);
+									attr.value = new String(utf8s, 0, len, StandardCharsets.UTF_8);
 	
-									len = enc.CountUTF8Chars(sbOri.ToString(), sbOri.GetLength());
-									attr.valueOri = Text::String::New(len).Ptr();
-									enc.UTF8FromBytes(attr.valueOri.v, sbOri.ToString(), sbOri.GetLength(), 0);
-									attr.valueOri.v[len] = 0;
+									len = enc.countUTF8Chars(sbOri.getBytes(), 0, sbOri.getLength());
+									utf8s = new byte[len + 1];
+									enc.utf8FromBytes(utf8s, 0, sbOri.getBytes(), 0, sbOri.getLength(), null);
+									attr.valueOri = new String(utf8s, 0, len, StandardCharsets.UTF_8);
 								}
 								else
 								{
-									attr.value = Text::String::New(sbText.ToCString()).Ptr();
-									attr.valueOri = Text::String::New(sbOri.ToCString()).Ptr();
+									attr.value = sbText.toString();
+									attr.valueOri = sbOri.toString();
 								}
 								isEqual = false;
 							}
 							else
 							{
-								NN<Text::XMLAttrib> attr;
-								NEW_CLASSNN(attr, Text::XMLAttrib(sbText.ToCString(), null));
-								this.attrList.Add(attr);
+								XMLAttrib attr = new XMLAttrib(sbText.toString(), null);
+								this.attrList.add(attr);
 							}
-							sbText.ClearStr();
-							sbOri.ClearStr();
+							sbText.clearStr();
+							sbOri.clearStr();
 						}
 					}
 					else if (c == '/')
 					{
-						if (sbText.GetLength() > 0)
+						if (sbText.getLength() > 0)
 						{
-							if (this.nodeText.IsNull())
+							if (this.nodeText == null)
 							{
-								this.nodeText = Text::String::New(sbText.ToCString());
-								this.nodeOriText = Text::String::New(sbOri.ToCString());
+								this.nodeText = sbText.toString();
+								this.nodeOriText = sbOri.toString();
 							}
 							else if (isEqual)
 							{
-								NN<Text::Encoding> enc;
-								NN<Text::XMLAttrib> attr = this.attrList.GetItemNoCheck(this.attrList.size() - 1);
-								OPTSTR_DEL(attr.value);
-								if (this.enc.SetTo(enc) && !this.stmEnc)
+								Encoding enc;
+								XMLAttrib attr = this.attrList.get(this.attrList.size() - 1);
+								attr.value = null;
+								if ((enc = this.enc) != null && !this.stmEnc)
 								{
-									UOSInt len = enc.CountUTF8Chars(sbText.ToString(), sbText.GetLength());
-									attr.value = nns = Text::String::New(len);
-									enc.UTF8FromBytes(nns.v, sbText.ToString(), sbText.GetLength(), 0);
-									nns.v[len] = 0;
+									int len = enc.countUTF8Chars(sbText.getBytes(), 0, sbText.getLength());
+									byte[] utf8s = new byte[len + 1];
+									enc.utf8FromBytes(utf8s, 0, sbText.getBytes(), 0, sbText.getLength(), null);
+									attr.value = new String(utf8s, 0, len, StandardCharsets.UTF_8);
 	
-									len = enc.CountUTF8Chars(sbOri.ToString(), sbOri.GetLength());
-									attr.valueOri = Text::String::New(len).Ptr();
-									enc.UTF8FromBytes(attr.valueOri.v, sbOri.ToString(), sbOri.GetLength(), 0);
-									attr.valueOri.v[len] = 0;
+									len = enc.countUTF8Chars(sbOri.getBytes(), 0, sbOri.getLength());
+									utf8s = new byte[len + 1];
+									enc.utf8FromBytes(utf8s, 0, sbOri.getBytes(), 0, sbOri.getLength(), null);
+									attr.valueOri = new String(utf8s, 0, len, StandardCharsets.UTF_8);
 								}
 								else
 								{
-									attr.value = Text::String::New(sbText.ToCString()).Ptr();
-									attr.valueOri = Text::String::New(sbOri.ToCString()).Ptr();
+									attr.value = sbText.toString();
+									attr.valueOri = sbOri.toString();
 								}
 								isEqual = false;
 							}
 							else
 							{
-								NN<Text::XMLAttrib> attr;
-								NEW_CLASSNN(attr, Text::XMLAttrib(sbText.ToCString(), null));
-								this.attrList.Add(attr);
+								XMLAttrib attr = new XMLAttrib(sbText.toString(), null);
+								this.attrList.add(attr);
 							}
-							sbText.ClearStr();
-							sbOri.ClearStr();
+							sbText.clearStr();
+							sbOri.clearStr();
 						}
 						if (parseOfst + 1 >= this.buffSize)
 						{
 							parseOfst = 0;
 							this.buffSize = 1;
-							UOSInt readSize = this.FillBuffer();
+							int readSize = this.fillBuffer();
 							if (readSize <= 0)
 							{
 								this.nt = NodeType.Unknown;
@@ -1203,11 +1335,11 @@ public class XMLReader {
 						{
 							this.parseOfst = parseOfst + 2;
 							this.emptyNode = true;
-							if (this.mode == ParseMode::PM_XML && this.nodeText != 0)
+							if (this.mode == ParseMode.XML && this.nodeText != null)
 							{
-								this.ParseElementNS();
+								this.parseElementNS();
 							}
-							return this.nodeText != 0;
+							return this.nodeText != null;
 						}
 						else
 						{
@@ -1218,78 +1350,76 @@ public class XMLReader {
 					}
 					else if (c == '>')
 					{
-						if (sbText.GetLength() > 0)
+						if (sbText.getLength() > 0)
 						{
-							if (this.nodeText.IsNull())
+							if (this.nodeText == null)
 							{
-								this.nodeText = Text::String::New(sbText.ToCString());
-								this.nodeOriText = Text::String::New(sbOri.ToCString());
+								this.nodeText = sbText.toString();
+								this.nodeOriText = sbOri.toString();
 							}
 							else if (isEqual)
 							{
-								NN<Text::Encoding> enc;
-								NN<Text::XMLAttrib> attr = this.attrList.GetItemNoCheck(this.attrList.size() - 1);
-								OPTSTR_DEL(attr.value);
-								if (this.enc.SetTo(enc) && !this.stmEnc)
+								Encoding enc;
+								XMLAttrib attr = this.attrList.get(this.attrList.size() - 1);
+								attr.value = null;
+								if ((enc = this.enc) != null && !this.stmEnc)
 								{
-									UOSInt len = enc.CountUTF8Chars(sbText.ToString(), sbText.GetLength());
-									attr.value = nns = Text::String::New(len);
-									enc.UTF8FromBytes(nns.v, sbText.ToString(), sbText.GetLength(), 0);
-									nns.v[len] = 0;
+									int len = enc.countUTF8Chars(sbText.getBytes(), 0, sbText.getLength());
+									byte[] utf8s = new byte[len + 1];
+									enc.utf8FromBytes(utf8s, 0, sbText.getBytes(), 0, sbText.getLength(), null);
+									attr.value = new String(utf8s, 0, len, StandardCharsets.UTF_8);
 	
-									len = enc.CountUTF8Chars(sbOri.ToString(), sbOri.GetLength());
-									attr.valueOri = Text::String::New(len).Ptr();
-									enc.UTF8FromBytes(attr.valueOri.v, sbOri.ToString(), sbOri.GetLength(), 0);
-									attr.valueOri.v[len] = 0;
+									len = enc.countUTF8Chars(sbOri.getBytes(), 0, sbOri.getLength());
+									utf8s = new byte[len + 1];
+									enc.utf8FromBytes(utf8s, 0, sbOri.getBytes(), 0, sbOri.getLength(), null);
+									attr.valueOri = new String(utf8s, 0, len, StandardCharsets.UTF_8);
 								}
 								else
 								{
-									attr.value = Text::String::New(sbText.ToCString()).Ptr();
-									attr.valueOri = Text::String::New(sbOri.ToCString()).Ptr();
+									attr.value = sbText.toString();
+									attr.valueOri = sbOri.toString();
 								}
 								isEqual = false;
 							}
 							else
 							{
-								NN<Text::XMLAttrib> attr;
-								NEW_CLASSNN(attr, Text::XMLAttrib(sbText.ToCString(), null));
-								this.attrList.Add(attr);
+								XMLAttrib attr = new XMLAttrib(sbText.toString(), null);
+								this.attrList.add(attr);
 							}
-							sbText.ClearStr();
-							sbOri.ClearStr();
+							sbText.clearStr();
+							sbOri.clearStr();
 						}
 						this.parseOfst = parseOfst + 1;
 						this.emptyNode = false;
-						if (this.mode == ParseMode::PM_XML && this.nodeText != 0)
+						if (this.mode == ParseMode.XML && this.nodeText != null)
 						{
-							this.ParseElementNS();
+							this.parseElementNS();
 						}
-						return this.nodeText != 0;
+						return this.nodeText != null;
 					}
 					else if (c == '=')
 					{
-						if (sbText.GetLength() > 0)
+						if (sbText.getLength() > 0)
 						{
-							NN<Text::XMLAttrib> attr;
-							NEW_CLASSNN(attr, Text::XMLAttrib(sbText.ToCString(), null));
-							this.attrList.Add(attr);
-							sbText.ClearStr();
-							sbOri.ClearStr();
+							XMLAttrib attr = new XMLAttrib(sbText.toString(), null);
+							this.attrList.add(attr);
+							sbText.clearStr();
+							sbOri.clearStr();
 						}
-						if (this.nodeText.IsNull())
+						if (this.nodeText == null)
 						{
 							this.nt = NodeType.Unknown;
 							this.parseError = 30;
 							return false;
 						}
-						NN<Text::XMLAttrib> attr;
-						if (!this.attrList.GetItem(this.attrList.size() - 1).SetTo(attr))
+						XMLAttrib attr;
+						if (this.attrList.size() == 0 || (attr = this.attrList.get(this.attrList.size() - 1)) == null)
 						{
 							this.nt = NodeType.Unknown;
 							this.parseError = 31;
 							return false;
 						}
-						if (!attr.value.SetTo(nns) || nns.v[0] == 0)
+						if ((nns = attr.value) == null || nns.length() == 0)
 						{
 							isEqual = true;
 						}
@@ -1309,7 +1439,7 @@ public class XMLReader {
 							return false;
 						}
 						isQuote = '"';
-						sbOri.AppendUTF8Char('\"');
+						sbOri.appendUTF8Char((byte)'\"');
 					}
 					else if (c == '\'')
 					{
@@ -1320,28 +1450,25 @@ public class XMLReader {
 							return false;
 						}
 						isQuote = '\'';
-						sbOri.AppendUTF8Char('\'');
+						sbOri.appendUTF8Char((byte)'\'');
 					}
 					else
 					{
-						sbText.AppendUTF8Char(c);
-						sbOri.AppendUTF8Char(c);
+						sbText.appendUTF8Char(c);
+						sbOri.appendUTF8Char(c);
 					}
 					parseOfst++;
 				}
-				this.nt = NodeType.Unknown;
-				this.parseError = 35;
-				return false;
 			}
 		}
 		else
 		{
-			NN<Text::Encoding> enc;
-			NN<Text::StringBuilderUTF8> sbText = this.sbTmp;
-			Text::StringBuilderUTF8 sbOri;
-			sbText.ClearStr();
-			UTF8Char c;
-			UInt8 b[1];
+			Encoding enc;
+			StringBuilderUTF8 sbText = this.sbTmp;
+			StringBuilderUTF8 sbOri = new StringBuilderUTF8();
+			sbText.clearStr();
+			byte c;
+			//UInt8 b[1];
 			this.nt = NodeType.Text;
 			while (true)
 			{
@@ -1349,25 +1476,25 @@ public class XMLReader {
 				{
 					parseOfst = 0;
 					this.buffSize = 0;
-					UOSInt readSize = this.FillBuffer();
+					int readSize = this.fillBuffer();
 					if (readSize <= 0)
 					{
-						if (this.enc.SetTo(enc) && !this.stmEnc)
+						if ((enc = this.enc) != null && !this.stmEnc)
 						{
-							UOSInt len = enc.CountUTF8Chars(sbText.ToString(), sbText.GetLength());
-							this.nodeText = nns = Text::String::New(len);
-							enc.UTF8FromBytes(nns.v, sbText.ToString(), sbText.GetLength(), 0);
-							nns.v[len] = 0;
+							int len = enc.countUTF8Chars(sbText.getBytes(), 0, sbText.getLength());
+							byte[] utf8s = new byte[len + 1];
+							enc.utf8FromBytes(utf8s, 0, sbText.getBytes(), 0, sbText.getLength(), null);
+							this.nodeText = new String(utf8s, 0, len, StandardCharsets.UTF_8);
 	
-							len = enc.CountUTF8Chars(sbOri.ToString(), sbOri.GetLength());
-							this.nodeOriText = nns = Text::String::New(len);
-							enc.UTF8FromBytes(nns.v, sbOri.ToString(), sbOri.GetLength(), 0);
-							nns.v[len] = 0;
+							len = enc.countUTF8Chars(sbOri.getBytes(), 0, sbOri.getLength());
+							utf8s = new byte[len + 1];
+							enc.utf8FromBytes(utf8s, 0, sbOri.getBytes(), 0, sbOri.getLength(), null);
+							this.nodeOriText = new String(utf8s, 0, len, StandardCharsets.UTF_8);
 						}
 						else
 						{
-							this.nodeText = Text::String::New(sbText.ToCString());
-							this.nodeOriText = Text::String::New(sbOri.ToCString());
+							this.nodeText = sbText.toString();
+							this.nodeOriText = sbOri.toString();
 						}
 						this.parseOfst = parseOfst;
 						return true;
@@ -1377,29 +1504,29 @@ public class XMLReader {
 				c = this.readBuff[parseOfst];
 				if (c == '<')
 				{
-					if (isHTMLScript && !Text::StrStartsWithC(&this.readBuff[parseOfst + 1], (this.buffSize - parseOfst - 1), UTF8STRC("/script>")))
+					if (isHTMLScript && !StringUtil.startsWithC(this.readBuff, parseOfst + 1, (this.buffSize - parseOfst - 1), "/script>"))
 					{
-						sbText.AppendUTF8Char(c);
-						sbOri.AppendUTF8Char(c);
+						sbText.appendUTF8Char(c);
+						sbOri.appendUTF8Char(c);
 					}
 					else
 					{
-						if (this.enc.SetTo(enc) && !this.stmEnc)
+						if ((enc = this.enc) != null && !this.stmEnc)
 						{
-							UOSInt len = enc.CountUTF8Chars(sbText.ToString(), sbText.GetLength());
-							this.nodeText = nns = Text::String::New(len);
-							enc.UTF8FromBytes(nns.v, sbText.ToString(), sbText.GetLength(), 0);
-							nns.v[len] = 0;
+							int len = enc.countUTF8Chars(sbText.getBytes(), 0, sbText.getLength());
+							byte[] utf8s = new byte[len + 1];
+							enc.utf8FromBytes(utf8s, 0, sbText.getBytes(), 0, sbText.getLength(), null);
+							this.nodeText = new String(utf8s, 0, len, StandardCharsets.UTF_8);
 	
-							len = enc.CountUTF8Chars(sbOri.ToString(), sbOri.GetLength());
-							this.nodeOriText = nns = Text::String::New(len);
-							enc.UTF8FromBytes(nns.v, sbOri.ToString(), sbOri.GetLength(), 0);
-							nns.v[len] = 0;
+							len = enc.countUTF8Chars(sbOri.getBytes(), 0, sbOri.getLength());
+							utf8s = new byte[len + 1];
+							enc.utf8FromBytes(utf8s, 0, sbOri.getBytes(), 0, sbOri.getLength(), null);
+							this.nodeOriText = new String(utf8s, 0, len, StandardCharsets.UTF_8);
 						}
 						else
 						{
-							this.nodeText = Text::String::New(sbText.ToCString()).Ptr();
-							this.nodeOriText = Text::String::New(sbOri.ToCString()).Ptr();
+							this.nodeText = sbText.toString();
+							this.nodeOriText = sbOri.toString();
 						}
 						this.parseOfst = parseOfst;
 						return true;
@@ -1407,32 +1534,32 @@ public class XMLReader {
 				}
 				else if (c == '&' && !isHTMLScript)
 				{
-					UOSInt l = this.buffSize - parseOfst;
+					int l = this.buffSize - parseOfst;
 					if (l >= 4 && this.readBuff[parseOfst + 3] == ';')
 					{
-						if (Text::StrStartsWithC(&this.readBuff[parseOfst], l, UTF8STRC("&lt;")))
+						if (StringUtil.startsWithC(this.readBuff, parseOfst, l, "&lt;"))
 						{
-							sbText.AppendUTF8Char('<');
-							sbOri.AppendC(&this.readBuff[parseOfst], 4);
+							sbText.appendUTF8Char((byte)'<');
+							sbOri.appendC(this.readBuff, parseOfst, 4);
 							parseOfst += 3;
 						}
-						else if (Text::StrStartsWithC(&this.readBuff[parseOfst], l, UTF8STRC("&gt;")))
+						else if (StringUtil.startsWithC(this.readBuff, parseOfst, l, "&gt;"))
 						{
-							sbText.AppendUTF8Char('>');
-							sbOri.AppendC(&this.readBuff[parseOfst], 4);
+							sbText.appendUTF8Char((byte)'>');
+							sbOri.appendC(this.readBuff, parseOfst, 4);
 							parseOfst += 3;
 						}
-						else if (this.mode == Text::XMLReader::PM_HTML)
+						else if (this.mode == ParseMode.HTML)
 						{
-							if (Text::XML::HTMLAppendCharRef(&this.readBuff[parseOfst], 4, sbText))
+							if (XmlUtil.htmlAppendCharRef(this.readBuff, parseOfst, 4, sbText))
 							{
-								sbOri.AppendC(&this.readBuff[parseOfst], 4);
+								sbOri.appendC(this.readBuff, parseOfst, 4);
 								parseOfst += 3;
 							}
 							else
 							{
-								sbText.AppendUTF8Char('&');
-								sbOri.AppendC(&this.readBuff[parseOfst], 1);
+								sbText.appendUTF8Char((byte)'&');
+								sbOri.appendC(this.readBuff, parseOfst, 1);
 							}
 						}
 						else
@@ -1443,30 +1570,29 @@ public class XMLReader {
 					}
 					else if (l >= 5 && this.readBuff[parseOfst + 4] == ';')
 					{
-						if (Text::StrStartsWithC(&this.readBuff[parseOfst], l, UTF8STRC("&amp;")))
+						if (StringUtil.startsWithC(this.readBuff, parseOfst, l, "&amp;"))
 						{
-							sbText.AppendUTF8Char('&');
-							sbOri.AppendC(&this.readBuff[parseOfst], 5);
+							sbText.appendUTF8Char((byte)'&');
+							sbOri.appendC(this.readBuff, parseOfst, 5);
 							parseOfst += 4;
 						}
 						else if (this.readBuff[parseOfst + 1] == '#')
 						{
-							b[0] = Text::StrHex2UInt8C(&this.readBuff[parseOfst + 2]);
-							sbText.AppendUTF8Char(b[0]);
-							sbOri.AppendC(&this.readBuff[parseOfst], 5);
+							sbText.appendUTF8Char(StringUtil.hex2UInt8C(this.readBuff, parseOfst + 2));
+							sbOri.appendC(this.readBuff, parseOfst, 5);
 							parseOfst += 4;
 						}
-						else if (this.mode == Text::XMLReader::PM_HTML)
+						else if (this.mode == ParseMode.HTML)
 						{
-							if (Text::XML::HTMLAppendCharRef(&this.readBuff[parseOfst], 5, sbText))
+							if (XmlUtil.htmlAppendCharRef(this.readBuff, parseOfst, 5, sbText))
 							{
-								sbOri.AppendC(&this.readBuff[parseOfst], 5);
+								sbOri.appendC(this.readBuff, parseOfst, 5);
 								parseOfst += 4;
 							}
 							else
 							{
-								sbText.AppendUTF8Char('&');
-								sbOri.AppendC(&this.readBuff[parseOfst], 1);
+								sbText.appendUTF8Char((byte)'&');
+								sbOri.appendC(this.readBuff, parseOfst, 1);
 							}
 						}
 						else
@@ -1477,29 +1603,29 @@ public class XMLReader {
 					}
 					else if (l >= 6 && this.readBuff[parseOfst + 5] == ';')
 					{
-						if (Text::StrStartsWithC(&this.readBuff[parseOfst], l, UTF8STRC("&quot;")))
+						if (StringUtil.startsWithC(this.readBuff, parseOfst, l, "&quot;"))
 						{
-							sbText.AppendUTF8Char('\"');
-							sbOri.AppendC(&this.readBuff[parseOfst], 6);
+							sbText.appendUTF8Char((byte)'\"');
+							sbOri.appendC(this.readBuff, parseOfst, 6);
 							parseOfst += 5;
 						}
-						else if (Text::StrStartsWithC(&this.readBuff[parseOfst], l, UTF8STRC("&apos;")))
+						else if (StringUtil.startsWithC(this.readBuff, parseOfst, l, "&apos;"))
 						{
-							sbText.AppendUTF8Char('\'');
-							sbOri.AppendC(&this.readBuff[parseOfst], 6);
+							sbText.appendUTF8Char((byte)'\'');
+							sbOri.appendC(this.readBuff, parseOfst, 6);
 							parseOfst += 5;
 						}
-						else if (this.mode == Text::XMLReader::PM_HTML)
+						else if (this.mode == ParseMode.HTML)
 						{
-							if (Text::XML::HTMLAppendCharRef(&this.readBuff[parseOfst], 6, sbText))
+							if (XmlUtil.htmlAppendCharRef(this.readBuff, parseOfst, 6, sbText))
 							{
-								sbOri.AppendC(&this.readBuff[parseOfst], 6);
+								sbOri.appendC(this.readBuff, parseOfst, 6);
 								parseOfst += 5;
 							}
 							else
 							{
-								sbText.AppendUTF8Char('&');
-								sbOri.AppendC(&this.readBuff[parseOfst], 1);
+								sbText.appendUTF8Char((byte)'&');
+								sbOri.appendC(this.readBuff, parseOfst, 1);
 							}
 						}
 						else
@@ -1508,10 +1634,10 @@ public class XMLReader {
 							return false;
 						}
 					}
-					else if (this.mode == Text::XMLReader::PM_HTML)
+					else if (this.mode == ParseMode.HTML)
 					{
-						sbText.AppendUTF8Char('&');
-						sbOri.AppendUTF8Char('&');
+						sbText.appendUTF8Char((byte)'&');
+						sbOri.appendUTF8Char((byte)'&');
 					}
 					else
 					{
@@ -1521,11 +1647,46 @@ public class XMLReader {
 				}
 				else
 				{
-					sbText.AppendUTF8Char(c);
-					sbOri.AppendUTF8Char(c);
+					sbText.appendUTF8Char(c);
+					sbOri.appendUTF8Char(c);
 				}
 				parseOfst++;
 			}
+		}
+	}
+
+	public boolean readNodeText(@Nonnull StringBuilderUTF8 sb)
+	{
+		if (this.getNodeType() == NodeType.Element)
+		{
+			if (this.emptyNode)
+			{
+				return true;
+			}
+			int pathLev = this.pathList.size();
+			NodeType nt;
+			boolean succ = true;
+			while ((succ = this.readNext()) != false)
+			{
+				nt = this.getNodeType();
+				if (nt == NodeType.ElementEnd && pathLev == this.pathList.size())
+				{
+					break;
+				}
+				else if (nt == NodeType.Text)
+				{
+					sb.appendOpt(this.nodeText);
+				}
+				else if (nt == NodeType.CData)
+				{
+					sb.appendOpt(this.nodeText);
+				}
+			}
+			return succ;
+		}
+		else
+		{
+			return this.readNext();
 		}
 	}
 
@@ -1541,5 +1702,160 @@ public class XMLReader {
 			if (this.nt == NodeType.ElementEnd)
 				return null;
 		}
+	}
+
+	public boolean skipElement()
+	{
+		if (this.nt == NodeType.Element)
+		{
+			if (this.emptyNode)
+			{
+				return true;
+			}
+			if (this.mode == ParseMode.HTML)
+			{
+				if (this.isHTMLSkip())
+				{
+					return true;
+				}
+			}
+			int initLev = this.pathList.size();
+			boolean succ = true;
+			while ((succ = this.readNext()) != false)
+			{
+				if (this.nt == NodeType.ElementEnd && initLev >= this.pathList.size())
+				{
+					break;
+				}
+			}
+			return succ;
+		}
+		else
+		{
+			return this.readNext();
+		}
+	}
+
+	public boolean isElementEmpty()
+	{
+		return this.nt == NodeType.Element && this.emptyNode;
+	}
+
+	public boolean isComplete()
+	{
+		return this.pathList.size() == 0 && this.parseOfst == this.buffSize;	
+	}
+
+	public boolean hasError()
+	{
+		return this.parseError != 0;
+	}
+
+	public int getErrorCode()
+	{
+		return this.parseError;
+	}
+
+	public boolean toString(@Nonnull StringBuilderUTF8 sb)
+	{
+		int i;
+		int j;
+		String s;
+		XMLAttrib attr;
+		switch (this.nt)
+		{
+		case Document:
+			sb.appendUTF8Char((byte)'<');
+			sb.appendUTF8Char((byte)'?');
+			sb.appendOpt(this.nodeText);
+			i = 0;
+			j = this.attrList.size();
+			while (i < j)
+			{
+				attr = this.attrList.get(i);
+				sb.appendUTF8Char((byte)' ');
+				sb.append(attr.toString());
+				i++;
+			}
+			sb.appendUTF8Char((byte)'?');
+			sb.appendUTF8Char((byte)'>');
+			return true;
+		case Element:
+			sb.appendUTF8Char((byte)'<');
+			sb.appendOpt(this.nodeText);
+			i = 0;
+			j = this.attrList.size();
+			while (i < j)
+			{
+				attr = this.attrList.get(i);
+				sb.appendUTF8Char((byte)' ');
+				sb.append(attr.toString());
+				i++;
+			}
+	
+			if (this.emptyNode)
+			{
+				sb.appendUTF8Char((byte)'/');
+			}
+			sb.appendUTF8Char((byte)'>');
+			return true;
+		case ElementEnd:
+			sb.appendUTF8Char((byte)'<');
+			sb.appendUTF8Char((byte)'/');
+			sb.appendOpt(this.nodeText);
+			sb.appendUTF8Char((byte)'>');
+			return true;
+		case Text:
+			if ((s = this.nodeOriText) != null)
+			{
+				sb.append(s);
+			}
+			else if (this.mode == ParseMode.XML && (s = this.nodeText) != null)
+			{
+				sb.append(XmlUtil.toXMLText(s));
+			}
+			else
+			{
+				sb.appendOpt(this.nodeText);
+			}
+			return true;
+		case CData:
+			sb.append("<![CDATA[");
+			sb.appendOpt(this.nodeText);
+			sb.append("]]>");
+			return true;
+		case Comment:
+			sb.append("<!--");
+			if ((s = this.nodeText) != null)
+			{
+				sb.append(s);
+			}
+			sb.append("-.");
+			return true;
+		case Attribute:
+		case Unknown:
+			break;
+		case DocType:
+			sb.appendUTF8Char((byte)'<');
+			sb.appendUTF8Char((byte)'!');
+			sb.appendOpt(this.nodeText);
+			i = 0;
+			j = this.attrList.size();
+			while (i < j)
+			{
+				attr = this.attrList.get(i);
+				sb.appendUTF8Char((byte)' ');
+				sb.append(attr.toString());
+				i++;
+			}
+	
+			if (this.emptyNode)
+			{
+				sb.appendUTF8Char((byte)'/');
+			}
+			sb.appendUTF8Char((byte)'>');
+			return true;
+		}
+		return false;
 	}
 }

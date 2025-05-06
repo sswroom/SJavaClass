@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.sswr.util.basic.HiResClock;
-import org.sswr.util.crypto.MyX509Cert;
+import org.sswr.util.crypto.cert.MyX509Cert;
 import org.sswr.util.data.DateTimeUtil;
 import org.sswr.util.data.SharedDouble;
 import org.sswr.util.data.StringUtil;

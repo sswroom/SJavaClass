@@ -1,8 +1,8 @@
 package org.sswr.util.net;
 
-import org.sswr.util.crypto.MyX509File;
-import org.sswr.util.crypto.MyX509Key;
-import org.sswr.util.crypto.MyX509PrivKey;
+import org.sswr.util.crypto.cert.MyX509File;
+import org.sswr.util.crypto.cert.MyX509Key;
+import org.sswr.util.crypto.cert.MyX509PrivKey;
 import org.sswr.util.data.StringUtil;
 import org.sswr.util.io.LogLevel;
 import org.sswr.util.io.LogTool;

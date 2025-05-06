@@ -17,8 +17,8 @@ import java.util.Map;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLPeerUnverifiedException;
 
-import org.sswr.util.crypto.CertUtil;
-import org.sswr.util.crypto.MyX509Cert;
+import org.sswr.util.crypto.cert.CertUtil;
+import org.sswr.util.crypto.cert.MyX509Cert;
 import org.sswr.util.data.DateTimeUtil;
 import org.sswr.util.data.SharedDouble;
 import org.sswr.util.data.SharedInt;

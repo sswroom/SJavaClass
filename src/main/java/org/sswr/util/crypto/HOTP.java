@@ -1,5 +1,7 @@
 package org.sswr.util.crypto;
 
+import org.sswr.util.crypto.hash.HMAC;
+import org.sswr.util.crypto.hash.SHA1;
 import org.sswr.util.data.ByteTool;
 import org.sswr.util.data.textbinenc.Base32Enc;
 import org.sswr.util.data.textenc.URIEncoding;

@@ -1,15 +1,26 @@
 # SJavaClass
 
 # Changes:
+0.7.
 - Added Encoding
 - Added StringBuilderUTF8
 - Added XMLAttrib
 - Added XMLNode
-- Adding XMLReader
+- Added XMLReader
 - Added XmlUtil.parseStr
+- Added XmlUtil.htmlAppendCharRef
 - Adding SAMLHandler
 - Adding SAMLIdpConfig
 - Added URL
+- Added cert, encrypt, hash, token subpackages
+- Added SSHPubKey
+- Added MyX509Key.createRSAPublicKey
+- Added ByteTool.subArray
+- Added StringUtil.startsWithICaseC
+- Added StringUtil.hex2UInt8C
+- Added StringUtil.hex2Int32C
+- Added StringUtil.toUInt32
+- Added X509Parser.parseBinary
 
 0.6.20250319
 - Enhance IAMSmart Address string

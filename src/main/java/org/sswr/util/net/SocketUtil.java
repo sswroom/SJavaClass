@@ -8,7 +8,7 @@ import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.UnknownHostException;
 
-import org.sswr.util.crypto.CRC32R;
+import org.sswr.util.crypto.hash.CRC32R;
 import org.sswr.util.data.ByteTool;
 
 import jakarta.annotation.Nonnull;

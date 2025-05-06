@@ -1,10 +1,9 @@
 package org.sswr.util.net;
 
-import java.nio.charset.StandardCharsets;
-
-import org.sswr.util.crypto.MyX509Cert;
-import org.sswr.util.crypto.MyX509File;
+import org.sswr.util.crypto.cert.MyX509Cert;
+import org.sswr.util.crypto.cert.MyX509File;
 import org.sswr.util.data.EncodingFactory;
+import org.sswr.util.data.StringBuilderUTF8;
 import org.sswr.util.data.XMLAttrib;
 import org.sswr.util.data.XMLReader;
 import org.sswr.util.data.textbinenc.Base64Enc;
@@ -40,9 +39,8 @@ public class SAMLIdpConfig {
 		int i;
 		int j;
 		XMLAttrib attr;
-		StringBuilder sb = new StringBuilder();
+		StringBuilderUTF8 sb = new StringBuilderUTF8();
 		byte[] buff;
-		int buffSize;
 		MyX509File file;
 		if ((stm = URL.openStream(path, null, clif, ssl, 10000, log)) == null)
 		{
@@ -59,15 +57,15 @@ public class SAMLIdpConfig {
 				MyX509Cert encryptionCert = null;
 				MyX509Cert signingCert = null;
 				int type;
-				while (reader.NextElementName().SetTo(s))
+				while ((s = reader.nextElementName()) != null)
 				{
 					if (s.equals("RoleDescriptor"))
 					{
 						i = 0;
-						j = reader.GetAttribCount();
+						j = reader.getAttribCount();
 						while (i < j)
 						{
-							attr = reader.GetAttribNoCheck(i);
+							attr = reader.getAttribNoCheck(i);
 							if ((s = attr.name) != null && s.equals("ServiceDisplayName"))
 							{
 								if (attr.value != null)
@@ -87,37 +85,37 @@ public class SAMLIdpConfig {
 							{
 								type = 0;
 								i = 0;
-								j = reader.GetAttribCount();
+								j = reader.getAttribCount();
 								while (i < j)
 								{
-									attr = reader.GetAttribNoCheck(i);
-									if (attr.name.SetTo(s) && s.equals("use"))
+									attr = reader.getAttribNoCheck(i);
+									if ((s = attr.name) != null && s.equals("use"))
 									{
-										if (attr.value.SetTo(s) && s.equals("encryption"))
+										if ((s = attr.value) != null && s.equals("encryption"))
 										{
 											type = 1;
 										}
-										else if (attr.value.SetTo(s) && s.equals("signing"))
+										else if ((s = attr.value) != null && s.equals("signing"))
 										{
 											type = 2;
 										}
 									}
 									i++;
 								}
-								while (reader.NextElementName().SetTo(s))
+								while ((s = reader.nextElementName()) != null)
 								{
 									if (s.equals("KeyInfo"))
 									{
-										while (reader.NextElementName().SetTo(s))
+										while ((s = reader.nextElementName()) != null)
 										{
 											if (s.equals("X509Data"))
 											{
-												while (reader.NextElementName().SetTo(s))
+												while ((s = reader.nextElementName()) != null)
 												{
 													if (s.equals("X509Certificate"))
 													{
-														sb.setLength(0);
-														reader.ReadNodeText(sb);
+														sb.clearStr();
+														reader.readNodeText(sb);
 														if (type == 1)
 														{
 															Base64Enc b64 = new Base64Enc();
@@ -133,7 +131,7 @@ public class SAMLIdpConfig {
 														else if (type == 2)
 														{
 															Base64Enc b64 = new Base64Enc();
-															b64.decodeBin(sb.toString());
+															buff = b64.decodeBin(sb.toString());
 															if ((file = X509Parser.parseBinary(buff, 0, buff.length)) != null)
 															{
 																if (file.getFileType() == MyX509File.FileType.Cert)
@@ -145,19 +143,19 @@ public class SAMLIdpConfig {
 													}
 													else
 													{
-														reader.SkipElement();
+														reader.skipElement();
 													}
 												}
 											}
 											else
 											{
-												reader.SkipElement();
+												reader.skipElement();
 											}
 										}
 									}
 									else
 									{
-										reader.SkipElement();
+										reader.skipElement();
 									}
 								}
 							}
@@ -165,65 +163,63 @@ public class SAMLIdpConfig {
 							{
 								type = 0;
 								i = 0;
-								j = reader.GetAttribCount();
+								j = reader.getAttribCount();
 								while (i < j)
 								{
-									attr = reader.GetAttribNoCheck(i);
-									if (attr.name.SetTo(s) && s.equals("Binding"))
+									attr = reader.getAttribNoCheck(i);
+									if ((s = attr.name) != null && s.equals("Binding"))
 									{
-										if (attr.value.SetTo(s) && s.equals("urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect"))
+										if ((s = attr.value) != null && s.equals("urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect"))
 										{
 											type = 1;
 										}
 									}
-									else if (attr.name.SetTo(s) && s.equals("Location"))
+									else if ((s = attr.name) != null && s.equals("Location"))
 									{
-										if (type == 1 && attr.value.SetTo(s))
+										if (type == 1 && (s = attr.value) != null)
 										{
-											OPTSTR_DEL(logoutLocation);
-											logoutLocation = s.Clone();
+											logoutLocation = s;
 										}
 									}
 									i++;
 								}
-								reader.SkipElement();
+								reader.skipElement();
 							}
-							else if (s.equals("SingleSignOnService")))
+							else if (s.equals("SingleSignOnService"))
 							{
 								type = 0;
 								i = 0;
-								j = reader.GetAttribCount();
+								j = reader.getAttribCount();
 								while (i < j)
 								{
-									attr = reader.GetAttribNoCheck(i);
-									if (attr.name.SetTo(s) && s.equals("Binding"))
+									attr = reader.getAttribNoCheck(i);
+									if ((s = attr.name) != null && s.equals("Binding"))
 									{
-										if (attr.value.SetTo(s) && s.equals("urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect"))
+										if ((s = attr.value) != null && s.equals("urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect"))
 										{
 											type = 1;
 										}
 									}
-									else if (attr.name.SetTo(s) && s.equals("Location"))
+									else if ((s = attr.name) != null && s.equals("Location"))
 									{
-										if (type == 1 && attr.value.SetTo(s))
+										if (type == 1 && (s = attr.value) != null)
 										{
-											OPTSTR_DEL(signOnLocation);
-											signOnLocation = s.Clone();
+											signOnLocation = s;
 										}
 									}
 									i++;
 								}
-								reader.SkipElement();
+								reader.skipElement();
 							}
 							else
 							{
-								reader.SkipElement();
+								reader.skipElement();
 							}
 						}
 					}
 					else
 					{
-						reader.SkipElement();
+						reader.skipElement();
 					}
 				}
 				if (serviceDispName != null && signOnLocation != null && logoutLocation != null)

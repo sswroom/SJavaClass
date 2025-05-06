@@ -5,7 +5,7 @@ import java.sql.Timestamp;
 import java.time.ZonedDateTime;
 import java.util.List;
 
-import org.sswr.util.crypto.CRC32R;
+import org.sswr.util.crypto.hash.CRC32R;
 import org.sswr.util.data.DateTimeUtil;
 import org.sswr.util.data.StringUtil;
 import org.sswr.util.net.WebUtil;

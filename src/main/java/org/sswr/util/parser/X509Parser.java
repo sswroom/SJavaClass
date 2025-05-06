@@ -1,15 +1,16 @@
 package org.sswr.util.parser;
 
-import org.sswr.util.crypto.MyX509CRL;
-import org.sswr.util.crypto.MyX509Cert;
-import org.sswr.util.crypto.MyX509CertReq;
-import org.sswr.util.crypto.MyX509File;
-import org.sswr.util.crypto.MyX509Key;
-import org.sswr.util.crypto.MyX509PKCS12;
-import org.sswr.util.crypto.MyX509PKCS7;
-import org.sswr.util.crypto.MyX509PrivKey;
-import org.sswr.util.crypto.MyX509PubKey;
-import org.sswr.util.crypto.MyX509File.KeyType;
+import org.sswr.util.crypto.cert.MyX509CRL;
+import org.sswr.util.crypto.cert.MyX509Cert;
+import org.sswr.util.crypto.cert.MyX509CertReq;
+import org.sswr.util.crypto.cert.MyX509File;
+import org.sswr.util.crypto.cert.MyX509Key;
+import org.sswr.util.crypto.cert.MyX509PKCS12;
+import org.sswr.util.crypto.cert.MyX509PKCS7;
+import org.sswr.util.crypto.cert.MyX509PrivKey;
+import org.sswr.util.crypto.cert.MyX509PubKey;
+import org.sswr.util.crypto.cert.SSHPubKey;
+import org.sswr.util.crypto.cert.MyX509File.KeyType;
 import org.sswr.util.data.StringUtil;
 import org.sswr.util.data.textbinenc.Base64Enc;
 import org.sswr.util.io.FileParser;
@@ -204,5 +205,24 @@ public class X509Parser extends FileParser
 	@Nonnull
 	public ParserType getParserType() {
 		return ParserType.ASN1Data;
+	}
+
+	@Nullable
+	public static MyX509File parseBinary(@Nonnull byte[] buff, int ofst, int len)
+	{
+		if (MyX509File.isCertificate(buff, ofst, ofst + len, "1"))
+		{
+			return new MyX509Cert("Certificate.crt", buff, ofst, len);
+		}
+		else if (MyX509File.isPublicKeyInfo(buff, ofst, ofst + len, "1"))
+		{
+			return new MyX509PubKey("PublicKey.key", buff, ofst, len);
+		}
+		else if (SSHPubKey.isValid(buff, ofst, len))
+		{
+			SSHPubKey key = new SSHPubKey("PublicKey.key", buff, ofst, len);
+			return key.createKey();
+		}
+		return null;
 	}
 }

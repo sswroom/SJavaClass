@@ -1,5 +1,6 @@
 package org.sswr.util.crypto;
 
+import org.sswr.util.crypto.hash.Hash;
 import org.sswr.util.data.ByteTool;
 
 import jakarta.annotation.Nonnull;

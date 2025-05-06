@@ -174,4 +174,133 @@ public class XmlUtil {
 		}
 		return sb.toString();
 	}
+
+	public static boolean htmlAppendCharRef(@Nonnull byte[] chrRef, int chrOfst, int refSize, @Nonnull StringBuilderUTF8 sb)
+	{
+		byte[] sbuff = new byte[6];
+		int wcs;
+		if (chrRef[chrOfst + 0] != '&')
+		{
+			return false;
+		}
+		if (refSize == 4)
+		{
+			if (chrRef[chrOfst + 1] == '#')
+			{
+				sbuff[0] = chrRef[chrOfst + 2];
+				sbuff[1] = 0;
+				sb.appendUTF8Char((byte)StringUtil.toUInt32(chrRef, chrOfst + 2));
+				return true;
+			}
+			else if (StringUtil.startsWithC(chrRef, chrOfst, refSize, "&lt;"))
+			{
+				sb.appendUTF8Char((byte)'<');
+				return true;
+			}
+			else if (StringUtil.startsWithC(chrRef, chrOfst, refSize, "&gt;"))
+			{
+				sb.appendUTF8Char((byte)'>');
+				return true;
+			}
+		}
+		else if (refSize == 5)
+		{
+			if (chrRef[chrOfst + 1] == '#')
+			{
+				if (chrRef[chrOfst + 2] == 'x')
+				{
+					sb.appendUTF8Char(StringUtil.hex2UInt8C(chrRef, chrOfst + 3));
+					return true;
+				}
+				else
+				{
+					sbuff[0] = chrRef[chrOfst + 2];
+					sbuff[1] = chrRef[chrOfst + 3];
+					sbuff[2] = 0;
+					wcs = StringUtil.toUInt32(sbuff, 0);
+					sb.appendChar(wcs, 1);
+					return true;
+				}
+			}
+			else if (StringUtil.startsWithC(chrRef, chrOfst, refSize, "&amp;"))
+			{
+				sb.appendUTF8Char((byte)'&');
+				return true;
+			}
+		}
+		else if (refSize == 6)
+		{
+			if (chrRef[chrOfst + 1] == '#')
+			{
+				if (chrRef[chrOfst + 2] == 'x')
+				{
+					wcs = StringUtil.hex2UInt8C(chrRef, chrOfst + 3);
+				}
+				else
+				{
+					sbuff[0] = chrRef[chrOfst + 2];
+					sbuff[1] = chrRef[chrOfst + 3];
+					sbuff[2] = chrRef[chrOfst + 4];
+					sbuff[3] = 0;
+					wcs = StringUtil.toUInt32(sbuff, 0);
+				}
+				sb.appendChar(wcs, 1);
+				return true;
+			}
+			else if (StringUtil.startsWithC(chrRef, chrOfst, refSize, "&apos;"))
+			{
+				sb.appendUTF8Char((byte)'\'');
+				return true;
+			}
+			else if (StringUtil.startsWithC(chrRef, chrOfst, refSize, "&bull;"))
+			{
+				sb.appendChar(0x2022, 1);
+				return true;
+			}
+			else if (StringUtil.startsWithC(chrRef, chrOfst, refSize, "&quot;"))
+			{
+				sb.appendUTF8Char((byte)'\"');
+				return true;
+			}
+		}
+		else if (refSize == 7)
+		{
+			if (chrRef[chrOfst + 1] == '#')
+			{
+				if (chrRef[chrOfst + 2] == 'x')
+				{
+					wcs = StringUtil.hex2UInt8C(chrRef, chrOfst + 4);
+					if (chrRef[chrOfst + 3] <= '9')
+					{
+						wcs += (int)(chrRef[chrOfst + 3] - '0') << 8;
+					}
+					else if (chrRef[chrOfst + 3] <= 'F')
+					{
+						wcs += (int)(chrRef[chrOfst + 3] - 0x37) << 8;
+					}
+					else if (chrRef[chrOfst + 3] <= 'f')
+					{
+						wcs += (int)(chrRef[chrOfst + 3] - 0x57) << 8;
+					}
+				}
+				else
+				{
+					sbuff[0] = chrRef[chrOfst + 2];
+					sbuff[1] = chrRef[chrOfst + 3];
+					sbuff[2] = chrRef[chrOfst + 4];
+					sbuff[3] = chrRef[chrOfst + 5];
+					sbuff[4] = 0;
+					wcs = (int)StringUtil.toUInt32(sbuff, 0);
+				}
+				sb.appendChar(wcs, 1);
+				return true;
+			}
+			else if (StringUtil.startsWithC(chrRef, chrOfst, refSize, "&raquo;"))
+			{
+				sb.appendChar(0xbb, 1);
+				return true;
+			}
+		}
+		return false;
+	}
 }

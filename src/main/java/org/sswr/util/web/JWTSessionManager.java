@@ -6,10 +6,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.sswr.util.crypto.JWSignature;
-import org.sswr.util.crypto.JWTHandler;
-import org.sswr.util.crypto.JWTParam;
-import org.sswr.util.crypto.JWToken;
+import org.sswr.util.crypto.token.JWSignature;
+import org.sswr.util.crypto.token.JWTHandler;
+import org.sswr.util.crypto.token.JWTParam;
+import org.sswr.util.crypto.token.JWToken;
 import org.sswr.util.data.DateTimeUtil;
 import org.sswr.util.data.StringUtil;
 

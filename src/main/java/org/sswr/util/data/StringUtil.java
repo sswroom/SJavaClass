@@ -1508,6 +1508,47 @@ public class StringUtil
 	}
 
 	/**
+	 * Check whether the byte buffer is starts with a string ignoring case
+	 * 
+	 * @param  buff byte buffer to check
+	 * @param  ofst offset of byte buffer start
+	 * @param  len length of byte buffer
+	 * @param  value Value to check
+	 * @return  whether it is starts with a string
+	 */
+	public static boolean startsWithICaseC(@Nonnull byte[] buff, int ofst, int len, @Nonnull String value)
+	{
+		byte[] valueBuff = value.getBytes(StandardCharsets.UTF_8);
+		if (valueBuff.length > len)
+		{
+			return false;
+		}
+		int i = 0;
+		int j = valueBuff.length;
+		byte b1;
+		byte b2;
+		while (i < j)
+		{
+			b1 = valueBuff[i];
+			b2 = buff[ofst + i]; 
+			if (b1 >= 'a' && b1 <= 'z')
+			{
+				b1 -= 0x20;
+			}
+			if (b2 >= 'a' && b2 <= 'z')
+			{
+				b2 -= 0x20;
+			}
+			if (b1 != b2)
+			{
+				return false;
+			}
+			i++;
+		}
+		return true;
+	}
+
+	/**
 	 * Check whether the byte buffer is equals to a string ignore case
 	 * 
 	 * @param  buff byte buffer to check
@@ -2058,5 +2099,132 @@ public class StringUtil
 			i++;
 		}
 		return -1;
+	}
+
+	/**
+	 * Convert 2 bytes hex to byte
+	 * @param buff byte array to convert
+	 * @param ofst offset of hex value
+	 * @return hex or 0 on error
+	 */
+	public static byte hex2UInt8C(@Nonnull byte[] buff, int ofst)
+	{
+		if (ofst < 0 || ofst + 2 > buff.length)
+		{
+			return 0;
+		}
+		int outVal = 0;
+		byte c;
+		c = buff[ofst];
+		if (c == 0)
+			return (byte)outVal;
+		if (c >= '0' && c <= '9')
+		{
+			outVal = (byte)(c - 48);
+		}
+		else if (c >= 'A' && c <= 'F')
+		{
+			outVal = (byte)(c - 0x37);
+		}
+		else if (c >= 'a' && c <= 'f')
+		{
+			outVal = (byte)(c - 0x57);
+		}
+		else
+		{
+			return 0;
+		}
+		c = buff[ofst + 1];
+		if (c == 0)
+			return (byte)outVal;
+		if (c >= '0' && c <= '9')
+		{
+			outVal = (byte)((outVal << 4) | (c - 48));
+		}
+		else if (c >= 'A' && c <= 'F')
+		{
+			outVal = (byte)((outVal << 4) | (c - 0x37));
+		}
+		else if (c >= 'a' && c <= 'f')
+		{
+			outVal = (byte)((outVal << 4) | (c - 0x57));
+		}
+		else
+		{
+			return 0;
+		}
+		return (byte)outVal;
+	}
+
+	/**
+	 * Convert 8 bytes hex to int
+	 * @param buff byte array to convert
+	 * @param ofst offset of hex value
+	 * @return hex or 0 on error
+	 */
+	public static int hex2Int32C(@Nonnull byte[] buff, int ofst)
+	{
+		if (ofst < 0 || ofst + 8 > buff.length)
+		{
+			return 0;
+		}
+		int i = 8;
+		int outVal = 0;
+		byte c;
+		while (i-- > 0)
+		{
+			c = buff[ofst];
+			if (c == 0)
+				return outVal;
+			if (c >= '0' && c <= '9')
+			{
+				outVal = (outVal << 4) | (c - 48);
+			}
+			else if (c >= 'A' && c <= 'F')
+			{
+				outVal = (outVal << 4) | (c - 0x37);
+			}
+			else if (c >= 'a' && c <= 'f')
+			{
+				outVal = (outVal << 4) | (c - 0x57);
+			}
+			else
+			{
+				return 0;
+			}
+			ofst++;
+		}
+		return outVal;
+	}
+
+	/**
+	 * Convert utf8 bytes to uint
+	 * @param buff byte array to convert
+	 * @param ofst offset of value
+	 * @return value or 0 on error
+	 */
+	public static int toUInt32(byte[] buff, int ofst)
+	{
+		int retVal = 0;
+		int endOfst = buff.length;
+		byte b;
+		if (endOfst - ofst >= 10 && buff[ofst + 0] == '0' && buff[ofst + 1] == 'x')
+		{
+			retVal = hex2Int32C(buff, ofst + 2);
+		}
+		else
+		{
+			while (ofst < endOfst)
+			{
+				b = buff[ofst];
+				if (b == 0)
+					return retVal;
+				if (b < '0' || b > '9')
+					return 0;
+				retVal = retVal * 10 + (int)b - 48;
+				ofst++;
+			}
+		}
+		return retVal;
 	}
 }

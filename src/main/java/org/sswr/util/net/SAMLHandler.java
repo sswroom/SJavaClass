@@ -1,7 +1,7 @@
 package org.sswr.util.net;
 
-import org.sswr.util.crypto.MyX509Cert;
-import org.sswr.util.crypto.MyX509Key;
+import org.sswr.util.crypto.cert.MyX509Cert;
+import org.sswr.util.crypto.cert.MyX509Key;
 import org.sswr.util.data.LineBreakType;
 import org.sswr.util.data.textbinenc.Base64Enc;
 
