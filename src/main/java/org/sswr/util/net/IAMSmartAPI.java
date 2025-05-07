@@ -19,6 +19,7 @@ import org.sswr.util.data.JSONBase;
 import org.sswr.util.data.JSONBuilder;
 import org.sswr.util.data.LineBreakType;
 import org.sswr.util.data.RandomBytesGenerator;
+import org.sswr.util.data.StringBuilderUTF8;
 import org.sswr.util.data.StringUtil;
 import org.sswr.util.data.JSONBuilder.ObjectType;
 import org.sswr.util.data.textbinenc.Base64Enc;
@@ -139,7 +140,7 @@ public class IAMSmartAPI {
 			return null;
 		}
 		ByteTool.copyArray(msgBuff, 16, encBuff, 0, encBuff.length);
-		StringBuilder sb = new StringBuilder();
+		StringBuilderUTF8 sb = new StringBuilderUTF8();
 		Base64Enc b64 = new Base64Enc();
 		sb.append("{\"content\":\"");
 		b64.encodeBin(sb, msgBuff, 0, jsonMsgBuff.length + 32);

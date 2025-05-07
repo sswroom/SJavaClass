@@ -33,6 +33,7 @@ public class StringBuilderUTF8 {
 		}
 	}
 
+	@Nonnull
 	public StringBuilderUTF8 append(@Nonnull String s)
 	{
 		byte[] sbuff = s.getBytes(StandardCharsets.UTF_8);
@@ -43,6 +44,7 @@ public class StringBuilderUTF8 {
 		return this;
 	}
 
+	@Nonnull
 	public StringBuilderUTF8 appendOpt(@Nullable String s)
 	{
 		if (s == null)
@@ -50,6 +52,7 @@ public class StringBuilderUTF8 {
 		return append(s);
 	}
 
+	@Nonnull
 	public StringBuilderUTF8 appendUTF8Char(byte c)
 	{
 		this.allocLeng(1);
@@ -59,6 +62,7 @@ public class StringBuilderUTF8 {
 		return this;
 	}
 
+	@Nonnull
 	public StringBuilderUTF8 appendChar(int c, int repCnt)
 	{
 		byte[] oc = new byte[6];
@@ -158,6 +162,7 @@ public class StringBuilderUTF8 {
 		return this;
 	}
 
+	@Nonnull
 	public StringBuilderUTF8 appendC(byte[] v, int ofst, int len)
 	{
 		this.allocLeng(1);
@@ -165,6 +170,60 @@ public class StringBuilderUTF8 {
 		this.leng += len;
 		this.v[this.leng] = 0;
 		return this;
+	}
+
+	@Nonnull
+	public StringBuilderUTF8 appendI16(short iVal)
+	{
+		return this.append(String.valueOf(iVal));
+	}
+
+	@Nonnull
+	public StringBuilderUTF8 appendU16(short iVal)
+	{
+		return this.append(String.valueOf(iVal & 65535));
+	}
+
+	@Nonnull
+	public StringBuilderUTF8 appendI32(int iVal)
+	{
+		return this.append(String.valueOf(iVal));
+	}
+
+	@Nonnull
+	public StringBuilderUTF8 appendU32(int iVal)
+	{
+		if (iVal < 0)
+		{
+			return this.append(String.valueOf(0xffffffffL & (long)iVal));
+		}
+		else
+		{
+			return this.append(String.valueOf(iVal));
+		}
+	}
+
+	@Nonnull
+	public StringBuilderUTF8 appendI64(long iVal)
+	{
+		return this.append(String.valueOf(iVal));
+	}
+
+	@Nonnull
+	public StringBuilderUTF8 appendLB(LineBreakType lbt)
+	{
+		switch (lbt)
+		{
+		case CRLF:
+			return appendC("\r\n".getBytes(), 0, 2);
+		case CR:
+			return appendUTF8Char((byte)'\r');
+		case LF:
+			return appendUTF8Char((byte)'\n');
+		case NONE:
+		default:
+			return this;
+		}
 	}
 
 	public StringBuilderUTF8 clearStr()

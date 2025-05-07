@@ -341,4 +341,14 @@ public class HTTPServerUtil {
 		}
 		return req.getRemoteAddr();
 	}
+
+	public static boolean redirectURL(@Nonnull HttpServletResponse resp, @Nonnull HttpServletRequest req, @Nonnull String url, int cacheAge)
+	{
+		addDefHeaders(resp, req);
+		resp.setStatus(StatusCode.MOVED_TEMPORARILY);
+		addCacheControl(resp, cacheAge);
+		resp.addHeader("Location", url);
+		addContentLength(resp, 0);
+		return true;
+	}
 }

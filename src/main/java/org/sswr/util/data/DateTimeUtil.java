@@ -816,6 +816,12 @@ public class DateTimeUtil
 		}
 	}
 
+	@Nonnull
+	public static String toStringISO8601(@Nonnull ZonedDateTime ts)
+	{
+		return ts.toInstant().toString();
+	}
+
 	public static int toYMD(@Nonnull ZonedDateTime dt)
 	{
 		return dt.getYear() * 10000 + dt.getMonthValue() * 100 + dt.getDayOfMonth();

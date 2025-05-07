@@ -2315,7 +2315,7 @@ public abstract class MyX509File extends ASN1Data
 		item = ASN1Util.pduGetItem(this.buff, 0, this.buff.length, "1.1");
 		if (item == null)
 		{
-			System.out.println("SignedInfo: error 1");
+			System.out.println("MyX509File.getSignedInfo: error 1");
 			return null;
 		}
 		signedInfo.payload = this.buff;
@@ -2324,22 +2324,22 @@ public abstract class MyX509File extends ASN1Data
 		item = ASN1Util.pduGetItem(this.buff, 0, this.buff.length, "1.2");
 		if (item == null)
 		{
-			System.out.println("SignedInfo: error 2a");
+			System.out.println("MyX509File.getSignedInfo: error 2a");
 			return null;
 		}
 		else if (item.itemType != ASN1Util.IT_SEQUENCE)
 		{
-			System.out.println("SignedInfo: error 2b");
+			System.out.println("MyX509File.getSignedInfo: error 2b");
 			return null;
 		}
 		else if ((signedInfo.algType = algorithmIdentifierGet(this.buff, item.ofst, item.ofst + item.len)) == AlgType.Unknown)
 		{
-			System.out.println("SignedInfo: error 2c");
+			System.out.println("MyX509File.getSignedInfo: error 2c");
 			return null;
 		}
 		if ((item = ASN1Util.pduGetItem(this.buff, 0, this.buff.length, "1.3")) == null || item.itemType != ASN1Util.IT_BIT_STRING)
 		{
-			System.out.println("SignedInfo: error 3");
+			System.out.println("MyX509File.getSignedInfo: error 3");
 			return null;
 		}
 		signedInfo.signature = this.buff;

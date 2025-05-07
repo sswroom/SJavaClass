@@ -11,6 +11,7 @@ import org.sswr.util.data.JSONBase;
 import org.sswr.util.data.JSONNumber;
 import org.sswr.util.data.JSONObject;
 import org.sswr.util.data.JSONString;
+import org.sswr.util.data.StringBuilderUTF8;
 import org.sswr.util.data.textbinenc.Base64Enc;
 
 import jakarta.annotation.Nonnull;
@@ -110,9 +111,9 @@ public class JWToken
 	public boolean signatureValid(@Nonnull byte[] key, int keyOfst, int keyLeng, @Nonnull MyX509Key.KeyType keyType)
 	{
 		Base64Enc b64 = new Base64Enc(Base64Enc.B64Charset.URL, true);
-		StringBuilder sb = new StringBuilder();
+		StringBuilderUTF8 sb = new StringBuilderUTF8();
 		b64.encodeBin(sb, this.header.getBytes(StandardCharsets.UTF_8));
-		sb.append('.');
+		sb.appendUTF8Char((byte)'.');
 		b64.encodeBin(sb, this.payload.getBytes(StandardCharsets.UTF_8));
 		JWSignature sign = new JWSignature(this.alg, key, keyOfst, keyLeng, keyType);
 		byte[] buff = sb.toString().getBytes(StandardCharsets.UTF_8);
@@ -224,12 +225,12 @@ public class JWToken
 	@Nonnull
 	public String toString()
 	{
-		StringBuilder sb = new StringBuilder();
+		StringBuilderUTF8 sb = new StringBuilderUTF8();
 		Base64Enc b64 = new Base64Enc(Base64Enc.B64Charset.URL, true);
 		b64.encodeBin(sb, this.header.getBytes(StandardCharsets.UTF_8));
-		sb.append('.');
+		sb.appendUTF8Char((byte)'.');
 		b64.encodeBin(sb, this.payload.getBytes(StandardCharsets.UTF_8));
-		sb.append('.');
+		sb.appendUTF8Char((byte)'.');
 		b64.encodeBin(sb, this.sign);
 		return sb.toString();
 	}
@@ -238,10 +239,10 @@ public class JWToken
 	public static JWToken generate(@Nonnull JWSignature.Algorithm alg, @Nonnull String payload, @Nonnull byte[] key, int keyOfst, int keyLeng, @Nonnull MyX509Key.KeyType keyType)
 	{
 		String header = "{\"alg\":\"" + alg.toString() + "\",\"typ\":\"JWT\"}";
-		StringBuilder sb = new StringBuilder();
+		StringBuilderUTF8 sb = new StringBuilderUTF8();
 		Base64Enc b64 = new Base64Enc(Base64Enc.B64Charset.URL, true);
 		b64.encodeBin(sb, header.getBytes(StandardCharsets.UTF_8));
-		sb.append('.');
+		sb.appendUTF8Char((byte)'.');
 
 		b64.encodeBin(sb, payload.getBytes(StandardCharsets.UTF_8));
 		JWSignature sign = new JWSignature(alg, key, keyOfst, keyLeng, keyType);

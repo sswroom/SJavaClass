@@ -1,8 +1,10 @@
 package org.sswr.util.data.textbinenc;
 
+import java.nio.charset.StandardCharsets;
+
 import org.sswr.util.data.ByteTool;
 import org.sswr.util.data.LineBreakType;
-import org.sswr.util.data.StringUtil;
+import org.sswr.util.data.StringBuilderUTF8;
 
 import jakarta.annotation.Nonnull;
 
@@ -34,15 +36,15 @@ public class Base64Enc extends TextBinEnc
 		(byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff
 	};
 
-	private static @Nonnull char []getEncArr(@Nonnull B64Charset cs)
+	private static @Nonnull byte []getEncArr(@Nonnull B64Charset cs)
 	{
 		if (cs == B64Charset.URL)
 		{
-			return "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_".toCharArray();
+			return "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_".getBytes(StandardCharsets.UTF_8);
 		}
 		else
 		{
-			return "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/".toCharArray();
+			return "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/".getBytes(StandardCharsets.UTF_8);
 		}
 	}
 
@@ -61,24 +63,24 @@ public class Base64Enc extends TextBinEnc
 	@Nonnull
 	public String encodeBin(@Nonnull byte []dataBuff, int dataOfst, int buffSize)
 	{
-		StringBuilder sb = new StringBuilder();
+		StringBuilderUTF8 sb = new StringBuilderUTF8();
 		encodeBin(sb, dataBuff, dataOfst, buffSize);
 		return sb.toString();
 	}
 
-	public void encodeBin(@Nonnull StringBuilder sb, @Nonnull byte []dataBuff, int dataOfst, int buffSize)
+	public void encodeBin(@Nonnull StringBuilderUTF8 sb, @Nonnull byte []dataBuff, int dataOfst, int buffSize)
 	{
 		encodeBin(sb, dataBuff, dataOfst, buffSize, LineBreakType.NONE, 0);
 	}
 
-	public void encodeBin(@Nonnull StringBuilder sb, @Nonnull byte []dataBuff)
+	public void encodeBin(@Nonnull StringBuilderUTF8 sb, @Nonnull byte []dataBuff)
 	{
 		encodeBin(sb, dataBuff, 0, dataBuff.length, LineBreakType.NONE, 0);
 	}
 
-	public void encodeBin(@Nonnull StringBuilder sb, @Nonnull byte[] dataBuff, int dataOfst, int buffSize, @Nonnull LineBreakType lbt, int charsPerLine)
+	public void encodeBin(@Nonnull StringBuilderUTF8 sb, @Nonnull byte[] dataBuff, int dataOfst, int buffSize, @Nonnull LineBreakType lbt, int charsPerLine)
 	{
-		char []encArr = getEncArr(this.cs);
+		byte []encArr = getEncArr(this.cs);
 		int outSize;
 		int tmp1 = buffSize % 3;
 		int tmp2 = buffSize / 3;
@@ -109,47 +111,47 @@ public class Base64Enc extends TextBinEnc
 		}
 		if (lbt == LineBreakType.NONE || charsPerLine == 0)
 		{
-			sb.ensureCapacity(outSize);
+			sb.allocLeng(outSize);
 			while (tmp2-- > 0)
 			{
-				sb.append(encArr[ByteTool.shr8(dataBuff[dataOfst + 0], 2)]);
-				sb.append(encArr[((dataBuff[dataOfst + 0] << 4) | ByteTool.shr8(dataBuff[dataOfst + 1], 4)) & 0x3f]);
-				sb.append(encArr[((dataBuff[dataOfst + 1] << 2) | ByteTool.shr8(dataBuff[dataOfst + 2], 6)) & 0x3f]);
-				sb.append(encArr[dataBuff[dataOfst + 2] & 0x3f]);
+				sb.appendUTF8Char(encArr[ByteTool.shr8(dataBuff[dataOfst + 0], 2)]);
+				sb.appendUTF8Char(encArr[((dataBuff[dataOfst + 0] << 4) | ByteTool.shr8(dataBuff[dataOfst + 1], 4)) & 0x3f]);
+				sb.appendUTF8Char(encArr[((dataBuff[dataOfst + 1] << 2) | ByteTool.shr8(dataBuff[dataOfst + 2], 6)) & 0x3f]);
+				sb.appendUTF8Char(encArr[dataBuff[dataOfst + 2] & 0x3f]);
 				dataOfst += 3;
 			}
 			if (tmp1 == 1)
 			{
-				sb.append(encArr[ByteTool.shr8(dataBuff[dataOfst + 0], 2)]);
-				sb.append(encArr[(dataBuff[dataOfst + 0] << 4) & 0x3f]);
+				sb.appendUTF8Char(encArr[ByteTool.shr8(dataBuff[dataOfst + 0], 2)]);
+				sb.appendUTF8Char(encArr[(dataBuff[dataOfst + 0] << 4) & 0x3f]);
 				if (this.noPadding)
 				{
 				}
 				else
 				{
-					sb.append('=');
-					sb.append('=');
+					sb.appendUTF8Char((byte)'=');
+					sb.appendUTF8Char((byte)'=');
 				}
 			}
 			else if (tmp1 == 2)
 			{
-				sb.append(encArr[ByteTool.shr8(dataBuff[dataOfst + 0], 2)]);
-				sb.append(encArr[((dataBuff[dataOfst + 0] << 4) | ByteTool.shr8(dataBuff[dataOfst + 1], 4)) & 0x3f]);
-				sb.append(encArr[(dataBuff[dataOfst + 1] << 2) & 0x3f]);
+				sb.appendUTF8Char(encArr[ByteTool.shr8(dataBuff[dataOfst + 0], 2)]);
+				sb.appendUTF8Char(encArr[((dataBuff[dataOfst + 0] << 4) | ByteTool.shr8(dataBuff[dataOfst + 1], 4)) & 0x3f]);
+				sb.appendUTF8Char(encArr[(dataBuff[dataOfst + 1] << 2) & 0x3f]);
 				if (this.noPadding)
 				{
 				}
 				else
 				{
-					sb.append('=');
+					sb.appendUTF8Char((byte)'=');
 				}
 			}
 		}
 		else
 		{
-			char[] sptr = new char[4];
+			byte[] sptr = new byte[4];
 			int lineCnt = outSize / charsPerLine;
-			sb.ensureCapacity(outSize + lineCnt * lbSize);
+			sb.allocLeng(outSize + lineCnt * lbSize);
 			int lineLeft = charsPerLine;
 			while (tmp2-- > 0)
 			{
@@ -159,20 +161,20 @@ public class Base64Enc extends TextBinEnc
 				sptr[3] = encArr[dataBuff[dataOfst + 2] & 0x3f];
 				if (lineLeft > 4)
 				{
-					sb.append(sptr);
+					sb.appendC(sptr, 0, 4);
 					lineLeft -= 4;
 				}
 				else if (lineLeft == 4)
 				{
-					sb.append(sptr);
-					StringUtil.appendLineBreak(sb, lbt);
+					sb.appendC(sptr, 0, 4);
+					sb.appendLB(lbt);
 					lineLeft = charsPerLine;
 				}
 				else
 				{
-					sb.append(sptr, 0, lineLeft);
-					StringUtil.appendLineBreak(sb, lbt);
-					sb.append(sptr, lineLeft, 4 - lineLeft);
+					sb.appendC(sptr, 0, lineLeft);
+					sb.appendLB(lbt);
+					sb.appendC(sptr, lineLeft, 4 - lineLeft);
 					lineLeft = charsPerLine + lineLeft - 4;
 				}
 				dataOfst += 3;
@@ -185,13 +187,13 @@ public class Base64Enc extends TextBinEnc
 				{
 					if (lineLeft >= 2)
 					{
-						sb.append(sptr, 0, 2);
+						sb.appendC(sptr, 0, 2);
 					}
 					else
 					{
-						sb.append(sptr[0]);
-						StringUtil.appendLineBreak(sb, lbt);
-						sb.append(sptr[1]);
+						sb.appendUTF8Char(sptr[0]);
+						sb.appendLB(lbt);
+						sb.appendUTF8Char(sptr[1]);
 					}
 				}
 				else
@@ -200,13 +202,13 @@ public class Base64Enc extends TextBinEnc
 					sptr[3] = '=';
 					if (lineLeft >= 4)
 					{
-						sb.append(sptr, 0, 4);
+						sb.appendC(sptr, 0, 4);
 					}
 					else
 					{
-						sb.append(sptr, 0, lineLeft);
-						StringUtil.appendLineBreak(sb, lbt);
-						sb.append(sptr, lineLeft, 4 - lineLeft);
+						sb.appendC(sptr, 0, lineLeft);
+						sb.appendLB(lbt);
+						sb.appendC(sptr, lineLeft, 4 - lineLeft);
 					}
 				}
 			}
@@ -219,13 +221,13 @@ public class Base64Enc extends TextBinEnc
 				{
 					if (lineLeft >= 3)
 					{
-						sb.append(sptr, 0, 3);
+						sb.appendC(sptr, 0, 3);
 					}
 					else
 					{
-						sb.append(sptr, 0, lineLeft);
-						StringUtil.appendLineBreak(sb, lbt);
-						sb.append(sptr, lineLeft, 3 - lineLeft);
+						sb.appendC(sptr, 0, lineLeft);
+						sb.appendLB(lbt);
+						sb.appendC(sptr, lineLeft, 3 - lineLeft);
 					}
 				}
 				else
@@ -233,13 +235,13 @@ public class Base64Enc extends TextBinEnc
 					sptr[3] = '=';
 					if (lineLeft >= 4)
 					{
-						sb.append(sptr, 0, 4);
+						sb.appendC(sptr, 0, 4);
 					}
 					else
 					{
-						sb.append(sptr, 0, lineLeft);
-						StringUtil.appendLineBreak(sb, lbt);
-						sb.append(sptr, lineLeft, 4 - lineLeft);
+						sb.appendC(sptr, 0, lineLeft);
+						sb.appendLB(lbt);
+						sb.appendC(sptr, lineLeft, 4 - lineLeft);
 					}
 				}
 			}

@@ -11,16 +11,24 @@
 - Added XmlUtil.htmlAppendCharRef
 - Adding SAMLHandler
 - Adding SAMLIdpConfig
+- Added SAMLUtil
 - Added URL
 - Added cert, encrypt, hash, token subpackages
+- Added CertUtil.toMyPrivKey
+- Added CertUtil.createPrivateKey
+- Added CertUtil.getDataBlockSize
 - Added SSHPubKey
 - Added MyX509Key.createRSAPublicKey
+- Added X509Parser.toType
 - Added ByteTool.subArray
 - Added StringUtil.startsWithICaseC
 - Added StringUtil.hex2UInt8C
 - Added StringUtil.hex2Int32C
 - Added StringUtil.toUInt32
+- Added DateTimeUtil.toStringISO8601
 - Added X509Parser.parseBinary
+- Change Base64Enc to use StringBuilderUTF8
+- Added HTTPServerUtil.redirectURL
 
 0.6.20250319
 - Enhance IAMSmart Address string

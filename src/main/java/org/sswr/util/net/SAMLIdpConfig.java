@@ -30,6 +30,36 @@ public class SAMLIdpConfig {
 		this.signingCert = signingCert;
 	}
 
+	@Nonnull
+	public String getServiceDispName()
+	{
+		return this.serviceDispName;
+	}
+
+	@Nonnull
+	public String getSignOnLocation()
+	{
+		return this.signOnLocation;
+	}
+
+	@Nonnull
+	public String getLogoutLocation()
+	{
+		return this.logoutLocation;
+	}
+
+	@Nullable
+	public MyX509Cert getEncryptionCert()
+	{
+		return this.encryptionCert;
+	}
+
+	@Nullable
+	public MyX509Cert getSigningCert()
+	{
+		return this.signingCert;
+	}
+
 	@Nullable
 	public static SAMLIdpConfig parseMetadata(@Nonnull TCPClientFactory clif, @Nullable SSLEngine ssl, @Nonnull EncodingFactory encFact, String path)
 	{

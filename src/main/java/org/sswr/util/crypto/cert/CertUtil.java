@@ -333,6 +333,26 @@ public class CertUtil
 	}
 
 	@Nullable
+	public static MyX509PrivKey toMyPrivKey(@Nonnull Key key)
+	{
+		String fmt = key.getFormat();
+		if (fmt.equals("PKCS#8"))
+		{
+			byte[] pdu = key.getEncoded();
+			return new MyX509PrivKey("key.pem", pdu, 0, pdu.length);
+		}
+		else
+		{
+			System.out.println("key format = "+fmt);
+			byte[] pdu = key.getEncoded();
+			StringBuilder sb = new StringBuilder();
+			ASN1Util.pduToString(pdu, 0, pdu.length, sb, 0);
+			System.out.println(sb.toString());
+			return null;
+		}
+	}
+
+	@Nullable
 	public static X509CRL loadCRL(@Nonnull String filePath)
 	{
 		FileInputStream fis = null;
@@ -466,7 +486,12 @@ public class CertUtil
 		{
 			return null;
 		}
-		MyX509Key key = (MyX509Key)x509;
+		return createPrivateKey((MyX509Key)x509);
+	}
+
+	@Nullable
+	public static PrivateKey createPrivateKey(@Nonnull MyX509Key key)
+	{
 		if (!key.isPrivateKey())
 		{
 			return null;
@@ -784,5 +809,13 @@ public class CertUtil
 		case JCEKS:
 			return "jceks";
 		}
+	}
+
+	public static int getDataBlockSize(@Nonnull PrivateKey key)
+	{
+		String alg = key.getAlgorithm();
+		System.out.println(alg);
+		////////////////////////////
+		return 0;
 	}
 }

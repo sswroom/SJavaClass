@@ -10,6 +10,7 @@ import org.sswr.util.crypto.cert.MyX509PKCS7;
 import org.sswr.util.crypto.cert.MyX509PrivKey;
 import org.sswr.util.crypto.cert.MyX509PubKey;
 import org.sswr.util.crypto.cert.SSHPubKey;
+import org.sswr.util.crypto.cert.MyX509File.FileType;
 import org.sswr.util.crypto.cert.MyX509File.KeyType;
 import org.sswr.util.data.StringUtil;
 import org.sswr.util.data.textbinenc.Base64Enc;
@@ -19,6 +20,8 @@ import org.sswr.util.io.PackageFile;
 import org.sswr.util.io.ParsedObject;
 import org.sswr.util.io.ParserType;
 import org.sswr.util.io.StreamData;
+import org.sswr.util.net.ASN1Data;
+import org.sswr.util.net.ASN1Type;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
@@ -205,6 +208,39 @@ public class X509Parser extends FileParser
 	@Nonnull
 	public ParserType getParserType() {
 		return ParserType.ASN1Data;
+	}
+
+	@Nullable
+	public static MyX509File toType(@Nonnull ParsedObject pobj, FileType ftype)
+	{
+		ASN1Data asn1;
+		if (pobj.getParserType() != ParserType.ASN1Data)
+		{
+			return null;
+		}
+		asn1 = (ASN1Data)pobj;
+		if (asn1.getASN1Type() != ASN1Type.X509)
+		{
+			return null;
+		}
+		MyX509File x509 = (MyX509File)asn1;
+		if (x509.getFileType() == ftype)
+		{
+			return x509;
+		}
+		if (x509.getFileType() == FileType.Key)
+		{
+			MyX509Key key = (MyX509Key)x509;
+			if (ftype == FileType.PrivateKey)
+			{
+				if (key.isPrivateKey())
+				{
+					MyX509PrivKey pkey = MyX509PrivKey.createFromKey(key);
+					return pkey;
+				}
+			}
+		}
+		return null;
 	}
 
 	@Nullable

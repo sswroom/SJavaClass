@@ -6,6 +6,7 @@ import org.sswr.util.crypto.cert.MyX509File;
 import org.sswr.util.crypto.cert.MyX509FileList;
 import org.sswr.util.crypto.cert.MyX509Key;
 import org.sswr.util.data.LineBreakType;
+import org.sswr.util.data.StringBuilderUTF8;
 import org.sswr.util.data.textbinenc.Base64Enc;
 import org.sswr.util.io.FileStream;
 import org.sswr.util.io.ParsedObject;
@@ -42,7 +43,7 @@ public class PEMExporter
 	public static boolean exportStream(@Nonnull SeekableStream stm, @Nonnull MyX509File x509)
 	{
 		Base64Enc b64 = new Base64Enc();
-		StringBuilder sb = new StringBuilder();
+		StringBuilderUTF8 sb = new StringBuilderUTF8();
 		byte[] sbuff;
 		switch (x509.getFileType())
 		{
