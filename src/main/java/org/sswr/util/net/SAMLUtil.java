@@ -4,8 +4,6 @@ import java.security.PrivateKey;
 import java.util.zip.DataFormatException;
 import java.util.zip.Inflater;
 
-import javax.xml.crypto.Data;
-
 import org.sswr.util.crypto.cert.CertUtil;
 import org.sswr.util.crypto.cert.CipherPadding;
 import org.sswr.util.crypto.encrypt.AES256;
@@ -22,7 +20,6 @@ import org.sswr.util.data.XMLReader.ParseMode;
 import org.sswr.util.data.textbinenc.Base64Enc;
 import org.sswr.util.io.MemoryReadingStream;
 import org.sswr.util.io.MemoryStream;
-import org.w3c.dom.Text;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
@@ -77,7 +74,7 @@ public class SAMLUtil {
 					sbResult.append("Length of e:CipherData not valid in EncryptedKey");
 					return 0;
 				}
-				keySize = CertUtil.decrypt(key, keyBuff, data, 0, data.length, rsaPadding);
+				keySize = CertUtil.decrypt(key, keyBuff, 0, data, 0, data.length, rsaPadding);
 				if (keySize == 0)
 				{
 					sbResult.append("Error in decrypting the EncryptedKey");
@@ -241,7 +238,7 @@ public class SAMLUtil {
 							return false;
 						}
 						decSize = decData.length;
-						if (decSize > 0 && decData[decSize - 1] <= blkSize)
+						if (decSize > 0 && (decData[decSize - 1] & 255) <= blkSize)
 						{
 							decSize -= decData[decSize - 1];
 						}

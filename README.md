@@ -9,6 +9,7 @@
 - Added XMLReader
 - Added XmlUtil.parseStr
 - Added XmlUtil.htmlAppendCharRef
+- Added XmlUtil.toAttrText
 - Adding SAMLHandler
 - Adding SAMLIdpConfig
 - Added SAMLUtil
@@ -17,10 +18,14 @@
 - Added CertUtil.toMyPrivKey
 - Added CertUtil.createPrivateKey
 - Added CertUtil.getDataBlockSize
+- Added CertUtil.decrypt
 - Added SSHPubKey
+- Added MyX509File.keyGetLeng
 - Added MyX509Key.createRSAPublicKey
+- Added MyX509Key.getKeySizeBits
 - Added X509Parser.toType
 - Added ByteTool.subArray
+- Added ByteArray
 - Added StringUtil.startsWithICaseC
 - Added StringUtil.hex2UInt8C
 - Added StringUtil.hex2Int32C

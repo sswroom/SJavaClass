@@ -795,6 +795,72 @@ public class CertUtil
 		return null;
 	}
 
+	public static int decrypt(@Nonnull PrivateKey key, @Nonnull byte[] keyBuff, int keyOfst, @Nonnull byte[] dataBuff, int dataOfst, int dataSize, @Nonnull CipherPadding rsaPadding)
+	{
+		if (key.getAlgorithm().equals("RSA"))
+		{
+			Cipher rsa;
+			try
+			{
+				if (rsaPadding == CipherPadding.PKCS1)
+				{
+					rsa = Cipher.getInstance("RSA/None/PKCS1Padding");
+				}
+				else if (rsaPadding == CipherPadding.OAEP)
+				{
+//					rsa = Cipher.getInstance("RSA/ECB/OAEPWithSHA-256AndMGF1Padding");
+					rsa = Cipher.getInstance("RSA/ECB/OAEPWithSHA-1AndMGF1Padding");
+				}
+				else
+				{
+					rsa = Cipher.getInstance("RSA/None/NoPadding");
+				}
+				rsa.init(Cipher.DECRYPT_MODE, key);
+				byte[] tmpBuff = rsa.doFinal(dataBuff, dataOfst, dataSize);
+				if (keyBuff.length - keyOfst < tmpBuff.length)
+				{
+					System.out.println("Key Buffer size is not enough: required "+tmpBuff.length+" bytes, buff = "+(keyBuff.length - keyOfst)+" bytes");
+					return 0;
+				}
+				else
+				{
+					ByteTool.copyArray(keyBuff, keyOfst, tmpBuff, 0, tmpBuff.length);
+					return tmpBuff.length;
+				}
+			}
+			catch (NoSuchAlgorithmException ex)
+			{
+				ex.printStackTrace();
+				return 0;
+			}
+			catch (InvalidKeyException ex)
+			{
+				ex.printStackTrace();
+				return 0;
+			}
+			catch (NoSuchPaddingException ex)
+			{
+				ex.printStackTrace();
+				return 0;
+			}
+			catch (BadPaddingException ex)
+			{
+				ex.printStackTrace();
+				return 0;
+			}
+			catch (IllegalBlockSizeException ex)
+			{
+				ex.printStackTrace();
+				return 0;
+			}
+		}
+		else
+		{
+			System.out.println("CertUtil.derypt: Unsupported algorithm");
+		}
+		return 0;
+	}
+
 	@Nonnull
 	public static String getKeyStoreTypeName(@Nonnull KeyStoreType type)
 	{
@@ -813,9 +879,10 @@ public class CertUtil
 
 	public static int getDataBlockSize(@Nonnull PrivateKey key)
 	{
-		String alg = key.getAlgorithm();
-		System.out.println(alg);
-		////////////////////////////
-		return 0;
+		byte[] buff = key.getEncoded();
+		MyX509Key privKey = new MyX509PrivKey("Temp.key", buff, 0, buff.length).createKey();
+		if (privKey == null)
+			return 0;
+		return privKey.getDataBlockSize();
 	}
 }

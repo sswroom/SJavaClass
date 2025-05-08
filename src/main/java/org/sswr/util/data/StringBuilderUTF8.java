@@ -5,7 +5,7 @@ import java.nio.charset.StandardCharsets;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
-public class StringBuilderUTF8 {
+public class StringBuilderUTF8 implements ByteArray {
 	private @Nonnull byte[] v;
 	private int leng;
 	private int buffSize;
@@ -165,7 +165,7 @@ public class StringBuilderUTF8 {
 	@Nonnull
 	public StringBuilderUTF8 appendC(byte[] v, int ofst, int len)
 	{
-		this.allocLeng(1);
+		this.allocLeng(len);
 		ByteTool.copyArray(this.v, this.leng, v, ofst, len);
 		this.leng += len;
 		this.v[this.leng] = 0;
@@ -226,6 +226,7 @@ public class StringBuilderUTF8 {
 		}
 	}
 
+	@Nonnull
 	public StringBuilderUTF8 clearStr()
 	{
 		this.leng = 0;
@@ -233,11 +234,13 @@ public class StringBuilderUTF8 {
 		return this;
 	}
 
+	@Nonnull
 	public byte[] getBytes()
 	{
 		return this.v;
 	}
 
+	@Nonnull
 	public String toString()
 	{
 		return new String(this.v, 0, this.leng, StandardCharsets.UTF_8);
@@ -250,6 +253,16 @@ public class StringBuilderUTF8 {
 
 	public int getCharCnt()
 	{
+		return this.leng;
+	}
+
+	@Override
+	public int getBytesOffset() {
+		return 0;
+	}
+
+	@Override
+	public int getBytesLength() {
 		return this.leng;
 	}
 }

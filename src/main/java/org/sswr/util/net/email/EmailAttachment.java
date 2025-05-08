@@ -37,7 +37,7 @@ public class EmailAttachment
 	}
 
 	@Nullable
-	public static EmailAttachment createFromFile(@Nonnull String fileName, @Nonnull String contentId)
+	public static EmailAttachment createFromFile(@Nonnull String fileName, @Nullable String contentId)
 	{
 		FileStream fs = new FileStream(fileName, FileMode.ReadOnly, FileShare.DenyNone, BufferType.Normal);
 		if (fs.isError())

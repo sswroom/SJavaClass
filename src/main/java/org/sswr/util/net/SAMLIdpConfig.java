@@ -15,15 +15,17 @@ import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
 public class SAMLIdpConfig {
-	String serviceDispName;
-	String signOnLocation;
-	String logoutLocation;
-	MyX509Cert encryptionCert;
-	MyX509Cert signingCert;
+	private String serviceDispName;
+	private String entityId;
+	private String signOnLocation;
+	private String logoutLocation;
+	private MyX509Cert encryptionCert;
+	private MyX509Cert signingCert;
 
-	public SAMLIdpConfig(@Nonnull String serviceDispName, @Nonnull String signOnLocation, @Nonnull String logoutLocation, @Nullable MyX509Cert encryptionCert, @Nullable MyX509Cert signingCert)
+	public SAMLIdpConfig(@Nonnull String serviceDispName, @Nonnull String entityId, @Nonnull String signOnLocation, @Nonnull String logoutLocation, @Nullable MyX509Cert encryptionCert, @Nullable MyX509Cert signingCert)
 	{
 		this.serviceDispName = serviceDispName;
+		this.entityId = entityId;
 		this.signOnLocation = signOnLocation;
 		this.logoutLocation = logoutLocation;
 		this.encryptionCert = encryptionCert;
@@ -34,6 +36,12 @@ public class SAMLIdpConfig {
 	public String getServiceDispName()
 	{
 		return this.serviceDispName;
+	}
+
+	@Nonnull
+	public String getEntityId()
+	{
+		return this.entityId;
 	}
 
 	@Nonnull
@@ -82,11 +90,26 @@ public class SAMLIdpConfig {
 			if (s.equals("EntityDescriptor"))
 			{
 				String serviceDispName = null;
+				String entityId = null;
 				String signOnLocation = null;
 				String logoutLocation = null;
 				MyX509Cert encryptionCert = null;
 				MyX509Cert signingCert = null;
 				int type;
+				i = 0;
+				j = reader.getAttribCount();
+				while (i < j)
+				{
+					attr = reader.getAttribNoCheck(i);
+					if ((s = attr.name) != null && s.equals("entityID"))
+					{
+						if (attr.value != null)
+						{
+							entityId = attr.value;
+						}
+					}
+					i++;
+				}
 				while ((s = reader.nextElementName()) != null)
 				{
 					if (s.equals("RoleDescriptor"))
@@ -252,9 +275,9 @@ public class SAMLIdpConfig {
 						reader.skipElement();
 					}
 				}
-				if (serviceDispName != null && signOnLocation != null && logoutLocation != null)
+				if (serviceDispName != null && entityId != null && signOnLocation != null && logoutLocation != null)
 				{
-					SAMLIdpConfig cfg = new SAMLIdpConfig(serviceDispName, signOnLocation, logoutLocation, encryptionCert, signingCert);
+					SAMLIdpConfig cfg = new SAMLIdpConfig(serviceDispName, entityId, signOnLocation, logoutLocation, encryptionCert, signingCert);
 					stm.close();
 					return cfg;
 				}

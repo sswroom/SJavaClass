@@ -1,5 +1,6 @@
 package org.sswr.util.io;
 
+import org.sswr.util.data.ByteArray;
 import org.sswr.util.data.ByteTool;
 
 import jakarta.annotation.Nonnull;
@@ -16,6 +17,15 @@ public class MemoryReadingStream extends SeekableStream {
 		this.buff = buff;
 		this.buffOfst = buffOfst;
 		this.buffEndOfst = buffOfst + buffSize;
+		this.currOfst = 0;
+	}
+
+	public MemoryReadingStream(@Nonnull ByteArray barr)
+	{
+		super("MemoryReadingStream");
+		this.buff = barr.getBytes();
+		this.buffOfst = barr.getBytesOffset();
+		this.buffEndOfst = barr.getBytesOffset() + barr.getBytesLength();
 		this.currOfst = 0;
 	}
 

@@ -14,7 +14,13 @@ public class XmlUtil {
 		v = v.replace("\n", "&#10;");
 		return v;
 	}
-	
+
+	@Nonnull
+	public static String toAttrText(@Nonnull String v)
+	{
+		return "\""+toAttr(v)+"\"";
+	}
+
 	@Nonnull
 	public static String toXMLText(@Nonnull String v)
 	{

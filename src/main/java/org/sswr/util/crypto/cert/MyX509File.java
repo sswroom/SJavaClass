@@ -2217,6 +2217,51 @@ public abstract class MyX509File extends ASN1Data
 		return null;
 	}
 
+	protected static int keyGetLeng(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull KeyType keyType)
+	{
+		ASN1Item item;
+		switch (keyType)
+		{
+		case RSA:
+			if ((item = ASN1Util.pduGetItem(pdu, beginOfst, endOfst, "1")) != null && item.itemType == ASN1Util.IT_SEQUENCE)
+			{
+				int cnt = ASN1Util.pduCountItem(pdu, item.ofst, item.ofst + item.len, null);
+				if (cnt > 4)
+				{
+					ASN1Item modulus;
+					if ((modulus = ASN1Util.pduGetItem(pdu, item.ofst, item.ofst + item.len, "2")) != null &&
+						(ASN1Util.pduGetItem(pdu, item.ofst, item.ofst + item.len, "4")) != null)
+					{
+						return (modulus.len - 1) << 3;
+					}
+				}
+			}
+			return 0;
+		case RSAPublic:
+			if (pdu[beginOfst + 0] == 0)
+			{
+				beginOfst++;
+			}
+			if ((item = ASN1Util.pduGetItem(pdu, beginOfst, endOfst, "1")) != null && item.itemType == ASN1Util.IT_SEQUENCE)
+			{
+				ASN1Item modulus;
+				if ((modulus = ASN1Util.pduGetItem(pdu, item.ofst, item.ofst + item.len, "1")) != null)
+				{
+					return (modulus.len - 1) << 3;
+				}
+			}
+			return 0;
+		case ECPublic:
+			return 0;
+		case DSA:
+		case ECDSA:
+		case ED25519:
+		case Unknown:
+		default:
+			return 0;
+		}
+	}
+
 	@Nonnull
 	protected static KeyType keyTypeFromOID(@Nonnull byte[] oid, int ofst, int oidLen, boolean pubKey)
 	{

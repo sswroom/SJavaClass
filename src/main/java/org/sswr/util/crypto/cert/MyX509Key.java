@@ -182,10 +182,10 @@ public class MyX509Key extends MyX509File
 		return this.keyType;
 	}
 
-/*	public int getKeySizeBits()
+	public int getKeySizeBits()
 	{
 		return keyGetLeng(this.buff, 0, this.buff.length, this.keyType);
-	}*/
+	}
 
 	public boolean isPrivateKey()
 	{
@@ -253,6 +253,12 @@ public class MyX509Key extends MyX509File
 		if (item == null)
 			return null;
 		return Arrays.copyOfRange(this.buff, item.ofst, item.ofst + item.len);
+	}
+
+
+	public int getDataBlockSize()
+	{
+		return getKeySizeBits() / 8;
 	}
 
 	@Nullable

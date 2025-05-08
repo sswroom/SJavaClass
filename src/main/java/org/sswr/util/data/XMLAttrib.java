@@ -36,7 +36,7 @@ public class XMLAttrib extends XMLNode {
 			}
 			else
 			{
-				return this.name + "=" + XmlUtil.toAttr(s);
+				return this.name + "=" + XmlUtil.toAttrText(s);
 			}
 		}
 		else

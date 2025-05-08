@@ -10,7 +10,9 @@ import java.security.PrivateKey;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.ZoneOffset;
+import java.time.format.DateTimeParseException;
 import java.util.zip.Deflater;
 
 import org.sswr.util.crypto.cert.CertUtil;
@@ -20,13 +22,18 @@ import org.sswr.util.crypto.cert.MyX509Key;
 import org.sswr.util.crypto.cert.MyX509PrivKey;
 import org.sswr.util.crypto.cert.MyX509File.FileType;
 import org.sswr.util.crypto.hash.HashType;
+import org.sswr.util.data.ByteArray;
 import org.sswr.util.data.DateTimeUtil;
 import org.sswr.util.data.EncodingFactory;
 import org.sswr.util.data.LineBreakType;
 import org.sswr.util.data.StringBuilderUTF8;
+import org.sswr.util.data.XMLAttrib;
+import org.sswr.util.data.XMLReader;
 import org.sswr.util.data.XmlUtil;
+import org.sswr.util.data.XMLReader.ParseMode;
 import org.sswr.util.data.textbinenc.Base64Enc;
 import org.sswr.util.data.textenc.FormEncoding;
+import org.sswr.util.io.MemoryReadingStream;
 import org.sswr.util.io.ParsedObject;
 import org.sswr.util.io.ParserType;
 import org.sswr.util.parser.X509Parser;
@@ -37,15 +44,46 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 public class SAMLHandler {
+	public static enum ResponseError
+	{
+		Success,
+		ResponseNotFound,
+		IDPMissing,
+		SignKeyMissing,
+		SignKeyInvalid,
+		ResponseFormatError,
+		DecryptFailed,
+		UnexpectedIssuer,
+		TimeOutOfRange,
+		InvalidAudience,
+		UsernameMissing
+	}
 	public static class SAMLSSOResponse
 	{
+		public ResponseError error;
 		@Nonnull
-		public String status;
+		public String errorMessage;
+		@Nullable
+		public String rawResponse;
+		@Nullable
+		public String decResponse;
+		@Nullable
+		public String id;
+		@Nullable
+		public String issuer;
+		@Nullable
+		public String audience;
+		@Nullable
+		public Timestamp notBefore;
+		@Nullable
+		public Timestamp notOnOrAfter;
 		@Nullable
 		public String username;
-		public SAMLSSOResponse(@Nonnull String status, @Nullable String username)
+
+		public SAMLSSOResponse(ResponseError error, @Nonnull String errorMessage, @Nullable String username)
 		{
-			this.status = status;
+			this.error = error;
+			this.errorMessage = errorMessage;
 			this.username = username;
 		}
 	}
@@ -193,28 +231,27 @@ public class SAMLHandler {
 		return false;
 	}
 
-	private void sendRedirect(@Nonnull HttpServletRequest req, @Nonnull HttpServletResponse resp, @Nonnull String url, @Nonnull String reqContent, @Nonnull HashType hashType) throws IOException
+	@Nullable
+	private String getRedirectUrl(@Nonnull String url, @Nonnull ByteArray reqContent, @Nonnull HashType hashType)
 	{
-		byte[] contentBuff = reqContent.getBytes(StandardCharsets.UTF_8);
-		byte[] buff = new byte[contentBuff.length + 16];
+		byte[] buff = new byte[reqContent.getBytesLength() + 16];
 		int buffSize;
 		byte[] signBuff = new byte[512];
 		MyX509Key key;
 		if ((key = this.signKey) == null)
 		{
-			resp.sendError(StatusCode.NOT_FOUND);
-			return;
+			System.out.println("SAMLHandler: signKey is null");
+			return null;
 		}
-		Deflater deflater = new Deflater(Deflater.BEST_COMPRESSION);
-		deflater.setInput(contentBuff);
+		Deflater deflater = new Deflater(Deflater.BEST_COMPRESSION, true);
+		deflater.setInput(reqContent.getBytes(), reqContent.getBytesOffset(), reqContent.getBytesLength());
 		deflater.finish();
 		buffSize = deflater.deflate(buff);
 		
 		if (!deflater.finished())
 		{
 			System.out.println("SAMLHandler: Error in compressing content");
-			resp.sendError(StatusCode.INTERNAL_SERVER_ERROR);
-			return;
+			return null;
 		}
 		deflater.end();
 		Base64Enc b64 = new Base64Enc();
@@ -247,8 +284,7 @@ public class SAMLHandler {
 		if (privKey == null)
 		{
 			System.out.println("SAMLHandler: Signature Key is not valid");
-			resp.sendError(StatusCode.INTERNAL_SERVER_ERROR);
-			return;
+			return null;
 		}
 
 		signBuff = CertUtil.signature(sb.getBytes(), 0, sb.getLength(), hashType, privKey);
@@ -263,16 +299,17 @@ public class SAMLHandler {
 			sb2.append(url);
 			sb2.appendUTF8Char((byte)'?');
 			sb2.append(sb.toString());
-			HTTPServerUtil.redirectURL(resp, req, sb2.toString(), 0);
+			return sb2.toString();
 		}
 		else
 		{
 			System.out.println("SAMLHandler: Error in Signature");
-			resp.sendError(StatusCode.INTERNAL_SERVER_ERROR);
+			return null;
 		}
 	}
 
-	public void doLoginGet(@Nonnull HttpServletRequest req, @Nonnull HttpServletResponse resp) throws IOException
+	@Nullable
+	public String getLoginUrl()
 	{
 		SAMLIdpConfig idp;
 		String metadataPath;
@@ -289,7 +326,7 @@ public class SAMLHandler {
 			sb.appendUTF8Char((byte)'"');
 			sb.append(" Version=\"2.0\"");
 			sb.append(" ProviderName=");
-			s = XmlUtil.toAttr(idp.getServiceDispName());
+			s = XmlUtil.toAttrText(idp.getServiceDispName());
 			sb.append(s);
 			sb.append(" IssueInstant=\"");
 			sb.append(DateTimeUtil.toStringISO8601(DateTimeUtil.clearTime(DateTimeUtil.newZonedDateTime(currTime)).withZoneSameInstant(ZoneOffset.UTC)));
@@ -312,19 +349,76 @@ public class SAMLHandler {
 			sb.append("</samlp:RequestedAuthnContext>");
 			sb.append("</samlp:AuthnRequest>");
 
-			this.sendRedirect(req, resp, idp.getSignOnLocation(), sb.toString(), this.hashType);
+			return this.getRedirectUrl(idp.getSignOnLocation(), sb, this.hashType);
 		}
 		else
 		{
-			resp.sendError(StatusCode.NOT_FOUND);
+			return null;
 		}
 	}
 
-	public void doMetadataGet(HttpServletRequest req, HttpServletResponse resp)
+	@Nullable
+	public String getLogoutUrl(@Nonnull String id)
+	{
+		SAMLIdpConfig idp;
+		String metadataPath;
+		if ((idp = this.idp) != null && (metadataPath = this.metadataPath) != null)
+		{
+			Timestamp currTime = DateTimeUtil.timestampNow();
+			StringBuilderUTF8 sb = new StringBuilderUTF8();
+			sb.append("<samlp:LogoutRequest xmlns:samlp=\"urn:oasis:names:tc:SAML:2.0:protocol\" xmlns:saml=\"urn:oasis:names:tc:SAML:2.0:assertion\"");
+			sb.append(" ID=\"SAML_");
+			sb.appendI64(currTime.getTime() / 1000);
+			sb.appendU32(currTime.getNanos());
+			sb.appendUTF8Char((byte)'"');
+			sb.append(" Version=\"2.0\"");
+			sb.append(" IssueInstant=\"");
+			sb.append(currTime.toInstant().toString());
+			sb.appendUTF8Char((byte)'"');
+			sb.append(" Destination=\"");
+			sb.append(idp.getLogoutLocation());
+			sb.appendUTF8Char((byte)'"');
+			sb.append(">");
+			sb.append("<saml:Issuer>https://");
+			sb.append(this.host);
+			sb.append(metadataPath);
+			sb.append("</saml:Issuer>");
+			sb.append("<saml:NameID SPNameQualifier=\"https://");
+			sb.append(this.host);
+			sb.append(metadataPath);
+			sb.appendUTF8Char((byte)'"');
+			sb.append(" Format=\"urn:oasis:names:tc:SAML:2.0:nameid-format:transient\">");
+			sb.append(XmlUtil.toAttr(id));
+			sb.append("</saml:NameID>");
+			sb.append("</samlp:LogoutRequest>");
+
+			return this.getRedirectUrl(idp.getLogoutLocation(), sb, this.hashType);
+		}
+		else
+		{
+			return null;
+		}
+	}
+
+	public void doLoginGet(@Nonnull HttpServletRequest req, @Nonnull HttpServletResponse resp) throws IOException
+	{
+		String url = getLoginUrl();
+		if (url != null)
+		{
+			HTTPServerUtil.redirectURL(resp, req, url, 0);
+		}
+		else
+		{
+			resp.sendError(StatusCode.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	@Nullable
+	public StringBuilderUTF8 getMetadataXML()
 	{
 		if (this.signCert == null)
 		{
-			throw new IllegalArgumentException("Signature cert is not found");
+			return null;
 		}
 		Base64Enc b64 = new Base64Enc();
 		StringBuilderUTF8 sb = new StringBuilderUTF8();
@@ -374,7 +468,16 @@ public class SAMLHandler {
 		sb.append("<md:AssertionConsumerService Binding=\"urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect\" Location=\"https://"+this.host+this.ssoPath+"\" index=\"1\"/>");
 		sb.append("</md:SPSSODescriptor>");
 		sb.append("</md:EntityDescriptor>");
+		return sb;
+	}
 
+	public void doMetadataGet(HttpServletRequest req, HttpServletResponse resp)
+	{
+		StringBuilderUTF8 sb = this.getMetadataXML();
+		if (sb == null)
+		{
+			throw new IllegalArgumentException("Signature cert is not found");
+		}
 		this.addResponseHeaders(req, resp);
 		resp.addHeader("Cache-Control", "no-cache, no-store, must-revalidate");
 		resp.addHeader("Content-Type", "application/samlmetadata+xml");
@@ -384,35 +487,206 @@ public class SAMLHandler {
 	@Nonnull
 	public SAMLSSOResponse doSSOPost(HttpServletRequest req, HttpServletResponse resp)
 	{
+		int i;
+		XMLAttrib attr;
 		String s = req.getParameter("SAMLResponse");
-		if (s != null)
+		if (this.idp == null)
+		{
+			return new SAMLSSOResponse(ResponseError.IDPMissing, "Idp Config missing", null);
+		}
+		else if (s != null)
 		{
 			Base64Enc b64 = new Base64Enc();
 			byte[] buff = b64.decodeBin(s);
+			SAMLSSOResponse saml;
 
 			String decMsg = null;
 			PrivateKey key;
 			if (this.signKey == null)
 			{
-				return new SAMLSSOResponse("Sign Key not exists", null);
+				saml = new SAMLSSOResponse(ResponseError.SignKeyMissing, "Sign Key not exists", null);
+				saml.rawResponse = new String(buff, StandardCharsets.UTF_8);
+				return saml;
 			}
 			if ((key = CertUtil.createPrivateKey(this.signKey)) == null)
 			{
-				return new SAMLSSOResponse("Sign Key is not Private Key", null);
+				saml = new SAMLSSOResponse(ResponseError.SignKeyInvalid, "Sign Key is not Private Key", null);
+				saml.rawResponse = new String(buff, StandardCharsets.UTF_8);
+				return saml;
 			}
 			StringBuilderUTF8 sb = new StringBuilderUTF8();
 			if (SAMLUtil.decryptResponse(this.encFact, key, buff, sb))
 			{
-				return new SAMLSSOResponse(sb.toString(), null);
+				decMsg = sb.toString();
+				saml = new SAMLSSOResponse(ResponseError.Success, "Decrypted", null);
+				saml.rawResponse = new String(buff, StandardCharsets.UTF_8);
+				saml.decResponse = decMsg;
+				MemoryReadingStream mstm = new MemoryReadingStream(sb);
+				XMLReader reader = new XMLReader(this.encFact, mstm, ParseMode.XML);
+				try
+				{
+					if ((s = reader.nextElementName()) != null && s.equals("Assertion"))
+					{
+						StringBuilderUTF8 sbTmp = new StringBuilderUTF8();
+						i = reader.getAttribCount();
+						while (i-- > 0)
+						{
+							attr = reader.getAttribNoCheck(i);
+							if (attr.name != null && attr.name.equals("ID"))
+							{
+								saml.id = attr.value;
+							}
+						}
+						while ((s = reader.nextElementName()) != null)
+						{
+							if (s.equals("Issuer"))
+							{
+								sbTmp.clearStr();
+								reader.readNodeText(sbTmp);
+								saml.issuer = sbTmp.toString();
+							}
+							else if (s.equals("Conditions"))
+							{
+								i = reader.getAttribCount();
+								while (i-- > 0)
+								{
+									attr = reader.getAttribNoCheck(i);
+									if (attr.name != null && attr.name.equals("NotBefore"))
+									{
+										saml.notBefore = Timestamp.from(Instant.parse(attr.value));
+									}
+									else if (attr.name != null && attr.name.equals("NotOnOrAfter"))
+									{
+										saml.notOnOrAfter = Timestamp.from(Instant.parse(attr.value));
+									}
+								}
+								while ((s = reader.nextElementName()) != null)
+								{
+									if (s.equals("AudienceRestriction"))
+									{
+										while ((s = reader.nextElementName()) != null)
+										{
+											if (s.equals("Audience"))
+											{
+												sbTmp.clearStr();
+												reader.readNodeText(sbTmp);
+												saml.audience = sbTmp.toString();
+											}
+											else
+											{
+												reader.skipElement();
+											}
+										}
+									}
+									else
+									{
+										reader.skipElement();
+									}
+								}
+							}
+							else if (s.equals("AttributeStatement"))
+							{
+								while ((s = reader.nextElementName()) != null)
+								{
+									if (s.equals("Attribute"))
+									{
+										String attrName = null;
+										i = reader.getAttribCount();
+										while (i-- > 0)
+										{
+											attr = reader.getAttribNoCheck(i);
+											if (attr.name != null && attr.name.equals("Name"))
+											{
+												attrName = attr.value;
+											}
+										}
+										while ((s = reader.nextElementName()) != null)
+										{
+											if (s.equals("AttributeValue"))
+											{
+												sbTmp.clearStr();
+												reader.readNodeText(sbTmp);
+												if (attrName != null)
+												{
+													if (attrName.equals("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"))
+													{
+														saml.username = sbTmp.toString();
+													}
+												}
+											}
+											else
+											{
+												reader.skipElement();
+											}
+										}
+									}
+									else
+									{
+										reader.skipElement();
+									}
+								}
+							}
+							else
+							{
+								reader.skipElement();
+							}
+						}
+					}
+					if (saml.error == ResponseError.Success && saml.issuer != null && !this.idp.getEntityId().equals(saml.issuer))
+					{
+						saml.error = ResponseError.UnexpectedIssuer;
+						saml.errorMessage = "Unexpected Issuer";
+					}
+					if (saml.error == ResponseError.Success && saml.notBefore != null)
+					{
+						Timestamp currTime = DateTimeUtil.timestampNow();
+						if (currTime.before(saml.notBefore))
+						{
+							saml.error = ResponseError.TimeOutOfRange;
+							saml.errorMessage = "Current time cannot be before "+saml.notBefore;
+						}
+					}
+					if (saml.error == ResponseError.Success && saml.notOnOrAfter != null)
+					{
+						Timestamp currTime = DateTimeUtil.timestampNow();
+						if (!currTime.before(saml.notOnOrAfter))
+						{
+							saml.error = ResponseError.TimeOutOfRange;
+							saml.errorMessage = "Current time cannot be on or after "+saml.notOnOrAfter;
+						}
+					}
+					if (saml.error == ResponseError.Success && saml.audience != null)
+					{
+						if (!saml.audience.equals("https://"+this.host+this.metadataPath))
+						{
+							saml.error = ResponseError.InvalidAudience;
+							saml.errorMessage = "Invalid Audience";
+						}
+					}
+					if (saml.error == ResponseError.Success && saml.username == null)
+					{
+						saml.error = ResponseError.UsernameMissing;
+						saml.errorMessage = "User name not found";
+					}
+				}
+				catch (DateTimeParseException ex)
+				{
+					saml.error = ResponseError.ResponseFormatError;
+					saml.errorMessage = ex.getMessage();
+					ex.printStackTrace();
+				}
+				return saml;
 			}
 			else
 			{
-				return new SAMLSSOResponse("Failed in decrypting response message", null);
+				saml = new SAMLSSOResponse(ResponseError.DecryptFailed, "Failed in decrypting response message", null);
+				saml.rawResponse = new String(buff, StandardCharsets.UTF_8);
+				return saml;
 			}
 		}
 		else
 		{
-			return new SAMLSSOResponse("SAMLResponse not found", null);
+			return new SAMLSSOResponse(ResponseError.ResponseNotFound, "SAMLResponse not found", null);
 		}
 	}
 }
