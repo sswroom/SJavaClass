@@ -60,6 +60,7 @@ public class SAMLHandler {
 	}
 	public static class SAMLSSOResponse
 	{
+		@Nonnull
 		public ResponseError error;
 		@Nonnull
 		public String errorMessage;
@@ -78,13 +79,20 @@ public class SAMLHandler {
 		@Nullable
 		public Timestamp notOnOrAfter;
 		@Nullable
-		public String username;
+		public String nameID;
+		@Nullable
+		public String name;
+		@Nullable
+		public String givenname;
+		@Nullable
+		public String surname;
+		@Nullable
+		public String emailAddress;
 
-		public SAMLSSOResponse(ResponseError error, @Nonnull String errorMessage, @Nullable String username)
+		public SAMLSSOResponse(@Nonnull ResponseError error, @Nonnull String errorMessage)
 		{
 			this.error = error;
 			this.errorMessage = errorMessage;
-			this.username = username;
 		}
 	}
 	private String host;
@@ -492,7 +500,7 @@ public class SAMLHandler {
 		String s = req.getParameter("SAMLResponse");
 		if (this.idp == null)
 		{
-			return new SAMLSSOResponse(ResponseError.IDPMissing, "Idp Config missing", null);
+			return new SAMLSSOResponse(ResponseError.IDPMissing, "Idp Config missing");
 		}
 		else if (s != null)
 		{
@@ -504,13 +512,13 @@ public class SAMLHandler {
 			PrivateKey key;
 			if (this.signKey == null)
 			{
-				saml = new SAMLSSOResponse(ResponseError.SignKeyMissing, "Sign Key not exists", null);
+				saml = new SAMLSSOResponse(ResponseError.SignKeyMissing, "Sign Key not exists");
 				saml.rawResponse = new String(buff, StandardCharsets.UTF_8);
 				return saml;
 			}
 			if ((key = CertUtil.createPrivateKey(this.signKey)) == null)
 			{
-				saml = new SAMLSSOResponse(ResponseError.SignKeyInvalid, "Sign Key is not Private Key", null);
+				saml = new SAMLSSOResponse(ResponseError.SignKeyInvalid, "Sign Key is not Private Key");
 				saml.rawResponse = new String(buff, StandardCharsets.UTF_8);
 				return saml;
 			}
@@ -518,7 +526,7 @@ public class SAMLHandler {
 			if (SAMLUtil.decryptResponse(this.encFact, key, buff, sb))
 			{
 				decMsg = sb.toString();
-				saml = new SAMLSSOResponse(ResponseError.Success, "Decrypted", null);
+				saml = new SAMLSSOResponse(ResponseError.Success, "Decrypted");
 				saml.rawResponse = new String(buff, StandardCharsets.UTF_8);
 				saml.decResponse = decMsg;
 				MemoryReadingStream mstm = new MemoryReadingStream(sb);
@@ -610,7 +618,23 @@ public class SAMLHandler {
 												{
 													if (attrName.equals("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"))
 													{
-														saml.username = sbTmp.toString();
+														saml.name = sbTmp.toString();
+													}
+													else if (attrName.equals("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"))
+													{
+														saml.emailAddress = sbTmp.toString();
+													}
+													else if (attrName.equals("http://schemas.xmlsoap.org/claims/EmailAddress"))
+													{
+														saml.emailAddress = sbTmp.toString();
+													}
+													else if (attrName.equals("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname"))
+													{
+														saml.givenname = sbTmp.toString();
+													}
+													else if (attrName.equals("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname"))
+													{
+														saml.surname = sbTmp.toString();
 													}
 												}
 											}
@@ -619,6 +643,22 @@ public class SAMLHandler {
 												reader.skipElement();
 											}
 										}
+									}
+									else
+									{
+										reader.skipElement();
+									}
+								}
+							}
+							else if (s.equals("Subject"))
+							{
+								while ((s = reader.nextElementName()) != null)
+								{
+									if (s.equals("NameID"))
+									{
+										sbTmp.clearStr();
+										reader.readNodeText(sbTmp);
+										saml.nameID = sbTmp.toString();
 									}
 									else
 									{
@@ -663,7 +703,7 @@ public class SAMLHandler {
 							saml.errorMessage = "Invalid Audience";
 						}
 					}
-					if (saml.error == ResponseError.Success && saml.username == null)
+					if (saml.error == ResponseError.Success && saml.nameID == null && saml.name == null)
 					{
 						saml.error = ResponseError.UsernameMissing;
 						saml.errorMessage = "User name not found";
@@ -679,14 +719,14 @@ public class SAMLHandler {
 			}
 			else
 			{
-				saml = new SAMLSSOResponse(ResponseError.DecryptFailed, "Failed in decrypting response message", null);
+				saml = new SAMLSSOResponse(ResponseError.DecryptFailed, "Failed in decrypting response message");
 				saml.rawResponse = new String(buff, StandardCharsets.UTF_8);
 				return saml;
 			}
 		}
 		else
 		{
-			return new SAMLSSOResponse(ResponseError.ResponseNotFound, "SAMLResponse not found", null);
+			return new SAMLSSOResponse(ResponseError.ResponseNotFound, "SAMLResponse not found");
 		}
 	}
 }
