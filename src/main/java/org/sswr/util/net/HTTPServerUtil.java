@@ -8,6 +8,7 @@ import java.sql.Timestamp;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 
+import org.sswr.util.data.ByteArray;
 import org.sswr.util.data.DateTimeUtil;
 import org.sswr.util.data.StringUtil;
 import org.sswr.util.data.textenc.URIEncoding;
@@ -278,14 +279,29 @@ public class HTTPServerUtil {
 		}
 	}
 
-	public static void sendContent(@Nonnull HttpServletRequest req, @Nonnull HttpServletResponse resp, @Nonnull String mime, @Nonnull byte[] content)
+	public static boolean sendContent(@Nonnull HttpServletRequest req, @Nonnull HttpServletResponse resp, @Nonnull String mime, @Nonnull byte[] content)
 	{
 		addContentLength(resp, content.length);
 		try
 		{
 			resp.getOutputStream().write(content);
+			return true;
 		} catch (Exception ex) {
 			ex.printStackTrace();
+			return false;
+		}
+	}
+
+	public static boolean sendContent(@Nonnull HttpServletRequest req, @Nonnull HttpServletResponse resp, @Nonnull String mime, @Nonnull ByteArray content)
+	{
+		addContentLength(resp, content.getBytesLength());
+		try
+		{
+			resp.getOutputStream().write(content.getBytes(), content.getBytesOffset(), content.getBytesLength());
+			return true;
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			return false;
 		}
 	}
 

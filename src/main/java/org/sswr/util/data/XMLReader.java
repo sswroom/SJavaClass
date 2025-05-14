@@ -1704,6 +1704,25 @@ public class XMLReader {
 		}
 	}
 
+	@Nullable
+	public String nextElementName2()
+	{
+		while (true)
+		{
+			if (!this.readNext())
+				return null;
+			if (this.nt == NodeType.Element)
+			{
+				String name = this.nodeText;
+				if (name == null) name = "";
+				int i = name.indexOf(':');
+				return name.substring(i + 1);
+			}
+			if (this.nt == NodeType.ElementEnd)
+				return null;
+		}
+	}
+
 	public boolean skipElement()
 	{
 		if (this.nt == NodeType.Element)
@@ -1857,5 +1876,66 @@ public class XMLReader {
 			return true;
 		}
 		return false;
+	}
+
+	public static boolean xmlWellFormat(@Nullable EncodingFactory encFact, @Nonnull IOStream stm, int lev, @Nonnull StringBuilderUTF8 sb)
+	{
+		boolean toWrite;
+		NodeType thisNT;
+		NodeType lastNT = NodeType.Unknown;
+		XMLReader reader = new XMLReader(encFact, stm, ParseMode.XML);
+		while (reader.readNext())
+		{
+			toWrite = true;
+			thisNT = reader.getNodeType();
+			if (thisNT == NodeType.Text)
+			{
+				toWrite = false;
+				String s = reader.getNodeText();
+				char[] sarr = (s != null)?s.toCharArray():new char[0];
+				int csptr = 0;
+				char c;
+				while (csptr < sarr.length)
+				{
+					c = sarr[csptr];
+					if (c == '\t' || c == ' ' || c == '\r' || c == '\n')
+					{
+
+					}
+					else
+					{
+						toWrite = true;
+						break;
+					}
+				}
+			}
+			if (toWrite)
+			{
+				if (lastNT == NodeType.Element && (thisNT == NodeType.Text || thisNT == NodeType.CData))
+				{
+
+				}
+				else if (thisNT == NodeType.ElementEnd && (lastNT == NodeType.Text || lastNT == NodeType.CData))
+				{
+
+				}
+				else
+				{
+					if (lastNT == NodeType.Element || lastNT == NodeType.Text || lastNT == NodeType.CData)
+					{
+						sb.append("\r\n");
+					}
+					sb.appendChar('\t', reader.getPathLev() + lev);
+				}
+				
+				reader.toString(sb);
+				if (thisNT != NodeType.Element && thisNT != NodeType.Text && thisNT != NodeType.CData)
+				{
+					sb.append("\r\n");
+				}
+				lastNT = thisNT;
+			}
+		}
+		return true;
 	}
 }

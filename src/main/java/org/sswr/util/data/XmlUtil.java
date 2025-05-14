@@ -1,5 +1,7 @@
 package org.sswr.util.data;
 
+import java.nio.charset.StandardCharsets;
+
 import jakarta.annotation.Nonnull;
 
 public class XmlUtil {
@@ -44,6 +46,164 @@ public class XmlUtil {
 		v = v.replace("\n", "<br/>");
 		v = v.replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;");
 		return v;
+	}
+
+	@Nonnull
+	public static String toHTMLTextXMLColor(@Nonnull String text)
+	{
+		StringBuilderUTF8 sb = new StringBuilderUTF8();
+		boolean elementStarted = false;
+		boolean beginAttr = false;
+		boolean fontStarted = false;
+		byte quoteChar = 0;
+		byte c;
+		byte[] textBuff = text.getBytes(StandardCharsets.UTF_8);
+		int len = text.length();
+		int ofst = 0;
+		while (ofst < len && (c = textBuff[ofst]) != 0)
+		{
+			ofst++;
+			if (quoteChar != 0 || !elementStarted)
+			{
+				if (c == '&')
+				{
+					sb.append("&#38;");
+				}
+				else if (c == '<')
+				{
+					if (quoteChar == 0)
+					{
+						elementStarted = true;
+						fontStarted = true;
+					}
+					sb.append("<font color=\"red\">&lt;");
+				}
+				else if (c == '>')
+				{
+					sb.append("&gt;");
+				}
+				else if (c == '\'')
+				{
+					sb.append("&#39;");
+				}
+				else if (c == '"')
+				{
+					sb.append("&quot;");
+				}
+				else if (c == '\r')
+				{
+				}
+				else if (c == '\n')
+				{
+					sb.append("<br/>");
+				}
+				else if (c == '\t')
+				{
+					sb.append("&nbsp;&nbsp;&nbsp;&nbsp;");
+				}
+				else
+				{
+					sb.appendUTF8Char(c);
+				}
+				if (c == quoteChar)
+				{
+					quoteChar = 0;
+				}
+			}
+			else
+			{
+				if (c == '=' && beginAttr)
+				{
+					if (!fontStarted)
+					{
+						sb.append("<font color=\"blue\">");
+						fontStarted = true;
+					}
+					sb.append("=</font><font color=\"green\">");
+				}
+				else if (c == ' ')
+				{
+					if (fontStarted)
+					{
+						sb.append(" </font>");
+						fontStarted = false;
+					}
+					else
+					{
+						sb.appendUTF8Char((byte)' ');
+					}
+					beginAttr = true;
+				}
+				else if (c == '>')
+				{
+					if (fontStarted)
+					{
+						sb.append("</font>");
+					}
+					sb.append("<font color=\"red\">&gt;</font>");
+					beginAttr = false;
+					fontStarted = false;
+					elementStarted = false;
+				}
+				else if (c == '\'')
+				{
+					sb.append("&#39;");
+					quoteChar = '\'';
+				}
+				else if (c == '"')
+				{
+					sb.append("&quot;");
+					quoteChar = '\"';
+				}
+				else if (c == '/')
+				{
+					if (ofst < len && textBuff[ofst] == '>')
+					{
+						if (fontStarted)
+						{
+							sb.append("</font>");
+							fontStarted = false;
+						}
+						sb.append("<font color=\"red\">/&gt;</font>");
+						ofst++;
+						elementStarted = false;
+					}
+					else
+					{
+						sb.appendUTF8Char(c);
+					}
+				}
+				else if (c == '\r')
+				{
+				}
+				else if (c == '\n')
+				{
+					sb.append("<br/>");
+				}
+				else if (c == '\t')
+				{
+					sb.append("&nbsp;&nbsp;&nbsp;&nbsp;");
+				}
+				else if (c == '&')
+				{
+					sb.append("&#38;");
+				}
+				else
+				{
+					if (!fontStarted)
+					{
+						fontStarted = true;
+						sb.append("<font color=\"blue\">");
+					}
+					sb.appendUTF8Char(c);
+				}
+			}
+		}
+		if (fontStarted)
+		{
+			sb.append("</font>");
+		}
+		return sb.toString();
 	}
 
 	@Nonnull
