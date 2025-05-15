@@ -45,6 +45,7 @@ import org.sswr.util.crypto.hash.Hash;
 import org.sswr.util.crypto.hash.HashCreator;
 import org.sswr.util.crypto.hash.HashType;
 import org.sswr.util.data.ByteTool;
+import org.sswr.util.data.StringBuilderUTF8;
 import org.sswr.util.net.ASN1Item;
 import org.sswr.util.net.ASN1Util;
 import org.sswr.util.parser.X509Parser;
@@ -657,7 +658,7 @@ public class CertUtil
 	@Nullable
 	public static byte[] rsaSignDecrypt(@Nonnull byte[] sign, int ofst, int len, @Nonnull Key key)
 	{
-		if (len != 256)
+		if (len < 256)
 		{
 			return null;
 		}
@@ -695,7 +696,7 @@ public class CertUtil
 		}
 	}
 
-	public static boolean verifySign(@Nonnull byte[] buff, int ofst, int buffSize, @Nonnull byte[] signature, int signOfst, int signLen, @Nonnull PublicKey key, @Nonnull HashType hashType, @Nullable StringBuilder sbError, @Nullable String dataName)
+	public static boolean verifySign(@Nonnull byte[] buff, int ofst, int buffSize, @Nonnull byte[] signature, int signOfst, int signLen, @Nonnull PublicKey key, @Nonnull HashType hashType, @Nullable StringBuilderUTF8 sbError, @Nullable String dataName)
 	{
 		byte[] digestInfo = rsaSignDecrypt(signature, signOfst, signLen, key);
 		if (digestInfo == null)

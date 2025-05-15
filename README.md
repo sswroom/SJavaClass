@@ -10,8 +10,8 @@
 - Added XmlUtil.parseStr
 - Added XmlUtil.htmlAppendCharRef
 - Added XmlUtil.toAttrText
-- Adding SAMLHandler
-- Adding SAMLIdpConfig
+- Added SAMLHandler
+- Added SAMLIdpConfig
 - Added SAMLUtil
 - Added URL
 - Added cert, encrypt, hash, token subpackages
