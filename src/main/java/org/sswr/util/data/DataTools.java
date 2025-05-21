@@ -1,5 +1,11 @@
 package org.sswr.util.data;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -19,8 +25,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.zip.DataFormatException;
+import java.util.zip.Deflater;
+import java.util.zip.Inflater;
 
 import org.locationtech.jts.geom.Geometry;
+import org.sswr.util.data.textbinenc.Base64Enc;
+import org.sswr.util.data.textbinenc.Base64Enc.B64Charset;
 import org.sswr.util.db.QueryConditions;
 import org.sswr.util.math.WKTWriter;
 import org.sswr.util.math.geometry.Vector2D;
@@ -1761,5 +1772,67 @@ public class DataTools {
 	public static void printClassTree(@Nonnull Class<?> cls)
 	{
 		printClassTreeInt(cls, 0);
+	}
+
+	@Nullable
+	public static String objectSerialize(@Nonnull Serializable o)
+	{
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		try
+		{
+			ObjectOutputStream oos = new ObjectOutputStream(baos);
+			oos.writeObject(o);
+			oos.flush();
+			oos.close();
+		}
+		catch (IOException ex)
+		{
+			ex.printStackTrace();
+			return null;
+		}
+		byte[] input = baos.toByteArray();
+		byte[] output = new byte[input.length + 5];
+		Deflater deflate = new Deflater(Deflater.BEST_COMPRESSION);
+		deflate.setInput(input);
+		deflate.finish();
+		int compSize = deflate.deflate(output, 4, output.length - 4);
+		deflate.end();
+		ByteTool.writeInt32(output, 0, input.length);
+		Base64Enc b64 = new Base64Enc(B64Charset.NORMAL, true);
+		return b64.encodeBin(output, 0, compSize + 4);
+	}
+
+	@Nullable
+	public static Serializable objectDeserialize(@Nonnull String s)
+	{
+		Base64Enc b64 = new Base64Enc(B64Charset.NORMAL, true);
+		byte[] buff = b64.decodeBin(s);
+		int len = ByteTool.readInt32(buff, 0);
+		byte[] outBuff = new byte[len];
+		Inflater inflater = new Inflater();
+		inflater.setInput(buff, 4, buff.length - 4);
+		try
+		{
+			inflater.inflate(outBuff);
+			inflater.end();
+			ByteArrayInputStream bais = new ByteArrayInputStream(outBuff);
+			ObjectInputStream ois = new ObjectInputStream(bais);
+			return (Serializable)ois.readObject();
+		}
+		catch (DataFormatException ex)
+		{
+			ex.printStackTrace();
+			return null;
+		}
+		catch (IOException ex)
+		{
+			ex.printStackTrace();
+			return null;
+		}
+		catch (ClassNotFoundException ex)
+		{
+			ex.printStackTrace();
+			return null;
+		}
 	}
 }

@@ -1,7 +1,7 @@
 # SJavaClass
 
 # Changes:
-0.7.
+0.7.20250521
 - Added Encoding
 - Added StringBuilderUTF8
 - Added XMLAttrib
@@ -34,6 +34,9 @@
 - Added X509Parser.parseBinary
 - Change Base64Enc to use StringBuilderUTF8
 - Added HTTPServerUtil.redirectURL
+- Added DataTools.objectSerialize, objectDeserialize
+- Change JWTSession.getValue/setValue to Serializable
+- Support JWTMSvrSessionManager allow forward values 
 
 0.6.20250319
 - Enhance IAMSmart Address string

@@ -20,7 +20,7 @@ public class JWTSessionManager
 {
 	public interface JWTSesionInitializator
 	{
-		public void initSession(JWTSession sess);
+		public void initSession(@Nonnull JWTSession sess);
 	}
 	protected long lastId;
 	protected JWTHandler jwt;

@@ -1,5 +1,6 @@
 package org.sswr.util.web;
 
+import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.List;
@@ -16,7 +17,7 @@ public class JWTSession
 	private @Nonnull List<String> roleList;
 	private @Nonnull Timestamp lastAccessTime;
 	private @Nonnull String userName;
-	private @Nonnull Map<String, Object> objectMap;
+	private @Nonnull Map<String, Serializable> objectMap;
 
 	public JWTSession(long sessId, @Nonnull String userName, @Nonnull List<String> roleList)
 	{
@@ -24,7 +25,7 @@ public class JWTSession
 		this.userName = userName;
 		this.lastAccessTime = DateTimeUtil.timestampNow();
 		this.roleList = roleList;
-		this.objectMap = new HashMap<String, Object>();
+		this.objectMap = new HashMap<String, Serializable>();
 	}
 
 	public long getSessId()
@@ -55,14 +56,20 @@ public class JWTSession
 		return this.lastAccessTime;
 	}
 
-	public void setValue(@Nonnull String name, @Nullable Object val)
+	public void setValue(@Nonnull String name, @Nullable Serializable val)
 	{
 		this.objectMap.put(name, val);
 	}
 
 	@Nullable
-	public Object getValue(@Nonnull String name)
+	public Serializable getValue(@Nonnull String name)
 	{
 		return this.objectMap.get(name);
+	}
+
+	@Nonnull
+	public Map<String, Serializable> getValues()
+	{
+		return this.objectMap;
 	}
 }
