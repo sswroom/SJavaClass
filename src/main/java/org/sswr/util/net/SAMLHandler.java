@@ -31,6 +31,7 @@ import org.sswr.util.data.ByteTool;
 import org.sswr.util.data.DateTimeUtil;
 import org.sswr.util.data.EncodingFactory;
 import org.sswr.util.data.LineBreakType;
+import org.sswr.util.data.SharedObject;
 import org.sswr.util.data.StaticByteArray;
 import org.sswr.util.data.StringBuilderUTF8;
 import org.sswr.util.data.StringUtil;
@@ -111,6 +112,62 @@ public class SAMLHandler {
 		QueryStringGetError,
 		QueryStringSearchError,
 		KeyError
+	}
+
+	public static enum SAMLAuthMethod
+	{
+		Unknown,
+		Password,
+		PasswordProtectedTransport,
+		TLSClient,
+		X509,
+		WindowsAuth,
+		Kerberos;
+
+		@Nonnull
+		public static String getString(@Nonnull SAMLAuthMethod authMethod)
+		{
+			switch (authMethod)
+			{
+				case Kerberos:
+					return "urn:oasis:names:tc:SAML:2.0:ac:classes:Kerberos";
+				case Password:
+					return "urn:oasis:names:tc:SAML:2.0:ac:classes:Password";
+				case PasswordProtectedTransport:
+					return "urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport";
+				case TLSClient:
+					return "urn:oasis:names:tc:SAML:2.0:ac:classes:TLSClient";
+				case WindowsAuth:
+					return "urn:federation:authentication:windows";
+				case X509:
+					return "urn:oasis:names:tc:SAML:2.0:ac:classes:X509";
+				case Unknown:
+				default:
+					return "urn:oasis:names:tc:SAML:2.0:ac:classes:unspecified";
+			}
+		}
+
+		@Nonnull
+		public static SAMLAuthMethod fromString(@Nonnull String val)
+		{
+			switch (val)
+			{
+			case "urn:oasis:names:tc:SAML:2.0:ac:classes:Password":
+				return SAMLAuthMethod.Password;
+			case "urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport":
+				return SAMLAuthMethod.PasswordProtectedTransport;
+			case "urn:oasis:names:tc:SAML:2.0:ac:classes:TLSClient":
+				return SAMLAuthMethod.TLSClient;
+			case "urn:oasis:names:tc:SAML:2.0:ac:classes:X509":
+				return SAMLAuthMethod.X509;
+			case "urn:federation:authentication:windows":
+				return SAMLAuthMethod.WindowsAuth;
+			case "urn:oasis:names:tc:SAML:2.0:ac:classes:Kerberos":
+				return SAMLAuthMethod.Kerberos;
+			default:
+				return SAMLAuthMethod.Unknown;
+			}
+		}
 	}
 
 	public static enum SAMLStatusCode
@@ -194,12 +251,20 @@ public class SAMLHandler {
 				return SAMLStatusCode.Unknown;
 			}
 		}
+
+		@Nonnull
+		public static String getString(@Nonnull SAMLStatusCode status)
+		{
+			return "urn:oasis:names:tc:SAML:2.0:status:"+status.toString();
+		}
 	}
 
 	public static class SAMLSSOResponse
 	{
 		@Nonnull
 		public ResponseError error;
+		@Nonnull
+		public SAMLStatusCode status;
 		@Nonnull
 		public String errorMessage;
 		@Nullable
@@ -233,6 +298,7 @@ public class SAMLHandler {
 		{
 			this.error = error;
 			this.errorMessage = errorMessage;
+			this.status = SAMLStatusCode.Unknown;
 		}
 	}
 
@@ -278,6 +344,7 @@ public class SAMLHandler {
 		}
 	}
 
+	private SAMLAuthMethod authMethod;
 	private String host;
 	private String loginPath;
 	private String logoutPath;
@@ -292,7 +359,7 @@ public class SAMLHandler {
 	private EncodingFactory encFact;
 
 	@Nullable
-	private String buildRedirectUrl(@Nonnull String url, @Nonnull ByteArray reqContent, @Nonnull HashType hashType)
+	private String buildRedirectUrl(@Nonnull String url, @Nonnull ByteArray reqContent, @Nonnull HashType hashType, boolean response)
 	{
 		byte[] buff = new byte[reqContent.getBytesLength() + 16];
 		int buffSize;
@@ -318,7 +385,14 @@ public class SAMLHandler {
 		StringBuilderUTF8 sb = new StringBuilderUTF8();
 		StringBuilderUTF8 sb2 = new StringBuilderUTF8();
 	
-		sb.append("SAMLRequest=");
+		if (response)
+		{
+			sb.append("SAMLResponse=");
+		}
+		else
+		{
+			sb.append("SAMLRequest=");
+		}
 		b64.encodeBin(sb2, buff, 0, buffSize);
 		sb.append(FormEncoding.formEncode(sb2.toString()));
 	
@@ -599,6 +673,7 @@ public class SAMLHandler {
 		this.ssoPath = ssoPath;
 		this.metadataPath = metadataPath;
 		this.hashType = HashType.SHA1;
+		this.authMethod = SAMLAuthMethod.PasswordProtectedTransport;
 		this.encFact = new EncodingFactory();
 	}
 
@@ -620,6 +695,11 @@ public class SAMLHandler {
 	public void setHashType(@Nonnull HashType hashType)
 	{
 		this.hashType = hashType;
+	}
+
+	public void setAuthMethod(@Nonnull SAMLAuthMethod authMethod)
+	{
+		this.authMethod = authMethod;
 	}
 
 	public boolean loadSignCertKeyFiles(@Nonnull String certPath, @Nonnull String keyPath)
@@ -745,11 +825,13 @@ public class SAMLHandler {
 			sb.append("</saml:Issuer>");
 			sb.append("<samlp:NameIDPolicy Format=\"urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified\" AllowCreate=\"true\"/>");
 			sb.append("<samlp:RequestedAuthnContext Comparison=\"exact\">");
-			sb.append("<saml:AuthnContextClassRef>urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport</saml:AuthnContextClassRef>");
+			sb.append("<saml:AuthnContextClassRef>");
+			sb.append(SAMLAuthMethod.getString(this.authMethod));
+			sb.append("</saml:AuthnContextClassRef>");
 			sb.append("</samlp:RequestedAuthnContext>");
 			sb.append("</samlp:AuthnRequest>");
 
-			return this.buildRedirectUrl(idp.getSignOnLocation(), sb, this.hashType);
+			return this.buildRedirectUrl(idp.getSignOnLocation(), sb, this.hashType, false);
 		}
 		else
 		{
@@ -801,7 +883,7 @@ public class SAMLHandler {
 			}
 			sb.append("</samlp:LogoutRequest>");
 
-			return this.buildRedirectUrl(idp.getLogoutLocation(), sb, this.hashType);
+			return this.buildRedirectUrl(idp.getLogoutLocation(), sb, this.hashType, false);
 		}
 		else
 		{
@@ -868,6 +950,45 @@ public class SAMLHandler {
 		return sb;
 	}
 
+	public boolean getLogoutResponse(@Nonnull StringBuilderUTF8 sb, @Nonnull String id, @Nonnull SAMLStatusCode status)
+	{
+		String metadataPath;
+		String serverHost;
+		SAMLIdpConfig idp;
+		if ((serverHost = this.host) != null && (metadataPath = this.metadataPath) != null && (idp = this.idp) != null)
+		{
+			Timestamp currTime = DateTimeUtil.timestampNow();
+			sb.append("<samlp:LogoutResponse");
+			sb.append(" ID=\"SAML_");
+			sb.appendI64(currTime.getTime() / 1000);
+			sb.appendU32(currTime.getNanos());
+			sb.appendUTF8Char((byte)'"');
+			sb.append(" Version=\"2.0\"");
+			sb.append(" IssueInstant=\"");
+			sb.append(DateTimeUtil.clearMs(currTime).toInstant().toString());
+			sb.appendUTF8Char((byte)'"');
+			sb.append(" InResponseTo=\"");
+			sb.append(id);
+			sb.appendUTF8Char((byte)'"');
+			sb.append(" Destination=\"");
+			sb.append(idp.getLogoutLocation());
+			sb.appendUTF8Char((byte)'"');
+			sb.append(" xmlns:samlp=\"urn:oasis:names:tc:SAML:2.0:protocol\" xmlns=\"urn:oasis:names:tc:SAML:2.0:assertion\">");
+			sb.append("<Issuer>https://");
+			sb.append(serverHost);
+			sb.append(metadataPath);
+			sb.append("</Issuer>");
+			sb.append("<samlp:Status>");
+			sb.append("<samlp:StatusCode Value=\"");
+			sb.append(SAMLStatusCode.getString(status));
+			sb.append("\" />");
+			sb.append("</samlp:Status>");
+			sb.append("</samlp:LogoutResponse>");
+			return true;
+		}
+		return false;
+	}
+
 	public void doLoginGet(@Nonnull HttpServletRequest req, @Nonnull HttpServletResponse resp) throws IOException
 	{
 		String url = getLoginUrl();
@@ -920,6 +1041,18 @@ public class SAMLHandler {
 		else if (req.getParameter("SAMLRequest") != null)
 		{
 			SAMLLogoutRequest msg = this.doLogoutReq(req, resp);
+			SAMLIdpConfig idp;
+			if (msg.error == ReqProcessError.Success && (s = msg.id) != null && (idp = this.idp) != null)
+			{
+				StringBuilderUTF8 sb = new StringBuilderUTF8();
+				this.getLogoutResponse(sb, s, SAMLStatusCode.Success);
+				String url = this.buildRedirectUrl(idp.getLogoutLocation(), sb, this.hashType, true);
+				if (url != null)
+				{
+					HTTPServerUtil.redirectURL(resp, req, url, 0);
+					return;
+				}
+			}
 			StringBuilderUTF8 sb = new StringBuilderUTF8();
 			StringBuilderUTF8 sb2 = new StringBuilderUTF8();
 			sb.clearStr();
@@ -1023,17 +1156,20 @@ public class SAMLHandler {
 				return saml;
 			}
 			StringBuilderUTF8 sb = new StringBuilderUTF8();
-			if (SAMLUtil.decryptResponse(this.encFact, key, buff, sb))
+			SharedObject<SAMLStatusCode> statusCode = new SharedObject<SAMLStatusCode>();
+			statusCode.value = SAMLStatusCode.Unknown;
+			if (SAMLUtil.decryptResponse(this.encFact, key, buff, sb, statusCode))
 			{
 				decMsg = sb.toString();
 				saml = new SAMLSSOResponse(ResponseError.Success, "Decrypted");
 				saml.rawResponse = new String(buff, StandardCharsets.UTF_8);
 				saml.decResponse = decMsg;
+				saml.status = statusCode.value;
 				MemoryReadingStream mstm = new MemoryReadingStream(sb);
 				XMLReader reader = new XMLReader(this.encFact, mstm, ParseMode.XML);
 				try
 				{
-					if ((s = reader.nextElementName()) != null && s.equals("Assertion"))
+					if ((s = reader.nextElementName2()) != null && s.equals("Assertion"))
 					{
 						StringBuilderUTF8 sbTmp = new StringBuilderUTF8();
 						i = reader.getAttribCount();
@@ -1234,6 +1370,7 @@ public class SAMLHandler {
 			{
 				saml = new SAMLSSOResponse(ResponseError.DecryptFailed, "Failed in decrypting response message");
 				saml.rawResponse = new String(buff, StandardCharsets.UTF_8);
+				saml.status = statusCode.value;
 				return saml;
 			}
 		}
