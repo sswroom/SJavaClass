@@ -1,5 +1,6 @@
 package org.sswr.util.web;
 
+import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -7,10 +8,15 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import org.sswr.util.basic.ThreadEvent;
 import org.sswr.util.crypto.JWTParam;
 import org.sswr.util.crypto.JWToken;
+import org.sswr.util.data.DataTools;
 import org.sswr.util.data.DateTimeUtil;
 import org.sswr.util.data.JSONMapper;
 import org.sswr.util.data.JSONParser;
@@ -28,6 +34,7 @@ public class JWTMSvrSessionManager extends JWTSessionManager implements MQTTEven
 		boolean reqResult;
 		String reqUserName;
 		List<String> reqRoles;
+		Map<String, Serializable> values;
 		int reqCnt;
 	}
 	private MQTTClient cli;
@@ -37,7 +44,7 @@ public class JWTMSvrSessionManager extends JWTSessionManager implements MQTTEven
 	private int reqNextId;
 	private String topicName;
 
-	public JWTMSvrSessionManager(String password, int timeoutMs, JWTSesionInitializator sessInit, MQTTClient cli, int serverId, String topicName)
+	public JWTMSvrSessionManager(@Nonnull String password, int timeoutMs, @Nonnull JWTSesionInitializator sessInit, @Nonnull MQTTClient cli, int serverId, @Nonnull String topicName)
 	{
 		super(password, timeoutMs, sessInit);
 
@@ -51,7 +58,7 @@ public class JWTMSvrSessionManager extends JWTSessionManager implements MQTTEven
 		this.cli.subscribe(this.topicName, null);
 	}
 
-	public synchronized JWTSession newSession(String userName, List<String> roleList)
+	public synchronized JWTSession newSession(@Nonnull String userName, @Nonnull List<String> roleList)
 	{
 		long id = System.currentTimeMillis();
 		if (id <= this.lastId)
@@ -61,7 +68,6 @@ public class JWTMSvrSessionManager extends JWTSessionManager implements MQTTEven
 		this.lastId = id;
 		JWTSession sess = new JWTSession(id, userName, roleList);
 		sessMap.put(id, sess);
-		sess.setLastAccessTime(DateTimeUtil.timestampNow());
 		if (this.sessInit != null)
 		{
 			this.sessInit.initSession(sess);
@@ -107,7 +113,7 @@ public class JWTMSvrSessionManager extends JWTSessionManager implements MQTTEven
 		}
 	}
 
-	public synchronized boolean removeSession(JWTSession sess)
+	public synchronized boolean removeSession(@Nonnull JWTSession sess)
 	{
 		JWTSession removedSess = this.sessMap.remove(sess.getSessId());
 		if (removedSess != null)
@@ -119,7 +125,7 @@ public class JWTMSvrSessionManager extends JWTSessionManager implements MQTTEven
 	}
 
 	@Override
-	public void removeSessions(String userName)
+	public void removeSessions(@Nonnull String userName)
 	{
 		Map<String, Object> reqMap = new HashMap<String, Object>();
 		reqMap.put("act", "remuser");
@@ -129,7 +135,7 @@ public class JWTMSvrSessionManager extends JWTSessionManager implements MQTTEven
 		this.removeUserSessions(userName);
 	}
 
-	private synchronized void removeUserSessions(String userName)
+	private synchronized void removeUserSessions(@Nonnull String userName)
 	{
 		Object[] sessArr = this.sessMap.values().toArray();
 		JWTSession sess;
@@ -166,7 +172,8 @@ public class JWTMSvrSessionManager extends JWTSessionManager implements MQTTEven
 		}		
 	}
 
-	public String createToken(JWTSession sess)
+	@Nullable
+	public String createToken(@Nonnull JWTSession sess)
 	{
 		JWTParam param = new JWTParam();
 		param.setJWTId(""+sess.getSessId());
@@ -175,7 +182,8 @@ public class JWTMSvrSessionManager extends JWTSessionManager implements MQTTEven
 		return jwt.generate(payload, param);
 	}
 
-	public JWTSession getSession(String token)
+	@Nullable
+	public JWTSession getSession(@Nonnull String token)
 	{
 		JWTParam param = new JWTParam();
 		JWToken t = JWToken.parse(token, null);
@@ -258,12 +266,12 @@ public class JWTMSvrSessionManager extends JWTSessionManager implements MQTTEven
 		return null;
 	}
 
-	public synchronized void setSessionListener(JWTSessionListener listener)
+	public synchronized void setSessionListener(@Nullable JWTSessionListener listener)
 	{
 		this.listener = listener;
 	}
 
-	private boolean sendReq(Map<String, Object> reqMap)
+	private boolean sendReq(@Nonnull Map<String, Object> reqMap)
 	{
 		return cli.publish(this.topicName, JSONMapper.object2Json(reqMap));
 	}
@@ -315,6 +323,7 @@ public class JWTMSvrSessionManager extends JWTSessionManager implements MQTTEven
 		return req.reqResult;
 	}
 
+	@Nullable
 	private JWTSession sendGetSession(int serverId, long sessId)
 	{
 		JWTRequest req = new JWTRequest();
@@ -363,6 +372,15 @@ public class JWTMSvrSessionManager extends JWTSessionManager implements MQTTEven
 			{
 				sess = new JWTSession(sessId, req.reqUserName, req.reqRoles);
 			}
+			if (req.values != null)
+			{
+				Iterator<Entry<String, Serializable>> it = req.values.entrySet().iterator();
+				while (it.hasNext())
+				{
+					Entry<String, Serializable> ent = it.next();
+					sess.setValue(ent.getKey(), ent.getValue());
+				}
+			}
 			synchronized(this.remoteSessMap)
 			{
 				sessMap = this.remoteSessMap.get(serverId);
@@ -382,7 +400,7 @@ public class JWTMSvrSessionManager extends JWTSessionManager implements MQTTEven
 	}
 
 	@Override
-	public void onPublishMessage(String topic, byte[] buff, int buffOfst, int buffSize)
+	public void onPublishMessage(@Nonnull String topic, @Nonnull byte[] buff, int buffOfst, int buffSize)
 	{
 		JWTSession sess;
 		Map<String, Object> reqMap;
@@ -498,6 +516,15 @@ public class JWTMSvrSessionManager extends JWTSessionManager implements MQTTEven
 								i++;
 							}
 							reqMap.put("roles", sb.toString());
+							Map<String, String> values = new HashMap<String, String>();
+							Map<String, Serializable> sValues = sess.getValues();
+							Iterator<Entry<String, Serializable>> it = sValues.entrySet().iterator();
+							while (it.hasNext())
+							{
+								Entry<String, Serializable> ent = it.next();
+								values.put(ent.getKey(), DataTools.objectSerialize(ent.getValue()));
+							}
+							reqMap.put("values", values);
 							reqMap.put("end", "1");
 							this.sendReq(reqMap);
 						}
@@ -531,6 +558,18 @@ public class JWTMSvrSessionManager extends JWTSessionManager implements MQTTEven
 										req.reqRoles.add(roleArr[i]);
 										i++;
 									}
+								}
+							}
+							@SuppressWarnings("unchecked" )
+							Map<String, String> values = (Map<String, String>)retMap.get("values");
+							if (values != null)
+							{
+								req.values = new HashMap<String, Serializable>();
+								Iterator<Entry<String, String>> it = values.entrySet().iterator();
+								while (it.hasNext())
+								{
+									Entry<String, String> ent = it.next();
+									req.values.put(ent.getKey(), DataTools.objectDeserialize(ent.getValue()));
 								}
 							}
 							if (req.reqCnt == req.reqRoles.size() && retMap.containsKey("end"))

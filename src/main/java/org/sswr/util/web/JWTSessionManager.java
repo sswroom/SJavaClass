@@ -6,6 +6,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 import org.sswr.util.crypto.JWSignature;
 import org.sswr.util.crypto.JWTHandler;
 import org.sswr.util.crypto.JWTParam;
@@ -17,7 +20,7 @@ public class JWTSessionManager
 {
 	public interface JWTSesionInitializator
 	{
-		public void initSession(JWTSession sess);
+		public void initSession(@Nonnull JWTSession sess);
 	}
 	protected long lastId;
 	protected JWTHandler jwt;
@@ -26,7 +29,7 @@ public class JWTSessionManager
 	protected JWTSessionListener listener;
 	protected JWTSesionInitializator sessInit;
 
-	public JWTSessionManager(String password, int timeoutMs, JWTSesionInitializator sessInit)
+	public JWTSessionManager(@Nonnull String password, int timeoutMs, @Nonnull JWTSesionInitializator sessInit)
 	{
 		this.lastId = 0;
 		this.timeoutMs = timeoutMs;
@@ -35,7 +38,7 @@ public class JWTSessionManager
 		this.sessMap = new HashMap<Long, JWTSession>();
 	}
 
-	public synchronized JWTSession newSession(String userName, List<String> roleList)
+	public synchronized JWTSession newSession(@Nonnull String userName, @Nonnull List<String> roleList)
 	{
 		long id = System.currentTimeMillis();
 		if (id <= this.lastId)
@@ -58,12 +61,14 @@ public class JWTSessionManager
 		Object[] sessArr = this.sessMap.values().toArray();
 		JWTSession sess;
 		Timestamp currTime = DateTimeUtil.timestampNow();
+		Timestamp lastAccessTime;
 		int i = 0;
 		int j = sessArr.length;
 		while (i < j)
 		{
 			sess = (JWTSession)sessArr[i];
-			if (currTime.getTime() - sess.getLastAccessTime().getTime() >= timeoutMs)
+			lastAccessTime = sess.getLastAccessTime();
+			if (currTime.getTime() - lastAccessTime.getTime() >= timeoutMs)
 			{
 				this.listener.sessionDestroy(sess);
 				this.sessMap.remove(sess.getSessId());
@@ -72,7 +77,7 @@ public class JWTSessionManager
 		}
 	}
 
-	public synchronized boolean removeSession(JWTSession sess)
+	public synchronized boolean removeSession(@Nonnull JWTSession sess)
 	{
 		JWTSession removedSess = this.sessMap.remove(sess.getSessId());
 		if (removedSess != null)
@@ -83,7 +88,7 @@ public class JWTSessionManager
 		return false;
 	}
 
-	public synchronized void removeSessions(String userName)
+	public synchronized void removeSessions(@Nonnull String userName)
 	{
 		Object[] sessArr = this.sessMap.values().toArray();
 		JWTSession sess;
@@ -101,14 +106,16 @@ public class JWTSessionManager
 		}
 	}
 
-	public String createToken(JWTSession sess)
+	@Nullable
+	public String createToken(@Nonnull JWTSession sess)
 	{
 		JWTParam param = new JWTParam();
 		param.setJWTId(""+sess.getSessId());
 		return jwt.generate(new HashMap<String, String>(), param);
 	}
 
-	public synchronized JWTSession getSession(String token)
+	@Nullable
+	public synchronized JWTSession getSession(@Nonnull String token)
 	{
 		JWTParam param = new JWTParam();
 		JWToken t = JWToken.parse(token, null);
@@ -128,7 +135,7 @@ public class JWTSessionManager
 		return null;
 	}
 
-	public synchronized void setSessionListener(JWTSessionListener listener)
+	public synchronized void setSessionListener(@Nullable JWTSessionListener listener)
 	{
 		this.listener = listener;
 	}

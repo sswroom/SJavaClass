@@ -1,24 +1,31 @@
 package org.sswr.util.web;
 
+import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
+import org.sswr.util.data.DateTimeUtil;
+
 public class JWTSession
 {
 	private long sessId;
-	private List<String> roleList;
-	private Timestamp lastAccessTime;
-	private String userName;
-	private Map<String, Object> objectMap;
+	private @Nonnull List<String> roleList;
+	private @Nonnull Timestamp lastAccessTime;
+	private @Nonnull String userName;
+	private @Nonnull Map<String, Serializable> objectMap;
 
-	public JWTSession(long sessId, String userName, List<String> roleList)
+	public JWTSession(long sessId, @Nonnull String userName, @Nonnull List<String> roleList)
 	{
 		this.sessId = sessId;
 		this.userName = userName;
+		this.lastAccessTime = DateTimeUtil.timestampNow();
 		this.roleList = roleList;
-		this.objectMap = new HashMap<String, Object>();
+		this.objectMap = new HashMap<String, Serializable>();
 	}
 
 	public long getSessId()
@@ -26,33 +33,43 @@ public class JWTSession
 		return this.sessId;
 	}
 	
+	@Nonnull
 	public List<String> getRoleList()
 	{
 		return this.roleList;
 	}
 
+	@Nonnull
 	public String getUserName()
 	{
 		return this.userName;
 	}
 
-	public void setLastAccessTime(Timestamp lastAccessTime)
+	public void setLastAccessTime(@Nonnull Timestamp lastAccessTime)
 	{
 		this.lastAccessTime = lastAccessTime;
 	}
 
+	@Nonnull
 	public Timestamp getLastAccessTime()
 	{
 		return this.lastAccessTime;
 	}
 
-	public void setValue(String name, Object val)
+	public void setValue(@Nonnull String name, @Nullable Serializable val)
 	{
 		this.objectMap.put(name, val);
 	}
 
-	public Object getValue(String name)
+	@Nullable
+	public Serializable getValue(@Nonnull String name)
 	{
 		return this.objectMap.get(name);
+	}
+
+	@Nonnull
+	public Map<String, Serializable> getValues()
+	{
+		return this.objectMap;
 	}
 }

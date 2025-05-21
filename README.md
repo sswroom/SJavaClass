@@ -1,6 +1,11 @@
 # SJavaClass
 
 # Changes:
+0.3.20250521
+- Added DataTools.objectSerialize, objectDeserialize
+- Change JWTSession.getValue/setValue to Serializable
+- Support JWTMSvrSessionManager allow forward values 
+
 0.3.20240925
 - Adding Nonnull/Nullable
 
