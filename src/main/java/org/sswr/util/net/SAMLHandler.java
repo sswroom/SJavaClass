@@ -122,7 +122,13 @@ public class SAMLHandler {
 		TLSClient,
 		X509,
 		WindowsAuth,
-		Kerberos;
+		Kerberos,
+		PGP,
+		SecureRemotePassword,
+		XMLDSig,
+		SPKI,
+		Smartcard,
+		SmartcardPKI;
 
 		@Nonnull
 		public static String getString(@Nonnull SAMLAuthMethod authMethod)
@@ -141,6 +147,19 @@ public class SAMLHandler {
 					return "urn:federation:authentication:windows";
 				case X509:
 					return "urn:oasis:names:tc:SAML:2.0:ac:classes:X509";
+				case PGP:
+					return "urn:oasis:names:tc:SAML:2.0:ac:classes:PGP";
+				case SecureRemotePassword:
+					return "urn:oasis:names:tc:SAML:2.0:ac:classes:SecureRemotePassword";
+				case XMLDSig:
+					return "urn:oasis:names:tc:SAML:2.0:ac:classes:XMLDSig";
+				case SPKI:
+					return "urn:oasis:names:tc:SAML:2.0:ac:classes:SPKI";
+				case Smartcard:
+					return "urn:oasis:names:tc:SAML:2.0:ac:classes:Smartcard";
+				case SmartcardPKI:
+					return "urn:oasis:names:tc:SAML:2.0:ac:classes:SmartcardPKI";
+		
 				case Unknown:
 				default:
 					return "urn:oasis:names:tc:SAML:2.0:ac:classes:unspecified";
@@ -164,6 +183,18 @@ public class SAMLHandler {
 				return SAMLAuthMethod.WindowsAuth;
 			case "urn:oasis:names:tc:SAML:2.0:ac:classes:Kerberos":
 				return SAMLAuthMethod.Kerberos;
+			case "urn:oasis:names:tc:SAML:2.0:ac:classes:PGP":
+				return SAMLAuthMethod.PGP;
+			case "urn:oasis:names:tc:SAML:2.0:ac:classes:SecureRemotePassword":
+				return SAMLAuthMethod.SecureRemotePassword;
+			case "urn:oasis:names:tc:SAML:2.0:ac:classes:XMLDSig":
+				return SAMLAuthMethod.XMLDSig;
+			case "urn:oasis:names:tc:SAML:2.0:ac:classes:SPKI":
+				return SAMLAuthMethod.SPKI;
+			case "urn:oasis:names:tc:SAML:2.0:ac:classes:Smartcard":
+				return SAMLAuthMethod.Smartcard;
+			case "urn:oasis:names:tc:SAML:2.0:ac:classes:SmartcardPKI":
+				return SAMLAuthMethod.SmartcardPKI;
 			default:
 				return SAMLAuthMethod.Unknown;
 			}
@@ -830,7 +861,7 @@ public class SAMLHandler {
 			sb.append("</saml:AuthnContextClassRef>");
 			sb.append("</samlp:RequestedAuthnContext>");
 			sb.append("</samlp:AuthnRequest>");
-
+			System.out.println(sb.toString());
 			return this.buildRedirectUrl(idp.getSignOnLocation(), sb, this.hashType, false);
 		}
 		else
