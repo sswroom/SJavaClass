@@ -375,7 +375,7 @@ public class SAMLHandler {
 		}
 	}
 
-	private SAMLAuthMethod authMethod;
+	private SAMLAuthMethod[] authMethods;
 	private String host;
 	private String loginPath;
 	private String logoutPath;
@@ -704,7 +704,7 @@ public class SAMLHandler {
 		this.ssoPath = ssoPath;
 		this.metadataPath = metadataPath;
 		this.hashType = HashType.SHA1;
-		this.authMethod = SAMLAuthMethod.PasswordProtectedTransport;
+		this.authMethods = new SAMLAuthMethod[]{SAMLAuthMethod.Unknown, SAMLAuthMethod.Password, SAMLAuthMethod.PasswordProtectedTransport, SAMLAuthMethod.WindowsAuth, SAMLAuthMethod.Kerberos};
 		this.encFact = new EncodingFactory();
 	}
 
@@ -730,7 +730,13 @@ public class SAMLHandler {
 
 	public void setAuthMethod(@Nonnull SAMLAuthMethod authMethod)
 	{
-		this.authMethod = authMethod;
+		this.authMethods = new SAMLAuthMethod[]{authMethod};
+	}
+
+	public void setAuthMethods(@Nonnull SAMLAuthMethod[] authMethods)
+	{
+		this.authMethods = new SAMLAuthMethod[authMethods.length];
+		ByteTool.copyArray(this.authMethods, 0, authMethods, 0, authMethods.length);
 	}
 
 	public boolean loadSignCertKeyFiles(@Nonnull String certPath, @Nonnull String keyPath)
@@ -855,13 +861,29 @@ public class SAMLHandler {
 			sb.append(metadataPath);
 			sb.append("</saml:Issuer>");
 			sb.append("<samlp:NameIDPolicy Format=\"urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified\" AllowCreate=\"true\"/>");
-			sb.append("<samlp:RequestedAuthnContext Comparison=\"exact\">");
-			sb.append("<saml:AuthnContextClassRef>");
-			sb.append(SAMLAuthMethod.getString(this.authMethod));
-			sb.append("</saml:AuthnContextClassRef>");
-			sb.append("</samlp:RequestedAuthnContext>");
+			if (this.authMethods.length == 1)
+			{
+				sb.append("<samlp:RequestedAuthnContext Comparison=\"exact\">");
+				sb.append("<saml:AuthnContextClassRef>");
+				sb.append(SAMLAuthMethod.getString(this.authMethods[0]));
+				sb.append("</saml:AuthnContextClassRef>");
+				sb.append("</samlp:RequestedAuthnContext>");
+			}
+			else
+			{
+				sb.append("<samlp:RequestedAuthnContext Comparison=\"minimum\">");
+				int i = 0;
+				int j = this.authMethods.length;
+				while (i < j)
+				{
+					sb.append("<saml:AuthnContextClassRef>");
+					sb.append(SAMLAuthMethod.getString(this.authMethods[i]));
+					sb.append("</saml:AuthnContextClassRef>");
+					i++;
+				}
+				sb.append("</samlp:RequestedAuthnContext>");
+			}
 			sb.append("</samlp:AuthnRequest>");
-			System.out.println(sb.toString());
 			return this.buildRedirectUrl(idp.getSignOnLocation(), sb, this.hashType, false);
 		}
 		else

@@ -1,6 +1,7 @@
 # SJavaClass
 
 # Changes:
+- Support Multiple AuthMethod
 - Support More SAML AuthMethod
 
 0.7.20250521
