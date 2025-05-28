@@ -1,6 +1,7 @@
 # SJavaClass
 
 # Changes:
+- Enhance Logout handling
 - Support Multiple AuthMethod
 - Support More SAML AuthMethod
 
