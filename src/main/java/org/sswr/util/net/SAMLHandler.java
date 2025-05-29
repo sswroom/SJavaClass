@@ -944,6 +944,13 @@ public class SAMLHandler {
 		}
 	}
 
+	@Nullable
+	public String getLogoutResponseUrl(@Nonnull String msgId, @Nonnull SAMLStatusCode status)
+	{
+		StringBuilderUTF8 sb = new StringBuilderUTF8();
+		this.getLogoutResponse(sb, msgId, status);
+		return this.buildRedirectUrl(idp.getLogoutLocation(), sb, this.hashType, true);
+	}
 
 	@Nullable
 	public StringBuilderUTF8 getMetadataXML()
