@@ -1792,7 +1792,7 @@ public class DataTools {
 		}
 		byte[] input = baos.toByteArray();
 		byte[] output = new byte[input.length + 5];
-		Deflater deflate = new Deflater(Deflater.BEST_COMPRESSION);
+		Deflater deflate = new Deflater(Deflater.BEST_COMPRESSION, true);
 		deflate.setInput(input);
 		deflate.finish();
 		int compSize = deflate.deflate(output, 4, output.length - 4);
@@ -1809,7 +1809,7 @@ public class DataTools {
 		byte[] buff = b64.decodeBin(s);
 		int len = ByteTool.readInt32(buff, 0);
 		byte[] outBuff = new byte[len];
-		Inflater inflater = new Inflater();
+		Inflater inflater = new Inflater(true);
 		inflater.setInput(buff, 4, buff.length - 4);
 		try
 		{

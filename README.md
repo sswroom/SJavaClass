@@ -3,6 +3,7 @@
 # Changes:
 - Support Multiple AuthMethod
 - Support More SAML AuthMethod
+- Enhance Object Serialize
 
 0.7.20250521
 - Added Encoding

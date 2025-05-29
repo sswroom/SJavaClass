@@ -44,7 +44,7 @@ public class JWTMSvrSessionManager extends JWTSessionManager implements MQTTEven
 	private int reqNextId;
 	private String topicName;
 
-	public JWTMSvrSessionManager(@Nonnull String password, int timeoutMs, @Nonnull JWTSesionInitializator sessInit, @Nonnull MQTTClient cli, int serverId, @Nonnull String topicName)
+	public JWTMSvrSessionManager(@Nonnull String password, int timeoutMs, @Nullable JWTSesionInitializator sessInit, @Nonnull MQTTClient cli, int serverId, @Nonnull String topicName)
 	{
 		super(password, timeoutMs, sessInit);
 

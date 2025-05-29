@@ -29,7 +29,7 @@ public class JWTSessionManager
 	protected JWTSessionListener listener;
 	protected JWTSesionInitializator sessInit;
 
-	public JWTSessionManager(@Nonnull String password, int timeoutMs, @Nonnull JWTSesionInitializator sessInit)
+	public JWTSessionManager(@Nonnull String password, int timeoutMs, @Nullable JWTSesionInitializator sessInit)
 	{
 		this.lastId = 0;
 		this.timeoutMs = timeoutMs;
