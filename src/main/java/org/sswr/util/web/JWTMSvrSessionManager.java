@@ -44,7 +44,7 @@ public class JWTMSvrSessionManager extends JWTSessionManager implements MQTTEven
 	private int reqNextId;
 	private String topicName;
 
-	public JWTMSvrSessionManager(@Nonnull String password, int timeoutMs, @Nonnull JWTSesionInitializator sessInit, @Nonnull MQTTClient cli, int serverId, @Nonnull String topicName)
+	public JWTMSvrSessionManager(@Nonnull String password, int timeoutMs, @Nullable JWTSesionInitializator sessInit, @Nonnull MQTTClient cli, int serverId, @Nonnull String topicName)
 	{
 		super(password, timeoutMs, sessInit);
 
@@ -569,7 +569,11 @@ public class JWTMSvrSessionManager extends JWTSessionManager implements MQTTEven
 								while (it.hasNext())
 								{
 									Entry<String, String> ent = it.next();
-									req.values.put(ent.getKey(), DataTools.objectDeserialize(ent.getValue()));
+									String v = ent.getValue();
+									if (v != null)
+									{
+										req.values.put(ent.getKey(), DataTools.objectDeserialize(v));
+									}
 								}
 							}
 							if (req.reqCnt == req.reqRoles.size() && retMap.containsKey("end"))

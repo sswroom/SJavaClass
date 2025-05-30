@@ -1,6 +1,9 @@
 # SJavaClass
 
 # Changes:
+0.3.20250530
+- Enhance Object Serialize
+
 0.3.20250521
 - Added DataTools.objectSerialize, objectDeserialize
 - Change JWTSession.getValue/setValue to Serializable
