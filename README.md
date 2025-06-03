@@ -5,6 +5,7 @@
 - Support Multiple AuthMethod
 - Support More SAML AuthMethod
 - Enhance Object Serialize
+- Added HTTPOSClient.setDebug
 
 0.7.20250521
 - Added Encoding
