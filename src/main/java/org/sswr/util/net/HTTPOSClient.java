@@ -28,11 +28,16 @@ import jakarta.annotation.Nullable;
 
 public class HTTPOSClient extends HTTPClient
 {
-	private static final boolean debug = false;
+	private static boolean debug = false;
 	private HttpURLConnection conn;
 	private RequestMethod method;
 	private boolean hasContType;
 	private String userAgent;
+
+	public static void setDebug(boolean debug)
+	{
+		HTTPOSClient.debug = debug;
+	}
 
 	public HTTPOSClient(@Nullable SocketFactory sockf, @Nullable String userAgent, boolean kaConn)
 	{
