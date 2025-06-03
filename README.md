@@ -1,6 +1,9 @@
 # SJavaClass
 
 # Changes:
+0.3.20250602
+- Added HTTPMyClient.setDebug
+
 0.3.20250530
 - Enhance Object Serialize
 

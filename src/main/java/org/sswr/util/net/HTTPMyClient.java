@@ -22,11 +22,16 @@ import org.sswr.util.data.SharedInt;
 
 public class HTTPMyClient extends HTTPClient
 {
-	private static final boolean debug = false;
+	private static boolean debug = false;
 	private HttpURLConnection conn;
 	private RequestMethod method;
 	private boolean hasContType;
 
+	public static void setDebug(boolean debug)
+	{
+		HTTPMyClient.debug = debug;
+	}
+	
 	public HTTPMyClient(String url, RequestMethod method) throws IOException
 	{
 		this(null, url, method);
