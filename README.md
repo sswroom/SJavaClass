@@ -1,11 +1,13 @@
 # SJavaClass
 
 # Changes:
+0.7.20250610
 - Enhance Logout handling
 - Support Multiple AuthMethod
 - Support More SAML AuthMethod
 - Enhance Object Serialize
 - Added HTTPOSClient.setDebug
+- Update Third-Party Version
 
 0.7.20250521
 - Added Encoding
