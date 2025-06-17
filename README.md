@@ -1,6 +1,8 @@
 # SJavaClass
 
 # Changes:
+- Fix for condition with sun.java.command is null
+
 0.7.20250610
 - Enhance Logout handling
 - Support Multiple AuthMethod
