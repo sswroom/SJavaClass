@@ -31,6 +31,7 @@ public class MemoryWebSessionManager extends WebSessionManager implements Runnab
 	private ArrayList<MemoryWebSession> sesses;
 	private ArrayListInt64 sessIds;
 	private ThreadEvent chkEvt;
+	private boolean forceSecure;
 
 	@Override
 	public void run()
@@ -122,6 +123,7 @@ public class MemoryWebSessionManager extends WebSessionManager implements Runnab
 	public MemoryWebSessionManager(@Nonnull String path, @Nonnull SessionHandler hdlr, int chkInterval, @Nonnull String cookieName)
 	{
 		super(hdlr);
+		this.forceSecure = false;
 		this.sessIds = new ArrayListInt64();
 		this.sesses = new ArrayList<MemoryWebSession>();
 		this.chkEvt = new ThreadEvent(true);
@@ -139,6 +141,11 @@ public class MemoryWebSessionManager extends WebSessionManager implements Runnab
 		{
 			MyThread.sleep(10);
 		}
+	}
+
+	public void setForceSecure(boolean forceSecure)
+	{
+		this.forceSecure = forceSecure;
 	}
 
 	public void close()
@@ -190,7 +197,7 @@ public class MemoryWebSessionManager extends WebSessionManager implements Runnab
 		Cookie cookie = new Cookie(this.cookieName, String.valueOf(sessId));
 		cookie.setPath(this.path);
 		cookie.setHttpOnly(true);
-		cookie.setSecure(req.isSecure() || HTTPServerUtil.isForwardedSSL(req));
+		cookie.setSecure(this.forceSecure || req.isSecure() || HTTPServerUtil.isForwardedSSL(req));
 		cookie.setAttribute("SameSite", "Strict");
 		resp.addCookie(cookie);
 		int i;
@@ -231,7 +238,7 @@ public class MemoryWebSessionManager extends WebSessionManager implements Runnab
 			Cookie cookie = new Cookie(this.cookieName, String.valueOf(sessId));
 			cookie.setPath(this.path);
 			cookie.setHttpOnly(true);
-			cookie.setSecure(req.isSecure());
+			cookie.setSecure(this.forceSecure || req.isSecure() || HTTPServerUtil.isForwardedSSL(req));
 			cookie.setAttribute("SameSite", "Strict");
 			cookie.setMaxAge(0);
 			resp.addCookie(cookie);
