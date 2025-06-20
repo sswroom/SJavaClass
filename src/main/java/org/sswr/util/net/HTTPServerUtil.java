@@ -367,4 +367,23 @@ public class HTTPServerUtil {
 		addContentLength(resp, 0);
 		return true;
 	}
+
+	@Nonnull
+	public static String getOrigin(@Nonnull HttpServletRequest req)
+	{
+		String hdr = req.getHeader("Origin");
+		if (hdr != null)
+			return hdr;
+		hdr = req.getHeader("Referer");
+		if (hdr != null)
+		{
+			int i = hdr.indexOf("://");
+			if (i == -1)
+				return "";
+			i = hdr.indexOf('/', i + 3);
+			if (i != -1)
+				return hdr.substring(0, i);
+		}
+		return "";
+	}
 }
