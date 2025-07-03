@@ -164,6 +164,10 @@ public class SMTPConn implements Runnable
 			ex.printStackTrace();
 			return;
 		}
+		if (this.logWriter != null)
+		{
+			this.logWriter.writeLine("Connecting to "+host+":"+port+" in mode "+connType.toString());
+		}
 		if (connType == SMTPConnType.SSL)
 		{
 			this.cli = new TCPClient(host, port, ssl, TCPClientType.SSL);

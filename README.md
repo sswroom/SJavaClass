@@ -4,6 +4,7 @@
 - Fix for condition with sun.java.command is null
 - Added MemoryWebSessionManager.setForceSecure
 - Added HTTPServerUtil.getOrigin
+- Enhance SMTPConn logging
 
 0.7.20250610
 - Enhance Logout handling
