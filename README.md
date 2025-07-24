@@ -5,6 +5,8 @@
 - Added MemoryWebSessionManager.setForceSecure
 - Added HTTPServerUtil.getOrigin
 - Enhance SMTPConn logging
+- Fixed SMTPMessage Content-ID
+- EmailMessage support custom ContentID
 
 0.7.20250610
 - Enhance Logout handling

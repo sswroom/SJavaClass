@@ -32,7 +32,8 @@ public abstract class EmailMessage
 	@Nonnull
 	public abstract List<EmailAttachment> getAttachments();
 	public abstract boolean addAttachmentFile(@Nonnull String attachmentPath);
-	public abstract boolean addAttachment(@Nonnull byte[] bytes, @Nonnull String contentType, @Nonnull String fileName);
+	public boolean addAttachment(@Nonnull byte[] bytes, @Nonnull String contentType, @Nonnull String fileName) { return addAttachment(bytes, contentType, fileName, null); }
+	public abstract boolean addAttachment(@Nonnull byte[] bytes, @Nonnull String contentType, @Nonnull String fileName, @Nullable String contentId);
 
 	public void setSentDate(@Nonnull ZonedDateTime dt)
 	{

@@ -172,24 +172,24 @@ public class SMTPMessage
 					stm.write("\r\n\tmodification-date=\"".getBytes(StandardCharsets.UTF_8));
 					strBuff = WebUtil.date2Str(att.modifyTime).getBytes(StandardCharsets.UTF_8);
 					stm.write(strBuff);
-					stm.write("\"\r\n".getBytes(StandardCharsets.UTF_8));
+					stm.write("\"".getBytes(StandardCharsets.UTF_8));
 				}
 				else
 				{
 					stm.write(" modification-date=\"".getBytes(StandardCharsets.UTF_8));
 					strBuff = WebUtil.date2Str(att.modifyTime).getBytes(StandardCharsets.UTF_8);
 					stm.write(strBuff);
-					stm.write("\"\r\n".getBytes(StandardCharsets.UTF_8));
+					stm.write("\"".getBytes(StandardCharsets.UTF_8));
 					k = 21 + strBuff.length;
 				}
 			}
 			if (att.contentId != null)
 			{
-				stm.write("Content-ID: <".getBytes(StandardCharsets.UTF_8));
+				stm.write("\r\nContent-ID: <".getBytes(StandardCharsets.UTF_8));
 				stm.write(att.contentId.getBytes(StandardCharsets.UTF_8));
-				stm.write(">\r\n".getBytes(StandardCharsets.UTF_8));
+				stm.write(">".getBytes(StandardCharsets.UTF_8));
 			}
-			stm.write("Content-Transfer-Encoding: base64\r\n\r\n".getBytes(StandardCharsets.UTF_8));
+			stm.write("\r\nContent-Transfer-Encoding: base64\r\n\r\n".getBytes(StandardCharsets.UTF_8));
 			writeB64Data(stm, att.content);
 	
 			i++;
