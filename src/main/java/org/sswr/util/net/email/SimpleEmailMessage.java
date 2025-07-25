@@ -77,7 +77,7 @@ public class SimpleEmailMessage extends EmailMessage
 	}
 
 	@Override
-	public boolean addAttachment(@Nonnull byte[] bytes, @Nonnull String contentType, @Nonnull String fileName, @Nullable String contentId) {
+	public boolean addAttachment(@Nonnull byte[] bytes, @Nonnull String contentType, @Nonnull String fileName, @Nullable String contentId, boolean inline) {
 		EmailAttachment att = new EmailAttachment();
 		att.content = bytes;
 		if (contentId == null)
@@ -90,6 +90,7 @@ public class SimpleEmailMessage extends EmailMessage
 		}
 		att.contentType = contentType;
 		att.fileName = fileName;
+		att.isInline = inline;
 		this.attachment.add(att);
 		return true;
 	}
