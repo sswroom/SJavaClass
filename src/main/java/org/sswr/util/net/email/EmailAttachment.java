@@ -42,17 +42,20 @@ public class EmailAttachment
 		FileStream fs = new FileStream(fileName, FileMode.ReadOnly, FileShare.DenyNone, BufferType.Normal);
 		if (fs.isError())
 		{
+			fs.close();
 			return null;
 		}
 		long len = fs.getLength();
 		if (len > 104857600)
 		{
+			fs.close();
 			return null;
 		}
 		EmailAttachment attachment = new EmailAttachment();
 		attachment.content = new byte[(int)len];
 		if (fs.read(attachment.content, 0, (int)len) != len)
 		{
+			fs.close();
 			return null;
 		}
 		attachment.createTime = fs.getCreateTime();
@@ -61,6 +64,7 @@ public class EmailAttachment
 		attachment.contentId = contentId;
 		attachment.isInline = false;
 		attachment.contentType = MIME.getMIMEFromFileName(attachment.fileName);
+		fs.close();
 		return attachment;
 
 	}

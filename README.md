@@ -1,12 +1,14 @@
 # SJavaClass
 
 # Changes:
+0.7.20250812
 - Fix for condition with sun.java.command is null
 - Added MemoryWebSessionManager.setForceSecure
 - Added HTTPServerUtil.getOrigin
 - Enhance SMTPConn logging
 - Fixed SMTPMessage Content-ID
 - EmailMessage support custom ContentID
+- Fixed EmailAttachment.createFromFile not closing
 
 0.7.20250610
 - Enhance Logout handling
