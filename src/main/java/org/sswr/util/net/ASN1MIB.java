@@ -1,13 +1,13 @@
 package org.sswr.util.net;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.sswr.util.data.StringBuilderUTF8;
 import org.sswr.util.data.StringUtil;
 import org.sswr.util.io.FileStream;
 import org.sswr.util.io.UTF8Reader;
@@ -348,11 +348,11 @@ public class ASN1MIB
 
 	private boolean parseObjectBegin(@Nonnull UTF8Reader reader, @Nullable ASN1ObjectInfo obj, @Nonnull StringBuilder errMessage)
 	{
-		StringBuilder sb = new StringBuilder();
+		StringBuilderUTF8 sb = new StringBuilderUTF8();
 		int i;
 		while (true)
 		{
-			sb.setLength(0);
+			sb.clearStr();
 			if (!reader.readLine(sb, 512))
 			{
 				errMessage.append("Object end not found");
@@ -362,17 +362,17 @@ public class ASN1MIB
 			i = sb.indexOf("--");
 			if (i >= 0)
 			{
-				sb.setLength(i);
+				sb.trimToLength(i);
 			}
-			StringUtil.trimRight(sb);
-			if (sb.length() > 0)
+			sb.rTrim();
+			if (sb.getLength() > 0)
 			{
-				if (StringUtil.endsWith(sb, "BEGIN"))
+				if (sb.endsWith("BEGIN"))
 				{
 					errMessage.append("Nested begin found");
 					return false;
 				}
-				else if (StringUtil.endsWith(sb, "END"))
+				else if (sb.endsWith("END"))
 				{
 					return true;
 				}
@@ -382,14 +382,14 @@ public class ASN1MIB
 
 	private boolean parseModule(@Nonnull UTF8Reader reader, @Nonnull ASN1ModuleInfo module, @Nonnull StringBuilder errMessage)
 	{
-		StringBuilder sb = new StringBuilder();
+		StringBuilderUTF8 sb = new StringBuilderUTF8();
 		int i;
 		int j;
 		int lineSpace;
 		ASN1ObjectInfo obj;
 		ASN1ObjectInfo currObj = null;
-		StringBuilder sbObjValName = new StringBuilder();
-		StringBuilder sbObjValCont = new StringBuilder();
+		StringBuilderUTF8 sbObjValName = new StringBuilderUTF8();
+		StringBuilderUTF8 sbObjValCont = new StringBuilderUTF8();
 		int objLineSpace = 0;
 		boolean objIsEqual = false;
 		boolean objIsBrk = false;
@@ -399,7 +399,7 @@ public class ASN1MIB
 		
 		while (true)
 		{
-			sb.setLength(0);
+			sb.clearStr();
 			if (!reader.readLine(sb, 512))
 			{
 				errMessage.append("Module end not found");
@@ -409,17 +409,17 @@ public class ASN1MIB
 			i = sb.indexOf("--");
 			if (i >= 0)
 			{
-				sb.setLength(i);
+				sb.trimToLength(i);
 			}
-			StringUtil.trimRight(sb);
+			sb.rTrim();;
 			if (currObj != null && (objectName = currObj.getObjectName()) != null && objectName.equals("PSSEQStringEntry"))
 			{
 				i = 0;
 			}
 	
-			if (sb.length() > 0)
+			if (sb.getLength() > 0)
 			{
-				if (StringUtil.endsWith(sb, "BEGIN"))
+				if (sb.endsWith("BEGIN"))
 				{
 					succ = parseObjectBegin(reader, null, errMessage);
 					if (!succ)
@@ -428,7 +428,7 @@ public class ASN1MIB
 					}
 					currObj = null;
 				}
-				else if (StringUtil.endsWith(sb, "END"))
+				else if (sb.endsWith("END"))
 				{
 					List<ASN1ObjectInfo> objList = module.getObjValues();
 					ASN1ObjectInfo iobj;
@@ -464,18 +464,18 @@ public class ASN1MIB
 					{
 						sbObjValCont.append(sb.toString());
 					}
-					if (StringUtil.endsWith(sb, "\""))
+					if (sb.endsWith("\""))
 					{
 						isQuotedText = false;
 						if (currObj != null)
 						{
-							if (sbObjValName.length() > 0 && sbObjValCont.length() > 0)
+							if (sbObjValName.getLength() > 0 && sbObjValCont.getLength() > 0)
 							{
 								currObj.getValName().add(sbObjValName.toString());
 								currObj.getValCont().add(sbObjValCont.toString());
 							}
-							sbObjValName.setLength(0);
-							sbObjValCont.setLength(0);
+							sbObjValName.clearStr();
+							sbObjValCont.clearStr();
 						}
 					}
 					else
@@ -487,8 +487,8 @@ public class ASN1MIB
 				else
 				{
 					lineSpace = calcLineSpace(sb.toString());
-					StringUtil.trim(sb);
-					if (currObj != null && (objIsBrk || objIsEqual || (lineSpace > objLineSpace && sb.charAt(0) >= 'A' && sb.charAt(0) <= 'Z') || StringUtil.startsWith(sb, "::=") || StringUtil.startsWith(sb, "{") || StringUtil.startsWith(sb, "\"")))
+					sb.trim();
+					if (currObj != null && (objIsBrk || objIsEqual || (lineSpace > objLineSpace && sb.charAt(0) >= 'A' && sb.charAt(0) <= 'Z') || sb.startsWith("::=") || sb.startsWith("{") || sb.startsWith("\"")))
 					{
 						if (objIsBrk)
 						{
@@ -501,17 +501,17 @@ public class ASN1MIB
 								sbObjValCont.append(sb.toString());
 							}
 							
-							if (StringUtil.endsWith(sb, "}"))
+							if (sb.endsWith("}"))
 							{
 								objIsBrk = false;
 								objIsEqual = false;
-								if (sbObjValName.length() > 0 && sbObjValCont.length() > 0)
+								if (sbObjValName.getLength() > 0 && sbObjValCont.getLength() > 0)
 								{
 									currObj.getValName().add(sbObjValName.toString());
 									currObj.getValCont().add(sbObjValCont.toString());
 								}
-								sbObjValName.setLength(0);
-								sbObjValCont.setLength(0);
+								sbObjValName.clearStr();
+								sbObjValCont.clearStr();
 								if (currObj.getTypeName() == null)
 								{
 									String typeVal = currObj.getTypeVal();
@@ -549,7 +549,7 @@ public class ASN1MIB
 						}
 						else if (objIsEqual)
 						{
-							if (StringUtil.startsWith(sb, "[") && StringUtil.endsWith(sb, "]"))
+							if (sb.startsWith("[") && sb.endsWith("]"))
 							{
 	
 							}
@@ -577,15 +577,15 @@ public class ASN1MIB
 								}
 							}
 						}
-						else if (StringUtil.startsWith(sb, "::="))
+						else if (sb.startsWith("::="))
 						{
-							if (sbObjValName.length() > 0 && sbObjValCont.length() > 0)
+							if (sbObjValName.getLength() > 0 && sbObjValCont.getLength() > 0)
 							{
 								currObj.getValName().add(sbObjValName.toString());
 								currObj.getValCont().add(sbObjValCont.toString());
 							}
-							sbObjValName.setLength(0);
-							sbObjValCont.setLength(0);
+							sbObjValName.clearStr();
+							sbObjValCont.clearStr();
 	
 							i = 3;
 							while (sb.charAt(i) == ' ' || sb.charAt(i) == '\t')
@@ -606,20 +606,20 @@ public class ASN1MIB
 								objIsEqual = true;
 							}
 						}
-						else if (StringUtil.startsWith(sb, "{"))
+						else if (sb.startsWith("{"))
 						{
 							sbObjValCont.append(sb.toString());
-							if (StringUtil.endsWith(sb, "}"))
+							if (sb.endsWith("}"))
 							{
 								objIsBrk = false;
 								objIsEqual = false;
-								if (sbObjValName.length() > 0 && sbObjValCont.length() > 0)
+								if (sbObjValName.getLength() > 0 && sbObjValCont.getLength() > 0)
 								{
 									currObj.getValName().add(sbObjValName.toString());
 									currObj.getValCont().add(sbObjValCont.toString());
 								}
-								sbObjValName.setLength(0);
-								sbObjValCont.setLength(0);
+								sbObjValName.clearStr();
+								sbObjValCont.clearStr();
 							}
 							else
 							{
@@ -627,18 +627,18 @@ public class ASN1MIB
 								objIsEqual = false;
 							}
 						}
-						else if (StringUtil.startsWith(sb, "\""))
+						else if (sb.startsWith("\""))
 						{
 							sbObjValCont.append(sb.toString());
-							if (sb.length() > 1 && StringUtil.endsWith(sb, "\""))
+							if (sb.getLength() > 1 && sb.endsWith("\""))
 							{
-								if (sbObjValName.length() > 0 && sbObjValCont.length() > 0)
+								if (sbObjValName.getLength() > 0 && sbObjValCont.getLength() > 0)
 								{
 									currObj.getValName().add(sbObjValName.toString());
 									currObj.getValCont().add(sbObjValCont.toString());
 								}
-								sbObjValName.setLength(0);
-								sbObjValCont.setLength(0);
+								sbObjValName.clearStr();
+								sbObjValCont.clearStr();
 							}
 							else
 							{
@@ -648,11 +648,11 @@ public class ASN1MIB
 						else
 						{
 							boolean proc = false;
-							if (sbObjValName.length() > 0 && sbObjValCont.length() > 0)
+							if (sbObjValName.getLength() > 0 && sbObjValCont.getLength() > 0)
 							{
-								if (StringUtil.startsWith(sb, "{") || StringUtil.startsWith(sb, "\""))
+								if (sb.startsWith("{") || sb.startsWith("\""))
 								{
-									sbObjValCont.append(' ');
+									sbObjValCont.appendUTF8Char((byte)' ');
 									sbObjValCont.append(sb.toString());
 									proc = true;
 								}
@@ -660,11 +660,11 @@ public class ASN1MIB
 								{
 									currObj.getValName().add(sbObjValName.toString());
 									currObj.getValCont().add(sbObjValCont.toString());
-									sbObjValName.setLength(0);
-									sbObjValCont.setLength(0);
+									sbObjValName.clearStr();
+									sbObjValCont.clearStr();
 								}
 							}
-							else if (sbObjValName.length() > 0)
+							else if (sbObjValName.getLength() > 0)
 							{
 								sbObjValCont.append(sb.toString());
 								proc = true;
@@ -691,7 +691,7 @@ public class ASN1MIB
 								{
 									sbObjValName.append(sb.substring(0, i));
 									sbObjValCont.append(sb.substring(i + 1));
-									StringUtil.trim(sbObjValCont);
+									sbObjValCont.trim();
 								}
 								
 							}
@@ -710,13 +710,13 @@ public class ASN1MIB
 								j = sb.indexOf("}");
 								if (j > i)
 								{
-									if (sbObjValName.length() > 0 && sbObjValCont.length() > 0)
+									if (sbObjValName.getLength() > 0 && sbObjValCont.getLength() > 0)
 									{
 										currObj.getValName().add(sbObjValName.toString());
 										currObj.getValCont().add(sbObjValCont.toString());
 									}
-									sbObjValName.setLength(0);
-									sbObjValCont.setLength(0);
+									sbObjValName.clearStr();
+									sbObjValCont.clearStr();
 								}
 								else
 								{
@@ -726,7 +726,7 @@ public class ASN1MIB
 							}
 						}
 					}
-					else if (StringUtil.startsWith(sb, "IMPORTS"))
+					else if (sb.startsWith("IMPORTS"))
 					{
 						boolean isEnd = false;
 						StringBuilder impObjNames = new StringBuilder();
@@ -736,15 +736,15 @@ public class ASN1MIB
 						String []impSarr;
 						int impCnt;
 						int impInd;
-						sb.delete(0, 7);
-						StringUtil.trim(sb);
+						sb.removeRange(0, 7);
+						sb.trim();
 	
 						while (!isEnd)
 						{
-							if (StringUtil.endsWith(sb, ';'))
+							if (sb.endsWith(";"))
 							{
 								isEnd = true;
-								sb.setLength(sb.length() - 1);
+								sb.trimToLength(sb.getLength() - 1);
 							}
 							i = sb.indexOf("FROM ");
 							if (i >= 0)
@@ -830,7 +830,7 @@ public class ASN1MIB
 							{
 								break;
 							}
-							sb.setLength(0);
+							sb.clearStr();
 							if (!reader.readLine(sb, 512))
 							{
 								errMessage.append("IMPORTS end not found");
@@ -840,21 +840,21 @@ public class ASN1MIB
 							i = sb.indexOf("--");
 							if (i >= 0)
 							{
-								sb.setLength(i);
+								sb.trimToLength(i);
 							}
-							StringUtil.trim(sb);
+							sb.trim();
 						}
 					}
-					else if (StringUtil.startsWith(sb, "EXPORTS"))
+					else if (sb.startsWith("EXPORTS"))
 					{
 						while (true)
 						{
-							if (StringUtil.endsWith(sb, ';'))
+							if (sb.endsWith(";"))
 							{
 								break;
 							}
 	
-							sb.setLength(0);
+							sb.clearStr();
 							if (!reader.readLine(sb, 512))
 							{
 								errMessage.append("EXPORTS end not found");
@@ -864,22 +864,22 @@ public class ASN1MIB
 							i = sb.indexOf("--");
 							if (i >= 0)
 							{
-								sb.setLength(i);
+								sb.trimToLength(i);
 							}
-							StringUtil.trim(sb);
+							sb.trim();
 						}
 					}
 					else
 					{
 						if (currObj != null)
 						{
-							if (sbObjValName.length() > 0 && sbObjValCont.length() > 0)
+							if (sbObjValName.getLength() > 0 && sbObjValCont.getLength() > 0)
 							{
 								currObj.getValName().add(sbObjValName.toString());
 								currObj.getValCont().add(sbObjValCont.toString());
 							}
-							sbObjValName.setLength(0);
-							sbObjValCont.setLength(0);
+							sbObjValName.clearStr();
+							sbObjValCont.clearStr();
 						}
 						currObj = null;
 						i = sb.indexOf("::=");
@@ -906,7 +906,7 @@ public class ASN1MIB
 							}
 							else
 							{
-								i = sb.length();
+								i = sb.getLength();
 								if (!reader.readLine(sb, 512))
 								{
 									errMessage.append("Unknown format: ");
@@ -916,9 +916,9 @@ public class ASN1MIB
 								j = sb.indexOf("--");
 								if (j >= 0)
 								{
-									sb.setLength(j);
+									sb.trimToLength(j);
 								}
-								StringUtil.trimRight(sb);
+								sb.rTrim();
 								if (sb.charAt(i) == ' ' || sb.charAt(i) == '\t')
 								{
 									i = sb.indexOf("::=");
@@ -976,13 +976,13 @@ public class ASN1MIB
 								currObj = null;
 							}
 	
-							if (StringUtil.endsWith(sb, "::="))
+							if (sb.endsWith("::="))
 							{
 								currObj = obj;
 								objLineSpace = lineSpace;
 								objIsEqual = true;
-								sbObjValName.setLength(0);
-								sbObjValCont.setLength(0);
+								sbObjValName.clearStr();
+								sbObjValCont.clearStr();
 							}
 							else
 							{
@@ -994,8 +994,8 @@ public class ASN1MIB
 								}
 								obj.setTypeVal(typeVal = sb.substring(i));
 								currObj = obj;
-								sbObjValName.setLength(0);
-								sbObjValCont.setLength(0);
+								sbObjValName.clearStr();
+								sbObjValCont.clearStr();
 								objLineSpace = lineSpace;
 								objIsEqual = false;
 								objIsBrk = false;
@@ -1024,7 +1024,7 @@ public class ASN1MIB
 							}
 							if (i < 0)
 							{
-								i = sb.length();
+								i = sb.getLength();
 								if (!reader.readLine(sb, 512))
 								{
 									errMessage.append("Unknown format: ");
@@ -1034,9 +1034,9 @@ public class ASN1MIB
 								j = sb.indexOf("--");
 								if (j >= 0)
 								{
-									sb.setLength(j);
+									sb.trimToLength(j);
 								}
-								StringUtil.trimRight(sb);
+								sb.rTrim();
 								if (sb.charAt(i) == ' ' || sb.charAt(i) == '\t')
 								{
 								}
@@ -1071,8 +1071,8 @@ public class ASN1MIB
 							currObj = obj;
 							objLineSpace = lineSpace;
 							objIsEqual = false;
-							sbObjValName.setLength(0);
-							sbObjValCont.setLength(0);
+							sbObjValName.clearStr();
+							sbObjValCont.clearStr();
 						}
 					}
 				}
@@ -1120,7 +1120,7 @@ public class ASN1MIB
 
 	public boolean loadFile(@Nonnull String fileName, @Nonnull StringBuilder errMessage)
 	{
-		StringBuilder sb = new StringBuilder();
+		StringBuilderUTF8 sb = new StringBuilderUTF8();
 		FileStream fs;
 		UTF8Reader reader;
 		int i;
@@ -1138,7 +1138,7 @@ public class ASN1MIB
 		reader = new UTF8Reader(fs.createInputStream());
 		while (true)
 		{
-			sb.setLength(0);
+			sb.clearStr();
 			if (!reader.readLine(sb, 512))
 			{
 				if (!moduleFound)
@@ -1151,10 +1151,10 @@ public class ASN1MIB
 			i = sb.indexOf("--");
 			if (i >= 0)
 			{
-				sb.setLength(i);
+				sb.trimToLength(i);
 			}
-			StringUtil.trim(sb);
-			if (sb.length() > 0)
+			sb.trim();
+			if (sb.getLength() > 0)
 			{
 				if (moduleFound)
 				{
@@ -1169,7 +1169,7 @@ public class ASN1MIB
 					errMessage.append("Wrong Module definition format");
 					break;
 				}
-				sb.setLength(i);
+				sb.trimToLength(i);
 				if (this.moduleMap.get(sb.toString()) != null)
 				{
 					errMessage.append("Module ");
@@ -1193,14 +1193,7 @@ public class ASN1MIB
 			}
 	
 		}
-		try
-		{
-			reader.close();
-		}
-		catch (IOException ex)
-		{
-
-		}
+		reader.close();
 		fs.close();
 		return succ;
 	}

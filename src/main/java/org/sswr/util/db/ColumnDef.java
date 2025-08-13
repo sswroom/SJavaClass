@@ -59,6 +59,10 @@ public class ColumnDef
 		return this.notNull;
 	}
 
+	public boolean isNull() {
+		return !this.notNull;
+	}
+
 	public boolean getNotNull() {
 		return this.notNull;
 	}

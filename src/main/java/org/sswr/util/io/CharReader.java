@@ -2,17 +2,19 @@ package org.sswr.util.io;
 
 import java.io.IOException;
 
+import org.sswr.util.data.StringBuilderUTF8;
+
 import jakarta.annotation.Nonnull;
 
 public class CharReader
 {
 	public UTF8Reader reader;
-	public StringBuilder sb;
+	public StringBuilderUTF8 sb;
 	public int charInd;
 
 	public CharReader(@Nonnull UTF8Reader reader)
 	{
-		this.sb = new StringBuilder();
+		this.sb = new StringBuilderUTF8();
 		this.reader = reader;
 		this.charInd = 0;
 	}
@@ -24,34 +26,34 @@ public class CharReader
 
 	public char nextChar()
 	{
-		if (this.charInd >= sb.length())
+		if (this.charInd >= sb.getLength())
 		{
 			nextLine();
 		}
-		if (this.charInd >= sb.length())
+		if (this.charInd >= sb.getLength())
 		{
 			return 0;
 		}
-		return sb.charAt(this.charInd++);
+		return (char)sb.getBytes()[this.charInd++];
 	}
 
 	public char currChar()
 	{
-		if (this.charInd >= sb.length())
+		if (this.charInd >= sb.getLength())
 		{
 			nextLine();
 		}
-		if (this.charInd >= sb.length())
+		if (this.charInd >= sb.getLength())
 		{
 			return 0;
 		}
-		return sb.charAt(this.charInd);
+		return (char)sb.getBytes()[this.charInd];
 	}
 
 	@Nonnull
 	public String currLine()
 	{
-		if (this.charInd >= sb.length())
+		if (this.charInd >= sb.getLength())
 		{
 			return "";
 		}
@@ -70,7 +72,7 @@ public class CharReader
 
 	public boolean nextLine()
 	{
-		sb.setLength(0);
+		sb.clearStr();
 		this.charInd = 0;
 		return this.appendLine();
 	}
@@ -79,14 +81,14 @@ public class CharReader
 	{
 		while (true)
 		{
-			if (this.charInd >= sb.length())
+			if (this.charInd >= sb.getLength())
 			{
 				if (!nextLine())
 				{
 					return;
 				}
 			}
-			switch (sb.charAt(this.charInd))
+			switch (sb.getBytes()[this.charInd])
 			{
 				case ' ':
 				case '\t':
@@ -105,13 +107,13 @@ public class CharReader
 		int len = s.length();
 		while (true)
 		{
-			if (this.charInd + len <= this.sb.length())
+			if (this.charInd + len <= this.sb.getLength())
 			{
 				return this.sb.substring(this.charInd, this.charInd + len).equals(s);
 			}
 			if (this.charInd > 0)
 			{
-				this.sb.delete(0, this.charInd);
+				this.sb.removeRange(0, this.charInd);
 				this.charInd = 0;
 			}
 			if (!this.appendLine())

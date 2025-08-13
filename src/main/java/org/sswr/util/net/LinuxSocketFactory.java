@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.sswr.util.data.DataTools;
+import org.sswr.util.data.StringBuilderUTF8;
 import org.sswr.util.io.UTF8Reader;
 
 import jakarta.annotation.Nonnull;
@@ -20,11 +21,11 @@ public class LinuxSocketFactory extends SocketFactory
 		try
 		{
 			List<InetAddress> addrList = new ArrayList<InetAddress>();
-			StringBuilder sb = new StringBuilder();
+			StringBuilderUTF8 sb = new StringBuilderUTF8();
 			UTF8Reader reader = new UTF8Reader(new FileInputStream("/etc/resolv.conf"));
 			while (true)
 			{
-				sb.setLength(0);
+				sb.clearStr();
 				if (!reader.readLine(sb, 1024))
 				{
 					break;

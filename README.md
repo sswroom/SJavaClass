@@ -1,6 +1,43 @@
 # SJavaClass
 
 # Changes:
+0.8.xxxxx
+-Added ArrayListTS
+-Added DataSet
+-Added DataSetGrouper
+-Added DataSetMonthGrouper
+-Added ObjectGetter
+-Added SortableArrayList
+-Added TableData
+-Added TwinItem
+-Added VariItemComparator
+-Added VariItemComparatorInv
+-Added VariItemHashCalc
+-Added VariItemUtil
+-Added CSVFile
+-Added CSVReader
+-Added ReadingDB
+-Added SQLType
+-Added TableDef
+-Added ConsoleWriter
+-Added IOReader
+-Added Streamreader
+-Added StyledTextWriter
+-Added StandardColor
+-Added DateTimeUtil.getLocalTZQhr
+-Added Encoding.setCodePage
+-Added StringBuilderUTF8.substring, removeRange, setEndOfst, startsWith, endsWith, trimToLength, indexOf, rTrim, trim, charAt
+-Added StringUtil.csvSplit
+-Added ColumnDef.isNull
+-Change CharReader to use StringBuilderUTF8
+-Change FileUtil to use StringBuilderUTF8
+-UTF8Reader implements IOReader
+-Change ASN1MIB to use StringBuilderUTF8
+-Change IcmpUtil to use StringBuilderUTF8
+-Change LinuxSocketFactory to use StringBuilderUTF8
+-Change EmailTemplate2 to use StringBuilderUTF8
+-Change SMTPConn to use StringBuilderUTF8
+
 0.7.20250812
 - Fix for condition with sun.java.command is null
 - Added MemoryWebSessionManager.setForceSecure

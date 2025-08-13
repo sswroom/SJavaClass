@@ -2227,4 +2227,70 @@ public class StringUtil
 		}
 		return retVal;
 	}
+
+	/**
+	 * Split string using CSV syntax
+	 * @param csvArr array to store splitted array
+	 * @param maxCount maximum split count
+	 * @param csv String to split
+	 * @return number of array elements filled
+	 */
+	public static int csvSplit(@Nonnull String[] csvArr, int maxCount, @Nonnull String csv)
+	{
+		boolean quoted = false;
+		boolean first = true;
+		int i = 1;
+		char[] strToSplit = csv.toCharArray();
+		int strStart = 0;
+		int strWrite = 0;
+		int strCurr = 0;
+		char c;
+		while (i < maxCount && strCurr < strToSplit.length)
+		{
+			c = strToSplit[strCurr++];
+			if (c == 0)
+			{
+				strCurr--;
+				break;
+			}
+			if (c == '"')
+			{
+				if (!quoted)
+				{
+					quoted = true;
+					first = false;
+				}
+				else if (strCurr < strToSplit.length && strToSplit[strCurr] == '"')
+				{
+					strCurr++;
+					strToSplit[strWrite++] = '"';
+					first = false;
+				}
+				else
+				{
+					quoted = false;
+				}
+			}
+			else if (c == ',' && !quoted)
+			{
+				csvArr[i - 1] = new String(strToSplit, strStart, strWrite - strStart);
+				strStart = strCurr;
+				i++;
+				first = true;
+			}
+			else
+			{
+				if (c == ' ' && first)
+				{
+				}
+				else
+				{
+					strToSplit[strWrite++] = c;
+					first = false;
+				}
+			}
+		}
+		csvArr[i - 1] = new String(strToSplit, strStart, strWrite - strStart);
+		return i;
+	}
 }

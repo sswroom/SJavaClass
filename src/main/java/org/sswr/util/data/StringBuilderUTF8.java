@@ -265,4 +265,177 @@ public class StringBuilderUTF8 implements ByteArray {
 	public int getBytesLength() {
 		return this.leng;
 	}
+
+	@Nonnull
+	public String substring(int startIndex)
+	{
+		if (startIndex < 0)
+		{
+			startIndex = 0;
+		}
+		if (startIndex >= this.leng)
+		{
+			return "";
+		}
+		return new String(this.v, startIndex, this.leng - startIndex, StandardCharsets.UTF_8);
+	}
+
+	@Nonnull
+	public String substring(int startIndex, int endIndex)
+	{
+		if (startIndex < 0)
+		{
+			startIndex = 0;
+		}
+		if (endIndex > this.leng)
+		{
+			endIndex = this.leng;
+		}
+		if (startIndex >= endIndex)
+		{
+			return "";
+		}
+		return new String(this.v, startIndex, endIndex - startIndex, StandardCharsets.UTF_8);
+	}
+
+	public void removeRange(int startIndex, int endIndex)
+	{
+		if (startIndex < 0)
+			startIndex = 0;
+		if (endIndex > this.leng)
+			endIndex = this.leng;
+		if (startIndex >= endIndex)
+			return;
+		ByteTool.copyArray(this.v, endIndex, this.v, startIndex, this.leng - endIndex);
+		this.leng -= endIndex - startIndex;
+	}
+
+	public void setEndOfst(int endOfst)
+	{
+		this.leng = endOfst;
+		this.v[endOfst] = 0;
+	}
+
+	public boolean startsWith(@Nonnull String s)
+	{
+		byte[] sarr = s.getBytes(StandardCharsets.UTF_8);
+		if (sarr.length > this.leng)
+			return false;
+		int i = 0;
+		int j = sarr.length;
+		while (i < j)
+		{
+			if (this.v[i] != sarr[i])
+				return false;
+			i++;
+		}
+		return true;
+	}
+
+	public boolean endsWith(@Nonnull String s)
+	{
+		byte[] sarr = s.getBytes(StandardCharsets.UTF_8);
+		if (sarr.length > this.leng)
+			return false;
+		int k = sarr.length;
+		int i = this.leng - k;
+		int j = 0;
+		while (j < k)
+		{
+			if (this.v[i + j] != sarr[j])
+				return false;
+			j++;
+		}
+		return true;
+	}
+
+	public void trimToLength(int newLength)
+	{
+		if (newLength >= this.leng || newLength < 0)
+			return;
+		this.leng = newLength;
+		this.v[newLength] = 0;
+	}
+
+	public int indexOf(@Nonnull String s)
+	{
+		return indexOf(s, 0);
+	}
+
+	public int indexOf(@Nonnull String s, int startIndex)
+	{
+		byte[] sarr = s.getBytes(StandardCharsets.UTF_8);
+		int j = sarr.length;
+		if (j > this.leng)
+			return -1;
+		if (j == 0)
+			return 0;
+		int i;
+		int k = startIndex;
+		int l = this.leng - j;
+		boolean diff;
+		while (k <= l)
+		{
+			diff = false;
+			i = 0;
+			while (i < j)
+			{
+				if (sarr[i] != this.v[k + i])
+				{
+					diff = true;
+					break;
+				}
+				i++;
+			}
+			if (!diff)
+			{
+				return k;
+			}
+
+			k++;
+		}
+		return -1;
+	}
+
+	public void rTrim()
+	{
+		int len = this.leng;
+		while (len > 0)
+		{
+			byte c = this.v[len - 1];
+			if (c == ' ' || c == '\t' || c == 0)
+			{
+				len--;
+			}
+			else
+			{
+				break;
+			}
+		}
+		this.v[len] = 0;
+		this.leng = len;
+	}
+
+	public void trim()
+	{
+		this.rTrim();
+		int sptr;
+		byte c;
+		byte[] str1 = this.v;
+		if (this.leng > 0 && (str1[0] == ' ' || str1[0] == '\t'))
+		{
+			sptr = 1;
+			while ((c = str1[sptr]) == ' ' || c == '\t')
+				sptr++;
+			this.leng -= sptr;
+			ByteTool.copyArray(str1, 0, str1, sptr, this.leng + 1);
+		}
+	}
+
+	public byte charAt(int index)
+	{
+		if (index < 0 || index >= this.leng)
+			return 0;
+		return this.v[index];
+	}
 }

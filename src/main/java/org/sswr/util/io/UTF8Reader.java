@@ -1,16 +1,16 @@
 package org.sswr.util.io;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 import org.sswr.util.data.ByteTool;
 import org.sswr.util.data.LineBreakType;
+import org.sswr.util.data.StringBuilderUTF8;
 import org.sswr.util.data.StringUtil;
 
 import jakarta.annotation.Nonnull;
 
-public class UTF8Reader
+public class UTF8Reader implements IOReader
 {
 	private static final int BUFFSIZE = 65536;
 
@@ -69,7 +69,7 @@ public class UTF8Reader
 		this.fillBuffer();	
 	}
 
-	public void close() throws IOException
+	public void close()
 	{
 		this.stm.close();
 	}
@@ -292,7 +292,7 @@ public class UTF8Reader
 		return 0;
 	}
 
-	public boolean readLine(@Nonnull StringBuilder sb, int maxByteCnt)
+	public boolean readLine(@Nonnull StringBuilderUTF8 sb, int maxByteCnt)
 	{
 		if (this.currOfst >= this.buffSize)
 		{
@@ -407,13 +407,134 @@ public class UTF8Reader
 		}
 	}
 
+	public int readLine(@Nonnull byte []u8buff, int ofst, int maxByteCnt)
+	{
+		if (this.currOfst >= this.buffSize)
+		{
+			this.fillBuffer();
+			if (this.currOfst >= this.buffSize)
+				return -1;
+		}
+	
+		this.lineBreak = LineBreakType.NONE;
+		int currSize = 0;
+		int writeSize = 0;
+		int charSize;
+		while (true)
+		{
+			if (currSize >= maxByteCnt)
+			{
+				ByteTool.copyArray(u8buff, ofst, this.buff, this.currOfst, currSize);
+				ofst += currSize;
+				this.currOfst += currSize;
+				return ofst;
+			}
+			if (this.currOfst + currSize >= this.buffSize)
+			{
+				if (currSize > 0)
+				{
+					ByteTool.copyArray(u8buff, ofst, this.buff, this.currOfst, currSize);
+					ofst += currSize;
+					this.currOfst += currSize;
+					maxByteCnt -= currSize;
+					writeSize += currSize;
+					currSize = 0;
+				}
+				this.fillBuffer();
+				if (this.currOfst >= this.buffSize)
+					return ofst;
+			}
+	
+			byte c = this.buff[this.currOfst + currSize];
+			if ((c & 0x80) == 0)
+			{
+				if (c == 10)
+				{
+					ByteTool.copyArray(u8buff, ofst, this.buff, this.currOfst, currSize);
+					ofst += currSize;
+					this.currOfst += currSize + 1;
+					this.lineBreak = LineBreakType.LF;
+					return ofst;
+				}
+				else if (c == 13)
+				{
+					ByteTool.copyArray(u8buff, ofst, this.buff, this.currOfst, currSize);
+					ofst += currSize;
+					this.currOfst += currSize + 1;
+					if (this.currOfst < this.buffSize && this.buff[this.currOfst] == 10)
+					{
+						this.lineBreak = LineBreakType.CRLF;
+						this.currOfst += 1;
+					}
+					else
+					{
+						this.lineBreak = LineBreakType.CR;
+					}
+					return ofst;
+				}
+				currSize += 1;
+			}
+			else
+			{
+				if ((c & 0xe0) == 0xc0)
+				{	
+					charSize = 2;
+				}
+				else if ((c & 0xf0) == 0xe0)
+				{
+					charSize = 3;
+				}
+				else if ((c & 0xf8) == 0xf0)
+				{
+					charSize = 4;
+				}
+				else if ((c & 0xfc) == 0xf8)
+				{
+					charSize = 5;
+				}
+				else
+				{
+					charSize = 6;
+				}
+	
+				if (maxByteCnt - currSize < charSize)
+				{
+					ByteTool.copyArray(u8buff, ofst, this.buff, this.currOfst, currSize);
+					ofst += currSize;
+					this.currOfst += currSize;
+					return ofst;
+				}
+				else if (this.buffSize - this.currOfst < currSize + charSize)
+				{
+					if (currSize > 0)
+					{
+						ByteTool.copyArray(u8buff, ofst, this.buff, this.currOfst, currSize);
+						ofst += currSize;
+						this.currOfst += currSize;
+						maxByteCnt -= currSize;
+						writeSize += currSize;
+						currSize = 0;
+					}
+					this.fillBuffer();
+					if (this.buffSize - this.currOfst < currSize + charSize)
+					{
+						if (writeSize <= 0)
+							return -1;
+						return ofst;
+					}
+				}
+				currSize += charSize;
+			}
+		}
+	}
+
 	public int readLine(@Nonnull char []u8buff, int ofst, int maxByteCnt)
 	{
 		if (this.currOfst >= this.buffSize)
 		{
 			this.fillBuffer();
 			if (this.currOfst >= this.buffSize)
-				return 0;
+				return -1;
 		}
 	
 		this.lineBreak = LineBreakType.NONE;
@@ -513,7 +634,7 @@ public class UTF8Reader
 					if (this.buffSize - this.currOfst < currSize + charSize)
 					{
 						if (writeSize <= 0)
-							return 0;
+							return -1;
 						return ofst;
 					}
 				}
@@ -558,15 +679,15 @@ public class UTF8Reader
 		return ofst;
 	}
 
-	public boolean getLastLineBreak(@Nonnull StringBuilder sb)
+	public boolean getLastLineBreak(@Nonnull StringBuilderUTF8 sb)
 	{
 		if (this.lineBreak == LineBreakType.CR)
 		{
-			sb.append('\r');
+			sb.appendUTF8Char((byte)'\r');
 		}
 		else if (this.lineBreak == LineBreakType.LF)
 		{
-			sb.append('\n');
+			sb.appendUTF8Char((byte)'\n');
 		}
 		else if (this.lineBreak == LineBreakType.CRLF)
 		{
@@ -580,7 +701,7 @@ public class UTF8Reader
 		return this.lineBreak != LineBreakType.NONE;
 	}
 
-	public boolean readToEnd(@Nonnull StringBuilder sb)
+	public boolean readToEnd(@Nonnull StringBuilderUTF8 sb)
 	{
 		boolean succ = false;
 		while (this.readLine(sb, BUFFSIZE))

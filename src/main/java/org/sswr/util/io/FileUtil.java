@@ -11,6 +11,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.sswr.util.data.StringBuilderUTF8;
 import org.sswr.util.io.FileStream.BufferType;
 import org.sswr.util.io.FileStream.FileMode;
 import org.sswr.util.io.FileStream.FileShare;
@@ -385,7 +386,7 @@ public class FileUtil {
 			return;
 		}
 		UTF8Reader reader = new UTF8Reader(new FileStream(filePath, FileMode.ReadOnly, FileShare.DenyNone, BufferType.Normal));
-		StringBuilder sb = new StringBuilder();
+		StringBuilderUTF8 sb = new StringBuilderUTF8();
 		if (reader.readToEnd(sb))
 		{
 			parseCmdLine(args, sb.toString());

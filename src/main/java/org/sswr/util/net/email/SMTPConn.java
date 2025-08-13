@@ -1,6 +1,5 @@
 package org.sswr.util.net.email;
 
-import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
@@ -9,6 +8,7 @@ import org.sswr.util.basic.MyThread;
 import org.sswr.util.basic.ThreadEvent;
 import org.sswr.util.data.ByteTool;
 import org.sswr.util.data.SharedInt;
+import org.sswr.util.data.StringBuilderUTF8;
 import org.sswr.util.data.StringUtil;
 import org.sswr.util.data.textbinenc.Base64Enc;
 import org.sswr.util.data.textbinenc.EncodingException;
@@ -46,7 +46,7 @@ public class SMTPConn implements Runnable
 	public void run()
 	{
 		UTF8Reader reader;
-		StringBuilder sb = new StringBuilder();
+		StringBuilderUTF8 sb = new StringBuilderUTF8();
 		int msgCode;
 	
 		this.threadStarted = true;
@@ -54,7 +54,7 @@ public class SMTPConn implements Runnable
 		reader = new UTF8Reader(this.cli.createInputStream());
 		while (!this.threadToStop)
 		{
-			sb.setLength(0);
+			sb.clearStr();
 			if (!reader.readLine(sb, 2048))
 			{
 				if (this.logWriter != null)
@@ -111,13 +111,7 @@ public class SMTPConn implements Runnable
 		this.lastStatus = 0;
 		this.statusChg = true;
 		this.evt.set();
-		try
-		{
-			reader.close();
-		}
-		catch (IOException ex)
-		{
-		}
+		reader.close();
 		this.threadRunning = false;
 	}
 

@@ -4,6 +4,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.Map;
 
+import org.sswr.util.data.StringBuilderUTF8;
 import org.sswr.util.data.XmlUtil;
 import org.sswr.util.data.textenc.FormEncoding;
 import org.sswr.util.io.LogLevel;
@@ -126,8 +127,8 @@ public class EmailTemplate2 {
 		try
 		{
 			FileInputStream fs = new FileInputStream(fileName);
-			StringBuilder sbSubject = new StringBuilder();
-			StringBuilder sbContent = new StringBuilder();
+			StringBuilderUTF8 sbSubject = new StringBuilderUTF8();
+			StringBuilderUTF8 sbContent = new StringBuilderUTF8();
 			UTF8Reader reader = new UTF8Reader(fs);
 			while (true)
 			{
@@ -137,7 +138,7 @@ public class EmailTemplate2 {
 					break;
 			}
 			reader.readToEnd(sbContent);
-			if (sbSubject.length() > 0 && sbContent.length() > 0)
+			if (sbSubject.getLength() > 0 && sbContent.getLength() > 0)
 			{
 				return new EmailTemplate2(sbSubject.toString(), sbContent.toString(), htmlContent);
 			}

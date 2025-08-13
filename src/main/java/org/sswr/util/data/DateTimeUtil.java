@@ -854,6 +854,12 @@ public class DateTimeUtil
 		return t1.equals(t2);
 	}
 
+	public static byte getLocalTZQhr()
+	{
+		ZonedDateTime now = ZonedDateTime.now();
+		return getTZQhr(now.getOffset());
+	}
+
 	public static byte getTZQhr(@Nonnull ZoneOffset z)
 	{
 		int secs = z.getTotalSeconds();

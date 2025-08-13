@@ -22,6 +22,11 @@ public class Encoding {
 //		this.lastHigh = false;
 	}
 
+	public void setCodePage(int codePage)
+	{
+		this.codePage = codePage;
+	}
+
 	public int countUTF8Chars(byte[] bytes, int ofst, int byteSize)
 	{
 		if (this.codePage == 65001)

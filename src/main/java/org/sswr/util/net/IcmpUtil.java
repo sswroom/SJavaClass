@@ -8,6 +8,7 @@ import java.net.Inet6Address;
 import java.net.InetAddress;
 
 import org.sswr.util.data.SharedInt;
+import org.sswr.util.data.StringBuilderUTF8;
 import org.sswr.util.data.StringUtil;
 import org.sswr.util.io.OSInfo;
 import org.sswr.util.io.UTF8Reader;
@@ -40,9 +41,9 @@ public class IcmpUtil
 				ProcessBuilder pb = new ProcessBuilder(StringUtil.split(cmd, " "));
 				Process proc = pb.start();
 				UTF8Reader reader = new UTF8Reader(proc.getInputStream());
-				StringBuilder sb = new StringBuilder();
+				StringBuilderUTF8 sb = new StringBuilderUTF8();
 				reader.readLine(sb, 512);
-				sb.setLength(0);
+				sb.clearStr();
 				reader.readLine(sb, 512);
 				String line = sb.toString();
 				int i = line.indexOf(": ");
