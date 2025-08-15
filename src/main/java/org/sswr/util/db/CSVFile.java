@@ -4,18 +4,18 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.crypto.Data;
-
+import org.sswr.util.data.QueryConditions;
 import org.sswr.util.data.TableData;
 import org.sswr.util.io.FileStream;
 import org.sswr.util.io.IOReader;
 import org.sswr.util.io.SeekableStream;
 import org.sswr.util.io.StreamData;
+import org.sswr.util.io.StreamDataStream;
+import org.sswr.util.io.StreamReader;
 import org.sswr.util.io.UTF8Reader;
 import org.sswr.util.io.FileStream.BufferType;
 import org.sswr.util.io.FileStream.FileMode;
 import org.sswr.util.io.FileStream.FileShare;
-import org.w3c.dom.Text;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
@@ -132,7 +132,7 @@ public class CSVFile extends ReadingDB
 			{
 				rdr = new StreamReader(stm, codePage);
 			}
-			r = new CSVReader(0, rdr, this.noHeader, this.nullIfEmpty, condition);
+			r = new CSVReader(null, rdr, this.noHeader, this.nullIfEmpty, condition);
 			this.initReader(r);
 			return r;
 		}
@@ -186,7 +186,7 @@ public class CSVFile extends ReadingDB
 
 	@Override
 	public void closeReader(@Nonnull DBReader r) {
-		((CSVReader)r).dispose();
+		((CSVReader)r).close();
 	}
 
 	@Override
@@ -232,7 +232,10 @@ public class CSVFile extends ReadingDB
 			return null;
 		CSVFile csv = new CSVFile(fileName, codePage);
 		csv.setIndexCol(indexCol);
-		csv.setTimeCols(timeCols);
-		return new TableData(csv, true, 0, "");
+		if (timeCols != null)
+		{
+			csv.setTimeCols(timeCols);
+		}
+		return new TableData(csv, true, null, "");
 	}
 }

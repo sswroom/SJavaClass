@@ -20,4 +20,39 @@ public class VariItemUtil {
 		System.out.println("VariItemUtil.asTimestamp: Unknown type: "+v.getClass().toString());
 		return null;
 	}
+
+	public static int asI32(@Nullable Object v)
+	{
+		if (v == null)
+			return 0;
+		System.out.println("VariItemUtil.asI32: Unknown type: "+v.getClass().toString());
+		return 0;
+	}
+
+	public static long asI64(@Nullable Object v)
+	{
+		if (v == null)
+			return 0;
+		System.out.println("VariItemUtil.asI64: Unknown type: "+v.getClass().toString());
+		return 0;
+	}
+
+	public static boolean asBool(@Nullable Object v)
+	{
+		if (v == null)
+			return false;
+		if (v instanceof Boolean)
+		{
+			return ((Boolean)v).booleanValue();
+		}
+		System.out.println("VariItemUtil.asBool: Unknown type: "+v.getClass().toString());
+		return false;
+	}
+
+	public static String asStr(@Nullable Object v)
+	{
+		if (v == null)
+			return null;
+		return v.toString();
+	}
 }

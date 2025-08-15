@@ -8,6 +8,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.sswr.util.data.ObjectFieldGetter;
+import org.sswr.util.data.QueryConditions;
+import org.sswr.util.data.cond.BooleanObject;
 import org.sswr.util.db.DBUtil.DBType;
 
 import jakarta.annotation.Nonnull;
@@ -21,10 +24,10 @@ public class DBIterator<T> implements Iterator<T>
 	private DBType dbType;
 	private ArrayList<DBColumnInfo> cols;
 	private Object parent;
-	private List<QueryConditions<T>.Condition> clientConditions;
+	private List<BooleanObject> clientConditions;
 	private boolean connError;
 
-	DBIterator(@Nullable ResultSet rs, @Nullable Object parent, @Nonnull Constructor<T> constr, @Nonnull DBType dbType, @Nullable ArrayList<DBColumnInfo> cols, @Nullable List<QueryConditions<T>.Condition> clientConditions)
+	DBIterator(@Nullable ResultSet rs, @Nullable Object parent, @Nonnull Constructor<T> constr, @Nonnull DBType dbType, @Nullable ArrayList<DBColumnInfo> cols, @Nullable List<BooleanObject> clientConditions)
 	{
 		this.rs = rs;
 		this.constr = constr;
@@ -57,7 +60,8 @@ public class DBIterator<T> implements Iterator<T>
 							obj = constr.newInstance(parent);
 						};
 						DBUtil.fillColVals(dbType, this.rs, obj, cols);
-						if (QueryConditions.objectValid(obj, clientConditions))
+						ObjectFieldGetter<T> getter = new ObjectFieldGetter<T>(obj);
+						if (QueryConditions.objectValid(getter, clientConditions))
 						{
 							this.nextItem = obj;
 							return;

@@ -1699,6 +1699,58 @@ public class StringUtil
 	}
 
 	/**
+	 * Split string by line into array
+	 * 
+	 * @param s the string to split
+	 * @param maxLines max Lines to split
+	 * @return  splitted string array
+	 */
+	@Nonnull
+	public static String[] splitLine(@Nonnull String s, int maxLines)
+	{
+		ArrayList<String> sarr = new ArrayList<String>();
+		int k = 0;
+		int i = 0;
+		int j = s.length();
+		char c;
+		while (i < j)
+		{
+			c = s.charAt(i);
+			if (c == '\r')
+			{
+				sarr.add(s.substring(k, i));
+				i++;
+				if (i < j && s.charAt(i) == '\n')
+				{
+					i++;
+				}
+				k = i;
+				if (sarr.size() >= maxLines - 1)
+					break;
+			}
+			else if (c == '\n')
+			{
+				sarr.add(s.substring(k, i));
+				i++;
+				k = i;
+				if (sarr.size() >= maxLines - 1)
+					break;
+			}
+			else
+			{
+				i++;
+			}
+		}
+		sarr.add(s.substring(k, s.length()));
+		String[] ret = new String[i = sarr.size()];
+		while (i-- > 0)
+		{
+			ret[i] = sarr.get(i);
+		}
+		return ret;
+	}
+
+	/**
 	 * Check whether string contains CJK characters
 	 * 
 	 * @param s the string to check

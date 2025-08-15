@@ -57,9 +57,12 @@ import org.sswr.util.data.FieldGetter;
 import org.sswr.util.data.FieldSetter;
 import org.sswr.util.data.GeometryUtil;
 import org.sswr.util.data.MSGeography;
+import org.sswr.util.data.ObjectFieldGetter;
+import org.sswr.util.data.QueryConditions;
 import org.sswr.util.data.ReflectTools;
 import org.sswr.util.data.SharedInt;
 import org.sswr.util.data.StringUtil;
+import org.sswr.util.data.cond.BooleanObject;
 import org.sswr.util.io.LogLevel;
 import org.sswr.util.io.LogTool;
 import org.sswr.util.math.WKTWriter;
@@ -162,6 +165,11 @@ public class DBUtil {
 			sqlLogger.logMessage("DB class = "+clsName, LogLevel.ERROR);
 			return DBType.Unknown;
 		}
+	}
+
+	public static byte connGetTzQhr(@Nonnull Connection conn)
+	{
+		return DateTimeUtil.getLocalTZQhr();
 	}
 
 	@Nonnull
@@ -875,7 +883,7 @@ public class DBUtil {
 	* @param joinFields return fields which are joined with other tables, null = not returns
 	*/
 	@Nullable
-	public static <T> Map<Integer, T> loadItems(@Nonnull Class<T> cls, @Nonnull Connection conn, @Nullable QueryConditions<T> conditions, @Nullable List<String> joinFields)
+	public static <T> Map<Integer, T> loadItems(@Nonnull Class<T> cls, @Nonnull Connection conn, @Nullable QueryConditions conditions, @Nullable List<String> joinFields)
 	{
 		return loadItemsIClass(cls, null, conn, conditions, joinFields);
 	}	
@@ -885,13 +893,14 @@ public class DBUtil {
 		StringBuilder sql;
 		Constructor<T> constr;
 		DBType dbType;
+		byte tzQhr;
 		ArrayList<DBColumnInfo> cols;
 		ArrayList<DBColumnInfo> idCols;
-		List<QueryConditions<T>.Condition> clientConditions;
+		List<BooleanObject> clientConditions;
 	}
 
 	@Nonnull
-	private static <T> LoadDataSession<T> parseLoadSession(@Nonnull Class<T> cls, @Nullable Object parent, @Nonnull Connection conn, @Nullable QueryConditions<T> conditions, @Nullable List<String> joinFields, boolean requireIdCol)
+	private static <T> LoadDataSession<T> parseLoadSession(@Nonnull Class<T> cls, @Nullable Object parent, @Nonnull Connection conn, @Nullable QueryConditions conditions, @Nullable List<String> joinFields, boolean requireIdCol)
 	{
 		LoadDataSession<T> sess = new LoadDataSession<T>();
 		Table tableAnn = parseClassTable(cls);
@@ -943,14 +952,15 @@ public class DBUtil {
 		}
 
 		sess.dbType = connGetDBType(conn);
+		sess.tzQhr = connGetTzQhr(conn);
 		sess.sql = new StringBuilder();
 		appendSelect(sess.sql, sess.cols, tableAnn, sess.dbType, 0, 0);
 
-		sess.clientConditions = new ArrayList<QueryConditions<T>.Condition>();
+		sess.clientConditions = new ArrayList<BooleanObject>();
 		if (conditions != null)
 		{
 			Map<String, DBColumnInfo> colsMap = dbCols2Map(sess.cols);
-			String whereClause = conditions.toWhereClause(colsMap, sess.dbType, sess.clientConditions, MAX_SQL_ITEMS);
+			String whereClause = conditions.toWhereClause(colsMap, sess.dbType, sess.tzQhr, MAX_SQL_ITEMS, sess.clientConditions);
 			if (!StringUtil.isNullOrEmpty(whereClause))
 			{
 				sess.sql.append(" where ");
@@ -964,7 +974,7 @@ public class DBUtil {
 	* @param joinFields return fields which are joined with other tables, null = not returns
 	*/
 	@Nullable
-	public static <T> Map<Integer, T> loadItemsIClass(@Nonnull Class<T> cls, @Nullable Object parent, @Nonnull Connection conn, @Nullable QueryConditions<T> conditions, @Nullable List<String> joinFields)
+	public static <T> Map<Integer, T> loadItemsIClass(@Nonnull Class<T> cls, @Nullable Object parent, @Nonnull Connection conn, @Nullable QueryConditions conditions, @Nullable List<String> joinFields)
 	{
 		LoadDataSession<T> sess = parseLoadSession(cls, parent, conn, conditions, joinFields, true);
 		try
@@ -988,8 +998,8 @@ public class DBUtil {
 						obj = sess.constr.newInstance(parent);
 					}
 					Integer id = fillColVals(sess.dbType, rs, obj, sess.cols);
-
-					if (id != null && QueryConditions.objectValid(obj, sess.clientConditions))
+					ObjectFieldGetter<T> getter = new ObjectFieldGetter<T>(obj);
+					if (id != null && QueryConditions.objectValid(getter, sess.clientConditions))
 					{
 						retMap.put(id, obj);
 					}
@@ -1018,7 +1028,7 @@ public class DBUtil {
 	}	
 
 	@Nullable
-	public static <T> DBIterator<T> loadData(@Nonnull Class<T> cls, @Nullable Object parent, @Nonnull Connection conn, @Nullable QueryConditions<T> conditions, @Nullable List<String> joinFields)
+	public static <T> DBIterator<T> loadData(@Nonnull Class<T> cls, @Nullable Object parent, @Nonnull Connection conn, @Nullable QueryConditions conditions, @Nullable List<String> joinFields)
 	{
 		LoadDataSession<T> sess = parseLoadSession(cls, parent, conn, conditions, joinFields, false);
 		try
@@ -1123,13 +1133,13 @@ public class DBUtil {
 	* @param joinFields return fields which are joined with other tables, null = not returns
 	*/
 	@Nullable
-	public static <T> List<T> loadItemsAsList(@Nonnull Class<T> cls, @Nullable Object parent, @Nonnull Connection conn, @Nullable QueryConditions<T> conditions, @Nullable List<String> joinFields, @Nullable String sortString, int dataOfst, int dataCnt)
+	public static <T> List<T> loadItemsAsList(@Nonnull Class<T> cls, @Nullable Object parent, @Nonnull Connection conn, @Nullable QueryConditions conditions, @Nullable List<String> joinFields, @Nullable String sortString, int dataOfst, int dataCnt)
 	{
 		return new SQLConnection(conn, sqlLogger).loadItemsAsList(cls, parent, conditions, joinFields, sortString, dataOfst, dataCnt);
 	}	
 
 	@Nullable
-	public static <T> List<T> loadItemsAsListWithJoins(@Nonnull Class<T> cls, @Nullable Object parent, @Nonnull Connection conn, @Nullable QueryConditions<T> conditions, @Nullable String sortString, int dataOfst, int dataCnt) throws NoSuchFieldException
+	public static <T> List<T> loadItemsAsListWithJoins(@Nonnull Class<T> cls, @Nullable Object parent, @Nonnull Connection conn, @Nullable QueryConditions conditions, @Nullable String sortString, int dataOfst, int dataCnt) throws NoSuchFieldException
 	{
 		List<String> joinFields = new ArrayList<String>();
 		List<T> list = new SQLConnection(conn, sqlLogger).loadItemsAsList(cls, parent, conditions, joinFields, sortString, dataOfst, dataCnt);
@@ -1473,7 +1483,7 @@ public class DBUtil {
 			Set<Integer> idSet = DataTools.createIntSet(items, idCol.field.getName(), null);
 			if (idSet == null)
 				throw new IllegalArgumentException("Error in creating idSet");
-			Map<Integer, ?> targetMap = loadItems(tmpClass, conn, new QueryConditions<>(tmpClass).intIn(oneToMany.mappedBy()+"."+idCol.field.getName(), idSet), null);
+			Map<Integer, ?> targetMap = loadItems(tmpClass, conn, new QueryConditions().int32In(oneToMany.mappedBy()+"."+idCol.field.getName(), idSet), null);
 			if (targetMap == null)
 				throw new IllegalArgumentException("Error in loading join items");
 			Iterator<?> itTarget = targetMap.values().iterator();
@@ -2850,7 +2860,7 @@ public class DBUtil {
 		}
 	}
 	
-	public static <T> boolean deleteRecords(@Nonnull Connection conn, @Nonnull Class<T> cls, @Nullable QueryConditions<T> conditions)
+	public static <T> boolean deleteRecords(@Nonnull Connection conn, @Nonnull Class<T> cls, @Nullable QueryConditions conditions)
 	{
 		StringBuilder sb;
 		Table tableAnn = parseClassTable(cls);
@@ -2859,6 +2869,7 @@ public class DBUtil {
 			throw new IllegalArgumentException("Class annotation is not valid");
 		}
 		DBType dbType = connGetDBType(conn);
+		byte tzQhr = connGetTzQhr(conn);
 		sb = new StringBuilder();
 		if (conditions == null)
 		{
@@ -2871,9 +2882,9 @@ public class DBUtil {
 			ArrayList<DBColumnInfo> cols = new ArrayList<DBColumnInfo>();
 			ArrayList<DBColumnInfo> idCols = new ArrayList<DBColumnInfo>();
 			parseDBCols(cls, cols, idCols, null);
-			List<QueryConditions<T>.Condition> clientConditions = new ArrayList<QueryConditions<T>.Condition>();
+			List<BooleanObject> clientConditions = new ArrayList<BooleanObject>();
 			Map<String, DBColumnInfo> colsMap = dbCols2Map(cols);
-			String whereClause = conditions.toWhereClause(colsMap, dbType, clientConditions, MAX_SQL_ITEMS);
+			String whereClause = conditions.toWhereClause(colsMap, dbType, tzQhr, MAX_SQL_ITEMS, clientConditions);
 			if (StringUtil.isNullOrEmpty(whereClause) && clientConditions.size() == 0)
 			{
 				sb.append("truncate table ");

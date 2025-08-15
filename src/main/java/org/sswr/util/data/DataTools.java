@@ -32,7 +32,6 @@ import java.util.zip.Inflater;
 import org.locationtech.jts.geom.Geometry;
 import org.sswr.util.data.textbinenc.Base64Enc;
 import org.sswr.util.data.textbinenc.Base64Enc.B64Charset;
-import org.sswr.util.db.QueryConditions;
 import org.sswr.util.math.WKTWriter;
 import org.sswr.util.math.geometry.Vector2D;
 
@@ -41,7 +40,7 @@ import jakarta.annotation.Nullable;
 
 public class DataTools {
 	@Nullable
-	public static <T> Set<Integer> createIntSet(@Nonnull Iterable<T> objs, @Nonnull String fieldName, @Nullable QueryConditions<T> cond)
+	public static <T> Set<Integer> createIntSet(@Nonnull Iterable<T> objs, @Nonnull String fieldName, @Nullable QueryConditions cond)
 	{
 		Iterator<T> it = objs.iterator();
 		if (!it.hasNext())
@@ -57,19 +56,19 @@ public class DataTools {
 			Class<?> fieldType = getter.getFieldType();
 			if (fieldType.equals(Integer.class) || fieldType.equals(int.class))
 			{
-				if (cond == null || cond.isValid(obj))
+				if (cond == null || cond.isValid(new ObjectFieldGetter<T>(obj)))
 					intSet.add((Integer)getter.get(obj));
 				while (it.hasNext())
 				{
 					obj = it.next();
-					if (cond == null || cond.isValid(obj))
+					if (cond == null || cond.isValid(new ObjectFieldGetter<T>(obj)))
 						intSet.add((Integer)getter.get(obj));
 				}
 				return intSet;
 			}
 			else if (fieldType.equals(Set.class))
 			{
-				if (cond == null || cond.isValid(obj))
+				if (cond == null || cond.isValid(new ObjectFieldGetter<T>(obj)))
 				{
 					@SuppressWarnings("unchecked")
 					Set<Integer> set = (Set<Integer>)getter.get(obj);
@@ -78,7 +77,7 @@ public class DataTools {
 				while (it.hasNext())
 				{
 					obj = it.next();
-					if (cond == null || cond.isValid(obj))
+					if (cond == null || cond.isValid(new ObjectFieldGetter<T>(obj)))
 					{
 						@SuppressWarnings("unchecked")
 						Set<Integer> set2 = (Set<Integer>)getter.get(obj);
@@ -111,7 +110,7 @@ public class DataTools {
 	}
 
 	@Nullable
-	public static <T> Set<String> createStringSet(@Nonnull Iterable<T> objs, @Nonnull String fieldName, @Nullable QueryConditions<T> cond)
+	public static <T> Set<String> createStringSet(@Nonnull Iterable<T> objs, @Nonnull String fieldName, @Nullable QueryConditions cond)
 	{
 		Iterator<T> it = objs.iterator();
 		if (!it.hasNext())
@@ -127,14 +126,14 @@ public class DataTools {
 			Class<?> fieldType = getter.getFieldType();
 			if (fieldType.equals(String.class))
 			{
-				if (cond == null || cond.isValid(obj))
+				if (cond == null || cond.isValid(new ObjectFieldGetter<T>(obj)))
 				{
 					strSet.add((String)getter.get(obj));
 				}
 				while (it.hasNext())
 				{
 					obj = it.next();
-					if (cond == null || cond.isValid(obj))
+					if (cond == null || cond.isValid(new ObjectFieldGetter<T>(obj)))
 					{
 						strSet.add((String)getter.get(obj));
 					}
@@ -143,14 +142,14 @@ public class DataTools {
 			}
 			else
 			{
-				if (cond == null || cond.isValid(obj))
+				if (cond == null || cond.isValid(new ObjectFieldGetter<T>(obj)))
 				{
 					strSet.add(getter.getNN(obj).toString());
 				}
 				while (it.hasNext())
 				{
 					obj = it.next();
-					if (cond == null || cond.isValid(obj))
+					if (cond == null || cond.isValid(new ObjectFieldGetter<T>(obj)))
 					{
 						strSet.add(getter.getNN(obj).toString());
 					}
@@ -176,7 +175,7 @@ public class DataTools {
 	}
 
 	@Nullable
-	public static <T> Set<Timestamp> createTimestampSet(@Nonnull Iterable<T> objs, @Nonnull String fieldName, @Nullable QueryConditions<T> cond)
+	public static <T> Set<Timestamp> createTimestampSet(@Nonnull Iterable<T> objs, @Nonnull String fieldName, @Nullable QueryConditions cond)
 	{
 		Iterator<T> it = objs.iterator();
 		if (!it.hasNext())
@@ -192,14 +191,14 @@ public class DataTools {
 			Class<?> fieldType = getter.getFieldType();
 			if (fieldType.equals(Timestamp.class))
 			{
-				if (cond == null || cond.isValid(obj))
+				if (cond == null || cond.isValid(new ObjectFieldGetter<T>(obj)))
 				{
 					tsSet.add((Timestamp)getter.get(obj));
 				}
 				while (it.hasNext())
 				{
 					obj = it.next();
-					if (cond == null || cond.isValid(obj))
+					if (cond == null || cond.isValid(new ObjectFieldGetter<T>(obj)))
 					{
 						tsSet.add((Timestamp)getter.get(obj));
 					}
@@ -229,7 +228,7 @@ public class DataTools {
 	}
 
 	@Nullable
-	public static <T> Map<Integer, T> createIntMap(@Nonnull Iterable<T> list, @Nonnull String fieldName, @Nullable QueryConditions<T> cond)
+	public static <T> Map<Integer, T> createIntMap(@Nonnull Iterable<T> list, @Nonnull String fieldName, @Nullable QueryConditions cond)
 	{
 		Iterator<T> it = list.iterator();
 		if (!it.hasNext())
@@ -245,7 +244,7 @@ public class DataTools {
 			Integer v;
 			if (t.equals(Integer.class) || t.equals(int.class))
 			{
-				if (cond == null || cond.isValid(o))
+				if (cond == null || cond.isValid(new ObjectFieldGetter<T>(o)))
 				{
 					v = (Integer)getter.get(o);
 					retMap.put(v, o);
@@ -253,7 +252,7 @@ public class DataTools {
 				while (it.hasNext())
 				{
 					o = it.next();
-					if (cond == null || cond.isValid(o))
+					if (cond == null || cond.isValid(new ObjectFieldGetter<T>(o)))
 					{
 						v = (Integer)getter.get(o);
 						retMap.put(v, o);
@@ -289,7 +288,7 @@ public class DataTools {
 	}
 
 	@Nullable 
-	public static <T> Map<String, T> createStringMapOrNull(@Nullable Iterator<T> it, @Nonnull String fieldName, @Nullable QueryConditions<T> cond)
+	public static <T> Map<String, T> createStringMapOrNull(@Nullable Iterator<T> it, @Nonnull String fieldName, @Nullable QueryConditions cond)
 	{
 		if (it == null)
 			return null;
@@ -297,7 +296,7 @@ public class DataTools {
 	}
 
 	@Nullable
-	public static <T> Map<String, T> createStringMap(@Nonnull Iterator<T> it, @Nonnull String fieldName, @Nullable QueryConditions<T> cond)
+	public static <T> Map<String, T> createStringMap(@Nonnull Iterator<T> it, @Nonnull String fieldName, @Nullable QueryConditions cond)
 	{
 		if (!it.hasNext())
 		{
@@ -312,7 +311,7 @@ public class DataTools {
 			String s;
 			if (t.equals(String.class))
 			{
-				if (cond == null || cond.isValid(o))
+				if (cond == null || cond.isValid(new ObjectFieldGetter<T>(o)))
 				{
 					s = (String)getter.get(o);
 					retMap.put(s, o);
@@ -320,7 +319,7 @@ public class DataTools {
 				while (it.hasNext())
 				{
 					o = it.next();
-					if (cond == null || cond.isValid(o))
+					if (cond == null || cond.isValid(new ObjectFieldGetter<T>(o)))
 					{
 						s = (String)getter.get(o);
 						retMap.put(s, o);
@@ -330,7 +329,7 @@ public class DataTools {
 			}
 			else
 			{
-				if (cond == null || cond.isValid(o))
+				if (cond == null || cond.isValid(new ObjectFieldGetter<T>(o)))
 				{
 					s = getter.getNN(o).toString();
 					retMap.put(s, o);
@@ -338,7 +337,7 @@ public class DataTools {
 				while (it.hasNext())
 				{
 					o = it.next();
-					if (cond == null || cond.isValid(o))
+					if (cond == null || cond.isValid(new ObjectFieldGetter<T>(o)))
 					{
 						s = getter.getNN(o).toString();
 						retMap.put(s, o);
@@ -370,13 +369,13 @@ public class DataTools {
 	}
 
 	@Nullable
-	public static <T> Map<String, T> createStringMap(@Nonnull Iterable<T> list, @Nonnull String fieldName, @Nullable QueryConditions<T> cond)
+	public static <T> Map<String, T> createStringMap(@Nonnull Iterable<T> list, @Nonnull String fieldName, @Nullable QueryConditions cond)
 	{
 		return createStringMap(list.iterator(), fieldName, cond);
 	}
 
 	@Nullable
-	public static <T> Map<String, T> createUpperStringMap(@Nonnull Iterable<T> list, @Nonnull String fieldName, @Nullable QueryConditions<T> cond)
+	public static <T> Map<String, T> createUpperStringMap(@Nonnull Iterable<T> list, @Nonnull String fieldName, @Nullable QueryConditions cond)
 	{
 		Iterator<T> it = list.iterator();
 		if (!it.hasNext())
@@ -392,7 +391,7 @@ public class DataTools {
 			String s;
 			if (t.equals(String.class))
 			{
-				if (cond == null || cond.isValid(o))
+				if (cond == null || cond.isValid(new ObjectFieldGetter<T>(o)))
 				{
 					s = (String)getter.getNN(o);
 					retMap.put(s.toUpperCase(), o);
@@ -400,7 +399,7 @@ public class DataTools {
 				while (it.hasNext())
 				{
 					o = it.next();
-					if (cond == null || cond.isValid(o))
+					if (cond == null || cond.isValid(new ObjectFieldGetter<T>(o)))
 					{
 						s = (String)getter.getNN(o);
 						retMap.put(s.toUpperCase(), o);
@@ -410,7 +409,7 @@ public class DataTools {
 			}
 			else
 			{
-				if (cond == null || cond.isValid(o))
+				if (cond == null || cond.isValid(new ObjectFieldGetter<T>(o)))
 				{
 					s = getter.getNN(o).toString();
 					retMap.put(s.toUpperCase(), o);
@@ -418,7 +417,7 @@ public class DataTools {
 				while (it.hasNext())
 				{
 					o = it.next();
-					if (cond == null || cond.isValid(o))
+					if (cond == null || cond.isValid(new ObjectFieldGetter<T>(o)))
 					{
 						s = getter.getNN(o).toString();
 						retMap.put(s.toUpperCase(), o);
@@ -450,7 +449,7 @@ public class DataTools {
 	}
 	
 	@Nullable
-	public static <T, K> List<K> createValueList(@Nonnull Class<K> cls, @Nonnull Iterable<T> objs, @Nonnull String fieldName, @Nullable QueryConditions<T> cond)
+	public static <T, K> List<K> createValueList(@Nonnull Class<K> cls, @Nonnull Iterable<T> objs, @Nonnull String fieldName, @Nullable QueryConditions cond)
 	{
 		Iterator<T> it = objs.iterator();
 		if (!it.hasNext())
@@ -466,7 +465,7 @@ public class DataTools {
 			Class<?> fieldType = getter.getFieldType();
 			if (fieldType.equals(cls))
 			{
-				if (cond == null || cond.isValid(obj))
+				if (cond == null || cond.isValid(new ObjectFieldGetter<T>(obj)))
 				{
 					@SuppressWarnings("unchecked")
 					K val = (K)getter.get(obj);
@@ -475,7 +474,7 @@ public class DataTools {
 				while (it.hasNext())
 				{
 					obj = it.next();
-					if (cond == null || cond.isValid(obj))
+					if (cond == null || cond.isValid(new ObjectFieldGetter<T>(obj)))
 					{
 						@SuppressWarnings("unchecked")
 						K val = (K)getter.get(obj);
@@ -486,7 +485,7 @@ public class DataTools {
 			}
 			else if (fieldType.equals(Set.class))
 			{
-				if (cond == null || cond.isValid(obj))
+				if (cond == null || cond.isValid(new ObjectFieldGetter<T>(obj)))
 				{
 					@SuppressWarnings("unchecked")
 					Set<K> set = (Set<K>)getter.get(obj);
@@ -495,7 +494,7 @@ public class DataTools {
 				while (it.hasNext())
 				{
 					obj = it.next();
-					if (cond == null || cond.isValid(obj))
+					if (cond == null || cond.isValid(new ObjectFieldGetter<T>(obj)))
 					{
 						@SuppressWarnings("unchecked")
 						Set<K> set2 = (Set<K>)getter.get(obj);
@@ -528,7 +527,7 @@ public class DataTools {
 	}
 
 	@Nullable
-	public static <T, K> Set<K> createValueSet(@Nonnull Class<K> cls, @Nonnull Iterable<T> objs, @Nonnull String fieldName, @Nullable QueryConditions<T> cond)
+	public static <T, K> Set<K> createValueSet(@Nonnull Class<K> cls, @Nonnull Iterable<T> objs, @Nonnull String fieldName, @Nullable QueryConditions cond)
 	{
 		Iterator<T> it = objs.iterator();
 		if (!it.hasNext())
@@ -544,7 +543,7 @@ public class DataTools {
 			Class<?> fieldType = getter.getFieldType();
 			if (fieldType.equals(cls))
 			{
-				if (cond == null || cond.isValid(obj))
+				if (cond == null || cond.isValid(new ObjectFieldGetter<T>(obj)))
 				{
 					@SuppressWarnings("unchecked")
 					K val = (K)getter.get(obj);
@@ -553,7 +552,7 @@ public class DataTools {
 				while (it.hasNext())
 				{
 					obj = it.next();
-					if (cond == null || cond.isValid(obj))
+					if (cond == null || cond.isValid(new ObjectFieldGetter<T>(obj)))
 					{
 						@SuppressWarnings("unchecked")
 						K val = (K)getter.get(obj);
@@ -564,7 +563,7 @@ public class DataTools {
 			}
 			else if (fieldType.equals(Set.class))
 			{
-				if (cond == null || cond.isValid(obj))
+				if (cond == null || cond.isValid(new ObjectFieldGetter<T>(obj)))
 				{
 					@SuppressWarnings("unchecked")
 					Set<K> set = (Set<K>)getter.get(obj);
@@ -573,7 +572,7 @@ public class DataTools {
 				while (it.hasNext())
 				{
 					obj = it.next();
-					if (cond == null || cond.isValid(obj))
+					if (cond == null || cond.isValid(new ObjectFieldGetter<T>(obj)))
 					{
 						@SuppressWarnings("unchecked")
 						Set<K> set2 = (Set<K>)getter.get(obj);
@@ -606,7 +605,7 @@ public class DataTools {
 	}
 
 	@Nullable
-	public static <T, K> Map<K, T> createValueMap(@Nonnull Class<K> cls, @Nonnull Iterable<T> objs, @Nonnull String fieldName, @Nullable QueryConditions<T> cond)
+	public static <T, K> Map<K, T> createValueMap(@Nonnull Class<K> cls, @Nonnull Iterable<T> objs, @Nonnull String fieldName, @Nullable QueryConditions cond)
 	{
 		Iterator<T> it = objs.iterator();
 		if (!it.hasNext())
@@ -622,7 +621,7 @@ public class DataTools {
 			Class<?> fieldType = getter.getFieldType();
 			if (fieldType.equals(cls))
 			{
-				if (cond == null || cond.isValid(obj))
+				if (cond == null || cond.isValid(new ObjectFieldGetter<T>(obj)))
 				{
 					@SuppressWarnings("unchecked")
 					K val = (K)getter.get(obj);
@@ -631,7 +630,7 @@ public class DataTools {
 				while (it.hasNext())
 				{
 					obj = it.next();
-					if (cond == null || cond.isValid(obj))
+					if (cond == null || cond.isValid(new ObjectFieldGetter<T>(obj)))
 					{
 						@SuppressWarnings("unchecked")
 						K val = (K)getter.get(obj);
@@ -664,7 +663,7 @@ public class DataTools {
 	}
 
 	@Nullable
-	public static <T> List<T> filterToList(@Nonnull T[] arr, @Nullable QueryConditions<T> cond)
+	public static <T> List<T> filterToList(@Nonnull T[] arr, @Nullable QueryConditions cond)
 	{
 		ArrayList<T> list = new ArrayList<T>();
 		int i = 0;
@@ -673,7 +672,7 @@ public class DataTools {
 		{
 			while (i < j)
 			{
-				if (cond == null || cond.isValid(arr[i]))
+				if (cond == null || cond.isValid(new ObjectFieldGetter<T>(arr[i])))
 					list.add(arr[i]);
 				i++;
 			}
@@ -690,7 +689,7 @@ public class DataTools {
 	}
 
 	@Nullable
-	public static <T> List<T> filterToList(@Nonnull Iterable<T> values, @Nullable QueryConditions<T> cond)
+	public static <T> List<T> filterToList(@Nonnull Iterable<T> values, @Nullable QueryConditions cond)
 	{
 		ArrayList<T> list = new ArrayList<T>();
 		Iterator<T> it = values.iterator();
@@ -700,7 +699,7 @@ public class DataTools {
 			while (it.hasNext())
 			{
 				obj = it.next();
-				if (cond == null || cond.isValid(obj))
+				if (cond == null || cond.isValid(new ObjectFieldGetter<T>(obj)))
 					list.add(obj);
 			}
 			return list;

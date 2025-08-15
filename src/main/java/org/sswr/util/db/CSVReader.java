@@ -1,5 +1,6 @@
 package org.sswr.util.db;
 
+import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
 
@@ -7,11 +8,11 @@ import org.locationtech.jts.geom.Geometry;
 import org.sswr.util.data.ByteTool;
 import org.sswr.util.data.DateTimeUtil;
 import org.sswr.util.data.ObjectGetter;
+import org.sswr.util.data.QueryConditions;
 import org.sswr.util.data.StringUtil;
 import org.sswr.util.io.IOReader;
 import org.sswr.util.io.IOStream;
 import org.sswr.util.math.geometry.Vector2D;
-import org.w3c.dom.Text;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
@@ -243,11 +244,16 @@ class CSVReader extends DBReader implements ObjectGetter
 				}
 			}
 			QueryConditions nncondition;
-			boolean valid;
-			if ((nncondition = this.condition) == null || !nncondition.isValid(this, valid) || valid)
+			try
 			{
-				this.nCol = nCol;
-				return true;
+				if ((nncondition = this.condition) == null || nncondition.isValid(this))
+				{
+					this.nCol = nCol;
+					return true;
+				}
+			}
+			catch (IllegalAccessException|InvocationTargetException ex)
+			{
 			}
 		}
 	}
@@ -352,76 +358,118 @@ class CSVReader extends DBReader implements ObjectGetter
 	}
 
 	@Override
-	public double getDbl(int colIndex) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'getDbl'");
+	public double getDblOrNAN(int colIndex) {
+		String s = this.getString(colIndex);
+		if (s == null)
+			return Double.NaN;
+		return StringUtil.toDoubleS(s.trim(), Double.NaN);
 	}
 
 	@Override
 	public boolean getBool(int colIndex) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'getBool'");
+		String s = this.getString(colIndex);
+		if (s == null)
+			return false;
+		if (s.toUpperCase().equals("TRUE"))
+			return true;
+		return StringUtil.toIntegerS(s.trim(), 0) != 0;
 	}
 
 	@Override
 	@Nullable
 	public byte[] getBinary(int colIndex) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'getBinary'");
+		return null;
 	}
 
 	@Override
 	@Nullable
 	public Vector2D getVector(int colIndex) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'getVector'");
+		///////////////////
+		return null;
 	}
 
 	@Override
 	@Nullable
 	public Geometry getGeometry(int colIndex) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'getGeometry'");
+		///////////////////
+		return null;
 	}
 
 	@Override
 	@Nullable
 	public Object getObject(int colIndex) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'getObject'");
+		if (colIndex < 0 || colIndex >= this.nCol)
+			return null;
+		if (this.cols[colIndex].colType == ColumnType.DateTimeTZ)
+		{
+			return this.getDate(colIndex);
+		}
+		return this.getString(colIndex);
 	}
 
 	@Override
 	public boolean isNull(int colIndex) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'isNull'");
+		if (colIndex < 0 || colIndex >= this.nCol)
+			return true;
+		return false;
 	}
 
 	@Override
 	@Nullable
 	public String getName(int colIndex) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'getName'");
+		if (colIndex < 0 || colIndex >= this.nCol)
+			return null;
+		return this.hdrs[colIndex];
 	}
 
 	@Override
 	@Nonnull
 	public ColumnType getColumnType(int colIndex) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'getColumnType'");
+		if (colIndex < 0 || colIndex >= this.nHdr)
+			return ColumnType.Unknown;
+		return this.cols[colIndex].colType;
 	}
 
 	@Override
 	@Nullable
 	public ColumnDef getColumnDef(int colIndex) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'getColumnDef'");
+		if (colIndex < 0 || colIndex >= nHdr)
+			return null;
+		ColumnDef colDef = new ColumnDef(this.hdrs[colIndex]);
+		colDef.setColType(cols[colIndex].colType);
+		colDef.setColSize(256);
+		colDef.setColDP(0);
+		colDef.setNotNull(true);
+		colDef.setPk(colIndex == this.indexCol);
+		colDef.setAutoInc(AutoIncType.None, 1, 1);
+		colDef.setDefVal(null);
+		colDef.setAttr(null);
+		return colDef;
 	}
 
 	@Override
 	public Object getObjectByName(@Nonnull String name) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'GetObjectByName'");
+		int i = this.nHdr;
+		while (i-- > 0)
+		{
+			if (this.hdrs[i].equals(name))
+			{
+				return this.getString(i);
+			}
+		}
+		return null;
 	}
-	
+
+	public void setIndexCol(int indexCol)
+	{
+		this.indexCol = indexCol;
+	}
+
+	public void addTimeCol(int timeCol)
+	{
+		if (timeCol >= 0 && timeCol < 128)
+		{
+			this.cols[timeCol].colType = ColumnType.DateTimeTZ;
+		}
+	}
 }

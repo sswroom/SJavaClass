@@ -13,7 +13,9 @@ import jakarta.annotation.Nullable;
 import jakarta.persistence.Table;
 
 import org.sswr.util.data.FieldComparator;
+import org.sswr.util.data.QueryConditions;
 import org.sswr.util.data.StringUtil;
+import org.sswr.util.data.cond.BooleanObject;
 import org.sswr.util.db.DBUtil.DBType;
 import org.sswr.util.io.LogLevel;
 import org.sswr.util.io.LogTool;
@@ -22,6 +24,7 @@ public class SQLConnection extends ReadingConnection
 {
 	private Connection conn;
 	private DBType dbType;
+	private byte tzQhr;
 	private String errorMsg;
 	private List<String> tableNames;
 
@@ -31,6 +34,7 @@ public class SQLConnection extends ReadingConnection
 		this.conn = conn;
 		this.logger = logger;
 		this.dbType = DBUtil.connGetDBType(this.conn);
+		this.tzQhr = DBUtil.connGetTzQhr(this.conn);
 		this.errorMsg = null;
 		this.tableNames = null;
 	}
@@ -63,7 +67,7 @@ public class SQLConnection extends ReadingConnection
 	}
 
 	@Nullable
-	public DBReader getTableData(@Nonnull String name, int maxCnt, @Nullable String sortString, @Nullable QueryConditions<?> condition)
+	public DBReader getTableData(@Nonnull String name, int maxCnt, @Nullable String sortString, @Nullable QueryConditions condition)
 	{
 /*		FileGDBTable table = this.tables.get(name);
 		if (table == null)
@@ -75,7 +79,7 @@ public class SQLConnection extends ReadingConnection
 	}
 
 	@Nullable
-	public <T> List<T> loadItemsAsList(@Nonnull Class<T> cls, @Nullable Object parent, @Nullable QueryConditions<T> conditions, @Nullable List<String> joinFields, @Nullable String sortString, int dataOfst, int dataCnt)
+	public <T> List<T> loadItemsAsList(@Nonnull Class<T> cls, @Nullable Object parent, @Nullable QueryConditions conditions, @Nullable List<String> joinFields, @Nullable String sortString, int dataOfst, int dataCnt)
 	{
 		StringBuilder sb;
 		Table tableAnn = parseClassTable(cls);
@@ -121,10 +125,10 @@ public class SQLConnection extends ReadingConnection
 		sb = new StringBuilder();
 		PageStatus status = DBUtil.appendSelect(sb, cols, tableAnn, dbType, dataOfst, dataCnt);
 
-		List<QueryConditions<T>.Condition> clientConditions = new ArrayList<QueryConditions<T>.Condition>();
+		List<BooleanObject> clientConditions = new ArrayList<BooleanObject>();
 		if (conditions != null)
 		{
-			String whereClause = conditions.toWhereClause(colsMap, dbType, clientConditions, DBUtil.MAX_SQL_ITEMS);
+			String whereClause = conditions.toWhereClause(colsMap, dbType, tzQhr, DBUtil.MAX_SQL_ITEMS, clientConditions);
 			if (!StringUtil.isNullOrEmpty(whereClause))
 			{
 				sb.append(" where ");
@@ -191,7 +195,7 @@ public class SQLConnection extends ReadingConnection
 	}
 
 	@Nullable
-	public <T> Map<Integer, T> loadItemsIClass(@Nonnull Class<T> cls, @Nullable Object parent, @Nullable QueryConditions<T> conditions, @Nullable List<String> joinFields)
+	public <T> Map<Integer, T> loadItemsIClass(@Nonnull Class<T> cls, @Nullable Object parent, @Nullable QueryConditions conditions, @Nullable List<String> joinFields)
 	{
 		StringBuilder sb;
 		Table tableAnn = parseClassTable(cls);
@@ -227,11 +231,11 @@ public class SQLConnection extends ReadingConnection
 		sb = new StringBuilder();
 		DBUtil.appendSelect(sb, cols, tableAnn, dbType, 0, 0);
 
-		List<QueryConditions<T>.Condition> clientConditions = new ArrayList<QueryConditions<T>.Condition>();
+		List<BooleanObject> clientConditions = new ArrayList<BooleanObject>();
 		if (conditions != null)
 		{
 			Map<String, DBColumnInfo> colsMap = dbCols2Map(cols);
-			String whereClause = conditions.toWhereClause(colsMap, dbType, clientConditions, DBUtil.MAX_SQL_ITEMS);
+			String whereClause = conditions.toWhereClause(colsMap, dbType, tzQhr, DBUtil.MAX_SQL_ITEMS, clientConditions);
 			if (!StringUtil.isNullOrEmpty(whereClause))
 			{
 				sb.append(" where ");

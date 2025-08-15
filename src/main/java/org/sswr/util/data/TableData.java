@@ -1,15 +1,11 @@
 package org.sswr.util.data;
 
 import java.util.List;
-import java.util.Optional;
 
-import javax.xml.crypto.Data;
-
+import org.sswr.util.data.cond.BooleanObject;
 import org.sswr.util.db.ColumnDef;
 import org.sswr.util.db.DBReader;
-import org.sswr.util.db.QueryConditions;
 import org.sswr.util.db.ReadingDB;
-import org.w3c.dom.Text;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
@@ -46,7 +42,7 @@ public class TableData {
 		QueryConditions tabCond;
 		if ((tabCond = this.cond) != null)
 		{
-			cond.and((Conditions.BooleanObject)tabCond.getRootCond().Clone());
+			cond.and((BooleanObject)tabCond.getRootCond().clone());
 		}
 		return this.db.queryTableData(this.schemaName, this.tableName, null, 0, 0, null, cond);
 	}

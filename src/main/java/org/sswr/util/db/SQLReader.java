@@ -132,16 +132,16 @@ public class SQLReader extends DBReader
 	}
 
 	@Override
-	public double getDbl(int colIndex)
+	public double getDblOrNAN(int colIndex)
 	{
-		if (this.rs == null) return 0;
+		if (this.rs == null) return Double.NaN;
 		try
 		{
 			return this.rs.getDouble(colIndex + 1);
 		}
 		catch (SQLException ex)
 		{
-			return 0;
+			return Double.NaN;
 		}
 	}
 
@@ -333,7 +333,7 @@ public class SQLReader extends DBReader
 			col.setColSize(this.rs.getMetaData().getPrecision(colIndex));
 			col.setColDP(this.rs.getMetaData().getScale(colIndex));
 			col.setNotNull(this.rs.getMetaData().isNullable(colIndex) == 0);
-			col.setAutoInc(this.rs.getMetaData().isAutoIncrement(colIndex));
+			col.setAutoInc(this.rs.getMetaData().isAutoIncrement(colIndex)?AutoIncType.Default:AutoIncType.None, 1, 1);
 			col.setPk(false);
 			return col;
 		}

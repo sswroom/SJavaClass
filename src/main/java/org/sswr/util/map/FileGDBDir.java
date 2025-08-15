@@ -14,13 +14,14 @@ import jakarta.persistence.Table;
 import org.sswr.util.data.ArtificialQuickSort;
 import org.sswr.util.data.DataTools;
 import org.sswr.util.data.FieldComparator;
+import org.sswr.util.data.QueryConditions;
 import org.sswr.util.data.StringUtil;
+import org.sswr.util.data.cond.BooleanObject;
 import org.sswr.util.db.DBColumnInfo;
 import org.sswr.util.db.ReadingConnection;
 import org.sswr.util.db.DBReader;
 import org.sswr.util.db.DBUtil;
 import org.sswr.util.db.PageStatus;
-import org.sswr.util.db.QueryConditions;
 import org.sswr.util.io.DirectoryPackage;
 import org.sswr.util.io.LogTool;
 import org.sswr.util.io.PackageFile;
@@ -53,7 +54,7 @@ public class FileGDBDir extends ReadingConnection
 	}
 
 	@Nullable
-	public DBReader getTableData(@Nonnull String name, @Nullable List<String> colNames, int maxCnt, @Nullable String ordering, @Nullable QueryConditions<?> condition)
+	public DBReader getTableData(@Nonnull String name, @Nullable List<String> colNames, int maxCnt, @Nullable String ordering, @Nullable QueryConditions condition)
 	{
 		FileGDBTable table = this.tables.get(name);
 		if (table == null)
@@ -143,7 +144,7 @@ public class FileGDBDir extends ReadingConnection
 
 	@Override
 	@Nullable
-	public <T> List<T> loadItemsAsList(@Nonnull Class<T> cls, @Nullable Object parent, @Nullable QueryConditions<T> conditions, @Nullable List<String> joinFields, @Nullable String sortString, int dataOfst, int dataCnt)
+	public <T> List<T> loadItemsAsList(@Nonnull Class<T> cls, @Nullable Object parent, @Nullable QueryConditions conditions, @Nullable List<String> joinFields, @Nullable String sortString, int dataOfst, int dataCnt)
 	{
 		Table tableAnn = parseClassTable(cls);
 		if (tableAnn == null)
@@ -160,7 +161,7 @@ public class FileGDBDir extends ReadingConnection
 			return null;
 		}
 		List<T> retList;
-		List<QueryConditions<T>.Condition> clientConditions;
+		List<BooleanObject> clientConditions;
 		if (conditions == null)
 		{
 			clientConditions = List.of();
@@ -223,7 +224,7 @@ public class FileGDBDir extends ReadingConnection
 	}
 
 	@Nullable
-	public <T> Map<Integer, T> loadItemsIClass(@Nonnull Class<T> cls, @Nullable Object parent, @Nullable QueryConditions<T> conditions, @Nullable List<String> joinFields)
+	public <T> Map<Integer, T> loadItemsIClass(@Nonnull Class<T> cls, @Nullable Object parent, @Nullable QueryConditions conditions, @Nullable List<String> joinFields)
 	{
 		Table tableAnn = parseClassTable(cls);
 		if (tableAnn == null)

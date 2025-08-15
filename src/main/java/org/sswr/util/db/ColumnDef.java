@@ -11,7 +11,9 @@ public class ColumnDef
 	private int colDP;
 	private boolean notNull;
 	private boolean pk;
-	private boolean autoInc;
+	private AutoIncType autoInc;
+	private long autoIncStartIndex;
+	private long autoIncStep;
 	private String defVal;
 	private String attr;
 
@@ -19,6 +21,9 @@ public class ColumnDef
 	{
 		this.colName = colName;
 		this.colType = ColumnType.Unknown;
+		this.autoInc = AutoIncType.None;
+		this.autoIncStartIndex = 1;
+		this.autoIncStep = 1;
 	}
 
 	@Nonnull
@@ -83,16 +88,30 @@ public class ColumnDef
 		this.pk = pk;
 	}
 
-	public boolean isAutoInc() {
+	@Nonnull
+	public AutoIncType getAutoInc() {
 		return this.autoInc;
 	}
 
-	public boolean getAutoInc() {
-		return this.autoInc;
+	public long getAutoIncStartIndex() {
+		return this.autoIncStartIndex;
 	}
 
-	public void setAutoInc(boolean autoInc) {
+	public long getAutoIncStep() {
+		return this.autoIncStep;
+	}
+
+	public void setAutoIncNone()
+	{
+		this.autoInc = AutoIncType.None;
+		this.autoIncStartIndex = 1;
+		this.autoIncStep = 1;
+	}
+
+	public void setAutoInc(AutoIncType autoInc, long autoIncStartIndex, long autoIncStep) {
 		this.autoInc = autoInc;
+		this.autoIncStartIndex = autoIncStartIndex;
+		this.autoIncStep = autoIncStep;
 	}
 
 	@Nullable
@@ -129,7 +148,7 @@ public class ColumnDef
 		newObj.setColDP(this.colDP);
 		newObj.setNotNull(this.notNull);
 		newObj.setPk(this.pk);
-		newObj.setAutoInc(this.autoInc);
+		newObj.setAutoInc(this.autoInc, this.autoIncStartIndex, this.autoIncStep);
 		newObj.setDefVal(this.defVal);
 		newObj.setAttr(this.attr);
 		return newObj;

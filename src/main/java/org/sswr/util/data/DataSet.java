@@ -7,10 +7,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 
-import javax.xml.crypto.Data;
-
-import org.w3c.dom.Text;
-
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 

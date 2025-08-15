@@ -23,7 +23,7 @@ public abstract class DBReader
 	public abstract String getString(int colIndex);
 	@Nullable
 	public abstract ZonedDateTime getDate(int colIndex);
-	public abstract double getDbl(int colIndex);
+	public abstract double getDblOrNAN(int colIndex);
 	public abstract boolean getBool(int colIndex);
 	@Nullable
 	public abstract byte[] getBinary(int colIndex);

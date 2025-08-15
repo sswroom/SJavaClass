@@ -15,6 +15,7 @@ import org.sswr.util.data.GeometryUtil;
 import org.sswr.util.data.SharedLong;
 import org.sswr.util.data.StringUtil;
 import org.sswr.util.data.UUID;
+import org.sswr.util.db.AutoIncType;
 import org.sswr.util.db.ColumnDef;
 import org.sswr.util.db.ColumnType;
 import org.sswr.util.db.DBReader;
@@ -383,17 +384,17 @@ public class FileGDBReader extends DBReader
 		return null;
 	}
 
-	public double getDbl(int colIndex)
+	public double getDblOrNAN(int colIndex)
 	{
 		if (this.rowData == null)
 		{
-			return 0;
+			return Double.NaN;
 		}
 		int fieldIndex = getFieldIndex(colIndex);
 		FileGDBFieldInfo field = this.getField(fieldIndex);
 		if (field == null || this.fieldNull[fieldIndex])
 		{
-			return 0;
+			return Double.NaN;
 		}
 		switch (field.getFieldType())
 		{
@@ -410,7 +411,7 @@ public class FileGDBReader extends DBReader
 		case 6:
 			return this.objectId;
 		}
-		return 0;
+		return Double.NaN;
 	}
 
 	public boolean getBool(int colIndex)
@@ -791,7 +792,7 @@ public class FileGDBReader extends DBReader
 				double[] zArr;
 				double[] mArr;
 				pl = new Polyline(srid);
-				//, (UOSInt)nParts, (UOSInt)nPoints, (this->tableInfo->geometryFlags & 0x80) != 0, (this->tableInfo->geometryFlags & 0x40) != 0
+				//, (UOSInt)nParts, (UOSInt)nPoints, (this.tableInfo.geometryFlags & 0x80) != 0, (this.tableInfo.geometryFlags & 0x40) != 0
 				ptOfstList = new int[(int)nParts.value];
 				ptOfstList[0] = 0;
 				int ptOfst = 0;
@@ -1000,7 +1001,19 @@ public class FileGDBReader extends DBReader
 		colDef.setColType(this.getColumnType(colIndex));
 		colDef.setNotNull((field.getFlags() & 1) == 0);
 		colDef.setPk(field.getFieldType() == 6);
-		colDef.setAutoInc(field.getFieldType() == 6);
+		if (field.getFieldType() == 6)
+		{
+			long startIndex = 1;
+//			if (this.indexBuff.GetCount() > 0)
+//			{
+//				startIndex = (long)this.indexCnt + 1;
+//			}
+			colDef.setAutoInc(AutoIncType.Default, startIndex, 1);
+		}
+		else
+		{
+			colDef.setAutoIncNone();
+		}
 		if (field.getDefValue() != null)
 		{
 			if (field.getFieldType() == 0)

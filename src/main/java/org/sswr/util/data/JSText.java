@@ -101,6 +101,52 @@ public class JSText
 		return sb.toString();
 	}
 
+	public static @Nonnull String toJSText(@Nullable String v)
+	{
+		StringBuilderUTF8 sb = new StringBuilderUTF8();
+		char c;
+		if (v == null)
+			return "null";
+		char[] sarr = v.toCharArray();
+		int i = 0;
+		int j = sarr.length;
+		sb.appendUTF8Char((byte)'\'');
+		while (i < j)
+		{
+			c = sarr[i];
+			switch (c)
+			{
+			case '\\':
+				sb.append("\\\\");
+				break;
+			case '\'':
+				sb.append("\\\'");
+				break;
+			case '\n':
+				sb.append("\\n");
+				break;
+			case '\r':
+				sb.append("\\n");
+				break;
+			case '\0':
+				sb.append("\\0");
+				break;
+			default:
+				if (c < 32)
+				{
+					sb.append("\\u" + StringUtil.toHex16(c));
+				}
+				else
+				{
+					sb.appendChar((int)c, 1);
+				}
+				break;
+			}
+		}
+		sb.appendUTF8Char((byte)'\'');
+		return sb.toString();		
+	}
+
 	public static void toJSTextDQuote(@Nonnull StringBuilder sb, @Nullable String v)
 	{
 		if (v == null)

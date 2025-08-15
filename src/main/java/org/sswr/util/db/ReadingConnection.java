@@ -19,7 +19,10 @@ import jakarta.persistence.Table;
 
 import org.locationtech.jts.geom.Geometry;
 import org.sswr.util.data.DateTimeUtil;
+import org.sswr.util.data.ObjectFieldGetter;
+import org.sswr.util.data.QueryConditions;
 import org.sswr.util.data.ReflectTools;
+import org.sswr.util.data.cond.BooleanObject;
 import org.sswr.util.io.LogLevel;
 import org.sswr.util.io.LogTool;
 import org.sswr.util.math.geometry.Vector2D;
@@ -190,12 +193,12 @@ public abstract class ReadingConnection
 			}
 			else if (fieldType.equals(double.class))
 			{
-				double v = r.getDbl(i);
+				double v = r.getDblOrNAN(i);
 				col.setter.set(o, v);
 			}
 			else if (fieldType.equals(Double.class))
 			{
-				Double v = r.getDbl(i);
+				Double v = r.getDblOrNAN(i);
 				if (r.isNull(i))
 				{
 					v = null;
@@ -260,7 +263,7 @@ public abstract class ReadingConnection
 	}
 
 	@Nonnull
-	protected <T> List<T> readAsList(@Nonnull DBReader r, @Nonnull PageStatus status, int dataOfst, int dataCnt, @Nullable Object parent, @Nonnull Constructor<T> constr, @Nonnull List<DBColumnInfo> cols, @Nonnull List<QueryConditions<T>.Condition> clientConditions)
+	protected <T> List<T> readAsList(@Nonnull DBReader r, @Nonnull PageStatus status, int dataOfst, int dataCnt, @Nullable Object parent, @Nonnull Constructor<T> constr, @Nonnull List<DBColumnInfo> cols, @Nonnull List<BooleanObject> clientConditions)
 	{
 		ArrayList<T> retList = new ArrayList<T>();
 		if (status == PageStatus.SUCC)
@@ -303,8 +306,9 @@ public abstract class ReadingConnection
 					{
 						obj = constr.newInstance(parent);
 					}
+					ObjectFieldGetter<T> getter = new ObjectFieldGetter<T>(obj);
 					this.fillColVals(r, obj, cols);
-					if (QueryConditions.objectValid(obj, clientConditions))
+					if (QueryConditions.objectValid(getter, clientConditions))
 					{
 						retList.add(obj);
 						dataCnt--;
@@ -328,7 +332,7 @@ public abstract class ReadingConnection
 	}
 
 	@Nonnull
-	protected <T> Map<Integer, T> readAsMap(@Nonnull DBReader r, @Nullable Object parent, @Nonnull Constructor<T> constr, @Nonnull List<DBColumnInfo> cols, @Nonnull List<QueryConditions<T>.Condition> clientConditions)
+	protected <T> Map<Integer, T> readAsMap(@Nonnull DBReader r, @Nullable Object parent, @Nonnull Constructor<T> constr, @Nonnull List<DBColumnInfo> cols, @Nonnull List<BooleanObject> clientConditions)
 	{
 		Map<Integer, T> retMap = new HashMap<Integer, T>();
 		while (r.readNext())
@@ -345,7 +349,8 @@ public abstract class ReadingConnection
 					obj = constr.newInstance(parent);
 				}
 				Integer id = this.fillColVals(r, obj, cols);
-				if (id != null && QueryConditions.objectValid(obj, clientConditions))
+				ObjectFieldGetter<T> getter = new ObjectFieldGetter<T>(obj);
+				if (id != null && QueryConditions.objectValid(getter, clientConditions))
 				{
 					retMap.put(id, obj);
 				}
@@ -380,20 +385,12 @@ public abstract class ReadingConnection
 		{
 			throw new IllegalArgumentException("No Id column found");
 		}
-		try
-		{
-			QueryConditions<T> queryConditions = new QueryConditions<T>(cls).intIn(idCols.get(0).setter.getField().getName(), idSet);
-			return this.loadItemsIClass(cls, null, queryConditions, joinFields);
-		}
-		catch (NoSuchFieldException ex)
-		{
-			if (this.logger != null) this.logger.logException(ex);
-			return null;
-		}
+		QueryConditions queryConditions = new QueryConditions().int32In(idCols.get(0).setter.getField().getName(), idSet);
+		return this.loadItemsIClass(cls, null, queryConditions, joinFields);
 	}
 
 	@Nullable 
-	public abstract <T> List<T> loadItemsAsList(@Nonnull Class<T> cls, @Nullable Object parent, @Nullable QueryConditions<T> conditions, @Nullable List<String> joinFields, @Nullable String sortString, int dataOfst, int dataCnt);
+	public abstract <T> List<T> loadItemsAsList(@Nonnull Class<T> cls, @Nullable Object parent, @Nullable QueryConditions conditions, @Nullable List<String> joinFields, @Nullable String sortString, int dataOfst, int dataCnt);
 	@Nullable
-	public abstract <T> Map<Integer, T> loadItemsIClass(@Nonnull Class<T> cls, @Nullable Object parent, @Nullable QueryConditions<T> conditions, @Nullable List<String> joinFields);
+	public abstract <T> Map<Integer, T> loadItemsIClass(@Nonnull Class<T> cls, @Nullable Object parent, @Nullable QueryConditions conditions, @Nullable List<String> joinFields);
 }

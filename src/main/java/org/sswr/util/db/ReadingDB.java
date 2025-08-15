@@ -3,6 +3,7 @@ package org.sswr.util.db;
 import java.util.List;
 
 import org.sswr.util.data.DateTimeUtil;
+import org.sswr.util.data.QueryConditions;
 import org.sswr.util.io.ParsedObject;
 import org.sswr.util.io.ParserType;
 
