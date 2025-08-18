@@ -293,13 +293,12 @@ public class CPPObjectParser<T>
 				}
 				else if (f.getType().equals(boolean.class))
 				{
-					c = reader.currChar();
+					c = reader.nextChar();
 					if (c == 't')
 					{
 						if (reader.nextChar() == 'r' && reader.nextChar() == 'u' && reader.nextChar() == 'e')
 						{
 							setters.get(objInd).set(o, true);
-							reader.nextChar();
 						}
 						else
 						{
@@ -310,8 +309,7 @@ public class CPPObjectParser<T>
 					{
 						if (reader.nextChar() == 'a' && reader.nextChar() == 'l' && reader.nextChar() == 's' && reader.nextChar() == 'e')
 						{
-							setters.get(objInd).set(o, true);
-							reader.nextChar();
+							setters.get(objInd).set(o, false);
 						}
 						else
 						{

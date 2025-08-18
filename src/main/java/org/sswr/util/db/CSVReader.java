@@ -60,6 +60,7 @@ class CSVReader extends DBReader implements ObjectGetter
 		currPtr = 0;
 		if ((sptr = this.rdr.readLine(this.row, 0, this.row.length - 1)) >= 0)
 		{
+			this.row[sptr] = 0;
 			while (true)
 			{
 				c = this.row[currPtr++];
@@ -72,6 +73,7 @@ class CSVReader extends DBReader implements ObjectGetter
 						currPtr = sptr;
 						if ((sptr = this.rdr.readLine(this.row, sptr, this.row.length - sptr - 1)) < 0)
 							break;
+						this.row[sptr] = 0;
 						if (!this.rdr.isLineBreak() && sptr > this.row.length - 6)
 						{
 							byte[] newRow = new byte[this.row.length << 1];
@@ -121,16 +123,16 @@ class CSVReader extends DBReader implements ObjectGetter
 		ByteTool.copyArray(this.hdr, 0, this.row, 0, currPtr + 1);
 		this.nHdr = StringUtil.csvSplit(this.hdrs, 128, new String(this.hdr, 0, currPtr, StandardCharsets.UTF_8));
 		this.nCol = this.nHdr;
-		int i = this.nCol;
+		int i = 128;
+		i = this.nCol;
 		while (i-- > 0)
 		{
 			this.cols[i] = new CSVColumn();
-			this.cols[i].colSize = this.hdrs[i].length();
+			this.cols[i].colType = ColumnType.VarUTF8Char;
 		}
-		i = 128;
 		while (i-- > 0)
 		{
-			this.cols[i].colType = ColumnType.VarUTF8Char;
+			this.cols[i].colSize = this.hdrs[i].length();
 		}
 	}
 
@@ -175,6 +177,7 @@ class CSVReader extends DBReader implements ObjectGetter
 					break;
 				}
 			}
+			this.row[sptr] = 0;
 
 			nCol = 1;
 			colStartPtr = 0;
@@ -197,6 +200,7 @@ class CSVReader extends DBReader implements ObjectGetter
 							ByteTool.copyArray(newRow, 0, this.row, 0, this.row.length);
 							this.row = newRow;
 						}
+						this.row[sptr] = 0;
 					}
 					else
 					{

@@ -11,7 +11,7 @@ public class CharUtil
 {
 	private static List<UnicodeBlock> ublk;
 
-	public static @Nullable UnicodeBlock getUnicodeBlock(char c)
+	public static @Nullable UnicodeBlock getUnicodeBlock(int c)
 	{
 		if (ublk == null)
 		{
@@ -43,6 +43,24 @@ public class CharUtil
 	}
 
 	public static boolean isDoubleSize(char c)
+	{
+		if (c == 0x3000)
+		{
+			return true;
+		}
+		if (c >= 0xff01 && c <= 0xff5e)
+		{
+			return true;
+		}
+		UnicodeBlock blk = getUnicodeBlock(c);
+		if (blk == null)
+		{
+			return false;
+		}
+		return blk.getDblWidth();
+	}
+
+	public static boolean isDoubleSize(int c)
 	{
 		if (c == 0x3000)
 		{

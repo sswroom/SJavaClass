@@ -6,10 +6,8 @@ import org.sswr.util.data.JSText;
 import org.sswr.util.data.StringUtil;
 import org.sswr.util.data.TableData;
 import org.sswr.util.db.DBReader;
-import org.sswr.util.media.Size2D;
 import org.sswr.util.media.Size2DInt;
 import org.sswr.util.media.StandardColor;
-import org.w3c.dom.Text;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
@@ -147,7 +145,6 @@ public class TextWriteUtil
 		}
 
 		boolean hasMoreLine;
-		boolean thisMoreLine;
 		int j;
 		String[] valArr = new String[colCnt];
 		String[] sArr = new String[colCnt];
@@ -382,7 +379,6 @@ public class TextWriteUtil
 		}
 
 		boolean hasMoreLine;
-		boolean thisMoreLine;
 		int j;
 		String[] valArr = new String[colCnt];
 		String[] sArr = new String[colCnt];

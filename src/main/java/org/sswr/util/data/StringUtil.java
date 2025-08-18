@@ -10,6 +10,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.sswr.util.media.Size2DInt;
+
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
@@ -2326,7 +2328,7 @@ public class StringUtil
 			else if (c == ',' && !quoted)
 			{
 				csvArr[i - 1] = new String(strToSplit, strStart, strWrite - strStart);
-				strStart = strCurr;
+				strStart = strWrite;
 				i++;
 				first = true;
 			}
@@ -2345,4 +2347,57 @@ public class StringUtil
 		csvArr[i - 1] = new String(strToSplit, strStart, strWrite - strStart);
 		return i;
 	}
+
+	/**
+	 * Get string size in monospace environment
+	 * @param buff byte array to convert
+	 * @param ofst offset of value
+	 * @return value or 0 on error
+	 */
+	public static @Nonnull Size2DInt getMonospaceSize(@Nonnull String s)
+	{
+		UTF32Reader reader = new UTF32Reader(s);
+		int h = 1;
+		int w = 0;
+		int maxW = 0;
+		int c;
+		while (true)
+		{
+			c = reader.nextChar();
+			if (c == 0)
+			{
+				if (w > maxW)
+				{
+					maxW = w;
+				}
+				return new Size2DInt(maxW, h);
+			}
+			if (c == '\r')
+			{
+				if (reader.isNextChar('\n'))
+				{
+					reader.nextChar();
+				}
+				if (w > maxW)
+				{
+					maxW = w;
+				}
+				w = 0;
+				h++;
+			}
+			else if (c == '\n')
+			{
+				if (w > maxW)
+				{
+					maxW = w;
+				}
+				w = 0;
+				h++;
+			}
+			else if (CharUtil.isDoubleSize(c))
+				w += 2;
+			else
+				w += 1;
+		}
+	}	
 }

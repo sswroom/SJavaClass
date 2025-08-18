@@ -548,6 +548,18 @@ public class DateTimeUtil
 	}
 
 	@Nonnull
+	public static Timestamp addMinute(@Nonnull Timestamp t, int minuteDiff)
+	{
+		return Timestamp.valueOf(t.toLocalDateTime().plusMinutes(minuteDiff));
+	}
+
+	@Nonnull
+	public static Timestamp addHour(@Nonnull Timestamp t, int hourDiff)
+	{
+		return Timestamp.valueOf(t.toLocalDateTime().plusHours(hourDiff));
+	}
+
+	@Nonnull
 	public static Timestamp addDay(@Nonnull Timestamp t, int dayDiff)
 	{
 		return Timestamp.valueOf(t.toLocalDateTime().plusDays(dayDiff));
@@ -854,6 +866,26 @@ public class DateTimeUtil
 		return t1.equals(t2);
 	}
 
+	public static double ms2Days(long ms)
+	{
+		return (double)ms / 86400000.0;
+	}
+
+	public static double ms2Hours(long ms)
+	{
+		return (double)ms / 3600000.0;
+	}
+
+	public static double ms2Minutes(long ms)
+	{
+		return (double)ms / 60000.0;
+	}
+
+	public static double ms2Seconds(long ms)
+	{
+		return (double)ms * 0.001;
+	}
+
 	public static byte getLocalTZQhr()
 	{
 		ZonedDateTime now = ZonedDateTime.now();
@@ -928,6 +960,17 @@ public class DateTimeUtil
 			totalDays2DateValue(totalDays, d);
 			return LocalDate.of(d.year, d.month, d.day);
 		}
+	}
+
+	public static long getMSPassedLocalDate(@Nonnull Timestamp ts)
+	{
+		ZonedDateTime d = ZonedDateTime.ofInstant(ts.toInstant(), ZoneId.systemDefault());
+		return (long)(d.getNano() / 1000000) + d.getSecond() * 1000 + d.getMinute() * 60000 + d.getHour() * 3600000;
+	}
+
+	public static int getDay(@Nonnull Timestamp ts)
+	{
+		return ts.toLocalDateTime().getDayOfMonth();
 	}
 
 	public static boolean isYearLeap(int year)

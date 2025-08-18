@@ -28,13 +28,17 @@
 -Added Size2DInt
 -Added StreamDataStream
 -Added TextWriteUtil
--Added DateTimeUtil.getLocalTZQhr
+-Added DateTimeUtil.getLocalTZQhr, addMinute, addHour, ms2Days, ms2Hours, ms2Minutes, ms2Seconds, getMSPassedLocalDate, getDay
 -Added Encoding.setCodePage
 -Added StringBuilderUTF8.substring, removeRange, setEndOfst, startsWith, endsWith, trimToLength, indexOf, rTrim, trim, charAt
 -Added StringUtil.csvSplit
 -Added StringUtil.splitLine with maxLines
+-Added StringUtil.getMonospaceSize
 -Added ColumnDef.isNull
 -Added JSText.toJSText
+-Added CharUtil.isDoubleSize(int)
+-Added UTF32Reader.peekChar, isNextChar
+-Added math.chart.*
 -Change QueryConditions to non-template
 -Support AutoIncType
 -Change CharReader to use StringBuilderUTF8
@@ -47,6 +51,7 @@
 -Change SMTPConn to use StringBuilderUTF8
 -Change CompareCondition to same as C++ version
 -Change DBReader.getDbl to getDblOrNAN
+-Fixed CPPObjectParser.parseObject
 
 0.7.20250812
 - Fix for condition with sun.java.command is null

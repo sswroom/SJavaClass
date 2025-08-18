@@ -30,4 +30,26 @@ public class UTF32Reader
 			return c;
 		}
 	}
+
+	public int peekChar()
+	{
+		int slen = this.s.length();
+		if (this.ofst >= slen)
+			return 0;
+		char c = this.s.charAt(ofst);
+		char c2;
+		if (this.ofst + 1 < slen && c >= 0xd800 && c < 0xdc00 && (c2 = this.s.charAt(this.ofst + 1)) >= 0xdc00 && c2 < 0xe000)
+		{
+			return 0x10000 + ((c - 0xd800) << 10) + (c2 - 0xdc00);
+		}
+		else
+		{
+			return c;
+		}
+	}
+
+	public boolean isNextChar(int c)
+	{
+		return peekChar() == c;
+	}
 }

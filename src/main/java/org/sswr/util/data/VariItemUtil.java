@@ -1,6 +1,7 @@
 package org.sswr.util.data;
 
 import java.sql.Timestamp;
+import java.time.ZonedDateTime;
 
 import jakarta.annotation.Nullable;
 
@@ -9,6 +10,10 @@ public class VariItemUtil {
 	{
 		if (v == null)
 			return Double.NaN;
+		if (v instanceof String)
+		{
+			return StringUtil.toDoubleS((String)v, Double.NaN);
+		}
 		System.out.println("VariItemUtil.asF64: Unknown type: "+v.getClass().toString());
 		return Double.NaN;
 	}
@@ -17,6 +22,10 @@ public class VariItemUtil {
 	{
 		if (v == null)
 			return null;
+		if (v instanceof ZonedDateTime)
+		{
+			return DateTimeUtil.toTimestamp((ZonedDateTime)v);
+		}
 		System.out.println("VariItemUtil.asTimestamp: Unknown type: "+v.getClass().toString());
 		return null;
 	}
