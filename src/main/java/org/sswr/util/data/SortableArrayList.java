@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-public abstract class SortableArrayList<T> extends ArrayList<T> implements Comparator<T>
+public abstract class SortableArrayList<T> extends ArrayList<T>
 {
 	public SortableArrayList()
 	{
@@ -133,7 +133,12 @@ public abstract class SortableArrayList<T> extends ArrayList<T> implements Compa
 		{
 			tmpArr.add(this.get(i));
 		}
-		ArtificialQuickSort.sort(tmpArr, this);
+		ArtificialQuickSort.sort(tmpArr, this.comparator());
 		return tmpArr.get(cnt >> 1);
+	}
+
+	public Comparator<T> comparator()
+	{
+		return new SortableComparator<>(this);
 	}
 }

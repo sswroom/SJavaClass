@@ -2350,9 +2350,8 @@ public class StringUtil
 
 	/**
 	 * Get string size in monospace environment
-	 * @param buff byte array to convert
-	 * @param ofst offset of value
-	 * @return value or 0 on error
+	 * @param s string to calculate
+	 * @return size in monospace character
 	 */
 	public static @Nonnull Size2DInt getMonospaceSize(@Nonnull String s)
 	{

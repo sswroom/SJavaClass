@@ -4,6 +4,7 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.geom.Rectangle2D;
 
 import org.sswr.util.math.Coord2DDbl;
@@ -44,7 +45,6 @@ public class DrawImage
 			}
 			this.font = Font.decode(name+Math.round(fontSizePt));
 			this.fontSizePt = fontSizePt;
-			System.out.println(name+Math.round(fontSizePt));
 		}
 
 		public Font getFont()
@@ -111,6 +111,8 @@ public class DrawImage
 	public DrawImage(@Nonnull Graphics2D g)
 	{
 		this.g = g;
+		this.g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+		this.g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 	}
 
 	public void dispose()
@@ -217,14 +219,18 @@ public class DrawImage
 		return true;
 	}
 
-	public boolean drawStringRot(@Nonnull Coord2DDbl center, @Nonnull String str, @Nonnull DrawFont f, @Nonnull DrawBrush b, double angleDegreeACW)
+	public boolean drawStringRot(@Nonnull Coord2DDbl tl, @Nonnull String str, @Nonnull DrawFont f, @Nonnull DrawBrush b, double angleDegreeACW)
 	{
 		this.g.setFont(f.getFont());
 		b.init(g);
 		double rangle = Angle.convert(AngleUnit.Degree, AngleUnit.Radian, angleDegreeACW);
-		this.g.rotate(-rangle, center.x, center.y);
-		this.g.drawString(str, (float)center.x, (float)center.y);
-		this.g.rotate(rangle, center.x, center.y);
+		double cangle = Math.cos(rangle);
+		double sangle = Math.sin(rangle);
+		double blx = tl.x + f.getPixelHeight() * sangle;
+		double bly = tl.y + f.getPixelHeight() * cangle;
+		this.g.rotate(-rangle, blx, bly);
+		this.g.drawString(str, (float)blx, (float)bly);
+		this.g.rotate(rangle, blx, bly);
 		return true;
 	}
 

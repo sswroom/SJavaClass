@@ -273,9 +273,8 @@ public class ChartPlotter {
 
 	public boolean addLineChart(@Nonnull String name, @Nonnull ChartData yData, @Nonnull ChartData xData, int lineColor)
 	{
-		Axis xAxis;
 		Axis yAxis;
-		if ((xAxis = getXAxis(xData)) == null || (yAxis = getYAxis(yData)) == null || xData.getCount() != yData.getCount())
+		if ((getXAxis(xData)) == null || (yAxis = getYAxis(yData)) == null || xData.getCount() != yData.getCount())
 		{
 			return false;
 		}
@@ -285,9 +284,8 @@ public class ChartPlotter {
 
 	public boolean addFilledLineChart(@Nonnull String name, @Nonnull ChartData yData, @Nonnull ChartData xData, int lineColor, int fillColor)
 	{
-		Axis xAxis;
 		Axis yAxis;
-		if ((xAxis = getXAxis(xData)) == null || (yAxis = getYAxis(yData)) == null || xData.getCount() != yData.getCount())
+		if ((getXAxis(xData)) == null || (yAxis = getYAxis(yData)) == null || xData.getCount() != yData.getCount())
 		{
 			return false;
 		}
@@ -302,9 +300,8 @@ public class ChartPlotter {
 
 	public boolean addScatter(@Nonnull String name, @Nonnull ChartData xData, @Nonnull ChartData yData, @Nullable String[] labels, int lineColor)
 	{
-		Axis xAxis;
 		Axis yAxis;
-		if ((xAxis = getXAxis(xData)) == null || (yAxis = getYAxis(yData)) == null || xData.getCount() != yData.getCount())
+		if ((getXAxis(xData)) == null || (yAxis = getYAxis(yData)) == null || xData.getCount() != yData.getCount())
 		{
 			return false;
 		}

@@ -38,7 +38,7 @@ public class HTTPProxyTCPClient extends TCPClient
 	public HTTPProxyTCPClient(@Nonnull SocketFactory sockf, @Nonnull String proxyHost, int proxyPort, @Nonnull PasswordType pt, @Nullable String userName, @Nullable String pwd, @Nonnull String destHost, int destPort)
 	{
 		super(null, null);
-		this.setSourceName(destHost);
+		super.setSourceName(destHost);
 
 		InetAddress addr;
 		try

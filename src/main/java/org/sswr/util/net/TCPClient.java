@@ -94,7 +94,7 @@ public class TCPClient extends IOStream
 			this.flags = 12;
 			return;
 		}
-		this.setSourceName(this.getRemoteName());
+		super.setSourceName(this.getRemoteName());
 		this.cliId = SocketUtil.genSocketId(s);
 	}
 
