@@ -1,32 +1,30 @@
 package org.sswr.util.math.chart;
 
-import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.Random;
-
-import javax.print.attribute.standard.Media;
-import javax.xml.crypto.Data;
 
 import org.sswr.util.data.DateTimeUtil;
 import org.sswr.util.data.SharedInt;
 import org.sswr.util.data.StringUtil;
 import org.sswr.util.data.TwinItem;
-import org.sswr.util.io.FileStream;
-import org.sswr.util.io.FileStream.BufferType;
-import org.sswr.util.io.FileStream.FileMode;
-import org.sswr.util.io.FileStream.FileShare;
+import org.sswr.util.math.Coord2DDbl;
+import org.sswr.util.media.DrawImage;
 import org.sswr.util.media.ImageUtil;
+import org.sswr.util.media.Size2D;
 import org.sswr.util.media.Size2DInt;
 import org.sswr.util.media.StaticImage;
-import org.w3c.dom.Text;
+import org.sswr.util.media.DrawImage.DrawBrush;
+import org.sswr.util.media.DrawImage.DrawFont;
+import org.sswr.util.media.DrawImage.DrawFontStyle;
+import org.sswr.util.media.DrawImage.DrawPen;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
@@ -174,6 +172,8 @@ public class ChartPlotter {
 		this.pointSize = 0;
 		this.yUnit = null;
 		this.timeZoneQHR = DateTimeUtil.getLocalTZQhr();
+		this.charts = new ArrayList<ChartParam>();
+		this.refType = RefType.None;
 
 		bgColor = 0xffffffff;
 		boundColor = 0xff000000;
@@ -181,6 +181,7 @@ public class ChartPlotter {
 		gridColor = 0xffebebeb;
 		refLineColor = 0xffff0000;
 		this.lineThick = 1.0;
+		this.rnd = new Random();
 		
 		this.fntName = "SimHei";
 		fntSizePt = 12.0;
@@ -597,7 +598,7 @@ public class ChartPlotter {
 		return this.charts.get(index);
 	}
 
-	public void plot(Graphics2D img, double x, double y, double width, double height)
+	public void plot(@Nonnull DrawImage img, double x, double y, double width, double height)
 	{
 		if (height <= 0 || width <= 0)
 			return;
@@ -606,49 +607,48 @@ public class ChartPlotter {
 		if ((xAxis = this.xAxis) == null || (y1Axis = this.y1Axis) == null)
 			return;
 
-		NN<Media::DrawFont> fnt;
+		DrawFont fnt;
 		double fntH;
 		double barLeng = this.barLength;
 		double xLeng;
-		Double y1Leng;
-		Double y2Leng;
-		Bool y2show;
-		UTF8Char sbuff[256];
-		UnsafeArray<UTF8Char> sptr;
-		NN<Text::String> s;
+		double y1Leng;
+		double y2Leng;
+		boolean y2show;
+		String s;
 
-		UOSInt i;
-		UOSInt j;
-		Data::DateTime dt1;
-		Data::DateTime dt2;
+		int i;
+		int j;
+		ZonedDateTime dt1;
+		ZonedDateTime dt2;
 
-		NN<Media::DrawBrush> bgBrush = img.NewBrushARGB(bgColor);
-		NN<Media::DrawPen> boundPen = img.NewPenARGB(boundColor, this.lineThick, 0, 0);
-		NN<Media::DrawBrush> fontBrush = img.NewBrushARGB(fontColor);
-		NN<Media::DrawPen> gridPen = img.NewPenARGB(gridColor, this.lineThick, 0, 0);
-		NN<Media::DrawPen> refLinePen = img.NewPenARGB(refLineColor, this.lineThick, 0, 0);
+		DrawBrush bgBrush = img.newBrushARGB(bgColor);
+		DrawPen boundPen = img.newPenARGB(boundColor, this.lineThick, null);
+		DrawBrush fontBrush = img.newBrushARGB(fontColor);
+		DrawPen gridPen = img.newPenARGB(gridColor, this.lineThick, null);
+		DrawPen refLinePen = img.newPenARGB(refLineColor, this.lineThick, null);
 
-		fnt = img.NewFontPt(fntName.ToCString(), (Double)fntSizePt, Media::DrawEngine::DFS_ANTIALIAS, 0);
-		img.DrawRect(Math::Coord2DDbl(x, y), Math::Size2DDbl(width, height), 0, bgBrush);
+		fnt = img.newFontPt(fntName, fntSizePt, DrawFontStyle.AntiAlias, 0);
+		img.drawRect(new Coord2DDbl(x, y), new Size2D(width, height), null, bgBrush);
 
-		Math::Size2DDbl rcSize = img.GetTextSize(fnt, CSTR("AA"));
-		fntH = rcSize.y;
-		if (this.titleLineCnt > 0)
+		Size2D rcSize = img.getTextSize(fnt, "AA");
+		fntH = rcSize.getHeight();
+		String[] titleLines;
+		if ((titleLines = this.titleLines) != null)
 		{
 			i = 0;
-			while (i < this.titleLineCnt)
+			while (i < titleLines.length)
 			{
-				rcSize = img.GetTextSize(fnt, this.titleLine[i].ToCString());
-				img.DrawString(Math::Coord2DDbl((x + (width / 2) - (rcSize.x * 0.5)), y), this.titleLine[i].ToCString(), fnt, fontBrush);
+				rcSize = img.getTextSize(fnt, titleLines[i]);
+				img.drawString(new Coord2DDbl((x + (width / 2) - (rcSize.getWidth() * 0.5)), y), titleLines[i], fnt, fontBrush);
 				y += fntH;
 				height -= fntH;
 				i++;
 			}
 		}
 
-		Double minXInt = fntH;
-		UOSInt xMode;
-		Double labelRotate = xAxis.GetLabelRotate();
+		double minXInt = fntH;
+		int xMode;
+		double labelRotate = xAxis.getLabelRotate();
 		if (labelRotate < 45)
 		{
 			xMode = 1;
@@ -657,546 +657,451 @@ public class ChartPlotter {
 		{
 			xMode = 0;
 		}
-		Double sRotate = Math_Sin(labelRotate * Math::PI / 180.0);
-		Double cRotate = Math_Cos(labelRotate * Math::PI / 180.0);
-		Double rotLeng;
+		double sRotate = Math.sin(labelRotate * Math.PI / 180.0);
+		double cRotate = Math.cos(labelRotate * Math.PI / 180.0);
+		double rotLeng;
 		xLeng = 0;
 		y1Leng = 0;
 		y2Leng = 0;
-		if (xAxis.GetType() == DataType::Integer)
+		if (xAxis instanceof Int32Axis)
 		{
-			NN<Int32Axis> iAxis = NN<Int32Axis>::ConvertFrom(xAxis);
-			sptr = Text::StrInt32(sbuff, iAxis.GetMax());
-			rcSize = img.GetTextSize(fnt, CSTRP(sbuff, sptr));
+			Int32Axis iAxis = (Int32Axis)xAxis;
+			s = String.valueOf(iAxis.getMax());
+			rcSize = img.getTextSize(fnt, s);
 			if (xMode == 1)
 			{
-				rotLeng = rcSize.x * 0.5 * sRotate + rcSize.y * cRotate;
-				if (rcSize.x > minXInt) minXInt = rcSize.x;
+				rotLeng = rcSize.getWidth() * 0.5 * sRotate + rcSize.getHeight() * cRotate;
+				if (rcSize.getWidth() > minXInt) minXInt = rcSize.getWidth();
 			}
 			else
 			{
-				rotLeng = rcSize.x * sRotate + rcSize.y * 0.5 * cRotate;
+				rotLeng = rcSize.getWidth() * sRotate + rcSize.getHeight() * 0.5 * cRotate;
 			}
 			xLeng = rotLeng;
 
-			sptr = Text::StrInt32(sbuff, iAxis.GetMin());
-			rcSize = img.GetTextSize(fnt, CSTRP(sbuff, sptr));
+			s = String.valueOf(iAxis.getMin());
+			rcSize = img.getTextSize(fnt, s);
 			if (xMode == 1)
 			{
-				rotLeng = rcSize.x * 0.5 * sRotate + rcSize.y * cRotate;
-				if (rcSize.x > minXInt) minXInt = rcSize.x;
+				rotLeng = rcSize.getWidth() * 0.5 * sRotate + rcSize.getHeight() * cRotate;
+				if (rcSize.getWidth() > minXInt) minXInt = rcSize.getHeight();
 			}
 			else
 			{
-				rotLeng = rcSize.x * sRotate + rcSize.y * 0.5 * cRotate;
+				rotLeng = rcSize.getWidth() * sRotate + rcSize.getHeight() * 0.5 * cRotate;
 			}
 			if (rotLeng > xLeng)
 				xLeng = rotLeng;
 		}
-		else if (xAxis.GetType() == DataType::UInteger)
+		else if (xAxis instanceof DoubleAxis)
 		{
-			NN<UInt32Axis> iAxis = NN<UInt32Axis>::ConvertFrom(xAxis);
-			sptr = Text::StrUInt32(sbuff, iAxis.GetMax());
-			rcSize = img.GetTextSize(fnt, CSTRP(sbuff, sptr));
+			DoubleAxis dAxis = (DoubleAxis)xAxis;
+			DecimalFormat fmt = new DecimalFormat(this.dblFormat);
+			s = fmt.format(dAxis.getMax());
+			rcSize = img.getTextSize(fnt, s);
 			if (xMode == 1)
 			{
-				rotLeng = rcSize.x * 0.5 * sRotate + rcSize.y * cRotate;
-				if (rcSize.x > minXInt) minXInt = rcSize.x;
+				rotLeng = rcSize.getWidth() * 0.5 * sRotate + rcSize.getHeight() * cRotate;
+				if (rcSize.getWidth() > minXInt) minXInt = rcSize.getWidth();
 			}
 			else
 			{
-				rotLeng = rcSize.x * sRotate + rcSize.y * 0.5 * cRotate;
-			}
-			xLeng = rotLeng;
-
-			sptr = Text::StrUInt32(sbuff, iAxis.GetMin());
-			rcSize = img.GetTextSize(fnt, CSTRP(sbuff, sptr));
-			if (xMode == 1)
-			{
-				rotLeng = rcSize.x * 0.5 * sRotate + rcSize.y * cRotate;
-				if (rcSize.x > minXInt) minXInt = rcSize.x;
-			}
-			else
-			{
-				rotLeng = rcSize.x * sRotate + rcSize.y * 0.5 * cRotate;
-			}
-			if (rotLeng > xLeng)
-				xLeng = rotLeng;
-		}
-		else if (xAxis.GetType() == DataType::DOUBLE)
-		{
-			NN<DoubleAxis> dAxis = NN<DoubleAxis>::ConvertFrom(xAxis);
-			sptr = Text::StrDoubleFmt(sbuff, dAxis.GetMax(), UnsafeArray<const Char>::ConvertFrom(this.dblFormat.v));
-			rcSize = img.GetTextSize(fnt, CSTRP(sbuff, sptr));
-			if (xMode == 1)
-			{
-				rotLeng = rcSize.x * 0.5 * sRotate + rcSize.y * cRotate;
-				if (rcSize.x > minXInt) minXInt = rcSize.x;
-			}
-			else
-			{
-				rotLeng = rcSize.x * sRotate + rcSize.y * 0.5 * cRotate;
+				rotLeng = rcSize.getWidth() * sRotate + rcSize.getHeight() * 0.5 * cRotate;
 			}
 			xLeng = rotLeng;
 			
-			sptr = Text::StrDoubleFmt(sbuff, dAxis.GetMin(), UnsafeArray<const Char>::ConvertFrom(this.dblFormat.v));
-			rcSize = img.GetTextSize(fnt, CSTRP(sbuff, sptr));
+			s = fmt.format(dAxis.getMin());
+			rcSize = img.getTextSize(fnt, s);
 			if (xMode == 1)
 			{
-				rotLeng = rcSize.x * 0.5 * sRotate + rcSize.y * cRotate;
-				if (rcSize.x > minXInt) minXInt = rcSize.x;
+				rotLeng = rcSize.getWidth() * 0.5 * sRotate + rcSize.getHeight() * cRotate;
+				if (rcSize.getWidth() > minXInt) minXInt = rcSize.getWidth();
 			}
 			else
 			{
-				rotLeng = rcSize.x * sRotate + rcSize.y * 0.5 * cRotate;
+				rotLeng = rcSize.getWidth() * sRotate + rcSize.getHeight() * 0.5 * cRotate;
 			}
 			if (rotLeng > xLeng)
 				xLeng = rotLeng;
 		}
-		else if (xAxis.GetType() == DataType::Time)
+		else if (xAxis instanceof TimeAxis)
 		{
-			NN<TimeAxis> tAxis = NN<TimeAxis>::ConvertFrom(xAxis);
-			dt1.SetInstant(tAxis.GetMax());
-			dt1.ConvertTimeZoneQHR(this.timeZoneQHR);
-			dt2.SetInstant(tAxis.GetMin());
-			dt2.ConvertTimeZoneQHR(this.timeZoneQHR);
-			if (dt1.IsSameDay(dt2))
+			TimeAxis tAxis = (TimeAxis)xAxis;
+			dt1 = DateTimeUtil.newZonedDateTime(tAxis.getMax(), this.timeZoneQHR);
+			dt2 = DateTimeUtil.newZonedDateTime(tAxis.getMin(), this.timeZoneQHR);
+			if (DateTimeUtil.isSameDay(dt1, dt2))
 			{
-				sptr = dt1.ToString(sbuff, UnsafeArray<const Char>::ConvertFrom(this.timeFormat.v));
-				rcSize = img.GetTextSize(fnt, CSTRP(sbuff, sptr));
+				s = DateTimeUtil.toString(dt1, this.timeFormat);
+				rcSize = img.getTextSize(fnt, s);
 				if (xMode == 1)
 				{
-					rotLeng = rcSize.x * 0.5 * sRotate + rcSize.y * cRotate;
-					if (rcSize.x > minXInt) minXInt = rcSize.x;
+					rotLeng = rcSize.getWidth() * 0.5 * sRotate + rcSize.getHeight() * cRotate;
+					if (rcSize.getWidth() > minXInt) minXInt = rcSize.getWidth();
 				}
 				else
 				{
-					rotLeng = rcSize.x * sRotate + rcSize.y * 0.5 * cRotate;
+					rotLeng = rcSize.getWidth() * sRotate + rcSize.getHeight() * 0.5 * cRotate;
 				}
 				xLeng = rotLeng;
-				if (dt2.GetMSPassedDate() == 0)
+				if (DateTimeUtil.getMSPassedLocalDate(dt2) == 0)
 				{
-					sptr = dt2.ToString(sbuff, UnsafeArray<const Char>::ConvertFrom(this.dateFormat.v));
+					s = DateTimeUtil.toString(dt2, this.dateFormat);
 				}
 				else
 				{
-					sptr = dt2.ToString(sbuff, UnsafeArray<const Char>::ConvertFrom(this.timeFormat.v));
+					s = DateTimeUtil.toString(dt2, this.timeFormat);
 				}
-				rcSize = img.GetTextSize(fnt, CSTRP(sbuff, sptr));
+				rcSize = img.getTextSize(fnt, s);
 				if (xMode == 1)
 				{
-					rotLeng = rcSize.x * 0.5 * sRotate + rcSize.y * cRotate;
-					if (rcSize.x > minXInt) minXInt = rcSize.x;
+					rotLeng = rcSize.getWidth() * 0.5 * sRotate + rcSize.getHeight() * cRotate;
+					if (rcSize.getWidth() > minXInt) minXInt = rcSize.getWidth();
 				}
 				else
 				{
-					rotLeng = rcSize.x * sRotate + rcSize.y * 0.5 * cRotate;
+					rotLeng = rcSize.getWidth() * sRotate + rcSize.getHeight() * 0.5 * cRotate;
 				}
 				if (rotLeng > xLeng)
 					xLeng = rotLeng;
 			}
 			else
 			{
-				sptr = dt1.ToString(sbuff, UnsafeArray<const Char>::ConvertFrom(this.dateFormat.v));
-				rcSize = img.GetTextSize(fnt, CSTRP(sbuff, sptr));
+				s = DateTimeUtil.toString(dt1, this.dateFormat);
+				rcSize = img.getTextSize(fnt, s);
 				if (xMode == 1)
 				{
-					rotLeng = rcSize.x * 0.5 * sRotate + rcSize.y * cRotate;
-					if (rcSize.x > minXInt) minXInt = rcSize.x;
+					rotLeng = rcSize.getWidth() * 0.5 * sRotate + rcSize.getHeight() * cRotate;
+					if (rcSize.getWidth() > minXInt) minXInt = rcSize.getWidth();
 				}
 				else
 				{
-					rotLeng = rcSize.x * sRotate + rcSize.y * 0.5 * cRotate;
+					rotLeng = rcSize.getWidth() * sRotate + rcSize.getHeight() * 0.5 * cRotate;
 				}
 				xLeng = rotLeng;
-				sptr = dt1.ToString(sbuff, UnsafeArray<const Char>::ConvertFrom(this.timeFormat.v));
-				rcSize = img.GetTextSize(fnt, CSTRP(sbuff, sptr));
+				s = DateTimeUtil.toString(dt1, this.timeFormat);
+				rcSize = img.getTextSize(fnt, s);
 				if (xMode == 1)
 				{
-					rotLeng = rcSize.x * 0.5 * sRotate + rcSize.y * cRotate;
-					if (rcSize.x > minXInt) minXInt = rcSize.x;
+					rotLeng = rcSize.getWidth() * 0.5 * sRotate + rcSize.getHeight() * cRotate;
+					if (rcSize.getWidth() > minXInt) minXInt = rcSize.getWidth();
 				}
 				else
 				{
-					rotLeng = rcSize.x * sRotate + rcSize.y * 0.5 * cRotate;
+					rotLeng = rcSize.getWidth() * sRotate + rcSize.getHeight() * 0.5 * cRotate;
 				}
 				if (rotLeng > xLeng)
 					xLeng = rotLeng;
 			}
 		}
-		if (xAxis.GetName().SetTo(s))
+		if ((s = xAxis.getName()) != null)
 		{
-			rcSize = img.GetTextSize(fnt, s.ToCString());
-			xLeng += rcSize.y;
+			rcSize = img.getTextSize(fnt, s);
+			xLeng += rcSize.getHeight();
 		}
 		xLeng += barLeng;
 
-		if (y1Axis.GetType() == DataType::Integer)
+		if (y1Axis instanceof Int32Axis)
 		{
-			NN<Int32Axis> iAxis = NN<Int32Axis>::ConvertFrom(y1Axis);
-			sptr = Text::StrInt32(sbuff, iAxis.GetMax());
-			if (this.yUnit.SetTo(s))
-				sptr = s.ConcatTo(sptr);
-			rcSize = img.GetTextSize(fnt, CSTRP(sbuff, sptr));
-			y1Leng = rcSize.x;
+			Int32Axis iAxis = (Int32Axis)y1Axis;
+			s = String.valueOf(iAxis.getMax());
+			if (this.yUnit != null)
+				s = s + this.yUnit;
+			rcSize = img.getTextSize(fnt, s);
+			y1Leng = rcSize.getWidth();
 
-			sptr = Text::StrInt32(sbuff, iAxis.GetMin());
-			if (this.yUnit.SetTo(s))
-				sptr = s.ConcatTo(sptr);
-			rcSize = img.GetTextSize(fnt, CSTRP(sbuff, sptr));
-			if (rcSize.x > y1Leng)
-				y1Leng = rcSize.x;
+			s = String.valueOf(iAxis.getMin());
+			if (this.yUnit != null)
+				s = s + this.yUnit;
+			rcSize = img.getTextSize(fnt, s);
+			if (rcSize.getWidth() > y1Leng)
+				y1Leng = rcSize.getWidth();
 		}
-		else if (y1Axis.GetType() == DataType::UInteger)
+		else if (y1Axis instanceof DoubleAxis)
 		{
-			NN<UInt32Axis> iAxis = NN<UInt32Axis>::ConvertFrom(y1Axis);
-			sptr = Text::StrUInt32(sbuff, iAxis.GetMax());
-			if (this.yUnit.SetTo(s))
-				sptr = s.ConcatTo(sptr);
-			rcSize = img.GetTextSize(fnt, CSTRP(sbuff, sptr));
-			y1Leng = rcSize.x;
+			DoubleAxis dAxis = (DoubleAxis)y1Axis;
+			DecimalFormat fmt = new DecimalFormat(this.dblFormat);
+			s = fmt.format(dAxis.getMax());
+			if (this.yUnit != null)
+				s = s + this.yUnit;
+			rcSize = img.getTextSize(fnt, s);
+			y1Leng = rcSize.getWidth();
 
-			sptr = Text::StrUInt32(sbuff, iAxis.GetMin());
-			if (this.yUnit.SetTo(s))
-				sptr = s.ConcatTo(sptr);
-			rcSize = img.GetTextSize(fnt, CSTRP(sbuff, sptr));
-			if (rcSize.x > y1Leng)
-				y1Leng = rcSize.x;
+			s = fmt.format(dAxis.getMin());
+			if (this.yUnit != null)
+				s = s + this.yUnit;
+			rcSize = img.getTextSize(fnt, s);
+			if (rcSize.getWidth() > y1Leng)
+				y1Leng = rcSize.getWidth();
 		}
-		else if (y1Axis.GetType() == DataType::DOUBLE)
+		else if (y1Axis instanceof TimeAxis)
 		{
-			NN<DoubleAxis> dAxis = NN<DoubleAxis>::ConvertFrom(y1Axis);
-			sptr = Text::StrDoubleFmt(sbuff, dAxis.GetMax(), UnsafeArray<const Char>::ConvertFrom(this.dblFormat.v));
-			if (this.yUnit.SetTo(s))
-				sptr = s.ConcatTo(sptr);
-			rcSize = img.GetTextSize(fnt, CSTRP(sbuff, sptr));
-			y1Leng = rcSize.x;
+			TimeAxis tAxis = (TimeAxis)y1Axis;
+			dt1 = DateTimeUtil.newZonedDateTime(tAxis.getMax(), this.timeZoneQHR);
+			s = DateTimeUtil.toString(dt1, this.dateFormat);
+			rcSize = img.getTextSize(fnt, s);
+			y1Leng = rcSize.getWidth();
 
-			sptr = Text::StrDoubleFmt(sbuff, dAxis.GetMin(), UnsafeArray<const Char>::ConvertFrom(this.dblFormat.v));
-			if (this.yUnit.SetTo(s))
-				sptr = s.ConcatTo(sptr);
-			rcSize = img.GetTextSize(fnt, CSTRP(sbuff, sptr));
-			if (rcSize.x > y1Leng)
-				y1Leng = rcSize.x;
+			dt1 = DateTimeUtil.newZonedDateTime(tAxis.getMin(), this.timeZoneQHR);
+			s = DateTimeUtil.toString(dt1, this.dateFormat);
+			rcSize = img.getTextSize(fnt, s);;
+			if (rcSize.getWidth() > y1Leng)
+				y1Leng = rcSize.getWidth();
 		}
-		else if (y1Axis.GetType() == DataType::Time)
+		if ((s = y1Axis.getName()) != null)
 		{
-			NN<TimeAxis> tAxis = NN<TimeAxis>::ConvertFrom(y1Axis);
-			dt1.SetInstant(tAxis.GetMax());
-			dt1.ConvertTimeZoneQHR(this.timeZoneQHR);
-			sptr = dt1.ToString(sbuff, UnsafeArray<const Char>::ConvertFrom(this.dateFormat.v));
-			rcSize = img.GetTextSize(fnt, CSTRP(sbuff, sptr));
-			y1Leng = rcSize.x;
-
-			dt1.SetInstant(tAxis.GetMin());
-			dt1.ConvertTimeZoneQHR(this.timeZoneQHR);
-			sptr = dt1.ToString(sbuff, UnsafeArray<const Char>::ConvertFrom(this.dateFormat.v));
-			rcSize = img.GetTextSize(fnt, CSTRP(sbuff, sptr));;
-			if (rcSize.x > y1Leng)
-				y1Leng = rcSize.x;
-		}
-		if (y1Axis.GetName().SetTo(s))
-		{
-			rcSize = img.GetTextSize(fnt, s.ToCString());
-			y1Leng += rcSize.y;
+			rcSize = img.getTextSize(fnt, s);
+			y1Leng += rcSize.getHeight();
 		}
 		y1Leng += barLeng;
 
-		NN<Axis> y2Axis;
-		if (this.y2Axis.SetTo(y2Axis))
+		Axis y2Axis;
+		if ((y2Axis = this.y2Axis) != null)
 		{
-			if (y2Axis.GetType() == DataType::Integer)
+			if (y2Axis instanceof Int32Axis)
 			{
-				NN<Int32Axis> iAxis = NN<Int32Axis>::ConvertFrom(iAxis);
-				sptr = Text::StrInt32(sbuff, iAxis.GetMax());
-				if (this.yUnit.SetTo(s))
-					sptr = s.ConcatTo(sptr);
-				rcSize = img.GetTextSize(fnt, CSTRP(sbuff, sptr));
-				y2Leng = rcSize.x;
+				Int32Axis iAxis = (Int32Axis)y2Axis;
+				s = String.valueOf(iAxis.getMax());
+				if (this.yUnit != null)
+					s = s + this.yUnit;
+				rcSize = img.getTextSize(fnt, s);
+				y2Leng = rcSize.getWidth();
 
-				sptr = Text::StrInt32(sbuff, iAxis.GetMin());
-				if (this.yUnit.SetTo(s))
-					sptr = s.ConcatTo(sptr);
-				rcSize = img.GetTextSize(fnt, CSTRP(sbuff, sptr));
-				if (rcSize.x > y2Leng)
-					y2Leng = rcSize.x;
+				s = String.valueOf(iAxis.getMin());
+				if (this.yUnit != null)
+					s = s + this.yUnit;
+				rcSize = img.getTextSize(fnt, s);
+				if (rcSize.getWidth() > y2Leng)
+					y2Leng = rcSize.getWidth();
 
 				y2Leng += barLeng;
 				y2show = true;
 			}
-			else if (y2Axis.GetType() == DataType::UInteger)
+			else if (y2Axis instanceof DoubleAxis)
 			{
-				NN<Int32Axis> iAxis = NN<Int32Axis>::ConvertFrom(iAxis);
-				sptr = Text::StrInt32(sbuff, iAxis.GetMax());
-				if (this.yUnit.SetTo(s))
-					sptr = s.ConcatTo(sptr);
-				rcSize = img.GetTextSize(fnt, CSTRP(sbuff, sptr));
-				y2Leng = rcSize.x;
+				DoubleAxis dAxis = (DoubleAxis)y2Axis;
+				DecimalFormat fmt = new DecimalFormat(this.dblFormat);
+				s = fmt.format(dAxis.getMax());
+				if (this.yUnit != null)
+					s = s + this.yUnit;
+				rcSize = img.getTextSize(fnt, s);
+				y2Leng = rcSize.getWidth();
 
-				sptr = Text::StrInt32(sbuff, iAxis.GetMin());
-				if (this.yUnit.SetTo(s))
-					sptr = s.ConcatTo(sptr);
-				rcSize = img.GetTextSize(fnt, CSTRP(sbuff, sptr));
-				if (rcSize.x > y2Leng)
-					y2Leng = rcSize.x;
+				s = fmt.format(dAxis.getMin());
+				if (this.yUnit != null)
+					s = s + this.yUnit;
+				rcSize = img.getTextSize(fnt, s);
+				if (rcSize.getWidth() > y2Leng)
+					y2Leng = rcSize.getWidth();
 
 				y2Leng += barLeng;
 				y2show = true;
 			}
-			else if (y2Axis.GetType() == DataType::DOUBLE)
+			else if (y2Axis instanceof TimeAxis)
 			{
-				NN<DoubleAxis> dAxis = NN<DoubleAxis>::ConvertFrom(y2Axis);
-				sptr = Text::StrDoubleFmt(sbuff, dAxis.GetMax(), UnsafeArray<const Char>::ConvertFrom(this.dblFormat.v));
-				if (this.yUnit.SetTo(s))
-					sptr = s.ConcatTo(sptr);
-				rcSize = img.GetTextSize(fnt, CSTRP(sbuff, sptr));
-				y2Leng = rcSize.x;
+				TimeAxis tAxis = (TimeAxis)y2Axis;
+				dt1 = DateTimeUtil.newZonedDateTime(tAxis.getMax(), this.timeZoneQHR);
+				s = DateTimeUtil.toString(dt1, this.dateFormat);
+				rcSize = img.getTextSize(fnt, s);
+				y2Leng = rcSize.getWidth();
 
-				sptr = Text::StrDoubleFmt(sbuff, dAxis.GetMin(), UnsafeArray<const Char>::ConvertFrom(this.dblFormat.v));
-				if (this.yUnit.SetTo(s))
-					sptr = s.ConcatTo(sptr);
-				rcSize = img.GetTextSize(fnt, CSTRP(sbuff, sptr));
-				if (rcSize.x > y2Leng)
-					y2Leng = rcSize.x;
-
-				y2Leng += barLeng;
-				y2show = true;
-			}
-			else if (y2Axis.GetType() == DataType::Time)
-			{
-				NN<TimeAxis> tAxis = NN<TimeAxis>::ConvertFrom(y2Axis);
-				dt1.SetInstant(tAxis.GetMax());
-				dt1.ConvertTimeZoneQHR(this.timeZoneQHR);
-				sptr = dt1.ToString(sbuff, UnsafeArray<const Char>::ConvertFrom(this.dateFormat.v));
-				rcSize = img.GetTextSize(fnt, CSTRP(sbuff, sptr));
-				y2Leng = rcSize.x;
-
-				dt1.SetInstant(tAxis.GetMin());
-				dt1.ConvertTimeZoneQHR(this.timeZoneQHR);
-				sptr = dt1.ToString(sbuff, UnsafeArray<const Char>::ConvertFrom(this.dateFormat.v));
-				rcSize = img.GetTextSize(fnt, CSTRP(sbuff, sptr));
-				if (rcSize.x > y2Leng)
-					y2Leng = rcSize.x;
+				dt1 = DateTimeUtil.newZonedDateTime(tAxis.getMin(), this.timeZoneQHR);
+				s = DateTimeUtil.toString(dt1, this.dateFormat);
+				rcSize = img.getTextSize(fnt, s);
+				if (rcSize.getWidth() > y2Leng)
+					y2Leng = rcSize.getWidth();
 
 				y2Leng += barLeng;
 				y2show = true;
 			}
 			else
 			{
-				y2Leng = (rcSize.y / 2.0);
+				y2Leng = (rcSize.getHeight() / 2.0);
 				y2show = false;
 			}
 		}
 		else
 		{
-			y2Leng = (rcSize.y / 2.0);
+			y2Leng = (rcSize.getHeight() / 2.0);
 			y2show = false;
 		}
 
-		img.DrawLine((Double)(x + y1Leng), (Double)y, (Double)(x + y1Leng), (Double)(y + height - xLeng), boundPen);
-		img.DrawLine((Double)(x + y1Leng), (Double)(y + height - xLeng), (Double)(x + width - y2Leng), (Double)(y + height - xLeng), boundPen);
+		img.drawLine(x + y1Leng, y, x + y1Leng, y + height - xLeng, boundPen);
+		img.drawLine(x + y1Leng, y + height - xLeng, x + width - y2Leng, y + height - xLeng, boundPen);
 		if (y2show)
 		{
-			img.DrawLine((Double)(x + width - y2Leng), (Double)y, (Double)(x + width - y2Leng), (Double)(y + height - xLeng), boundPen);
+			img.drawLine(x + width - y2Leng, y, x + width - y2Leng, y + height - xLeng, boundPen);
 		}
 		
-		Data::ArrayListDbl locations;
-		Data::ArrayListStringNN labels;
-		if (xAxis.GetType() == DataType::Integer)
+		List<Double> locations = new ArrayList<Double>();
+		List<String> labels = new ArrayList<String>();
+		if (xAxis instanceof Int32Axis)
 		{
-			NN<Int32Axis> iAxis = NN<Int32Axis>::ConvertFrom(xAxis);
-			CalScaleMarkInt(locations, labels, iAxis.GetMin(), iAxis.GetMax(), width - y1Leng - y2Leng - this.pointSize * 2, minXInt, 0);
+			Int32Axis iAxis = (Int32Axis)xAxis;
+			calScaleMarkInt(locations, labels, iAxis.getMin(), iAxis.getMax(), width - y1Leng - y2Leng - this.pointSize * 2, minXInt, null);
 		}
-		else if (xAxis.GetType() == DataType::UInteger)
+		else if (xAxis instanceof DoubleAxis)
 		{
-			NN<UInt32Axis> iAxis = NN<UInt32Axis>::ConvertFrom(xAxis);
-			CalScaleMarkUInt(locations, labels, iAxis.GetMin(), iAxis.GetMax(), width - y1Leng - y2Leng - this.pointSize * 2, minXInt, 0);
+			DoubleAxis dAxis = (DoubleAxis)xAxis;
+			calScaleMarkDbl(locations, labels, dAxis.getMin(), dAxis.getMax(), width - y1Leng - y2Leng - this.pointSize * 2, minXInt, this.dblFormat, minDblVal, null);
 		}
-		else if (xAxis.GetType() == DataType::DOUBLE)
+		else if (xAxis instanceof TimeAxis)
 		{
-			NN<DoubleAxis> dAxis = NN<DoubleAxis>::ConvertFrom(xAxis);
-			CalScaleMarkDbl(locations, labels, dAxis.GetMin(), dAxis.GetMax(), width - y1Leng - y2Leng - this.pointSize * 2, minXInt, UnsafeArray<const Char>::ConvertFrom(this.dblFormat.v), minDblVal, 0);
-		}
-		else if (xAxis.GetType() == DataType::Time)
-		{
-			NN<TimeAxis> tAxis = NN<TimeAxis>::ConvertFrom(xAxis);
-			dt1.SetInstant(tAxis.GetMin());
-			dt1.ConvertTimeZoneQHR(this.timeZoneQHR);
-			dt2.SetInstant(tAxis.GetMax());
-			dt2.ConvertTimeZoneQHR(this.timeZoneQHR);
-			CalScaleMarkDate(locations, labels, dt1, dt2, width - y1Leng - y2Leng - this.pointSize * 2, minXInt, UnsafeArray<const Char>::ConvertFrom(this.dateFormat.v), UnsafeArray<const Char>::ConvertFrom(this.timeFormat.v));
+			TimeAxis tAxis = (TimeAxis)xAxis;
+			calScaleMarkDate(locations, labels, Timestamp.from(tAxis.getMin()), Timestamp.from(tAxis.getMax()), width - y1Leng - y2Leng - this.pointSize * 2, minXInt, this.dateFormat, this.timeFormat);
 		}
 		else
 		{
 		}
 
 		i = 0;
-		while (i < locations.GetCount())
+		while (i < locations.size())
 		{
-			img.DrawLine((x + y1Leng + this.pointSize + locations.GetItem(i)), (y + height - xLeng), (x + y1Leng + this.pointSize + locations.GetItem(i)), (y + height - xLeng + barLeng), boundPen);
+			img.drawLine((x + y1Leng + this.pointSize + locations.get(i)), (y + height - xLeng), (x + y1Leng + this.pointSize + locations.get(i)), (y + height - xLeng + barLeng), boundPen);
 			i++;
 		}
 
 		if (xMode == 1)
 		{
 			i = 0;
-			while (i < locations.GetCount())
+			while (i < locations.size())
 			{
-				s = Text::String::OrEmpty(labels.GetItem(i));
-				Math::Size2DDbl strSize = img.GetTextSize(fnt, s.ToCString());
-				img.DrawStringRot(Math::Coord2DDbl((x + y1Leng + this.pointSize + locations.GetItem(i)) - strSize.y * sRotate - strSize.x * 0.5 * cRotate, (y + height + barLeng) + strSize.x * 0.5 * sRotate - strSize.y * cRotate), Text::String::OrEmpty(labels.GetItem(i)), fnt, fontBrush, labelRotate);
+				s = StringUtil.orEmpty(labels.get(i));
+				Size2D strSize = img.getTextSize(fnt, s);
+				img.drawStringRot(new Coord2DDbl((x + y1Leng + this.pointSize + locations.get(i)) - strSize.getHeight() * sRotate - strSize.getWidth() * 0.5 * cRotate, (y + height + barLeng) + strSize.getWidth() * 0.5 * sRotate - strSize.getHeight() * cRotate), StringUtil.orEmpty(labels.get(i)), fnt, fontBrush, labelRotate);
 				i += 1;
 			}
 		}
 		else
 		{
 			i = 0;
-			while (i < locations.GetCount())
+			while (i < locations.size())
 			{
-				s = Text::String::OrEmpty(labels.GetItem(i));
-				Math::Size2DDbl strSize = img.GetTextSize(fnt, s.ToCString());
-				img.DrawStringRot(Math::Coord2DDbl((x + y1Leng + this.pointSize + locations.GetItem(i)) - strSize.y * 0.5 * sRotate - strSize.x * cRotate, (y + height - xLeng + barLeng) + strSize.x * sRotate - strSize.y * 0.5 * cRotate), Text::String::OrEmpty(labels.GetItem(i)), fnt, fontBrush, labelRotate);
+				s = StringUtil.orEmpty(labels.get(i));
+				Size2D strSize = img.getTextSize(fnt, s);
+				img.drawStringRot(new Coord2DDbl((x + y1Leng + this.pointSize + locations.get(i)) - strSize.getHeight() * 0.5 * sRotate - strSize.getWidth() * cRotate, (y + height - xLeng + barLeng) + strSize.getWidth() * sRotate - strSize.getHeight() * 0.5 * cRotate), StringUtil.orEmpty(labels.get(i)), fnt, fontBrush, labelRotate);
 				i += 1;
 			}
 		}
 
-		locations.Clear();
-		i = labels.GetCount();
-		while (i-- > 0)
-		{
-			OPTSTR_DEL(labels.GetItem(i));
-		}
-		labels.Clear();
+		locations.clear();
+		labels.clear();
 
-		if (y1Axis.GetType() == DataType::Integer)
+		if (y1Axis instanceof Int32Axis)
 		{
-			NN<Int32Axis> iAxis = NN<Int32Axis>::ConvertFrom(y1Axis);
-			CalScaleMarkInt(locations, labels, iAxis.GetMin(), iAxis.GetMax(), height - xLeng - fntH / 2 - this.pointSize * 2, fntH, this.yUnit);
+			Int32Axis iAxis = (Int32Axis)y1Axis;
+			calScaleMarkInt(locations, labels, iAxis.getMin(), iAxis.getMax(), height - xLeng - fntH / 2 - this.pointSize * 2, fntH, this.yUnit);
 		}
-		else if (y1Axis.GetType() == DataType::UInteger)
+		else if (y1Axis instanceof DoubleAxis)
 		{
-			NN<UInt32Axis> iAxis = NN<UInt32Axis>::ConvertFrom(y1Axis);
-			CalScaleMarkUInt(locations, labels, iAxis.GetMin(), iAxis.GetMax(), height - xLeng - fntH / 2 - this.pointSize * 2, fntH, this.yUnit);
+			DoubleAxis dAxis = (DoubleAxis)y1Axis;
+			calScaleMarkDbl(locations, labels, dAxis.getMin(), dAxis.getMax(), height - xLeng - fntH / 2 - this.pointSize * 2, fntH, this.dblFormat, minDblVal, this.yUnit);
 		}
-		else if (y1Axis.GetType() == DataType::DOUBLE)
+		else if (y1Axis instanceof TimeAxis)
 		{
-			NN<DoubleAxis> dAxis = NN<DoubleAxis>::ConvertFrom(y1Axis);
-			CalScaleMarkDbl(locations, labels, dAxis.GetMin(), dAxis.GetMax(), height - xLeng - fntH / 2 - this.pointSize * 2, fntH, UnsafeArray<const Char>::ConvertFrom(this.dblFormat.v), minDblVal, this.yUnit);
-		}
-		else if (y1Axis.GetType() == DataType::Time)
-		{
-			NN<TimeAxis> tAxis = NN<TimeAxis>::ConvertFrom(y1Axis);
-			dt1.SetInstant(tAxis.GetMin());
-			dt1.ConvertTimeZoneQHR(this.timeZoneQHR);
-			dt2.SetInstant(tAxis.GetMax());
-			dt2.ConvertTimeZoneQHR(this.timeZoneQHR);
-			CalScaleMarkDate(locations, labels, dt1, dt2, height - xLeng - fntH / 2 - this.pointSize * 2, fntH, UnsafeArray<const Char>::ConvertFrom(this.dateFormat.v), UnsafeArray<const Char>::ConvertFrom(this.timeFormat.v));
+			TimeAxis tAxis = (TimeAxis)y1Axis;
+			calScaleMarkDate(locations, labels, Timestamp.from(tAxis.getMin()), Timestamp.from(tAxis.getMax()), height - xLeng - fntH / 2 - this.pointSize * 2, fntH, this.dateFormat, this.timeFormat);
 		}
 		else
 		{
 		}
 
 		i = 0;
-		while (i < locations.GetCount())
+		while (i < locations.size())
 		{
-			if (locations.GetItem(i))
+			if (locations.get(i) != 0)
 			{
-				img.DrawLine((Double)(x + y1Leng), (Double)(y + height - this.pointSize - xLeng - locations.GetItem(i)), (Double)(x + width - y2Leng), (Double)(y + height - this.pointSize - xLeng - locations.GetItem(i)), gridPen);
+				img.drawLine(x + y1Leng, y + height - this.pointSize - xLeng - locations.get(i), x + width - y2Leng, y + height - this.pointSize - xLeng - locations.get(i), gridPen);
 			}
-			img.DrawLine((Double)(x + y1Leng), (Double)(y + height - this.pointSize - xLeng - locations.GetItem(i)), (Double)(x + y1Leng - barLeng), (Double)(y + height - this.pointSize - xLeng - locations.GetItem(i)), boundPen);
-			s = Text::String::OrEmpty(labels.GetItem(i));
-			rcSize = img.GetTextSize(fnt, s.ToCString());
-			img.DrawString(Math::Coord2DDbl(x + y1Leng - barLeng - rcSize.x, y + height - this.pointSize - xLeng - locations.GetItem(i) - fntH / 2), s.ToCString(), fnt, fontBrush);
+			img.drawLine(x + y1Leng, y + height - this.pointSize - xLeng - locations.get(i), x + y1Leng - barLeng, y + height - this.pointSize - xLeng - locations.get(i), boundPen);
+			s = StringUtil.orEmpty(labels.get(i));
+			rcSize = img.getTextSize(fnt, s);
+			img.drawString(new Coord2DDbl(x + y1Leng - barLeng - rcSize.getWidth(), y + height - this.pointSize - xLeng - locations.get(i) - fntH / 2), s, fnt, fontBrush);
 			i++;
 		}
 
-		if (y1Axis.GetName().SetTo(s))
+		if ((s = y1Axis.getName()) != null)
 		{
-			Math::Size2DDbl sz = img.GetTextSize(fnt, s.ToCString());
-			img.DrawStringRot(Math::Coord2DDbl((x + fntH / 2) - sz.y * 0.5, (y + (height - xLeng) / 2) + sz.x * 0.5), s.ToCString(), fnt, fontBrush, 90);
+			Size2D sz = img.getTextSize(fnt, s);
+			img.drawStringRot(new Coord2DDbl((x + fntH / 2) - sz.getHeight() * 0.5, (y + (height - xLeng) / 2) + sz.getWidth() * 0.5), s, fnt, fontBrush, 90);
 		}
 
-		if (xAxis.GetName().SetTo(s))
+		if ((s = xAxis.getName()) != null)
 		{
-			rcSize = img.GetTextSize(fnt, s.ToCString());
-			img.DrawString(Math::Coord2DDbl((x + y1Leng + (width - y1Leng - y2Leng) / 2 - rcSize.x / 2), (y + height - rcSize.y)), s.ToCString(), fnt, fontBrush);
+			rcSize = img.getTextSize(fnt, s);
+			img.drawString(new Coord2DDbl((x + y1Leng + (width - y1Leng - y2Leng) / 2 - rcSize.getWidth() / 2), (y + height - rcSize.getHeight())), s, fnt, fontBrush);
 		}
 
-		locations.Clear();
-		i = labels.GetCount();
-		while (i-- > 0)
-		{
-			OPTSTR_DEL(labels.GetItem(i));
-		}
-		labels.Clear();
+		locations.clear();
+		labels.clear();
 
 
 	//	System::Drawing::PointF currPos[];
-		Math::Coord2DDbl *currPos;
-		UOSInt currPosLen;
+		Coord2DDbl[] currPos;
+		int currPosLen;
 		
 		i = 0;
-		while (i < this.charts.GetCount())
+		while (i < this.charts.size())
 		{
-			NN<ChartParam> chart = this.charts.GetItemNoCheck(i);
-			if (chart.chartType == ChartType::FilledLine)
+			ChartParam chart = this.charts.get(i);
+			if (chart.chartType == ChartType.FilledLine)
 			{
-				currPosLen = chart.yData.GetCount() + 2;
-				currPos = MemAllocA(Math::Coord2DDbl, currPosLen);
+				currPosLen = chart.yData.getCount() + 2;
+				currPos = new Coord2DDbl[currPosLen];
 			}
 			else
 			{
-				currPosLen = chart.yData.GetCount();
-				currPos = MemAllocA(Math::Coord2DDbl, currPosLen);
+				currPosLen = chart.yData.getCount();
+				currPos = new Coord2DDbl[currPosLen];
+			}
+			int k = currPosLen;
+			while (k-- > 0)
+			{
+				currPos[k] = new Coord2DDbl();
 			}
 
-			Double xChartLeng = width - y1Leng - y2Leng - this.pointSize * 2.0;
-			xAxis.CalcX(chart.xData, currPos, x + y1Leng + this.pointSize, x + y1Leng + this.pointSize + xChartLeng);
+			double xChartLeng = width - y1Leng - y2Leng - this.pointSize * 2.0;
+			xAxis.calcX(chart.xData, currPos, x + y1Leng + this.pointSize, x + y1Leng + this.pointSize + xChartLeng);
 			xChartLeng = height - xLeng - fntH / 2 - this.pointSize * 2;
-			chart.yAxis.CalcY(chart.yData, currPos, y + height - this.pointSize - xLeng, y + height - this.pointSize - xLeng - xChartLeng);
+			chart.yAxis.calcY(chart.yData, currPos, y + height - this.pointSize - xLeng, y + height - this.pointSize - xLeng - xChartLeng);
 
-			if (chart.chartType == ChartType::FilledLine)
+			if (chart.chartType == ChartType.FilledLine)
 			{
 				if (currPosLen >= 4)
 				{
 					j = currPosLen;
 					currPos[j - 2].x = currPos[j - 3].x;
-					currPos[j - 2].y = (Double)(y + height - xLeng);
+					currPos[j - 2].y = y + height - xLeng;
 					currPos[j - 1].x = currPos[0].x;
-					currPos[j - 1].y = (Double)(y + height - xLeng);
-					NN<Media::DrawPen> p = img.NewPenARGB(chart.lineColor, 1, 0, 0);
-					NN<Media::DrawBrush> b = img.NewBrushARGB(chart.fillColor);
-					img.DrawPolygon(currPos, currPosLen, p, b);
-					img.DelBrush(b);
-					img.DelPen(p);
+					currPos[j - 1].y = y + height - xLeng;
+					DrawPen p = img.newPenARGB(chart.lineColor, 1, null);
+					DrawBrush b = img.newBrushARGB(chart.fillColor);
+					img.drawPolygon(currPos, p, b);
 				}
 			}
-			else if (chart.chartType == ChartType::Line)
+			else if (chart.chartType == ChartType.Line)
 			{
 				if (currPosLen >= 2)
 				{
-					NN<Media::DrawPen> pen = img.NewPenARGB(chart.lineColor, this.lineThick, 0, 0);
-					img.DrawPolyline(currPos, currPosLen, pen);
-					img.DelPen(pen);
+					DrawPen pen = img.newPenARGB(chart.lineColor, this.lineThick, null);
+					img.drawPolyline(currPos, pen);
 
-					if (this.pointType == PointType::Circle && this.pointSize > 0)
+					if (this.pointType == PointType.Circle && this.pointSize > 0)
 					{
-						NN<Media::DrawBrush> b = img.NewBrushARGB(chart.lineColor);
+						DrawBrush b = img.newBrushARGB(chart.lineColor);
 						j = currPosLen;
 						while (j-- > 0)
 						{
-							img.DrawEllipse(currPos[j] - this.pointSize, Math::Size2DDbl(this.pointSize * 2.0, this.pointSize * 2.0), 0, b);
+							img.drawEllipse(currPos[j].subtract(this.pointSize), new Size2D(this.pointSize * 2.0, this.pointSize * 2.0), null, b);
 						}
-						img.DelBrush(b);
 					}
 				}
 			}
-			else if (chart.chartType == ChartType::Histogram)
+			else if (chart.chartType == ChartType.Histogram)
 			{
 				if (currPosLen > 0)
 				{
-					NN<Media::DrawPen> p = img.NewPenARGB(chart.lineColor, 1, 0, 0);
-					NN<Media::DrawBrush> b = img.NewBrushARGB(chart.fillColor);
+					DrawPen p = img.newPenARGB(chart.lineColor, 1, null);
+					DrawBrush b = img.newBrushARGB(chart.fillColor);
 					Double lastX;
 					if (currPosLen >= 2)
 					{
@@ -1206,45 +1111,42 @@ public class ChartPlotter {
 					{
 						lastX = x + y1Leng + this.pointSize;
 					}
-					Double yBottom = y + height - this.pointSize - xLeng;
-					Math::Coord2DDbl pg[5];
+					double yBottom = y + height - this.pointSize - xLeng;
+					Coord2DDbl[] pg = new Coord2DDbl[5];
 					j = 0;
 					while (j < currPosLen)
 					{
-						pg[0] = Math::Coord2DDbl(lastX, yBottom);
-						pg[1] = Math::Coord2DDbl(lastX, currPos[j].y);
+						pg[0] = new Coord2DDbl(lastX, yBottom);
+						pg[1] = new Coord2DDbl(lastX, currPos[j].y);
 						pg[2] = currPos[j];
-						pg[3] = Math::Coord2DDbl(pg[2].x, yBottom);
+						pg[3] = new Coord2DDbl(pg[2].x, yBottom);
 						pg[4] = pg[0];
-						img.DrawPolygon(pg, 5, p, b);
+						img.drawPolygon(pg, p, b);
 						lastX = pg[2].x;
 						j++;
 					}
-					img.DelBrush(b);
-					img.DelPen(p);
 				}
 			}
-			else if (chart.chartType == ChartType::Scatter)
+			else if (chart.chartType == ChartType.Scatter)
 			{
-				if (this.pointType == PointType::Circle)
+				if (this.pointType == PointType.Circle)
 				{
-					Double pointSize = this.pointSize;
+					double pointSize = this.pointSize;
 					if (pointSize <= 0)
 					{
 						pointSize = 3;
 					}
-					NN<Media::DrawBrush> b = img.NewBrushARGB(chart.lineColor);
-					UnsafeArray<Optional<Text::String>> labels;
-					NN<Text::String> s;
-					if (chart.labels.SetTo(labels))
+					DrawBrush b = img.newBrushARGB(chart.lineColor);
+					String[] clabels;
+					if ((clabels = chart.labels) != null)
 					{
 						j = currPosLen;
 						while (j-- > 0)
 						{
-							img.DrawEllipse(currPos[j] - pointSize, Math::Size2DDbl(pointSize * 2.0, pointSize * 2.0), 0, b);
-							if (labels[j].SetTo(s))
+							img.drawEllipse(currPos[j].subtract(pointSize), new Size2D(pointSize * 2.0, pointSize * 2.0), null, b);
+							if (clabels[j] != null)
 							{
-								img.DrawString(Math::Coord2DDbl(currPos[j].x + pointSize, currPos[j].y - fntH * 0.5), s, fnt, b);
+								img.drawString(new Coord2DDbl(currPos[j].x + pointSize, currPos[j].y - fntH * 0.5), clabels[j], fnt, b);
 							}
 						}
 					}
@@ -1253,164 +1155,156 @@ public class ChartPlotter {
 						j = currPosLen;
 						while (j-- > 0)
 						{
-							img.DrawEllipse(currPos[j] - pointSize, Math::Size2DDbl(pointSize * 2.0, pointSize * 2.0), 0, b);
+							img.drawEllipse(currPos[j].subtract(pointSize), new Size2D(pointSize * 2.0, pointSize * 2.0), null, b);
 						}
 					}
-					img.DelBrush(b);
 				}
 			}
 
-
-			MemFreeA(currPos);
 			i += 1;
 		}
 
 		if (this.refExist)
 		{
-			Double xChartLeng = height - xLeng - fntH / 2;
-			Int32 iMax = 0;
-			Int32 iMin = 0;
-			Single yPos;
-			Double dMax;
-			Double dMin;
-			Data::TimeInstant tMax;
-			Data::TimeInstant tMin;
+			double xChartLeng = height - xLeng - fntH / 2;
+			int iMax = 0;
+			int iMin = 0;
+			float yPos;
+			double dMax;
+			double dMin;
+			Instant tMax;
+			Instant tMin;
 
-			if (y1Axis.GetType() == DataType::Integer)
+			if (y1Axis instanceof Int32Axis)
 			{
-				NN<Int32Axis> iAxis = NN<Int32Axis>::ConvertFrom(y1Axis);
-				iMax = iAxis.GetMax();
-				iMin = iAxis.GetMin();
+				Int32Axis iAxis = (Int32Axis)y1Axis;
+				iMax = iAxis.getMax();
+				iMin = iAxis.getMin();
 				if (this.refInt >= iMin && this.refInt <= iMax)
 				{
-					yPos = (Single)(y + height - xLeng - (Double)(this.refInt - iMin) / (Single)(iMax - iMin) * xChartLeng);
-					img.DrawLine((Double)(x + y1Leng), (Double)yPos, (Double)(x + width - y2Leng), (Double)yPos, refLinePen);
+					yPos = (float)(y + height - xLeng - (double)(this.refInt - iMin) / (float)(iMax - iMin) * xChartLeng);
+					img.drawLine(x + y1Leng, (double)yPos, x + width - y2Leng, (double)yPos, refLinePen);
 
-					sptr = Text::StrInt32(sbuff, this.refInt);
-					if (this.yUnit.SetTo(s))
-						sptr = s.ConcatTo(sptr);
-					if (this.refType == RefType::LeftAlign)
+					s = String.valueOf(this.refInt);
+					if (this.yUnit != null)
+						s = s + this.yUnit;
+					if (this.refType == RefType.LeftAlign)
 					{
-						rcSize = img.GetTextSize(fnt, CSTRP(sbuff, sptr));
-						img.DrawString(Math::Coord2DDbl(x + y1Leng, yPos - rcSize.y), CSTRP(sbuff, sptr), fnt, fontBrush);
+						rcSize = img.getTextSize(fnt, s);
+						img.drawString(new Coord2DDbl(x + y1Leng, yPos - rcSize.getHeight()), s, fnt, fontBrush);
 					}
-					else if (this.refType == RefType::RightAlign)
+					else if (this.refType == RefType.RightAlign)
 					{
-						rcSize = img.GetTextSize(fnt, CSTRP(sbuff, sptr));
-						img.DrawString(Math::Coord2DDbl(x + width - y2Leng - rcSize.x, yPos - rcSize.y), CSTRP(sbuff, sptr), fnt, fontBrush);
+						rcSize = img.getTextSize(fnt, s);
+						img.drawString(new Coord2DDbl(x + width - y2Leng - rcSize.getWidth(), yPos - rcSize.getHeight()), s, fnt, fontBrush);
 					}
 				}
 			}
-			else if (this.y2Axis.SetTo(y2Axis) && y2Axis.GetType() == DataType::Integer)
+			else if ((y2Axis = this.y2Axis) != null && y2Axis instanceof Int32Axis)
 			{
-				NN<Int32Axis> iAxis = NN<Int32Axis>::ConvertFrom(y2Axis);
-				iMax = iAxis.GetMax();
-				iMin = iAxis.GetMin();
+				Int32Axis iAxis = (Int32Axis)y2Axis;
+				iMax = iAxis.getMax();
+				iMin = iAxis.getMin();
 				if (this.refInt >= iMin && this.refInt <= iMax)
 				{
-					yPos = (Single)(y + height - xLeng - (Double)(this.refInt - iMin) / (Single)(iMax - iMin) * xChartLeng);
-					img.DrawLine((Double)(x + y1Leng), (Double)yPos, (Double)(x + width - y2Leng), (Double)yPos, refLinePen);
+					yPos = (float)(y + height - xLeng - (double)(this.refInt - iMin) / (float)(iMax - iMin) * xChartLeng);
+					img.drawLine((double)(x + y1Leng), (double)yPos, (Double)(x + width - y2Leng), (double)yPos, refLinePen);
 
-					sptr = Text::StrInt32(sbuff, this.refInt);
-					if (this.yUnit.SetTo(s))
-						sptr = s.ConcatTo(sptr);
-					if (this.refType == RefType::LeftAlign)
+					s = String.valueOf(this.refInt);
+					if (this.yUnit != null)
+						s = s + this.yUnit;
+					if (this.refType == RefType.LeftAlign)
 					{
-						rcSize = img.GetTextSize(fnt, CSTRP(sbuff, sptr));
-						img.DrawString(Math::Coord2DDbl(x + y1Leng, yPos - rcSize.y), CSTRP(sbuff, sptr), fnt, fontBrush);
+						rcSize = img.getTextSize(fnt, s);
+						img.drawString(new Coord2DDbl(x + y1Leng, yPos - rcSize.getHeight()), s, fnt, fontBrush);
 					}
-					else if (this.refType == RefType::RightAlign)
+					else if (this.refType == RefType.RightAlign)
 					{
-						rcSize = img.GetTextSize(fnt, CSTRP(sbuff, sptr));
-						img.DrawString(Math::Coord2DDbl(x + width - y2Leng - rcSize.x, yPos - rcSize.y), CSTRP(sbuff, sptr), fnt, fontBrush);
+						rcSize = img.getTextSize(fnt, s);
+						img.drawString(new Coord2DDbl(x + width - y2Leng - rcSize.getWidth(), yPos - rcSize.getHeight()), s, fnt, fontBrush);
 					}
 				}
 			}
 
-			if (y1Axis.GetType() == DataType::DOUBLE)
+			if (y1Axis instanceof DoubleAxis)
 			{
-				NN<DoubleAxis> dAxis = NN<DoubleAxis>::ConvertFrom(y1Axis);
-				dMax = dAxis.GetMax();
-				dMin = dAxis.GetMin();
+				DoubleAxis dAxis = (DoubleAxis)y1Axis;
+				dMax = dAxis.getMax();
+				dMin = dAxis.getMin();
 				if (this.refDbl >= dMin && this.refDbl <= dMax)
 				{
-					yPos = (Single)(y + height - xLeng - (this.refDbl - dMin) / (dMax - dMin) * xChartLeng);
-					img.DrawLine((Double)(x + y1Leng), (Double)yPos, (Double)(x + width - y2Leng), (Double)yPos, refLinePen);
+					DecimalFormat fmt = new DecimalFormat(this.dblFormat);
+					yPos = (float)(y + height - xLeng - (this.refDbl - dMin) / (dMax - dMin) * xChartLeng);
+					img.drawLine((double)(x + y1Leng), (double)yPos, (double)(x + width - y2Leng), (double)yPos, refLinePen);
 
-					sptr = Text::StrDoubleFmt(sbuff, this.refDbl, UnsafeArray<const Char>::ConvertFrom(this.dblFormat.v));
-					if (this.yUnit.SetTo(s))
-						sptr = s.ConcatTo(sptr);
-					if (this.refType == RefType::LeftAlign)
+					s = fmt.format(this.refDbl);
+					if (this.yUnit != null)
+						s = s + this.yUnit;
+					if (this.refType == RefType.LeftAlign)
 					{
-						rcSize = img.GetTextSize(fnt, CSTRP(sbuff, sptr));
-						img.DrawString(Math::Coord2DDbl(x + y1Leng, yPos - rcSize.y), CSTRP(sbuff, sptr), fnt, fontBrush);
+						rcSize = img.getTextSize(fnt, s);
+						img.drawString(new Coord2DDbl(x + y1Leng, yPos - rcSize.getHeight()), s, fnt, fontBrush);
 					}
-					else if (this.refType == RefType::RightAlign)
+					else if (this.refType == RefType.RightAlign)
 					{
-						rcSize = img.GetTextSize(fnt, CSTRP(sbuff, sptr));
-						img.DrawString(Math::Coord2DDbl(x + width - y2Leng - rcSize.x, yPos - rcSize.y), CSTRP(sbuff, sptr), fnt, fontBrush);
+						rcSize = img.getTextSize(fnt, s);
+						img.drawString(new Coord2DDbl(x + width - y2Leng - rcSize.getWidth(), yPos - rcSize.getHeight()), s, fnt, fontBrush);
 					}
 				}
 			}
-			else if (this.y2Axis.SetTo(y2Axis) && y2Axis.GetType() == DataType::DOUBLE)
+			else if ((y2Axis = this.y2Axis) != null && y2Axis instanceof DoubleAxis)
 			{
-				NN<DoubleAxis> dAxis = NN<DoubleAxis>::ConvertFrom(y2Axis);
-				dMax = dAxis.GetMax();
-				dMin = dAxis.GetMin();
+				DoubleAxis dAxis = (DoubleAxis)y2Axis;
+				dMax = dAxis.getMax();
+				dMin = dAxis.getMin();
 				if (this.refDbl >= dMin && this.refDbl <= dMax)
 				{
-					yPos = (Single)(y + height - xLeng - (this.refDbl - dMin) / (dMax - dMin) * xChartLeng);
-					img.DrawLine((Double)(x + y1Leng), (Double)yPos, (Double)(x + width - y2Leng), (Double)yPos, refLinePen);
+					DecimalFormat fmt = new DecimalFormat(this.dblFormat);
+					yPos = (float)(y + height - xLeng - (this.refDbl - dMin) / (dMax - dMin) * xChartLeng);
+					img.drawLine((double)(x + y1Leng), (double)yPos, (double)(x + width - y2Leng), (double)yPos, refLinePen);
 
-					sptr = Text::StrDoubleFmt(sbuff, this.refDbl, UnsafeArray<const Char>::ConvertFrom(this.dblFormat.v));
-					if (this.yUnit.SetTo(s))
-						sptr = s.ConcatTo(sptr);
-					if (this.refType == RefType::LeftAlign)
+					s = fmt.format(this.refDbl);
+					if (this.yUnit != null)
+						s = s + this.yUnit;
+					if (this.refType == RefType.LeftAlign)
 					{
-						rcSize = img.GetTextSize(fnt, CSTRP(sbuff, sptr));
-						img.DrawString(Math::Coord2DDbl(x + y1Leng, yPos - rcSize.y), CSTRP(sbuff, sptr), fnt, fontBrush);
+						rcSize = img.getTextSize(fnt, s);
+						img.drawString(new Coord2DDbl(x + y1Leng, yPos - rcSize.getHeight()), s, fnt, fontBrush);
 					}
-					else if (this.refType == RefType::RightAlign)
+					else if (this.refType == RefType.RightAlign)
 					{
-						rcSize = img.GetTextSize(fnt, CSTRP(sbuff, sptr));
-						img.DrawString(Math::Coord2DDbl(x + width - y2Leng - rcSize.x, yPos - rcSize.y), CSTRP(sbuff, sptr), fnt, fontBrush);
+						rcSize = img.getTextSize(fnt, s);
+						img.drawString(new Coord2DDbl(x + width - y2Leng - rcSize.getWidth(), yPos - rcSize.getHeight()), s, fnt, fontBrush);
 					}
 				}
 			}
 
-			if (!this.refTime.IsZero())
+			if (this.refTime.getEpochSecond() != 0)
 			{
-				if (y1Axis.GetType() == DataType::Time)
+				if (y1Axis instanceof TimeAxis)
 				{
-					NN<TimeAxis> tAxis = NN<TimeAxis>::ConvertFrom(y1Axis);
-					tMax = tAxis.GetMax();
-					tMin = tAxis.GetMin();
-					if (this.refTime >= tMin && this.refTime <= tMax)
+					TimeAxis tAxis = (TimeAxis)y1Axis;
+					tMax = tAxis.getMax();
+					tMin = tAxis.getMin();
+					if (this.refTime.compareTo(tMin) >= 0 && this.refTime.compareTo(tMax) <= 0)
 					{
-						yPos = (Single)(y + height - xLeng - this.refTime.DiffSecDbl(tMin) / tMax.DiffSecDbl(tMin) * xChartLeng);
-						img.DrawLine((Double)(x + y1Leng), (Double)yPos, (Double)(x + width - y2Leng), (Double)yPos, refLinePen);
+						yPos = (float)(y + height - xLeng - DateTimeUtil.timeDiffSec(this.refTime, tMin) / DateTimeUtil.timeDiffSec(tMax, tMin) * xChartLeng);
+						img.drawLine((double)(x + y1Leng), (double)yPos, (double)(x + width - y2Leng), (double)yPos, refLinePen);
 					}
 				}
-				else if (this.y2Axis.SetTo(y2Axis) && y2Axis.GetType() == DataType::Time)
+				else if ((y2Axis = this.y2Axis) != null && y2Axis instanceof TimeAxis)
 				{
-					NN<TimeAxis> tAxis = NN<TimeAxis>::ConvertFrom(y2Axis);
-					tMax = tAxis.GetMax();
-					tMin = tAxis.GetMin();
-					if (this.refTime >= tMin && this.refTime <= tMax)
+					TimeAxis tAxis = (TimeAxis)y2Axis;
+					tMax = tAxis.getMax();
+					tMin = tAxis.getMin();
+					if (this.refTime.compareTo(tMin) >= 0 && this.refTime.compareTo(tMax) <= 0)
 					{
-						yPos = (Single)(y + height - xLeng - this.refTime.DiffSecDbl(tMin) / tMax.DiffSecDbl(tMin) * xChartLeng);
-						img.DrawLine((Double)(x + y1Leng), (Double)yPos, (Double)(x + width - y2Leng), (Double)yPos, refLinePen);
+						yPos = (float)(y + height - xLeng - DateTimeUtil.timeDiffSec(this.refTime, tMin) / DateTimeUtil.timeDiffSec(tMax, tMin) * xChartLeng);
+						img.drawLine((double)(x + y1Leng), (double)yPos, (double)(x + width - y2Leng), (double)yPos, refLinePen);
 					}
 				}
 			}
 		}
-
-		img.DelFont(fnt);
-		img.DelBrush(bgBrush);
-		img.DelPen(boundPen);
-		img.DelBrush(fontBrush);
-		img.DelPen(gridPen);
-		img.DelPen(refLinePen);
 	}
 
 	public int getLegendCount()
@@ -1434,10 +1328,10 @@ public class ChartPlotter {
 		{
 			FileOutputStream fs = new FileOutputStream(fileName);
 			BufferedImage img = new BufferedImage(size.getWidth(), size.getHeight(), BufferedImage.TYPE_INT_ARGB);
-			Graphics2D g = img.createGraphics();
+			DrawImage dimg = new DrawImage(img.createGraphics());
 			
-			this.plot(g, 0, 0, size.getWidth(), size.getHeight());
-			g.dispose();
+			this.plot(dimg, 0, 0, size.getWidth(), size.getHeight());
+			dimg.dispose();
 			StaticImage simg = new StaticImage(img);
 			if (ImageUtil.saveAsPng(simg, fs))
 			{

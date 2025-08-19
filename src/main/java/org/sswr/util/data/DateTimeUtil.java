@@ -965,6 +965,11 @@ public class DateTimeUtil
 	public static long getMSPassedLocalDate(@Nonnull Timestamp ts)
 	{
 		ZonedDateTime d = ZonedDateTime.ofInstant(ts.toInstant(), ZoneId.systemDefault());
+		return getMSPassedLocalDate(d);
+	}
+
+	public static long getMSPassedLocalDate(@Nonnull ZonedDateTime d)
+	{
 		return (long)(d.getNano() / 1000000) + d.getSecond() * 1000 + d.getMinute() * 60000 + d.getHour() * 3600000;
 	}
 
