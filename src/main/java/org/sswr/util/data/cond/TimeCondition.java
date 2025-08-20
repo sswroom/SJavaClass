@@ -102,9 +102,8 @@ public class TimeCondition extends BooleanObject
 		Timestamp leftVal = this.left.eval(getter);
 		Timestamp rightVal = this.right.eval(getter);
 		if (leftVal == null || rightVal == null)
-			return false;
-		tsCompare(leftVal, rightVal, this.cond);
-		return true;		
+			throw new IllegalAccessError("Error in getting date time value");
+		return tsCompare(leftVal, rightVal, this.cond);
 	}
 
 	public @Nonnull TimeObject getLeft()

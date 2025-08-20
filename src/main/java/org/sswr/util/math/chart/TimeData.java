@@ -40,13 +40,13 @@ public class TimeData implements ChartData
 		}
 	}
 
-	public TimeData(@Nonnull List<Timestamp> timeArr)
+	public TimeData(@Nonnull List<Timestamp> timeArr, int ofst, int count)
 	{
-		this.timeArr = new Instant[timeArr.size()];
-		int i = timeArr.size();
+		this.timeArr = new Instant[count];
+		int i = count;
 		while (i-- > 0)
 		{
-			this.timeArr[i] = timeArr.get(i).toInstant();
+			this.timeArr[i] = timeArr.get(i + ofst).toInstant();
 		}
 	}
 	

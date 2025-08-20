@@ -16,13 +16,13 @@ public class Int32Data implements ChartData {
 		}
 	}
 
-	public Int32Data(@Nonnull List<Integer> intArr)
+	public Int32Data(@Nonnull List<Integer> intArr, int ofst, int count)
 	{
-		this.intArr = new int[intArr.size()];
-		int i = intArr.size();
+		this.intArr = new int[count];
+		int i = count;
 		while (i-- > 0)
 		{
-			this.intArr[i] = intArr.get(i).intValue();
+			this.intArr[i] = intArr.get(i + ofst).intValue();
 		}
 	}
 

@@ -1834,4 +1834,27 @@ public class DataTools {
 			return null;
 		}
 	}
+
+	@Nonnull
+	public static <T> Map<T, Integer> valueCounts(@Nonnull Iterable<T> arr)
+	{
+		Integer cnt;
+		Map<T, Integer> ret = new HashMap<T, Integer>();
+		Iterator<T> it = arr.iterator();
+		T v;
+		while (it.hasNext())
+		{
+			v = it.next();
+			cnt = ret.get(v);
+			if (cnt == null)
+			{
+				ret.put(v, 1);
+			}
+			else
+			{
+				ret.put(v, cnt.intValue() + 1);
+			}
+		}
+		return ret;
+	}
 }

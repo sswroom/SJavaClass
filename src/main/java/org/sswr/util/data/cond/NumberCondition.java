@@ -123,7 +123,7 @@ public class NumberCondition extends BooleanObject
 		if (this.left.getNumberType(getter) == NumberType.F64 || this.right.getNumberType(getter) == NumberType.F64)
 		{
 			double leftVal = this.left.evalDouble(getter);
-			Double rightVal = this.right.evalDouble(getter);
+			double rightVal = this.right.evalDouble(getter);
 			return floatCompare(leftVal, rightVal, this.cond);
 		}
 		else

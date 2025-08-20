@@ -26,6 +26,10 @@ public class VariItemUtil {
 		{
 			return DateTimeUtil.toTimestamp((ZonedDateTime)v);
 		}
+		else if (v instanceof String)
+		{
+			return DateTimeUtil.toTimestamp(DateTimeUtil.parse((String)v));
+		}
 		System.out.println("VariItemUtil.asTimestamp: Unknown type: "+v.getClass().toString());
 		return null;
 	}

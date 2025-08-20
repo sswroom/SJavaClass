@@ -2,12 +2,12 @@ package org.sswr.util.basic;
 
 import jakarta.annotation.Nullable;
 
-public class ArrayListInt32 extends SortableArrayList<Integer>
+public class ArrayListInt32 extends SortableArrayListNum<Integer>
 {
 	private static final long serialVersionUID = 6357929868L;
 	
 	@Override
-	public int compareItem(@Nullable Integer obj1, @Nullable Integer obj2)
+	public int compare(@Nullable Integer obj1, @Nullable Integer obj2)
 	{
 		int i1;
 		int i2;

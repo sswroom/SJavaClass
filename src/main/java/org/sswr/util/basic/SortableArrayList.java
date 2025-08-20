@@ -1,15 +1,16 @@
 package org.sswr.util.basic;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 
 import jakarta.annotation.Nullable;
 
-public abstract class SortableArrayList<T> extends ArrayList<T>
+public abstract class SortableArrayList<T> extends ArrayList<T> implements Comparator<T>
 {
 	private static final long serialVersionUID = -4816476556L;
 	
-	public abstract int compareItem(@Nullable T obj1, @Nullable T obj2);
-
 	public int sortedInsert(@Nullable T val)
 	{
 		int i;
@@ -21,7 +22,7 @@ public abstract class SortableArrayList<T> extends ArrayList<T>
 		while (i <= j)
 		{
 			k = (i + j) >> 1;
-			l = compareItem(this.get(k), val);
+			l = compare(this.get(k), val);
 			if (l > 0)
 			{
 				j = k - 1;
@@ -52,7 +53,7 @@ public abstract class SortableArrayList<T> extends ArrayList<T>
 		while (i <= j)
 		{
 			k = (i + j) >> 1;
-			l = this.compareItem(this.get(k), val);
+			l = this.compare(this.get(k), val);
 			if (l > 0)
 			{
 				j = k - 1;
@@ -68,4 +69,55 @@ public abstract class SortableArrayList<T> extends ArrayList<T>
 		}
 		return -i - 1;
 	}
+
+	public @Nullable T min()
+	{
+		int i = this.size();
+		if (this.size() == 0)
+			return null;
+		T v = this.get(0);
+		while (i-- > 1)
+		{
+			if (this.compare(this.get(i), v) < 0)
+			{
+				v = this.get(i);
+			}
+		}
+		return v;
+	}
+
+	public @Nullable T max()
+	{
+		int i = this.size();
+		if (this.size() == 0)
+			return null;
+		T v = this.get(0);
+		while (i-- > 1)
+		{
+			if (this.compare(this.get(i), v) > 0)
+			{
+				v = this.get(i);
+			}
+		}
+		return v;
+	}
+
+	public @Nullable T median()
+	{
+		int cnt = this.size();
+		if (cnt == 0)
+			return null;
+		if (cnt == 1)
+			return this.get(0);
+		@SuppressWarnings("unchecked")
+		T[] tmpArr = (T[])Array.newInstance(this.get(0).getClass(), cnt);
+		int i = 0;
+		while (i < cnt)
+		{
+			tmpArr[i] = this.get(i);
+			i++;
+		}
+		Arrays.sort(tmpArr, this);
+		return tmpArr[cnt >> 1];
+	}	
 }

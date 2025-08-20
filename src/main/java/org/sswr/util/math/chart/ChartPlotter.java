@@ -1774,17 +1774,32 @@ public class ChartPlotter {
 
 	public static @Nonnull TimeData newDataTime(@Nonnull List<Timestamp> data)
 	{
-		return new TimeData(data);
+		return new TimeData(data, 0, data.size());
+	}
+
+	public static @Nonnull TimeData newDataTime(@Nonnull List<Timestamp> data, int ofst, int count)
+	{
+		return new TimeData(data, ofst, count);
 	}
 
 	public static @Nonnull Int32Data newDataInt32(@Nonnull List<Integer> data)
 	{
-		return new Int32Data(data);
+		return new Int32Data(data, 0, data.size());
+	}
+
+	public static @Nonnull Int32Data newDataInt32(@Nonnull List<Integer> data, int ofst, int count)
+	{
+		return new Int32Data(data, ofst, count);
 	}
 
 	public static @Nonnull DoubleData newDataDouble(@Nonnull List<Double> data)
 	{
-		return new DoubleData(data);
+		return new DoubleData(data, 0, data.size());
+	}
+
+	public static @Nonnull DoubleData newDataDouble(@Nonnull List<Double> data, int ofst, int count)
+	{
+		return new DoubleData(data, ofst, count);
 	}
 
 	public static @Nonnull Int32Data newDataSeq(int startSeq, int count)

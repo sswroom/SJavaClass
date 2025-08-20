@@ -1,6 +1,6 @@
 package org.sswr.util.data;
 
-public class RandomMT19937
+public class RandomMT19937 implements RandomGenerator
 {
 	private int mt[];
 	private int mt_index;
@@ -17,6 +17,11 @@ public class RandomMT19937
 			this.mt[i] = (int)((1812433253L * (this.mt[i - 1] ^ ((this.mt[i - 1] >> 30) & 3)) + i) & 0xffffffff);
 			i++;
 		}
+	}
+
+	public double nextDouble()
+	{
+		return (this.nextInt32() & 0x7fffffff) / 2147483647.0;
 	}
 
 	public int nextInt32()

@@ -7,7 +7,7 @@ public class ArrayListStr extends SortableArrayList<String>
 	private static final long serialVersionUID = 2229777143L;
 	
 	@Override
-	public int compareItem(@Nullable String obj1, @Nullable String obj2)
+	public int compare(@Nullable String obj1, @Nullable String obj2)
 	{
 		if (obj1 == obj2)
 			return 0;

@@ -17,13 +17,13 @@ public class DoubleData implements ChartData
 		}
 	}
 
-	public DoubleData(@Nonnull List<Double> dblArr)
+	public DoubleData(@Nonnull List<Double> dblArr, int ofst, int count)
 	{
-		this.dblArr = new double[dblArr.size()];
-		int i = dblArr.size();
+		this.dblArr = new double[count];
+		int i = count;
 		while (i-- > 0)
 		{
-			this.dblArr[i] = dblArr.get(i).doubleValue();
+			this.dblArr[i] = dblArr.get(i + ofst).doubleValue();
 		}
 	}
 

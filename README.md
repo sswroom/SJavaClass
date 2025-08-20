@@ -3,6 +3,7 @@
 # Changes:
 0.8.xxxxx
 -Added ArrayListTS
+-Added ArrayListDbl
 -Added DataSet
 -Added DataSetGrouper
 -Added DataSetMonthGrouper
@@ -39,6 +40,11 @@
 -Added CharUtil.isDoubleSize(int)
 -Added UTF32Reader.peekChar, isNextChar
 -Added math.chart.*
+-Added TextDB
+-Added TextDBRader
+-Added TextFileLoader
+-Added SortableArrayListNum
+-Added RandomGenerator
 -Change QueryConditions to non-template
 -Support AutoIncType
 -Change CharReader to use StringBuilderUTF8

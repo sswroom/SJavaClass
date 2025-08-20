@@ -1,11 +1,11 @@
 package org.sswr.util.data;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map.Entry;
+
+import org.sswr.util.basic.ArrayListInt32;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
@@ -74,7 +74,8 @@ public class DataSet {
 		public int count;
 	}
 
-	public List<Integer> valueCounts()
+	@Nonnull
+	public ArrayListInt32 valueCounts()
 	{
 		VariItemHashCalc hashCalc = new VariItemHashCalc();
 		HashMap<Long, ValueItem> itemMap = new HashMap<Long, ValueItem>();
@@ -118,7 +119,7 @@ public class DataSet {
 			}
 			i++;
 		}
-		List<Integer> result = new ArrayList<Integer>();
+		ArrayListInt32 result = new ArrayListInt32();
 		Iterator<Entry<Long, ValueItem>> it = itemMap.entrySet().iterator();
 		Entry<Long, ValueItem> entry;
 		while (it.hasNext())

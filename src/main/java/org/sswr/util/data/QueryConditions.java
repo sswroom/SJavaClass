@@ -237,33 +237,33 @@ public class QueryConditions
 		return this;
 	}
 
-	public @Nonnull QueryConditions strIn(@Nonnull String fieldName, @Nonnull Iterable<String> vals) throws NoSuchFieldException
+	public @Nonnull QueryConditions strIn(@Nonnull String fieldName, @Nonnull Iterable<String> vals)
 	{
 		this.andCond.addAnd(new StringInCondition(fieldName, vals));
 		return this;
 	}
 
-	public @Nonnull QueryConditions strNotIn(@Nonnull String fieldName, @Nonnull Iterable<String> vals) throws NoSuchFieldException
+	public @Nonnull QueryConditions strNotIn(@Nonnull String fieldName, @Nonnull Iterable<String> vals)
 	{
 		this.andCond.addAnd(new StringNotInCondition(fieldName, vals));
 		return this;
 	}
 
-	public @Nonnull QueryConditions strContains(@Nonnull String fieldName, @Nonnull String val) throws NoSuchFieldException
+	public @Nonnull QueryConditions strContains(@Nonnull String fieldName, @Nonnull String val)
 	{
 		this.andCond.addAnd(new StringContainsCondition(fieldName, val));
 		return this;
 	}
 
 	@Nonnull
-	public QueryConditions strEquals(@Nonnull String fieldName, @Nonnull String val) throws NoSuchFieldException
+	public QueryConditions strEquals(@Nonnull String fieldName, @Nonnull String val)
 	{
 		this.andCond.addAnd(new StringEqualsCondition(fieldName, val));
 		return this;
 	}
 
 	@Nonnull
-	public QueryConditions boolEquals(@Nonnull String fieldName, boolean val) throws NoSuchFieldException
+	public QueryConditions boolEquals(@Nonnull String fieldName, boolean val)
 	{
 		this.andCond.addAnd(new BooleanCondition(fieldName, val));
 		return this;
@@ -312,7 +312,7 @@ public class QueryConditions
 		return this;
 	}
 	
-	public @Nonnull QueryConditions notNull(@Nonnull String fieldName) throws NoSuchFieldException
+	public @Nonnull QueryConditions notNull(@Nonnull String fieldName)
 	{
 		this.andCond.addAnd(new NotNullCondition(fieldName));
 		return this;
