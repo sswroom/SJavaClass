@@ -5,6 +5,7 @@ import org.sswr.util.math.CoordinateSystem;
 import org.sswr.util.math.RectAreaDbl;
 
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 public abstract class Vector2D
 {
@@ -79,6 +80,8 @@ public abstract class Vector2D
 	public abstract void convCSys(@Nonnull CoordinateSystem srcCSys, @Nonnull CoordinateSystem destCSys);
 	public abstract boolean equals(@Nonnull Vector2D vec, boolean sameTypeOnly, boolean nearlyVal);
 	public abstract boolean insideOrTouch(@Nonnull Coord2DDbl coord);
+	public boolean hasCurve() { return false; }
+	public @Nullable Vector2D toSimpleShape() { return this.clone(); }
 
 	public int getSRID()
 	{

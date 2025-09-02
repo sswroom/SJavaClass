@@ -1,5 +1,6 @@
 package org.sswr.util.math.geometry;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -8,6 +9,7 @@ import org.sswr.util.data.GeometryUtil;
 import org.sswr.util.math.Coord2DDbl;
 
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 public class CompoundCurve extends MultiGeometry<LineString>
 {
@@ -85,4 +87,14 @@ public class CompoundCurve extends MultiGeometry<LineString>
 		}
 		return ret;
 	}	
+
+	public boolean hasCurve() { return true; }
+	public @Nullable Vector2D toSimpleShape()
+	{
+		List<Coord2DDbl> ptList = new ArrayList<Coord2DDbl>();
+		LineString ls;
+		this.getDrawPoints(ptList);
+		ls = new LineString(this.srid, ptList.toArray(new Coord2DDbl[0]), null, null);
+		return ls;
+	}
 }

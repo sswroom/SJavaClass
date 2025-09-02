@@ -1857,4 +1857,14 @@ public class DataTools {
 		}
 		return ret;
 	}
+
+	public static <T> void insertRange(@Nonnull List<T> destList, int destIndex, int destCount, @Nonnull List<T> srcList, int srcIndex)
+	{
+		int i = 0;
+		while (i < destCount)
+		{
+			destList.add(destIndex + i, srcList.get(srcIndex + i));
+			i++;
+		}
+	}
 }

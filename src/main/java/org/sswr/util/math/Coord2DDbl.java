@@ -102,6 +102,18 @@ public class Coord2DDbl
 		return new Coord2DDbl(this.x * val.x, this.y * val.y);
 	}
 
+	@Nonnull
+	public Coord2DDbl divide(double val)
+	{
+		return new Coord2DDbl(this.x / val, this.y / val);
+	}
+
+	@Nonnull
+	public Coord2DDbl divide(@Nonnull Coord2DDbl val)
+	{
+		return new Coord2DDbl(this.x / val.x, this.y / val.y);
+	}
+
 	public boolean equals(@Nonnull Coord2DDbl coord)
 	{
 		return (this.x == coord.x) && (this.y == coord.y);

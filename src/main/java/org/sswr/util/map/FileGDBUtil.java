@@ -206,7 +206,7 @@ public class FileGDBUtil
 
 	public static int readVarInt(@Nonnull byte []buff, int ofst, @Nonnull SharedLong val)
 	{
-		boolean sign = (buff[0] & 0x40) != 0;
+		boolean sign = (buff[ofst] & 0x40) != 0;
 		long v = 0;
 		int i = 0;
 		long currV;

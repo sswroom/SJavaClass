@@ -6,6 +6,7 @@ import java.util.Iterator;
 import org.sswr.util.math.Coord2DDbl;
 
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 public class CurvePolygon extends MultiGeometry<Vector2D>
 {
@@ -79,4 +80,7 @@ public class CurvePolygon extends MultiGeometry<Vector2D>
 	{
 		return this.curveToLine().insideOrTouch(coord);
 	}
+
+	public boolean hasCurve() { return true; }
+	public @Nullable Vector2D toSimpleShape() { return this.curveToLine(); }
 }

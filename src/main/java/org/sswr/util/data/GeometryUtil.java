@@ -473,6 +473,103 @@ public class GeometryUtil
 		return pg;
 	}
 
+	public static int arcToLine(@Nonnull Coord2DDbl pt1, @Nonnull Coord2DDbl pt2, @Nonnull Coord2DDbl pt3, double minDist, @Nonnull List<Coord2DDbl> ptOut)
+	{
+		double eps = 1e-5;
+		Coord2DDbl v1 = pt2.subtract(pt3);
+		double dist1 = Math.sqrt(v1.x * v1.x + v1.y * v1.y);
+		v1 = v1.divide(dist1);
+		Coord2DDbl v2 = pt2.subtract(pt1);
+		double dist2 = Math.sqrt(v2.x * v2.x + v2.y * v2.y);
+		v2 = v2.divide(dist2);
+		double det = v1.x * v2.y - v1.y * v2.x;
+		if (Math.abs(det) < eps)
+		{
+			if (pt1.equals(pt3) && !pt2.equals(pt1))
+			{
+				Coord2DDbl c = pt1.add(pt2).multiply(0.5);
+				double r = c.calcLengTo(pt1);
+				int nPoints = (int)((2 * Math.PI * r) / minDist);
+				if (nPoints < 6)
+				{
+					nPoints = 6;
+				}
+				else if (nPoints > 20)
+				{
+					nPoints = 20;
+				}
+				double ratio = 2 * Math.PI / (double)nPoints;
+				double a = Math.atan2(pt1.x - c.x, pt1.y - c.y);
+				double angle;
+				int i = 0;
+				while (i < nPoints)
+				{
+					angle = (double)i * ratio + a;
+					ptOut.add(c.add(new Coord2DDbl(r * Math.cos(angle), r * Math.sin(angle))));
+					i++;
+				}
+				ptOut.add(pt1);
+				return nPoints + 1;
+			}
+			else
+			{
+				ptOut.add(pt1);
+				ptOut.add(pt2);
+				ptOut.add(pt3);
+				return 3;
+			}
+		}
+		Coord2DDbl mid1 = pt2.add(pt3).multiply(0.5);
+		Coord2DDbl mid2 = pt2.add(pt1).multiply(0.5);
+	
+		double b1 = v1.x * mid1.x + v1.y * mid1.y;
+		double b2 = v2.x * mid2.x + v2.y * mid2.y;
+	
+		double centerX =  v2.y / det * b1 - v1.y / det * b2;
+		double centerY = -v2.x / det * b1 + v1.x / det * b2;
+	
+		Coord2DDbl center = new Coord2DDbl(centerX, centerY);
+		double radius = Math.sqrt((pt2.x-center.x)*(pt2.x-center.x) + (pt2.y-center.y)*(pt2.y-center.y));
+		double startAngle = Math.atan2(pt1.y - center.y, pt1.x - center.x);
+		double movingAngle = Math.atan2(pt2.y - center.y, pt2.x - center.x);
+		double endAngle = Math.atan2(pt3.y - center.y, pt3.x - center.x);
+		double angleDiff;
+	
+		boolean isClockwise;
+		if ((endAngle > startAngle && startAngle < movingAngle && movingAngle < endAngle) ||
+			(endAngle < startAngle && !(endAngle < movingAngle && movingAngle < startAngle))) {
+			isClockwise = true;
+			angleDiff = endAngle - startAngle;
+			if (angleDiff < 0)
+				angleDiff += 2 * Math.PI;
+		} else {
+			isClockwise = false;
+			angleDiff = startAngle - endAngle;
+			if (angleDiff < 0)
+				angleDiff += 2 * Math.PI;
+		}
+		double leng = radius * angleDiff;
+		int pointCnt = (int)(leng / minDist);
+		if (pointCnt < 6)
+			pointCnt = 6;
+		angleDiff /= (double)pointCnt;
+		if (!isClockwise)
+		{
+			angleDiff = -angleDiff;
+		}
+		double currAngle = startAngle;
+		int i = 0;
+		while (i < pointCnt)
+		{
+			ptOut.add(new Coord2DDbl(radius * Math.cos(currAngle), radius * Math.sin(currAngle)).add(center));
+			currAngle += angleDiff;
+			i++;
+		}
+		ptOut.add(pt3);
+		return pointCnt + 1;
+	}
+
+/*
 	private static double sqrtFix(double sqrtVal, double addVal, double targetVal)
 	{
 		double o1 = targetVal - (addVal + sqrtVal);
@@ -487,7 +584,7 @@ public class GeometryUtil
 			return addVal - sqrtVal;
 	}
 
-	@Nonnull
+ 	@Nonnull
 	private static Coord2DDbl arcNearest(double x, double y, double h, double k, double r, int cnt)
 	{
 		double r2 = r * r;
@@ -506,17 +603,9 @@ public class GeometryUtil
 		}
 		return new Coord2DDbl(thisX, thisY);
 	}
-	
+
 	public static int arcToLine(@Nonnull Coord2DDbl pt1, @Nonnull Coord2DDbl pt2, @Nonnull Coord2DDbl pt3, double minDist, @Nonnull List<Coord2DDbl> ptOut)
 	{
-		//(x – h)^2 + (y – k)^2 = r^2
-		//2h(x1 - x2) + 2k(y1 - y2) = x1^2 - x2^2 + y1^2 - y2^2
-		//2k = (x1^2 - x2^2 + y1^2 - y2^2 - 2h(x1 - x2)) / (y1 - y2)
-		//(x1^2 - x3^2 + y1^2 - y3^2 - 2h(x1 - x3)) / (y1 - y3) = (x1^2 - x2^2 + y1^2 - y2^2 - 2h(x1 - x2)) / (y1 - y2)
-		//(x1^2 - x3^2 + y1^2 - y3^2 - 2h(x1 - x3)) * (y1 - y2) = (x1^2 - x2^2 + y1^2 - y2^2 - 2h(x1 - x2)) * (y1 - y3)
-		//(x1^2 - x3^2 + y1^2 - y3^2) * (y1 - y2) - 2h(x1 - x3) * (y1 - y2) = (x1^2 - x2^2 + y1^2 - y2^2) * (y1 - y3) - 2h(x1 - x2) * (y1 - y3)
-		//(x1^2 - x3^2 + y1^2 - y3^2) * (y1 - y2) - (x1^2 - x2^2 + y1^2 - y2^2) * (y1 - y3) = 2h(x1 - x3) * (y1 - y2) - 2h(x1 - x2) * (y1 - y3)
-		//(x1^2 - x3^2 + y1^2 - y3^2) * (y1 - y2) - (x1^2 - x2^2 + y1^2 - y2^2) * (y1 - y3) / (2 * (x1 - x3) * (y1 - y2) - 2 * (x1 - x2) * (y1 - y3)) = h
 		Coord2DDbl d13 = pt1.subtract(pt3);
 		Coord2DDbl d12 = pt1.subtract(pt2);
 		Double c1 = (pt1.x * pt1.x - pt3.x * pt3.x + pt1.y * pt1.y - pt3.y * pt3.y) * d12.y;
@@ -553,6 +642,31 @@ public class GeometryUtil
 		}
 		ptOut.add(pt3.clone());
 		return ptOut.size() - initCnt;
+	}*/
+
+	@Nonnull
+	private static Coord2DDbl bezierCurvePoint(@Nonnull Coord2DDbl pt0, @Nonnull Coord2DDbl pt1, @Nonnull Coord2DDbl pt2, @Nonnull Coord2DDbl pt3, double t)
+	{
+		double invT = 1 - t;
+		double invT2 = invT * invT;
+		double t2 = t * t;
+		return pt0.multiply(invT2 * invT).add(pt1.multiply(3 * t * invT2)).add(pt2.multiply(3 * invT * t2)).add(pt3.multiply(t2 * t));
+	}
+
+	public static int bezierCurveToLine(@Nonnull Coord2DDbl pt0, @Nonnull Coord2DDbl pt1, @Nonnull Coord2DDbl pt2, @Nonnull Coord2DDbl pt3, int nPoints, @Nonnull List<Coord2DDbl> ptOut)
+	{
+		double tDiff = 1 / (double)(nPoints - 1);
+		ptOut.add(pt0);
+		double t = tDiff;
+		int i = 2;
+		while (i < nPoints)
+		{
+			ptOut.add(bezierCurvePoint(pt0, pt1, pt2, pt3, t));
+			t += tDiff;
+			i++;
+		}
+		ptOut.add(pt3);
+		return nPoints;
 	}
 
 	private static <T> void appendGeojsonList(@Nonnull Iterable<T> coll, @Nonnull StringBuilder sb) throws NoSuchFieldException, InvocationTargetException, IllegalAccessException

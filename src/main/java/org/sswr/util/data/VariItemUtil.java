@@ -3,6 +3,9 @@ package org.sswr.util.data;
 import java.sql.Timestamp;
 import java.time.ZonedDateTime;
 
+import org.locationtech.jts.geom.Geometry;
+import org.sswr.util.math.geometry.Vector2D;
+
 import jakarta.annotation.Nullable;
 
 public class VariItemUtil {
@@ -67,5 +70,52 @@ public class VariItemUtil {
 		if (v == null)
 			return null;
 		return v.toString();
+	}
+
+	@Nullable
+	public static byte[] asByteArr(@Nullable Object v)
+	{
+		if (v == null)
+			return null;
+		if (v instanceof byte[])
+		{
+			return (byte[])v;
+		}
+		System.out.println("VariItemUtil.asByteArr: Unknown type: "+v.getClass().toString());
+		return null;
+	}
+
+	@Nullable
+	public static Vector2D asVector(@Nullable Object v)
+	{
+		if (v == null)
+			return null;
+		if (v instanceof Vector2D)
+		{
+			return (Vector2D)v;
+		}
+		if (v instanceof Geometry)
+		{
+			return GeometryUtil.toVector2D((Geometry)v);
+		}
+		System.out.println("VariItemUtil.asVector: Unknown type: "+v.getClass().toString());
+		return null;
+	}
+
+	@Nullable
+	public static Geometry asGeometry(@Nullable Object v)
+	{
+		if (v == null)
+			return null;
+		if (v instanceof Vector2D)
+		{
+			return GeometryUtil.fromVector2D((Vector2D)v);
+		}
+		if (v instanceof Geometry)
+		{
+			return (Geometry)v;
+		}
+		System.out.println("VariItemUtil.asVector: Unknown type: "+v.getClass().toString());
+		return null;
 	}
 }

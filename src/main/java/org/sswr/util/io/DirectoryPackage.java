@@ -59,4 +59,9 @@ public class DirectoryPackage extends PackageFile
 		}
 		return null;
 	}
+
+	public @Nonnull PackageFile clone()
+	{
+		return new DirectoryPackage(this.sourceName);
+	}
 }

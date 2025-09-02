@@ -7,10 +7,11 @@ import java.util.Comparator;
 
 import jakarta.annotation.Nullable;
 
-public abstract class SortableArrayList<T> extends ArrayList<T> implements Comparator<T>
+public abstract class SortableArrayList<T> extends ArrayList<T>
 {
 	private static final long serialVersionUID = -4816476556L;
 	
+	public abstract int compare(T a, T b);
 	public int sortedInsert(@Nullable T val)
 	{
 		int i;
@@ -117,7 +118,15 @@ public abstract class SortableArrayList<T> extends ArrayList<T> implements Compa
 			tmpArr[i] = this.get(i);
 			i++;
 		}
-		Arrays.sort(tmpArr, this);
+		Arrays.sort(tmpArr, new ListComparator());
 		return tmpArr[cnt >> 1];
-	}	
+	}
+
+	private class ListComparator implements Comparator<T>
+	{
+		@Override
+		public int compare(T arg0, T arg1) {
+			return SortableArrayList.this.compare(arg0, arg1);
+		}
+	}
 }

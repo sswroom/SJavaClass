@@ -1,7 +1,7 @@
 # SJavaClass
 
 # Changes:
-0.8.xxxxx
+0.8.20250903
 -Added ArrayListTS
 -Added ArrayListDbl
 -Added DataSet
@@ -45,6 +45,23 @@
 -Added TextFileLoader
 -Added SortableArrayListNum
 -Added RandomGenerator
+-Added PackageFile.clone
+-Added DataTools.insertRange
+-Added GeometryUtil.bezierCurveToLine
+-Added MapFieldComparator
+-Added MapObjectGetter
+-Added GeometryType
+-Added SortableDBReader
+-Added DirectoryPackage.clone
+-Added ESRICurve
+-Added Coord2DDbl.divide
+-Added CircularString constructor with values
+-Added CircularString.hasCurve, toSimpleShape
+-Added CompoundCurve.hasCurve, toSimpleShape
+-Added CurvePolygon.hasCurve, toSimpleShape
+-Added MultiCurve
+-Added MultiSurface.hasCurve, toSimpleShape
+-Added Vector2D.hasCurve, toSimpleShape
 -Change QueryConditions to non-template
 -Support AutoIncType
 -Change CharReader to use StringBuilderUTF8
@@ -57,7 +74,12 @@
 -Change SMTPConn to use StringBuilderUTF8
 -Change CompareCondition to same as C++ version
 -Change DBReader.getDbl to getDblOrNAN
+-Change FileGDBDir to same as C++ version
+-Change FileGDBReader to same as C++ version
+-Change FileGDBTable to same as C++ version
+-Change GeometryUtil.arcToLine to same as C++ version
 -Fixed CPPObjectParser.parseObject
+-Fixed FileGDBUtil.readVarInt
 
 0.7.20250812
 - Fix for condition with sun.java.command is null

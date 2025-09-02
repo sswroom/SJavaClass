@@ -18,4 +18,5 @@ public abstract class PackageFile extends ParsedObject
 
 	@Nullable
 	public abstract StreamData getItemStmData(@Nonnull String name);
+	public abstract @Nonnull PackageFile clone();
 }

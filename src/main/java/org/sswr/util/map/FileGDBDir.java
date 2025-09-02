@@ -1,6 +1,5 @@
 package org.sswr.util.map;
 
-import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -9,32 +8,60 @@ import java.util.Map;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
-import jakarta.persistence.Table;
 
-import org.sswr.util.data.ArtificialQuickSort;
-import org.sswr.util.data.DataTools;
-import org.sswr.util.data.FieldComparator;
 import org.sswr.util.data.QueryConditions;
 import org.sswr.util.data.StringUtil;
-import org.sswr.util.data.cond.BooleanObject;
-import org.sswr.util.db.DBColumnInfo;
-import org.sswr.util.db.ReadingConnection;
+import org.sswr.util.db.ReadingDB;
+import org.sswr.util.db.SortableDBReader;
+import org.sswr.util.db.TableDef;
 import org.sswr.util.db.DBReader;
-import org.sswr.util.db.DBUtil;
-import org.sswr.util.db.PageStatus;
 import org.sswr.util.io.DirectoryPackage;
 import org.sswr.util.io.LogTool;
 import org.sswr.util.io.PackageFile;
 import org.sswr.util.io.StreamData;
 
-public class FileGDBDir extends ReadingConnection
+public class FileGDBDir extends ReadingDB
 {
-	private Map<String, FileGDBTable> tables;
+	private static boolean VERBOSE = false;
+	private @Nonnull PackageFile pkg;
+	private @Nonnull Map<String, Integer> tableMap;
+	private @Nonnull Map<String, FileGDBTable> tables;
+	private @Nonnull List<String> tableNames;
 
-	private FileGDBDir(@Nonnull String sourceName, @Nullable LogTool logger)
+	public static void setVerbose(boolean verbose)
 	{
-		super(logger);
+		VERBOSE = verbose;
+	}
+
+	private FileGDBDir(@Nonnull PackageFile pkg, @Nonnull FileGDBTable systemCatalog)
+	{
+		super(pkg.getSourceNameObj());
+		this.pkg = pkg.clone();
 		this.tables = new HashMap<String, FileGDBTable>();
+		this.tableMap = new HashMap<String, Integer>();
+		this.tableNames = new ArrayList<String>();
+		FileGDBReader reader;
+		if ((reader = (FileGDBReader)systemCatalog.openReader(null, 0, 0, null, null)) == null)
+		{
+			systemCatalog.close();
+			return;
+		}
+		this.tableMap.put(systemCatalog.getName(), 1);
+		this.tables.put(systemCatalog.getName(), systemCatalog);
+		this.tableNames.add(systemCatalog.getName());
+		String s;
+		while (reader.readNext())
+		{
+			int id = reader.getInt32(0);
+			int fmt = reader.getInt32(2);
+			s = reader.getString(1);
+			if (id > 1 && s != null && s.length() > 0 && fmt == 0)
+			{
+				this.tableNames.add(s);
+				this.tableMap.put(s, id);
+			}
+		}
+		reader.close();
 	}
 
 	public void close()
@@ -45,93 +72,149 @@ public class FileGDBDir extends ReadingConnection
 			itTables.next().close();
 		}
 		tables.clear();
+		this.pkg.dispose();
 	}
 
-	public int getTableNames(@Nonnull List<String> names)
+	public @Nullable List<String> queryTableNames(@Nullable String schemaName)
 	{
-		names.addAll(this.tables.keySet());
-		return this.tables.size();
+		List<String> names = new ArrayList<String>();
+		names.addAll(this.tableNames);
+		return names;
 	}
 
 	@Nullable
-	public DBReader getTableData(@Nonnull String name, @Nullable List<String> colNames, int maxCnt, @Nullable String ordering, @Nullable QueryConditions condition)
+	public DBReader queryTableData(@Nullable String schemaName, @Nonnull String tableName, @Nullable List<String> colNames, int dataOfst, int maxCnt, @Nullable String ordering, @Nullable QueryConditions condition)
 	{
-		FileGDBTable table = this.tables.get(name);
+		FileGDBTable table = this.getTable(tableName);
 		if (table == null)
+		{
+			if (VERBOSE)
+				System.out.println("FileGDBDir: QueryTableData failed in getting table: " + tableName);
+			return null;
+		}
+		if (ordering == null || ordering.length() == 0)
+			return table.openReader(colNames, dataOfst, maxCnt, ordering, condition);
+		else
+			return new SortableDBReader(this, schemaName, tableName, colNames, dataOfst, maxCnt, ordering, condition);
+	}
+
+	@Nullable
+	public TableDef getTableDef(@Nullable String schemaName, @Nonnull String tableName)
+	{
+		FileGDBTable table;
+		if ((table = this.getTable(tableName)) == null)
 		{
 			return null;
 		}
-		return table.openReader(colNames);
+		TableDef tab;
+		DBReader r;
+		tab = new TableDef(schemaName, tableName);
+		if ((r = table.openReader(null, 0, 0, null, null)) != null)
+		{
+			tab.colFromReader(r);
+			this.closeReader(r);
+			return tab;
+		}
+		else
+		{
+			return null;
+		}
 	}
-
 	public void closeReader(@Nonnull DBReader r)
 	{
 		r.close();
 	}
 
-	public void getErrorMsg(@Nonnull StringBuilder str)
+	public @Nullable String getLastErrorMsg()
 	{
+		return null;
 	}
 
 	public void reconnect()
 	{
 	}
 
-	public void addTable(@Nonnull FileGDBTable table)
+	public boolean isError()
 	{
-		this.tables.put(table.getName(), table);
+		return this.tableMap.size() == 0;
+	}
+
+	public @Nullable FileGDBTable getTable(@Nonnull String name)
+	{
+		Integer id = this.tableMap.get(name);
+		if (id == null)
+		{
+			return null;
+		}
+		FileGDBTable table;
+		if ((table = this.tables.get(name)) != null)
+		{
+			return table;
+		}
+		StreamData indexFD;
+		StreamData tableFD;
+		FileGDBTable innerTable;
+		String fileName = "a" + StringUtil.toHex32(id)+".gdbtablx";
+		fileName = fileName.toLowerCase();
+		indexFD = this.pkg.getItemStmData(fileName);
+		fileName = "a" + StringUtil.toHex32(id)+".gdbtable";
+		fileName = fileName.toLowerCase();
+		if ((tableFD = pkg.getItemStmData(fileName)) != null)
+		{
+			innerTable = new FileGDBTable(name, tableFD, indexFD);
+			tableFD.close();
+			if (innerTable.isError())
+			{
+				innerTable.close();
+				if (VERBOSE)
+					System.out.println("FileGDBTable: Table "+fileName+" has error");
+			}
+			else
+			{
+				if (indexFD != null) indexFD.close();
+				this.tables.put(innerTable.getName(), innerTable);
+				return innerTable;
+			}
+		}
+		else if (VERBOSE)
+		{
+			System.out.println("FileGDBTable: Cannot get item "+fileName+" in package file");
+		}
+		if (indexFD != null) indexFD.close();
+		return null;
 	}
 
 	@Nullable
 	public static FileGDBDir openDir(@Nonnull PackageFile pkg, @Nullable LogTool logger)
 	{
-		StreamData fd = pkg.getItemStmData("a00000001.gdbtable");
 		FileGDBTable table;
-		if (fd == null)
+		StreamData indexFD = pkg.getItemStmData("a00000001.gdbtablx");
+		StreamData tableFD;
+		if ((tableFD = pkg.getItemStmData("a00000001.gdbtable")) == null)
 		{
+			if (indexFD != null) indexFD.close();
 			return null;
 		}
-		table = new FileGDBTable("GDB_SystemCatalog", fd);
-		fd.close();
+		table = new FileGDBTable("GDB_SystemCatalog", tableFD, indexFD);
+		tableFD.close();
 		if (table.isError())
 		{
 			table.close();
 			return null;
 		}
-		FileGDBReader reader = (FileGDBReader)table.openReader(null);
+		FileGDBReader reader = (FileGDBReader)table.openReader(null, 0, 0, null, null);
 		if (reader == null)
 		{
 			table.close();
 			return null;
 		}
-		FileGDBDir dir = new FileGDBDir(pkg.getSourceNameObj(), logger);
-		dir.addTable(table);
-		while (reader.readNext())
+		FileGDBDir dir = new FileGDBDir(pkg, table);
+		dir.logger = logger;
+		if (dir.isError())
 		{
-			int id = reader.getInt32(0);
-			String name = reader.getString(1);
-			int fmt = reader.getInt32(2);
-			if (id > 1 && name != null && fmt == 0)
-			{
-				FileGDBTable innerTable;
-				String fileName = "a" + StringUtil.toHex32(id).toLowerCase() + ".gdbtable";
-				fd = pkg.getItemStmData(fileName);
-				if (fd != null)
-				{
-					innerTable = new FileGDBTable(name, fd);
-					fd.close();
-					if (innerTable.isError())
-					{
-						innerTable.close();
-					}
-					else
-					{
-						dir.addTable(innerTable);
-					}
-				}
-			}
+			dir.close();
+			return null;
 		}
-		reader.close();
 		return dir;
 	}
 
@@ -140,120 +223,5 @@ public class FileGDBDir extends ReadingConnection
 	{
 		DirectoryPackage pkg = new DirectoryPackage(pathName);
 		return openDir(pkg, logger);
-	}
-
-	@Override
-	@Nullable
-	public <T> List<T> loadItemsAsList(@Nonnull Class<T> cls, @Nullable Object parent, @Nullable QueryConditions conditions, @Nullable List<String> joinFields, @Nullable String sortString, int dataOfst, int dataCnt)
-	{
-		Table tableAnn = parseClassTable(cls);
-		if (tableAnn == null)
-		{
-			throw new IllegalArgumentException("Class annotation is not valid");
-		}
-		Constructor<T> constr = getConstructor(cls, parent);
-		ArrayList<DBColumnInfo> cols = new ArrayList<DBColumnInfo>();
-		ArrayList<DBColumnInfo> idCols = new ArrayList<DBColumnInfo>();
-		DBUtil.parseDBCols(cls, cols, idCols, joinFields);
-		DBReader r = this.getTableData(tableAnn.name(), DataTools.createValueList(String.class, cols, "colName", null), 0, null, conditions);
-		if (r == null)
-		{
-			return null;
-		}
-		List<T> retList;
-		List<BooleanObject> clientConditions;
-		if (conditions == null)
-		{
-			clientConditions = List.of();
-		}
-		else
-		{
-			clientConditions = conditions.toList();
-		}
-
-		if (sortString != null)
-		{
-			FieldComparator<T> fieldComp;
-			try
-			{
-				fieldComp = new FieldComparator<T>(cls, sortString);
-			}
-			catch (NoSuchFieldException ex)
-			{
-				if (this.logger != null) this.logger.logException(ex);
-				throw new IllegalArgumentException("sortString is not valid ("+sortString+")");
-			}
-			retList = this.readAsList(r, PageStatus.NO_PAGE, 0, 0, parent, constr, cols, clientConditions);
-			ArtificialQuickSort.sort(retList, fieldComp);
-			if (dataOfst > 0)
-			{
-				if (dataOfst >= retList.size())
-				{
-					retList.clear();
-				}
-				else
-				{
-					ArrayList<T> remList = new ArrayList<T>();
-					int i = 0;
-					while (i < dataOfst)
-					{
-						remList.add(retList.get(i));
-						i++;
-					}
-					retList.removeAll(remList);
-				}
-			}
-			if (dataCnt > 0)
-			{
-				if (dataCnt < retList.size())
-				{
-					int i = retList.size();
-					while (i-- > dataCnt)
-					{
-						retList.remove(i);
-					}
-				}
-			}
-		}
-		else
-		{
-			retList = this.readAsList(r, PageStatus.NO_PAGE, dataOfst, dataCnt, parent, constr, cols, clientConditions);
-		}
-		r.close();
-		return retList;
-	}
-
-	@Nullable
-	public <T> Map<Integer, T> loadItemsIClass(@Nonnull Class<T> cls, @Nullable Object parent, @Nullable QueryConditions conditions, @Nullable List<String> joinFields)
-	{
-		Table tableAnn = parseClassTable(cls);
-		if (tableAnn == null)
-		{
-			throw new IllegalArgumentException("Class annotation is not valid");
-		}
-		Constructor<T> constr = getConstructor(cls, parent);
-		ArrayList<DBColumnInfo> cols = new ArrayList<DBColumnInfo>();
-		ArrayList<DBColumnInfo> idCols = new ArrayList<DBColumnInfo>();
-		DBUtil.parseDBCols(cls, cols, idCols, joinFields);
-		if (cols.size() == 0)
-		{
-			throw new IllegalArgumentException("No selectable column found");
-		}
-		if (idCols.size() > 1)
-		{
-			throw new IllegalArgumentException("Multiple id column found");
-		}
-		if (idCols.size() == 0)
-		{
-			throw new IllegalArgumentException("No Id column found");
-		}
-		DBReader r = this.getTableData(tableAnn.name(), DataTools.createValueList(String.class, cols, "colName", null), 0, null, conditions);
-		if (r == null)
-		{
-			return null;
-		}
-		Map<Integer, T> retMap = this.readAsMap(r, parent, constr, cols, conditions == null?List.of():conditions.toList());
-		r.close();
-		return retMap;
 	}
 }
