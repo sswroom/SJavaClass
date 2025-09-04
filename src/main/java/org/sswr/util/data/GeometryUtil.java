@@ -199,6 +199,17 @@ public class GeometryUtil
 				return factory.createPolygon(lineStrings[0], Arrays.copyOfRange(lineStrings, 1, lineStrings.length));
 			}
 		}
+		else if (vec.getVectorType() == VectorType.MultiPolygon)
+		{
+			MultiPolygon mpg = (MultiPolygon)vec;
+			org.locationtech.jts.geom.Polygon[] polygons = new org.locationtech.jts.geom.Polygon[mpg.getCount()];
+			int i = mpg.getCount();
+			while (i-- > 0)
+			{
+				polygons[i] = (org.locationtech.jts.geom.Polygon)fromVector2D(mpg.getItemNN(i));
+			}
+			return factory.createMultiPolygon(polygons);
+		}
 		System.out.println("GeometryUtil: Unsupported type: "+vec.toString());
 		return null;
 	}

@@ -1,6 +1,9 @@
 # SJavaClass
 
 # Changes:
+0.8.20250904
+-GeometryUtil.fromVector support MultiPolygon
+
 0.8.20250903
 -Added ArrayListTS
 -Added ArrayListDbl
