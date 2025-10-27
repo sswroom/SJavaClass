@@ -1,6 +1,8 @@
 # SJavaClass
 
 # Changes:
+-Support SAML group
+
 0.8.20250904
 -GeometryUtil.fromVector support MultiPolygon
 

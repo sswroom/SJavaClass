@@ -324,12 +324,15 @@ public class SAMLHandler {
 		public String surname;
 		@Nullable
 		public String emailAddress;
+		@Nonnull
+		public ArrayList<String> group;
 
 		public SAMLSSOResponse(@Nonnull ResponseError error, @Nonnull String errorMessage)
 		{
 			this.error = error;
 			this.errorMessage = errorMessage;
 			this.status = SAMLStatusCode.Unknown;
+			this.group = new ArrayList<String>();
 		}
 	}
 
@@ -1331,6 +1334,10 @@ public class SAMLHandler {
 													else if (attrName.equals("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname"))
 													{
 														saml.surname = sbTmp.toString();
+													}
+													else if (attrName.equals("http://schemas.xmlsoap.org/claims/Group"))
+													{
+														saml.group.add(sbTmp.toString());
 													}
 												}
 											}
