@@ -2,6 +2,9 @@
 
 # Changes:
 -Support SAML group
+-Added StringBuilderUTF8.appendHexBuff
+-DBUtil supporting Convert
+-Enhance Nonnull/Nullable
 
 0.8.20250904
 -GeometryUtil.fromVector support MultiPolygon

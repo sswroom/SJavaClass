@@ -30,8 +30,10 @@ import java.util.Set;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -61,6 +63,7 @@ import org.sswr.util.data.ObjectFieldGetter;
 import org.sswr.util.data.QueryConditions;
 import org.sswr.util.data.ReflectTools;
 import org.sswr.util.data.SharedInt;
+import org.sswr.util.data.StringBuilderUTF8;
 import org.sswr.util.data.StringUtil;
 import org.sswr.util.data.cond.BooleanObject;
 import org.sswr.util.io.LogLevel;
@@ -175,7 +178,7 @@ public class DBUtil {
 	@Nonnull
 	private static String getFieldDefColName(@Nonnull Field field)
 	{
-		StringBuilder sb = new StringBuilder();
+		StringBuilderUTF8 sb = new StringBuilderUTF8();
 		String name = field.getName();
 		char c;
 		int i = 0;
@@ -185,12 +188,12 @@ public class DBUtil {
 			c = name.charAt(i);
 			if (c >= 'A' && c <= 'Z')
 			{
-				sb.append('_');
-				sb.append((char)(c + 32));
+				sb.appendUTF8Char((byte)'_');
+				sb.appendUTF8Char((byte)(c + 32));
 			}
 			else
 			{
-				sb.append(c);
+				sb.appendChar(c, 1);
 			}
 			i++;
 		}
@@ -207,6 +210,7 @@ public class DBUtil {
 		boolean isJoin;
 		JoinColumn joinCol;
 		GeneratedValue genVal;
+		Class<? extends AttributeConverter> converter = null;
 		Annotation anns[];
 		int i;
 		int j;
@@ -284,6 +288,11 @@ public class DBUtil {
 				{
 					genVal = (GeneratedValue)anns[i];
 				}
+				else if (annType.equals(Convert.class))
+				{
+					Convert cvt = (Convert)anns[i];
+					converter = cvt.converter();
+				}
 				else if (annType.getSimpleName().equals("Formula"))
 				{
 					isTransient = true;
@@ -318,6 +327,24 @@ public class DBUtil {
 			}
 			try
 			{
+				if (converter != null)
+				{
+					try
+					{
+						if (converter.getMethod("convertToDatabaseColumn", field.getType()) != null)
+						{
+							col.converter = converter.getConstructor(new Class<?>[0]).newInstance();
+						}
+					}
+					catch (NoSuchMethodException ex)
+					{
+
+					}
+					catch (InvocationTargetException|InstantiationException|IllegalAccessException ex)
+					{
+						ex.printStackTrace();
+					}
+				}
 				col.setter = new FieldSetter(field);
 				col.getter = new FieldGetter<>(field);
 				return col;
@@ -414,7 +441,7 @@ public class DBUtil {
 	@Nonnull
 	private static String getTableName(@Nonnull Table table, @Nonnull DBType dbType)
 	{
-		StringBuilder sb = new StringBuilder();
+		StringBuilderUTF8 sb = new StringBuilderUTF8();
 		String catalog = uncol(table.catalog());
 		String schema = uncol(table.schema());
 		String tableName = uncol(table.name());
@@ -423,7 +450,7 @@ public class DBUtil {
 			if (!catalog.equals(""))
 			{
 				sb.append(dbCol(dbType, catalog));
-				sb.append('.');
+				sb.appendUTF8Char((byte)'.');
 			}
 			sb.append(dbCol(dbType, tableName));
 		}
@@ -432,12 +459,12 @@ public class DBUtil {
 			if (!catalog.equals(""))
 			{
 				sb.append(dbCol(dbType, catalog));
-				sb.append('.');
+				sb.appendUTF8Char((byte)'.');
 			}
 			if (!schema.equals(""))
 			{
 				sb.append(dbCol(dbType, schema));
-				sb.append('.');
+				sb.appendUTF8Char((byte)'.');
 			}
 			sb.append(dbCol(dbType, tableName));
 		}

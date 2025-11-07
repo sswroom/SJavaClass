@@ -18,9 +18,9 @@ import jakarta.annotation.Nullable;
 
 public class LineString extends Vector2D
 {
-	protected Coord2DDbl[] pointArr;
-	protected double []zArr;
-	protected double []mArr;
+	protected @Nonnull Coord2DDbl[] pointArr;
+	protected @Nullable double []zArr;
+	protected @Nullable double []mArr;
 
 	public LineString(int srid, int nPoint, boolean hasZ, boolean hasM)
 	{

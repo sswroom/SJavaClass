@@ -15,7 +15,7 @@ public class ASN1PDUBuilder
 	private int seqOffset[];
 	private int currLev;
 	private int buffSize;
-	private byte[] buff;
+	private @Nonnull byte[] buff;
 	private int currOffset;
 
 	public ASN1PDUBuilder()

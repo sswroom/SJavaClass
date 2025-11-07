@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.sswr.util.data.ByteTool;
 import org.sswr.util.data.SharedInt;
+import org.sswr.util.data.StringBuilderUTF8;
 import org.sswr.util.data.StringUtil;
 
 import jakarta.annotation.Nonnull;
@@ -491,20 +492,20 @@ public class SNMPUtil
 	}
 
 
-	public static void oidToString(@Nonnull byte []pdu, int pduOfst, int pduSize, @Nonnull StringBuilder sb)
+	public static void oidToString(@Nonnull byte []pdu, int pduOfst, int pduSize, @Nonnull StringBuilderUTF8 sb)
 	{
 		int v = 0;
 		int i = 1;
-		sb.append((pdu[pduOfst + 0] & 0xff) / 40);
-		sb.append('.');
-		sb.append((pdu[pduOfst + 0] & 0xff) % 40);
+		sb.appendI32((pdu[pduOfst + 0] & 0xff) / 40);
+		sb.appendUTF8Char((byte)'.');
+		sb.appendI32((pdu[pduOfst + 0] & 0xff) % 40);
 		while (i < pduSize)
 		{
 			v = (v << 7) | (pdu[pduOfst + i] & 0x7f);
 			if ((pdu[pduOfst + i] & 0x80) == 0)
 			{
-				sb.append('.');
-				sb.append(v);
+				sb.appendUTF8Char((byte)'.');
+				sb.appendI32(v);
 				v = 0;
 			}
 			i++;

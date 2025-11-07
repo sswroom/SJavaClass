@@ -4,7 +4,7 @@ import java.nio.charset.StandardCharsets;
 
 import org.sswr.util.data.ByteTool;
 import org.sswr.util.data.LineBreakType;
-import org.sswr.util.data.StringUtil;
+import org.sswr.util.data.StringBuilderUTF8;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
@@ -15,11 +15,11 @@ public class SNMPInfo
 	{
 	}
 
-	public void pduSeqGetDetail(@Nonnull byte[] pdu, int pduOfst, int pduSize, int level, @Nonnull StringBuilder sb)
+	public void pduSeqGetDetail(@Nonnull byte[] pdu, int pduOfst, int pduSize, int level, @Nonnull StringBuilderUTF8 sb)
 	{
 		if (level > 0)
 		{
-			StringUtil.appendChar(sb, '\t', level);
+			sb.appendChar('\t', level);
 		}
 		sb.append("{\r\n");
 		int i = 0;
@@ -34,12 +34,12 @@ public class SNMPInfo
 		sb.append("\r\n");
 		if (level > 0)
 		{
-			StringUtil.appendChar(sb, '\t', level);
+			sb.appendChar('\t', level);
 		}
 		sb.append("}");
 	}
 	
-	public int pduGetDetail(@Nullable String name, @Nonnull byte[] pdu, int pduOfst, int pduSize, int level, @Nonnull StringBuilder sb)
+	public int pduGetDetail(@Nullable String name, @Nonnull byte[] pdu, int pduOfst, int pduSize, int level, @Nonnull StringBuilderUTF8 sb)
 	{
 		if (pduSize < 2)
 		{
@@ -47,12 +47,12 @@ public class SNMPInfo
 		}
 		if (level > 0)
 		{
-			StringUtil.appendChar(sb, '\t', level);
+			sb.appendChar('\t', level);
 		}
 		if (name != null)
 		{
 			sb.append(name);
-			sb.append(' ');
+			sb.appendUTF8Char((byte)' ');
 		}
 		byte t = pdu[pduOfst + 0];
 		int len = pdu[pduOfst + 1] & 0xff;
@@ -82,7 +82,7 @@ public class SNMPInfo
 		}
 		if (hdrSize + len > pduSize)
 		{
-			StringUtil.appendHex(sb, pdu, pduOfst, pduSize, ' ', LineBreakType.NONE);
+			sb.appendHexBuff(pdu, pduOfst, pduSize, (byte)' ', LineBreakType.NONE);
 			return pduSize;
 		}
 		switch (t & 0xff)
@@ -91,23 +91,23 @@ public class SNMPInfo
 			sb.append("INTEGER ");
 			if (len == 1)
 			{
-				sb.append(pdu[pduOfst + hdrSize]);
+				sb.appendI32(pdu[pduOfst + hdrSize]);
 			}
 			else if (len == 2)
 			{
-				sb.append(ByteTool.readMInt16(pdu, pduOfst + hdrSize));
+				sb.appendI32(ByteTool.readMInt16(pdu, pduOfst + hdrSize));
 			}
 			else if (len == 3)
 			{
-				sb.append(ByteTool.readMInt24(pdu, pduOfst + hdrSize));
+				sb.appendI32(ByteTool.readMInt24(pdu, pduOfst + hdrSize));
 			}
 			else if (len == 4)
 			{
-				sb.append(ByteTool.readMInt32(pdu, pduOfst + hdrSize));
+				sb.appendI32(ByteTool.readMInt32(pdu, pduOfst + hdrSize));
 			}
 			else
 			{
-				StringUtil.appendHex(sb, pdu, pduOfst + hdrSize, len, ' ', LineBreakType.NONE);
+				sb.appendHexBuff(pdu, pduOfst + hdrSize, len, (byte)' ', LineBreakType.NONE);
 			}
 			return len + hdrSize;
 		case 4:
@@ -126,7 +126,7 @@ public class SNMPInfo
 				}
 				if (isBin)
 				{
-					StringUtil.appendHex(sb, pdu, pduOfst + hdrSize, len, ' ', LineBreakType.NONE);
+					sb.appendHexBuff(pdu, pduOfst + hdrSize, len, (byte)' ', LineBreakType.NONE);
 				}
 				else
 				{
@@ -140,8 +140,8 @@ public class SNMPInfo
 			sb.append("NULL");
 			if (len > 0)
 			{
-				sb.append(' ');
-				StringUtil.appendHex(sb, pdu, pduOfst + hdrSize, len, ' ', LineBreakType.NONE);
+				sb.appendUTF8Char((byte)' ');
+				sb.appendHexBuff(pdu, pduOfst + hdrSize, len, (byte)' ', LineBreakType.NONE);
 			}
 			return len + hdrSize;
 		case 6:
@@ -160,76 +160,76 @@ public class SNMPInfo
 			}
 			else
 			{
-				StringUtil.appendHex(sb, pdu, pduOfst + hdrSize, len, ' ', LineBreakType.NONE);
+				sb.appendHexBuff(pdu, pduOfst + hdrSize, len, (byte)' ', LineBreakType.NONE);
 			}
 			return len + hdrSize;
 		case 0x41:
 			sb.append("Counter32 ");
 			if (len == 1)
 			{
-				sb.append(pdu[pduOfst + hdrSize] & 0xff);
+				sb.appendI32(pdu[pduOfst + hdrSize] & 0xff);
 			}
 			else if (len == 2)
 			{
-				sb.append(ByteTool.readMUInt16(pdu, pduOfst + hdrSize));
+				sb.appendI32(ByteTool.readMUInt16(pdu, pduOfst + hdrSize));
 			}
 			else if (len == 3)
 			{
-				sb.append(ByteTool.readMUInt24(pdu, pduOfst + hdrSize));
+				sb.appendI32(ByteTool.readMUInt24(pdu, pduOfst + hdrSize));
 			}
 			else if (len == 4)
 			{
-				sb.append(ByteTool.readMInt32(pdu, pduOfst + hdrSize));
+				sb.appendI32(ByteTool.readMInt32(pdu, pduOfst + hdrSize));
 			}
 			else
 			{
-				StringUtil.appendHex(sb, pdu, pduOfst + hdrSize, len, ' ', LineBreakType.NONE);
+				sb.appendHexBuff(pdu, pduOfst + hdrSize, len, (byte)' ', LineBreakType.NONE);
 			}
 			return len + hdrSize;
 		case 0x42:
 			sb.append("Gauge32 ");
 			if (len == 1)
 			{
-				sb.append(pdu[pduOfst + hdrSize] & 0xff);
+				sb.appendI32(pdu[pduOfst + hdrSize] & 0xff);
 			}
 			else if (len == 2)
 			{
-				sb.append(ByteTool.readMUInt16(pdu, pduOfst + hdrSize));
+				sb.appendI32(ByteTool.readMUInt16(pdu, pduOfst + hdrSize));
 			}
 			else if (len == 3)
 			{
-				sb.append(ByteTool.readMUInt24(pdu, pduOfst + hdrSize));
+				sb.appendI32(ByteTool.readMUInt24(pdu, pduOfst + hdrSize));
 			}
 			else if (len == 4)
 			{
-				sb.append(ByteTool.readMInt32(pdu, pduOfst + hdrSize));
+				sb.appendI32(ByteTool.readMInt32(pdu, pduOfst + hdrSize));
 			}
 			else
 			{
-				StringUtil.appendHex(sb, pdu, pduOfst + hdrSize, len, ' ', LineBreakType.NONE);
+				sb.appendHexBuff(pdu, pduOfst + hdrSize, len, (byte)' ', LineBreakType.NONE);
 			}
 			return len + hdrSize;
 		case 0x43:
 			sb.append("Timeticks ");
 			if (len == 1)
 			{
-				sb.append(pdu[pduOfst + hdrSize] & 0xff);
+				sb.appendI32(pdu[pduOfst + hdrSize] & 0xff);
 			}
 			else if (len == 2)
 			{
-				sb.append(ByteTool.readMUInt16(pdu, pduOfst + hdrSize));
+				sb.appendI32(ByteTool.readMUInt16(pdu, pduOfst + hdrSize));
 			}
 			else if (len == 3)
 			{
-				sb.append(ByteTool.readMUInt24(pdu, pduOfst + hdrSize));
+				sb.appendI32(ByteTool.readMUInt24(pdu, pduOfst + hdrSize));
 			}
 			else if (len == 4)
 			{
-				sb.append(ByteTool.readMInt32(pdu, pduOfst + hdrSize));
+				sb.appendI32(ByteTool.readMInt32(pdu, pduOfst + hdrSize));
 			}
 			else
 			{
-				StringUtil.appendHex(sb, pdu, pduOfst + hdrSize, len, ' ', LineBreakType.NONE);
+				sb.appendHexBuff(pdu, pduOfst + hdrSize, len, (byte)' ', LineBreakType.NONE);
 			}
 			return len + hdrSize;
 		case 0xA0:
@@ -254,37 +254,37 @@ public class SNMPInfo
 			return len + hdrSize;
 		default:
 			sb.append("UNKNOWN(");
-			sb.append(t & 0xff);
+			sb.appendI32(t & 0xff);
 			sb.append(") ");
-			StringUtil.appendHex(sb, pdu, pduOfst + hdrSize, len, ' ', LineBreakType.NONE);
+			sb.appendHexBuff(pdu, pduOfst + hdrSize, len, (byte)' ', LineBreakType.NONE);
 			return len + hdrSize;
 		}
 	}
 	
-	public static void valueToString(byte type, @Nonnull byte[] pduBuff, int pduOfst, int valLen, @Nonnull StringBuilder sb)
+	public static void valueToString(byte type, @Nonnull byte[] pduBuff, int pduOfst, int valLen, @Nonnull StringBuilderUTF8 sb)
 	{
 		switch (type & 0xff)
 		{
 		case 2:
 			if (valLen == 1)
 			{
-				sb.append(pduBuff[pduOfst + 0]);
+				sb.appendI32(pduBuff[pduOfst + 0]);
 			}
 			else if (valLen == 2)
 			{
-				sb.append(ByteTool.readMInt16(pduBuff, pduOfst));
+				sb.appendI32(ByteTool.readMInt16(pduBuff, pduOfst));
 			}
 			else if (valLen == 3)
 			{
-				sb.append(ByteTool.readMInt24(pduBuff, pduOfst));
+				sb.appendI32(ByteTool.readMInt24(pduBuff, pduOfst));
 			}
 			else if (valLen == 4)
 			{
-				sb.append(ByteTool.readMInt32(pduBuff, pduOfst));
+				sb.appendI32(ByteTool.readMInt32(pduBuff, pduOfst));
 			}
 			else
 			{
-				StringUtil.appendHex(sb, pduBuff, pduOfst, valLen, ' ', LineBreakType.NONE);
+				sb.appendHexBuff(pduBuff, pduOfst, valLen, (byte)' ', LineBreakType.NONE);
 			}
 			break;
 		case 4:
@@ -302,7 +302,7 @@ public class SNMPInfo
 				}
 				if (isBin)
 				{
-					StringUtil.appendHex(sb, pduBuff, pduOfst, valLen, ' ', LineBreakType.NONE);
+					sb.appendHexBuff(pduBuff, pduOfst, valLen, (byte)' ', LineBreakType.NONE);
 				}
 				else
 				{
@@ -318,8 +318,8 @@ public class SNMPInfo
 		case 5:
 			if (valLen > 0)
 			{
-				sb.append(' ');
-				StringUtil.appendHex(sb, pduBuff, pduOfst, valLen, ' ', LineBreakType.NONE);
+				sb.appendUTF8Char((byte)' ');
+				sb.appendHexBuff(pduBuff, pduOfst, valLen, (byte)' ', LineBreakType.NONE);
 			}
 			break;
 		case 6:
@@ -338,99 +338,99 @@ public class SNMPInfo
 			}
 			else
 			{
-				StringUtil.appendHex(sb, pduBuff, pduOfst, valLen, ' ', LineBreakType.NONE);
+				sb.appendHexBuff(pduBuff, pduOfst, valLen, (byte)' ', LineBreakType.NONE);
 			}
 			break;
 		case 0x41:
 			if (valLen == 1)
 			{
-				sb.append(pduBuff[pduOfst + 0] & 0xff);
+				sb.appendI32(pduBuff[pduOfst + 0] & 0xff);
 			}
 			else if (valLen == 2)
 			{
-				sb.append(ByteTool.readMUInt16(pduBuff, pduOfst));
+				sb.appendI32(ByteTool.readMUInt16(pduBuff, pduOfst));
 			}
 			else if (valLen == 3)
 			{
-				sb.append(ByteTool.readMUInt24(pduBuff, pduOfst));
+				sb.appendI32(ByteTool.readMUInt24(pduBuff, pduOfst));
 			}
 			else if (valLen == 4)
 			{
-				sb.append(ByteTool.readMInt32(pduBuff, pduOfst));
+				sb.appendI32(ByteTool.readMInt32(pduBuff, pduOfst));
 			}
 			else
 			{
-				StringUtil.appendHex(sb, pduBuff, pduOfst, valLen, ' ', LineBreakType.NONE);
+				sb.appendHexBuff(pduBuff, pduOfst, valLen, (byte)' ', LineBreakType.NONE);
 			}
 			break;
 		case 0x42:
 			if (valLen == 1)
 			{
-				sb.append(pduBuff[pduOfst + 0] & 0xff);
+				sb.appendI32(pduBuff[pduOfst + 0] & 0xff);
 			}
 			else if (valLen == 2)
 			{
-				sb.append(ByteTool.readMUInt16(pduBuff, pduOfst));
+				sb.appendI32(ByteTool.readMUInt16(pduBuff, pduOfst));
 			}
 			else if (valLen == 3)
 			{
-				sb.append(ByteTool.readMUInt24(pduBuff, pduOfst));
+				sb.appendI32(ByteTool.readMUInt24(pduBuff, pduOfst));
 			}
 			else if (valLen == 4)
 			{
-				sb.append(ByteTool.readMInt32(pduBuff, pduOfst));
+				sb.appendI32(ByteTool.readMInt32(pduBuff, pduOfst));
 			}
 			else
 			{
-				StringUtil.appendHex(sb, pduBuff, pduOfst, valLen, ' ', LineBreakType.NONE);
+				sb.appendHexBuff(pduBuff, pduOfst, valLen, (byte)' ', LineBreakType.NONE);
 			}
 			break;
 		case 0x43:
 			if (valLen == 1)
 			{
-				sb.append(pduBuff[pduOfst + 0] & 0xff);
+				sb.appendI32(pduBuff[pduOfst + 0] & 0xff);
 			}
 			else if (valLen == 2)
 			{
-				sb.append(ByteTool.readMUInt16(pduBuff, pduOfst));
+				sb.appendI32(ByteTool.readMUInt16(pduBuff, pduOfst));
 			}
 			else if (valLen == 3)
 			{
-				sb.append(ByteTool.readMUInt24(pduBuff, pduOfst));
+				sb.appendI32(ByteTool.readMUInt24(pduBuff, pduOfst));
 			}
 			else if (valLen == 4)
 			{
-				sb.append(ByteTool.readMInt32(pduBuff, pduOfst));
+				sb.appendI32(ByteTool.readMInt32(pduBuff, pduOfst));
 			}
 			else
 			{
-				StringUtil.appendHex(sb, pduBuff, pduOfst, valLen, ' ', LineBreakType.NONE);
+				sb.appendHexBuff(pduBuff, pduOfst, valLen, (byte)' ', LineBreakType.NONE);
 			}
 			break;
 		case 0x46:
 			if (valLen == 1)
 			{
-				sb.append(pduBuff[pduOfst + 0] & 0xff);
+				sb.appendI32(pduBuff[pduOfst + 0] & 0xff);
 			}
 			else if (valLen == 2)
 			{
-				sb.append(ByteTool.readMUInt16(pduBuff, pduOfst));
+				sb.appendI32(ByteTool.readMUInt16(pduBuff, pduOfst));
 			}
 			else if (valLen == 3)
 			{
-				sb.append(ByteTool.readMUInt24(pduBuff, pduOfst));
+				sb.appendI32(ByteTool.readMUInt24(pduBuff, pduOfst));
 			}
 			else if (valLen == 4)
 			{
-				sb.append(ByteTool.readMInt32(pduBuff, pduOfst));
+				sb.appendI32(ByteTool.readMInt32(pduBuff, pduOfst));
 			}
 			else if (valLen == 8)
 			{
-				sb.append(ByteTool.readMInt64(pduBuff, pduOfst));
+				sb.appendI64(ByteTool.readMInt64(pduBuff, pduOfst));
 			}
 			else
 			{
-				StringUtil.appendHex(sb, pduBuff, pduOfst, valLen, ' ', LineBreakType.NONE);
+				sb.appendHexBuff(pduBuff, pduOfst, valLen, (byte)' ', LineBreakType.NONE);
 			}
 			break;
 		case 0xA0:
@@ -464,7 +464,7 @@ public class SNMPInfo
 			}
 			break;
 		default:
-			StringUtil.appendHex(sb, pduBuff, pduOfst, valLen, ' ', LineBreakType.NONE);
+			sb.appendHexBuff(pduBuff, pduOfst, valLen, (byte)' ', LineBreakType.NONE);
 			break;
 		}
 	}

@@ -27,7 +27,7 @@ import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
 public class SAMLUtil {
-	private static int decryptEncryptedKey(@Nonnull PrivateKey key, @Nonnull XMLReader reader, @Nonnull StringBuilderUTF8 sbResult, byte[] keyBuff)
+	private static int decryptEncryptedKey(@Nonnull PrivateKey key, @Nonnull XMLReader reader, @Nonnull StringBuilderUTF8 sbResult, @Nonnull byte[] keyBuff)
 	{
 		String nodeName;
 		CipherPadding rsaPadding = CipherPadding.PKCS1;
@@ -101,7 +101,7 @@ public class SAMLUtil {
 		return keySize;
 	}
 
-	private static int parseKeyInfo(@Nonnull PrivateKey key, @Nonnull XMLReader reader, @Nonnull StringBuilderUTF8 sbResult, byte[] keyBuff)
+	private static int parseKeyInfo(@Nonnull PrivateKey key, @Nonnull XMLReader reader, @Nonnull StringBuilderUTF8 sbResult, @Nonnull byte[] keyBuff)
 	{
 		String nodeName;
 		int keySize = 0;

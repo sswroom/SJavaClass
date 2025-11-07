@@ -175,7 +175,7 @@ public class StringBuilderUTF8 implements ByteArray {
 	@Nonnull
 	public StringBuilderUTF8 appendI16(short iVal)
 	{
-		return this.append(String.valueOf(iVal));
+		return this.append(Short.toString(iVal));
 	}
 
 	@Nonnull
@@ -207,6 +207,115 @@ public class StringBuilderUTF8 implements ByteArray {
 	public StringBuilderUTF8 appendI64(long iVal)
 	{
 		return this.append(String.valueOf(iVal));
+	}
+	@Nonnull
+	public StringBuilderUTF8 appendHexBuff(@Nonnull byte[] buff, int ofst, int buffSize, byte seperator, LineBreakType lineBreak)
+	{
+		if (buffSize == 0)
+			return this;
+		int lbCnt;
+		int lineCnt;
+		int i;
+		if (lineBreak == LineBreakType.NONE)
+		{
+			lbCnt = 0;
+			lineCnt = 0;
+		}
+		else
+		{
+			lineCnt = (buffSize >> 4);
+			if ((buffSize & 15) == 0)
+				lineCnt -= 1;
+			if (lineBreak == LineBreakType.CRLF)
+				lbCnt = lineCnt << 1;
+			else
+				lbCnt = lineCnt;
+		}
+		i = 0;
+		if (seperator == 0)
+		{
+			this.allocLeng((buffSize << 1) + lbCnt);
+			int buffEnd = this.leng;
+			this.leng += (buffSize << 1) + lbCnt;
+			while (buffSize-- > 0)
+			{
+				this.v[buffEnd + 0] = (byte)StringUtil.HEX_ARRAY[buff[ofst] >> 4];
+				this.v[buffEnd + 1] = (byte)StringUtil.HEX_ARRAY[buff[ofst] & 15];
+				buffEnd += 2;
+				ofst++;
+				i++;
+				if ((i & 15) == 0 && buffSize > 0)
+				{
+					if (lineBreak == LineBreakType.CRLF)
+					{
+						this.v[buffEnd + 0] = 13;
+						this.v[buffEnd + 1] = 10;
+						buffEnd += 2;
+					}
+					else if (lineBreak == LineBreakType.CR)
+					{
+						this.v[buffEnd++] = '\r';
+					}
+					else if (lineBreak == LineBreakType.LF)
+					{
+						this.v[buffEnd++] = '\n';
+					}
+				}
+			}
+			this.v[buffEnd + 0] = 0;
+		}
+		else
+		{
+			this.allocLeng(buffSize * 3 + lbCnt - 1 - lineCnt);
+			int buffEnd = this.leng;
+			this.leng += buffSize * 3 + lbCnt - 1 - lineCnt;
+			while (buffSize-- > 0)
+			{
+				i++;
+				this.v[buffEnd + 0] = (byte)StringUtil.HEX_ARRAY[buff[ofst] >> 4];
+				this.v[buffEnd + 1] = (byte)StringUtil.HEX_ARRAY[buff[ofst] & 15];
+				ofst++;
+				if (buffSize > 0)
+				{
+					if ((i & 15) == 0)
+					{
+						switch (lineBreak)
+						{
+						case CRLF:
+							this.v[buffEnd + 2] = 13;
+							this.v[buffEnd + 3] = 10;
+							buffEnd += 4;
+							break;
+						case CR:
+							this.v[buffEnd + 2] = '\r';
+							buffEnd += 3;
+							break;
+						case LF:
+							this.v[buffEnd + 2] = '\n';
+							buffEnd += 3;
+							break;
+						case NONE:
+						default:
+							this.v[buffEnd + 2] = seperator;
+							buffEnd += 3;
+							break;
+						}
+					}
+					else
+					{
+						this.v[buffEnd + 2] = seperator;
+						buffEnd += 3;
+					}
+				}
+				else
+				{
+					buffEnd += 2;
+					this.v[buffEnd] = 0;
+					break;
+				}
+			}
+		}
+		return this;
 	}
 
 	@Nonnull

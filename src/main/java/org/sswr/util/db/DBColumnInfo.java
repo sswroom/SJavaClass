@@ -2,6 +2,7 @@ package org.sswr.util.db;
 
 import java.lang.reflect.Field;
 
+import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.JoinColumn;
@@ -18,4 +19,5 @@ public class DBColumnInfo {
 	public boolean isId;
 	public JoinColumn joinCol;
 	public GenerationType genType;
+	public AttributeConverter<?,?> converter;
 }

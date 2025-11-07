@@ -4,19 +4,20 @@ import java.util.List;
 import java.util.Objects;
 
 import org.sswr.util.data.DataTools;
+import org.sswr.util.data.StringBuilderUTF8;
 
 import jakarta.annotation.Nonnull;
 
 public class ASN1ModuleInfo
 {
-	private String moduleName;
-	private String moduleFileName;
-	private List<String> objKeys;
-	private List<ASN1ObjectInfo> objValues;
-	private List<ASN1ObjectInfo> oidList;
+	private @Nonnull String moduleName;
+	private @Nonnull String moduleFileName;
+	private @Nonnull List<String> objKeys;
+	private @Nonnull List<ASN1ObjectInfo> objValues;
+	private @Nonnull List<ASN1ObjectInfo> oidList;
 
-	public ASN1ModuleInfo() {
-	}
+//	public ASN1ModuleInfo() {
+//	}
 
 	public ASN1ModuleInfo(@Nonnull String moduleName, @Nonnull String moduleFileName, @Nonnull List<String> objKeys, @Nonnull List<ASN1ObjectInfo> objValues, @Nonnull List<ASN1ObjectInfo> oidList) {
 		this.moduleName = moduleName;
@@ -92,29 +93,31 @@ public class ASN1ModuleInfo
 		return DataTools.toObjectString(this);
 	}
 
-	public void toString(@Nonnull StringBuilder sb)
+	public void toString(@Nonnull StringBuilderUTF8 sb)
 	{
 		sb.append("Module ");
 		sb.append(this.moduleName);
 		sb.append("\r\n");
 		ASN1ObjectInfo obj;
+		String s;
 		int i = 0;
 		int j = this.objValues.size();
 		while (i < j)
 		{
 			obj = this.objValues.get(i);
-			sb.append(obj.getObjectName());
+			if ((s = obj.getObjectName()) != null)
+				sb.append(s);
 			sb.append(", ");
 			SNMPUtil.oidToString(obj.getOid(), 0, obj.getOidLen(), sb);
 			sb.append(", ");
-			if (obj.getTypeName() != null)
+			if ((s = obj.getTypeName()) != null)
 			{
-				sb.append(obj.getTypeName());
+				sb.append(s);
 			}
 			sb.append(", ");
-			if (obj.getTypeVal() != null)
+			if ((s = obj.getTypeVal()) != null)
 			{
-				sb.append(obj.getTypeVal());
+				sb.append(s);
 			}
 			sb.append("\r\n");
 			i++;

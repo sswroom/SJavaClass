@@ -22,7 +22,7 @@ public final class DNSClient implements UDPPacketListener
 {
 	class RequestStatus
 	{
-		public byte[] respBuff;
+		public @Nonnull byte[] respBuff;
 		public int respSize;
 		public ThreadEvent finEvt;
 
@@ -35,7 +35,7 @@ public final class DNSClient implements UDPPacketListener
 
 	private UDPServer svr;
 	private int lastID;
-	private InetAddress serverAddr;
+	private @Nonnull InetAddress serverAddr;
 	private HashMap<Integer, RequestStatus> reqMap;
 
 	@Override

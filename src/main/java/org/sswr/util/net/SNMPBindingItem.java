@@ -3,13 +3,14 @@ package org.sswr.util.net;
 import java.util.Objects;
 
 import org.sswr.util.data.ByteTool;
+import org.sswr.util.data.StringBuilderUTF8;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
 public class SNMPBindingItem
 {
-	private byte[] oid;
+	private @Nonnull byte[] oid;
 	private int oidLen;
 	private byte valType;
 	private int valLen;
@@ -82,13 +83,21 @@ public class SNMPBindingItem
 
 	@Override
 	public String toString() {
-		StringBuilder sb = new StringBuilder();
+		StringBuilderUTF8 sb = new StringBuilderUTF8();
 		sb.append("SNMPBindingItem{oid=");
 		SNMPUtil.oidToString(oid, 0, oidLen, sb);
 		sb.append("\", type=\"");
 		sb.append(SNMPUtil.typeGetName(valType));
 		sb.append("\", value=");
-		SNMPInfo.valueToString(valType, valBuff, 0, valLen, sb);
+		byte[] valBuff;
+		if ((valBuff = this.valBuff) == null)
+		{
+			sb.append("null");
+		}
+		else
+		{
+			SNMPInfo.valueToString(valType, valBuff, 0, valLen, sb);
+		}
 		sb.append("}");
 		return sb.toString();
 	}

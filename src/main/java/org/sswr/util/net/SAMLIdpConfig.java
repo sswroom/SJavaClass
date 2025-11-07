@@ -15,12 +15,12 @@ import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
 public class SAMLIdpConfig {
-	private String serviceDispName;
-	private String entityId;
-	private String signOnLocation;
-	private String logoutLocation;
-	private MyX509Cert encryptionCert;
-	private MyX509Cert signingCert;
+	private @Nonnull String serviceDispName;
+	private @Nonnull String entityId;
+	private @Nonnull String signOnLocation;
+	private @Nonnull String logoutLocation;
+	private @Nullable MyX509Cert encryptionCert;
+	private @Nullable MyX509Cert signingCert;
 
 	public SAMLIdpConfig(@Nonnull String serviceDispName, @Nonnull String entityId, @Nonnull String signOnLocation, @Nonnull String logoutLocation, @Nullable MyX509Cert encryptionCert, @Nullable MyX509Cert signingCert)
 	{

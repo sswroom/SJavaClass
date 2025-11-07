@@ -17,7 +17,7 @@ public class IAMSmartClient {
 		public void cekUpdated(IAMSmartAPI.CEKInfo cek);
 	}
 	private IAMSmartAPI api;
-	private IAMSmartAPI.CEKInfo cek;
+	private @Nonnull IAMSmartAPI.CEKInfo cek;
 	private MyX509PrivKey key;
 	private LogTool log;
 	private CEKUpdateListener cekListener;
@@ -29,7 +29,8 @@ public class IAMSmartClient {
 		{
 			return true;
 		}
-		if (this.key == null)
+		MyX509PrivKey key;
+		if ((key = this.key) == null)
 			return false;
 		if (cek.issueAt != 0)
 		{

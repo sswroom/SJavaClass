@@ -24,7 +24,7 @@ public class ASN1MIB
 	private static final String DEBUGOBJ = "gdStatusBytes";
 
 	private Map<String, ASN1ModuleInfo> moduleMap;
-	private ASN1ModuleInfo globalModule;
+	private @Nonnull ASN1ModuleInfo globalModule;
 
 	private static int calcLineSpace(@Nonnull String txt)
 	{
@@ -97,7 +97,7 @@ public class ASN1MIB
 		int oidNextLevOfst;
 		int oidNextLen;
 		boolean isFirst = false;
-		StringBuilder sb = new StringBuilder();
+		StringBuilderUTF8 sb = new StringBuilderUTF8();
 		while (true)
 		{
 			c = sarr[sofst++];
@@ -153,7 +153,7 @@ public class ASN1MIB
 				return false;
 			}
 		}
-		sb.setLength(0);
+		sb.clearStr();
 		sb.append(new String(sarr, oidNameOfst, oidNameLen));
 		if (sb.toString().equals("iso"))
 		{
@@ -277,7 +277,7 @@ public class ASN1MIB
 			Integer v;
 			int i;
 			int j;
-			sb.setLength(0);
+			sb.clearStr();
 			sb.append(new String(sarr, oidNextLevOfst, oidNextLen));
 			i = sb.indexOf("(");
 			j = sb.indexOf(")");
@@ -729,7 +729,7 @@ public class ASN1MIB
 					else if (sb.startsWith("IMPORTS"))
 					{
 						boolean isEnd = false;
-						StringBuilder impObjNames = new StringBuilder();
+						StringBuilderUTF8 impObjNames = new StringBuilderUTF8();
 						ASN1ModuleInfo impModule;
 						ASN1ObjectInfo impObj;
 						ASN1ObjectInfo impObj2;
@@ -750,7 +750,7 @@ public class ASN1MIB
 							if (i >= 0)
 							{
 								impObjNames.append(sb.substring(0, i));
-								StringUtil.trimRight(impObjNames);
+								impObjNames.rTrim();
 								if ((impModule = this.moduleMap.get(sb.substring(i + 5))) != null)
 								{
 								
@@ -820,7 +820,7 @@ public class ASN1MIB
 									}
 									impCnt++;
 								}
-								impObjNames.setLength(0);
+								impObjNames.clearStr();
 							}
 							else
 							{
@@ -1083,10 +1083,7 @@ public class ASN1MIB
 	public ASN1MIB()
 	{
 		this.moduleMap = new HashMap<String, ASN1ModuleInfo>();
-		this.globalModule = new ASN1ModuleInfo();
-		this.globalModule.setObjKeys(new ArrayList<String>());
-		this.globalModule.setObjValues(new ArrayList<ASN1ObjectInfo>());
-		this.globalModule.setOidList(new ArrayList<ASN1ObjectInfo>());
+		this.globalModule = new ASN1ModuleInfo("", "", new ArrayList<String>(), new ArrayList<ASN1ObjectInfo>(), new ArrayList<ASN1ObjectInfo>());
 	}
 
 	@Nonnull
@@ -1177,12 +1174,7 @@ public class ASN1MIB
 					errMessage.append(" already loaded");
 					break;
 				}
-				module = new ASN1ModuleInfo();
-				module.setModuleName(sb.toString());
-				module.setModuleFileName(fileName);
-				module.setObjKeys(new ArrayList<String>());
-				module.setObjValues(new ArrayList<ASN1ObjectInfo>());
-				module.setOidList(new ArrayList<ASN1ObjectInfo>());
+				module = new ASN1ModuleInfo(sb.toString(), fileName, new ArrayList<String>(), new ArrayList<ASN1ObjectInfo>(), new ArrayList<ASN1ObjectInfo>());
 				this.moduleMap.put(module.getModuleName(), module);
 				succ = this.parseModule(reader, module, errMessage);
 				moduleFound = true;
@@ -1198,7 +1190,7 @@ public class ASN1MIB
 		return succ;
 	}
 
-	public void toString(@Nonnull StringBuilder sb)
+	public void toString(@Nonnull StringBuilderUTF8 sb)
 	{
 		Iterator<ASN1ModuleInfo> itModules = this.moduleMap.values().iterator();
 		while (itModules.hasNext())
@@ -1211,7 +1203,7 @@ public class ASN1MIB
 	@Nonnull
 	public String toString()
 	{
-		StringBuilder sb = new StringBuilder();
+		StringBuilderUTF8 sb = new StringBuilderUTF8();
 		toString(sb);
 		return sb.toString();
 	}
