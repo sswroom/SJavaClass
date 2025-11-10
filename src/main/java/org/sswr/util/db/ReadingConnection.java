@@ -3,6 +3,7 @@ package org.sswr.util.db;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -91,7 +92,7 @@ public abstract class ReadingConnection
 	}
 
 	@Nullable
-	protected Integer fillColVals(@Nonnull DBReader r, @Nonnull Object o, @Nonnull List<DBColumnInfo> allCols) throws IllegalAccessException, InvocationTargetException
+	protected Integer fillColVals(@Nonnull DBReader r, @Nonnull Object o, @Nonnull List<DBColumnInfo> allCols) throws IllegalAccessException, InvocationTargetException, NoSuchMethodException
 	{
 		Class<?> fieldType;
 		Integer id = null;
@@ -101,134 +102,251 @@ public abstract class ReadingConnection
 		while (i < j)
 		{
 			col = allCols.get(i);
-			fieldType = col.field.getType();
-			if (fieldType.isEnum())
+			if (col.converter != null)
 			{
-				if (col.enumType == EnumType.ORDINAL)
+				Method toDBCol = col.converter.getClass().getMethod("convertToDatabaseColumn", col.field.getType());
+				fieldType = toDBCol.getReturnType();
+				if (fieldType.isEnum())
 				{
-					col.setter.set(o, fieldType.getEnumConstants()[r.getInt32(i)]);
+					if (col.enumType == EnumType.ORDINAL)
+					{
+						col.setter.set(o, col.converter.convertToEntityAttribute(r.getInt32(i)));
+					}
+					else
+					{
+						col.setter.set(o, col.converter.convertToEntityAttribute(r.getString(i)));
+					}
+				}
+				else if (col.joinCol != null)
+				{
+					try
+					{
+						Constructor<?> constr = fieldType.getConstructor(new Class<?>[0]);
+						Object obj = constr.newInstance(new Object[0]);
+						List<DBColumnInfo> fieldCols = new ArrayList<DBColumnInfo>();
+						List<DBColumnInfo> idCols = new ArrayList<DBColumnInfo>();
+						DBUtil.parseDBCols(fieldType, fieldCols, idCols, null);
+						if (idCols.size() == 1)
+						{
+							idCols.get(0).setter.set(obj, col.converter.convertToEntityAttribute(r.getInt32(i)));
+							col.setter.set(o, obj);
+						}
+						else
+						{
+							if (this.logger != null) this.logger.logMessage("fillColVals join idCols mismatch", LogLevel.ERROR);
+						}
+					}
+					catch (NoSuchMethodException ex)
+					{
+						if (this.logger != null) this.logger.logException(ex);
+					}
+					catch (InstantiationException ex)
+					{
+						if (this.logger != null) this.logger.logException(ex);
+					}
+				}
+				else if (fieldType.equals(int.class))
+				{
+					int v = r.getInt32(i);
+					col.setter.set(o, col.converter.convertToEntityAttribute(v));
+					if (col.isId)
+					{
+						id = v;
+					}
+				}
+				else if (fieldType.equals(Integer.class))
+				{
+					Integer v = r.getInt32(i);
+					if (r.isNull(i))
+					{
+						v = null;
+					}
+					col.setter.set(o, col.converter.convertToEntityAttribute(v));
+					if (col.isId)
+					{
+						id = v;
+					}
+				}
+				else if (fieldType.equals(Long.class))
+				{
+					Long v = r.getInt64(i);
+					if (r.isNull(i))
+					{
+						v = null;
+					}
+					col.setter.set(o, col.converter.convertToEntityAttribute(v));
+				}
+				else if (fieldType.equals(double.class))
+				{
+					double v = r.getDblOrNAN(i);
+					col.setter.set(o, col.converter.convertToEntityAttribute(v));
+				}
+				else if (fieldType.equals(Double.class))
+				{
+					Double v = r.getDblOrNAN(i);
+					if (r.isNull(i))
+					{
+						v = null;
+					}
+					col.setter.set(o, col.converter.convertToEntityAttribute(v));
+				}
+				else if (fieldType.equals(Timestamp.class))
+				{
+					col.setter.set(o, col.converter.convertToEntityAttribute(DateTimeUtil.toTimestamp(r.getDate(i))));
+				}
+				else if (fieldType.equals(String.class))
+				{
+					col.setter.set(o, col.converter.convertToEntityAttribute(r.getString(i)));
+				}
+				else if (fieldType.equals(Geometry.class))
+				{
+					col.setter.set(o, col.converter.convertToEntityAttribute(r.getGeometry(i)));
+				}
+				else if (fieldType.equals(Vector2D.class))
+				{
+					col.setter.set(o, col.converter.convertToEntityAttribute(r.getVector(i)));
+				}
+				else if (fieldType.equals(byte[].class))
+				{
+					col.setter.set(o, col.converter.convertToEntityAttribute(r.getBinary(i)));
 				}
 				else
 				{
-					Object[] enums = fieldType.getEnumConstants();
-					String enumName = r.getString(i);
-					if (enumName == null)
-					{
-						col.setter.set(o, null);
-					}
-					else
-					{
-						Object e = null;
-						int k = enums.length;
-						while (k-- > 0)
-						{
-							if (enums[k].toString().equals(enumName))
-							{
-								e = enums[k];
-								break;
-							}
-						}
-						col.setter.set(o, e);
-					}
+	//							col.setterMeth.invoke(obj, rs.getObject(i + 1));
+					if (this.logger != null) this.logger.logMessage("ReadingConnection: Unknown fieldType for "+col.field.getName()+" ("+fieldType.toString()+")", LogLevel.ERROR);
 				}
-			}
-			else if (col.joinCol != null)
-			{
-				try
-				{
-					Constructor<?> constr = fieldType.getConstructor(new Class<?>[0]);
-					Object obj = constr.newInstance(new Object[0]);
-					List<DBColumnInfo> fieldCols = new ArrayList<DBColumnInfo>();
-					List<DBColumnInfo> idCols = new ArrayList<DBColumnInfo>();
-					DBUtil.parseDBCols(fieldType, fieldCols, idCols, null);
-					if (idCols.size() == 1)
-					{
-						idCols.get(0).setter.set(obj, r.getInt32(i));
-						col.setter.set(o, obj);
-					}
-					else
-					{
-						if (this.logger != null) this.logger.logMessage("fillColVals join idCols mismatch", LogLevel.ERROR);
-					}
-				}
-				catch (NoSuchMethodException ex)
-				{
-					if (this.logger != null) this.logger.logException(ex);
-				}
-				catch (InstantiationException ex)
-				{
-					if (this.logger != null) this.logger.logException(ex);
-				}
-			}
-			else if (fieldType.equals(int.class))
-			{
-				int v = r.getInt32(i);
-				col.setter.set(o, v);
-				if (col.isId)
-				{
-					id = v;
-				}
-			}
-			else if (fieldType.equals(Integer.class))
-			{
-				Integer v = r.getInt32(i);
-				if (r.isNull(i))
-				{
-					v = null;
-				}
-				col.setter.set(o, v);
-				if (col.isId)
-				{
-					id = v;
-				}
-			}
-			else if (fieldType.equals(Long.class))
-			{
-				Long v = r.getInt64(i);
-				if (r.isNull(i))
-				{
-					v = null;
-				}
-				col.setter.set(o, v);
-			}
-			else if (fieldType.equals(double.class))
-			{
-				double v = r.getDblOrNAN(i);
-				col.setter.set(o, v);
-			}
-			else if (fieldType.equals(Double.class))
-			{
-				Double v = r.getDblOrNAN(i);
-				if (r.isNull(i))
-				{
-					v = null;
-				}
-				col.setter.set(o, v);
-			}
-			else if (fieldType.equals(Timestamp.class))
-			{
-				col.setter.set(o, DateTimeUtil.toTimestamp(r.getDate(i)));
-			}
-			else if (fieldType.equals(String.class))
-			{
-				col.setter.set(o, r.getString(i));
-			}
-			else if (fieldType.equals(Geometry.class))
-			{
-				col.setter.set(o, r.getGeometry(i));
-			}
-			else if (fieldType.equals(Vector2D.class))
-			{
-				col.setter.set(o, r.getVector(i));
-			}
-			else if (fieldType.equals(byte[].class))
-			{
-				col.setter.set(o, r.getBinary(i));
 			}
 			else
 			{
-//							col.setterMeth.invoke(obj, rs.getObject(i + 1));
-				if (this.logger != null) this.logger.logMessage("ReadingConnection: Unknown fieldType for "+col.field.getName()+" ("+fieldType.toString()+")", LogLevel.ERROR);
+				fieldType = col.field.getType();
+				if (fieldType.isEnum())
+				{
+					if (col.enumType == EnumType.ORDINAL)
+					{
+						col.setter.set(o, fieldType.getEnumConstants()[r.getInt32(i)]);
+					}
+					else
+					{
+						Object[] enums = fieldType.getEnumConstants();
+						String enumName = r.getString(i);
+						if (enumName == null)
+						{
+							col.setter.set(o, null);
+						}
+						else
+						{
+							Object e = null;
+							int k = enums.length;
+							while (k-- > 0)
+							{
+								if (enums[k].toString().equals(enumName))
+								{
+									e = enums[k];
+									break;
+								}
+							}
+							col.setter.set(o, e);
+						}
+					}
+				}
+				else if (col.joinCol != null)
+				{
+					try
+					{
+						Constructor<?> constr = fieldType.getConstructor(new Class<?>[0]);
+						Object obj = constr.newInstance(new Object[0]);
+						List<DBColumnInfo> fieldCols = new ArrayList<DBColumnInfo>();
+						List<DBColumnInfo> idCols = new ArrayList<DBColumnInfo>();
+						DBUtil.parseDBCols(fieldType, fieldCols, idCols, null);
+						if (idCols.size() == 1)
+						{
+							idCols.get(0).setter.set(obj, r.getInt32(i));
+							col.setter.set(o, obj);
+						}
+						else
+						{
+							if (this.logger != null) this.logger.logMessage("fillColVals join idCols mismatch", LogLevel.ERROR);
+						}
+					}
+					catch (NoSuchMethodException ex)
+					{
+						if (this.logger != null) this.logger.logException(ex);
+					}
+					catch (InstantiationException ex)
+					{
+						if (this.logger != null) this.logger.logException(ex);
+					}
+				}
+				else if (fieldType.equals(int.class))
+				{
+					int v = r.getInt32(i);
+					col.setter.set(o, v);
+					if (col.isId)
+					{
+						id = v;
+					}
+				}
+				else if (fieldType.equals(Integer.class))
+				{
+					Integer v = r.getInt32(i);
+					if (r.isNull(i))
+					{
+						v = null;
+					}
+					col.setter.set(o, v);
+					if (col.isId)
+					{
+						id = v;
+					}
+				}
+				else if (fieldType.equals(Long.class))
+				{
+					Long v = r.getInt64(i);
+					if (r.isNull(i))
+					{
+						v = null;
+					}
+					col.setter.set(o, v);
+				}
+				else if (fieldType.equals(double.class))
+				{
+					double v = r.getDblOrNAN(i);
+					col.setter.set(o, v);
+				}
+				else if (fieldType.equals(Double.class))
+				{
+					Double v = r.getDblOrNAN(i);
+					if (r.isNull(i))
+					{
+						v = null;
+					}
+					col.setter.set(o, v);
+				}
+				else if (fieldType.equals(Timestamp.class))
+				{
+					col.setter.set(o, DateTimeUtil.toTimestamp(r.getDate(i)));
+				}
+				else if (fieldType.equals(String.class))
+				{
+					col.setter.set(o, r.getString(i));
+				}
+				else if (fieldType.equals(Geometry.class))
+				{
+					col.setter.set(o, r.getGeometry(i));
+				}
+				else if (fieldType.equals(Vector2D.class))
+				{
+					col.setter.set(o, r.getVector(i));
+				}
+				else if (fieldType.equals(byte[].class))
+				{
+					col.setter.set(o, r.getBinary(i));
+				}
+				else
+				{
+	//							col.setterMeth.invoke(obj, rs.getObject(i + 1));
+					if (this.logger != null) this.logger.logMessage("ReadingConnection: Unknown fieldType for "+col.field.getName()+" ("+fieldType.toString()+")", LogLevel.ERROR);
+				}
 			}
 			i++;
 		}
@@ -326,6 +444,10 @@ public abstract class ReadingConnection
 				{
 					if (this.logger != null) this.logger.logException(ex);
 				}
+				catch (NoSuchMethodException ex)
+				{
+					if (this.logger != null) this.logger.logException(ex);
+				}
 			}
 		}
 		return retList;
@@ -364,6 +486,10 @@ public abstract class ReadingConnection
 				if (this.logger != null) this.logger.logException(ex);
 			}
 			catch (IllegalAccessException ex)
+			{
+				if (this.logger != null) this.logger.logException(ex);
+			}
+			catch (NoSuchMethodException ex)
 			{
 				if (this.logger != null) this.logger.logException(ex);
 			}

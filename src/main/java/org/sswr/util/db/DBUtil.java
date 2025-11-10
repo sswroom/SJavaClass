@@ -5,6 +5,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -200,6 +201,7 @@ public class DBUtil {
 		return sb.toString();
 	}
 
+	@SuppressWarnings("unchecked")
 	@Nullable
 	private static DBColumnInfo parseField2ColInfo(@Nonnull Field field, @Nullable List<String> joinFields)
 	{
@@ -210,7 +212,7 @@ public class DBUtil {
 		boolean isJoin;
 		JoinColumn joinCol;
 		GeneratedValue genVal;
-		Class<? extends AttributeConverter> converter = null;
+		Class<? extends AttributeConverter<Object, Object>> converter = null;
 		Annotation anns[];
 		int i;
 		int j;
@@ -291,7 +293,16 @@ public class DBUtil {
 				else if (annType.equals(Convert.class))
 				{
 					Convert cvt = (Convert)anns[i];
-					converter = cvt.converter();
+					converter = (Class<? extends AttributeConverter<Object, Object>>) cvt.converter();
+					try
+					{
+						converter.getMethod("convertToDatabaseColumn", field.getType());
+					}
+					catch (NoSuchMethodException ex)
+					{
+						ex.printStackTrace();
+						converter = null;
+					}
 				}
 				else if (annType.getSimpleName().equals("Formula"))
 				{
@@ -582,224 +593,428 @@ public class DBUtil {
 		while (i < j)
 		{
 			col = allCols.get(i);
-			fieldType = col.field.getType();
 			try
 			{
-				if (fieldType.isEnum())
+				if (col.converter != null)
 				{
-					if (col.enumType == EnumType.ORDINAL)
+					Method toDBCol = col.converter.getClass().getMethod("convertToDatabaseColumn", col.field.getType());
+					fieldType = toDBCol.getReturnType();
+					if (fieldType.isEnum())
 					{
-						col.setter.set(o, fieldType.getEnumConstants()[rs.getInt(i + 1)]);
-					}
-					else
-					{
-						Object[] enums = fieldType.getEnumConstants();
-						String enumName = rs.getString(i + 1);
-						if (enumName == null)
+						if (col.enumType == EnumType.ORDINAL)
 						{
-							col.setter.set(o, null);
+							col.setter.set(o, col.converter.convertToEntityAttribute(rs.getInt(i + 1)));
 						}
 						else
 						{
-							Object e = null;
-							int k = enums.length;
-							while (k-- > 0)
+							col.setter.set(o, col.converter.convertToEntityAttribute(rs.getString(i + 1)));
+						}
+					}
+					else if (col.joinCol != null)
+					{
+						try
+						{
+							Constructor<?> constr = fieldType.getConstructor(new Class<?>[0]);
+							Object obj = constr.newInstance(new Object[0]);
+							List<DBColumnInfo> fieldCols = new ArrayList<DBColumnInfo>();
+							List<DBColumnInfo> idCols = new ArrayList<DBColumnInfo>();
+							parseDBCols(fieldType, fieldCols, idCols, null);
+							if (idCols.size() == 1)
 							{
-								if (enums[k].toString().equals(enumName))
-								{
-									e = enums[k];
-									break;
-								}
+								idCols.get(0).setter.set(obj, col.converter.convertToEntityAttribute(rs.getInt(i + 1)));
+								col.setter.set(o, obj);
 							}
-							col.setter.set(o, e);
+							else
+							{
+								sqlLogger.logMessage("DBUtil.fillColVals join idCols mismatch", LogLevel.ERROR);
+							}
+						}
+						catch (NoSuchMethodException ex)
+						{
+							sqlLogger.logException(ex);
+						}
+						catch (InstantiationException ex)
+						{
+							sqlLogger.logException(ex);
 						}
 					}
-				}
-				else if (col.joinCol != null)
-				{
-					try
+					else if (fieldType.equals(int.class))
 					{
-						Constructor<?> constr = fieldType.getConstructor(new Class<?>[0]);
-						Object obj = constr.newInstance(new Object[0]);
-						List<DBColumnInfo> fieldCols = new ArrayList<DBColumnInfo>();
-						List<DBColumnInfo> idCols = new ArrayList<DBColumnInfo>();
-						parseDBCols(fieldType, fieldCols, idCols, null);
-						if (idCols.size() == 1)
+						int v = rs.getInt(i + 1);
+						col.setter.set(o, col.converter.convertToEntityAttribute(v));
+						if (col.isId)
 						{
-							idCols.get(0).setter.set(obj, rs.getInt(i + 1));
-							col.setter.set(o, obj);
+							id = v;
+						}
+					}
+					else if (fieldType.equals(Integer.class))
+					{
+						Integer v = rs.getInt(i + 1);
+						if (rs.wasNull())
+						{
+							v = null;
+						}
+						col.setter.set(o, col.converter.convertToEntityAttribute(v));
+						if (col.isId)
+						{
+							id = v;
+						}
+					}
+					else if (fieldType.equals(Long.class))
+					{
+						Long v = rs.getLong(i + 1);
+						if (rs.wasNull())
+						{
+							v = null;
+						}
+						col.setter.set(o, col.converter.convertToEntityAttribute(v));
+					}
+					else if (fieldType.equals(double.class))
+					{
+						double v = rs.getDouble(i + 1);
+						col.setter.set(o, col.converter.convertToEntityAttribute(v));
+					}
+					else if (fieldType.equals(Double.class))
+					{
+						Double v = rs.getDouble(i + 1);
+						if (rs.wasNull())
+						{
+							v = null;
+						}
+						col.setter.set(o, col.converter.convertToEntityAttribute(v));
+					}
+					else if (fieldType.equals(float.class))
+					{
+						float v = (float)rs.getDouble(i + 1);
+						col.setter.set(o, col.converter.convertToEntityAttribute(v));
+					}
+					else if (fieldType.equals(Float.class))
+					{
+						Float v = (float)rs.getDouble(i + 1);
+						if (rs.wasNull())
+						{
+							v = null;
+						}
+						col.setter.set(o, col.converter.convertToEntityAttribute(v));
+					}
+					else if (fieldType.equals(Timestamp.class))
+					{
+						col.setter.set(o, col.converter.convertToEntityAttribute(rs.getTimestamp(i + 1)));
+					}
+					else if (fieldType.equals(Date.class))
+					{
+						col.setter.set(o, col.converter.convertToEntityAttribute(rs.getDate(i + 1)));
+					}
+					else if (fieldType.equals(Time.class))
+					{
+						col.setter.set(o, col.converter.convertToEntityAttribute(rs.getTime(i + 1)));
+					}
+					else if (fieldType.equals(String.class))
+					{
+						col.setter.set(o, col.converter.convertToEntityAttribute(rs.getString(i + 1)));
+					}
+					else if (fieldType.equals(Boolean.class))
+					{
+						Object dbO = rs.getObject(i + 1);
+						Boolean v;
+						if (rs.wasNull())
+						{
+							v = null;
+						}
+						else if (dbO instanceof String)
+						{
+							v = ((String)dbO).startsWith("t") || ((String)dbO).startsWith("T");
+						}
+						else if (dbO instanceof Integer)
+						{
+							v = ((Integer)dbO).intValue() != 0;
+						}
+						else if (dbO instanceof Boolean)
+						{
+							v = (Boolean)dbO;
 						}
 						else
 						{
-							sqlLogger.logMessage("DBUtil.fillColVals join idCols mismatch", LogLevel.ERROR);
+							System.out.println("DBUtil: unsupported Boolean type: "+dbO.getClass().toString());
+							v = false;
 						}
+						col.setter.set(o, col.converter.convertToEntityAttribute(v));
 					}
-					catch (NoSuchMethodException ex)
+					else if (fieldType.equals(Geometry.class))
 					{
-						sqlLogger.logException(ex);
-					}
-					catch (InstantiationException ex)
-					{
-						sqlLogger.logException(ex);
-					}
-				}
-				else if (fieldType.equals(int.class))
-				{
-					int v = rs.getInt(i + 1);
-					col.setter.set(o, v);
-					if (col.isId)
-					{
-						id = v;
-					}
-				}
-				else if (fieldType.equals(Integer.class))
-				{
-					Integer v = rs.getInt(i + 1);
-					if (rs.wasNull())
-					{
-						v = null;
-					}
-					col.setter.set(o, v);
-					if (col.isId)
-					{
-						id = v;
-					}
-				}
-				else if (fieldType.equals(Long.class))
-				{
-					Long v = rs.getLong(i + 1);
-					if (rs.wasNull())
-					{
-						v = null;
-					}
-					col.setter.set(o, v);
-				}
-				else if (fieldType.equals(double.class))
-				{
-					double v = rs.getDouble(i + 1);
-					col.setter.set(o, v);
-				}
-				else if (fieldType.equals(Double.class))
-				{
-					Double v = rs.getDouble(i + 1);
-					if (rs.wasNull())
-					{
-						v = null;
-					}
-					col.setter.set(o, v);
-				}
-				else if (fieldType.equals(float.class))
-				{
-					float v = (float)rs.getDouble(i + 1);
-					col.setter.set(o, v);
-				}
-				else if (fieldType.equals(Float.class))
-				{
-					Float v = (float)rs.getDouble(i + 1);
-					if (rs.wasNull())
-					{
-						v = null;
-					}
-					col.setter.set(o, v);
-				}
-				else if (fieldType.equals(Timestamp.class))
-				{
-					col.setter.set(o, rs.getTimestamp(i + 1));
-				}
-				else if (fieldType.equals(Date.class))
-				{
-					col.setter.set(o, rs.getDate(i + 1));
-				}
-				else if (fieldType.equals(Time.class))
-				{
-					col.setter.set(o, rs.getTime(i + 1));
-				}
-				else if (fieldType.equals(String.class))
-				{
-					col.setter.set(o, rs.getString(i + 1));
-				}
-				else if (fieldType.equals(Boolean.class))
-				{
-					Object dbO = rs.getObject(i + 1);
-					Boolean v;
-					if (rs.wasNull())
-					{
-						v = null;
-					}
-					else if (dbO instanceof String)
-					{
-						v = ((String)dbO).startsWith("t") || ((String)dbO).startsWith("T");
-					}
-					else if (dbO instanceof Integer)
-					{
-						v = ((Integer)dbO).intValue() != 0;
-					}
-					else if (dbO instanceof Boolean)
-					{
-						v = (Boolean)dbO;
-					}
-					else
-					{
-						System.out.println("DBUtil: unsupported Boolean type: "+dbO.getClass().toString());
-						v = false;
-					}
-					col.setter.set(o, v);
-				}
-				else if (fieldType.equals(Geometry.class))
-				{
-					byte bytes[] = rs.getBytes(i + 1);
-					if (bytes == null)
-					{
-						col.setter.set(o, null);
-					}
-					else if (dbType == DBType.MSSQL)
-					{
-						Vector2D vec = MSGeography.parseBinary(bytes);
-						if (vec != null)
-							col.setter.set(o, GeometryUtil.fromVector2D(vec));
-						else
+						byte bytes[] = rs.getBytes(i + 1);
+						if (bytes == null)
+						{
 							col.setter.set(o, null);
+						}
+						else if (dbType == DBType.MSSQL)
+						{
+							Vector2D vec = MSGeography.parseBinary(bytes);
+							if (vec != null)
+								col.setter.set(o, col.converter.convertToEntityAttribute(GeometryUtil.fromVector2D(vec)));
+							else
+								col.setter.set(o, null);
+						}
+						else if (dbType == DBType.PostgreSQL || dbType == DBType.PostgreSQLESRI)
+						{
+							bytes = StringUtil.hex2Bytes(new String(bytes));
+							WKBReader reader = new WKBReader();
+							try
+							{
+								col.setter.set(o, col.converter.convertToEntityAttribute(reader.read(bytes)));
+							}
+							catch (ParseException ex)
+							{
+								sqlLogger.logException(ex);
+							}
+						}
+						else
+						{
+							WKBReader reader = new WKBReader();
+							try
+							{
+								col.setter.set(o, col.converter.convertToEntityAttribute(reader.read(bytes)));
+							}
+							catch (ParseException ex)
+							{
+								sqlLogger.logException(ex);
+							}
+						}
 					}
-					else if (dbType == DBType.PostgreSQL || dbType == DBType.PostgreSQLESRI)
+					else if (fieldType.equals(byte[].class))
 					{
-						bytes = StringUtil.hex2Bytes(new String(bytes));
-						WKBReader reader = new WKBReader();
-						try
-						{
-							col.setter.set(o, reader.read(bytes));
-						}
-						catch (ParseException ex)
-						{
-							sqlLogger.logException(ex);
-						}
+						col.setter.set(o, col.converter.convertToEntityAttribute(rs.getBytes(i + 1)));
 					}
 					else
 					{
-						WKBReader reader = new WKBReader();
-						try
-						{
-							col.setter.set(o, reader.read(bytes));
-						}
-						catch (ParseException ex)
-						{
-							sqlLogger.logException(ex);
-						}
+		//							col.setterMeth.invoke(obj, rs.getObject(i + 1));
+						sqlLogger.logMessage("DBUtil: Unknown converter fieldType for "+col.field.getName()+" ("+fieldType.toString()+")", LogLevel.ERROR);
 					}
-				}
-				else if (fieldType.equals(byte[].class))
-				{
-					col.setter.set(o, rs.getBytes(i + 1));
 				}
 				else
 				{
-	//							col.setterMeth.invoke(obj, rs.getObject(i + 1));
-					sqlLogger.logMessage("DBUtil: Unknown fieldType for "+col.field.getName()+" ("+fieldType.toString()+")", LogLevel.ERROR);
+					fieldType = col.field.getType();
+					if (fieldType.isEnum())
+					{
+						if (col.enumType == EnumType.ORDINAL)
+						{
+							col.setter.set(o, fieldType.getEnumConstants()[rs.getInt(i + 1)]);
+						}
+						else
+						{
+							Object[] enums = fieldType.getEnumConstants();
+							String enumName = rs.getString(i + 1);
+							if (enumName == null)
+							{
+								col.setter.set(o, null);
+							}
+							else
+							{
+								Object e = null;
+								int k = enums.length;
+								while (k-- > 0)
+								{
+									if (enums[k].toString().equals(enumName))
+									{
+										e = enums[k];
+										break;
+									}
+								}
+								col.setter.set(o, e);
+							}
+						}
+					}
+					else if (col.joinCol != null)
+					{
+						try
+						{
+							Constructor<?> constr = fieldType.getConstructor(new Class<?>[0]);
+							Object obj = constr.newInstance(new Object[0]);
+							List<DBColumnInfo> fieldCols = new ArrayList<DBColumnInfo>();
+							List<DBColumnInfo> idCols = new ArrayList<DBColumnInfo>();
+							parseDBCols(fieldType, fieldCols, idCols, null);
+							if (idCols.size() == 1)
+							{
+								idCols.get(0).setter.set(obj, rs.getInt(i + 1));
+								col.setter.set(o, obj);
+							}
+							else
+							{
+								sqlLogger.logMessage("DBUtil.fillColVals join idCols mismatch", LogLevel.ERROR);
+							}
+						}
+						catch (NoSuchMethodException ex)
+						{
+							sqlLogger.logException(ex);
+						}
+						catch (InstantiationException ex)
+						{
+							sqlLogger.logException(ex);
+						}
+					}
+					else if (fieldType.equals(int.class))
+					{
+						int v = rs.getInt(i + 1);
+						col.setter.set(o, v);
+						if (col.isId)
+						{
+							id = v;
+						}
+					}
+					else if (fieldType.equals(Integer.class))
+					{
+						Integer v = rs.getInt(i + 1);
+						if (rs.wasNull())
+						{
+							v = null;
+						}
+						col.setter.set(o, v);
+						if (col.isId)
+						{
+							id = v;
+						}
+					}
+					else if (fieldType.equals(Long.class))
+					{
+						Long v = rs.getLong(i + 1);
+						if (rs.wasNull())
+						{
+							v = null;
+						}
+						col.setter.set(o, v);
+					}
+					else if (fieldType.equals(double.class))
+					{
+						double v = rs.getDouble(i + 1);
+						col.setter.set(o, v);
+					}
+					else if (fieldType.equals(Double.class))
+					{
+						Double v = rs.getDouble(i + 1);
+						if (rs.wasNull())
+						{
+							v = null;
+						}
+						col.setter.set(o, v);
+					}
+					else if (fieldType.equals(float.class))
+					{
+						float v = (float)rs.getDouble(i + 1);
+						col.setter.set(o, v);
+					}
+					else if (fieldType.equals(Float.class))
+					{
+						Float v = (float)rs.getDouble(i + 1);
+						if (rs.wasNull())
+						{
+							v = null;
+						}
+						col.setter.set(o, v);
+					}
+					else if (fieldType.equals(Timestamp.class))
+					{
+						col.setter.set(o, rs.getTimestamp(i + 1));
+					}
+					else if (fieldType.equals(Date.class))
+					{
+						col.setter.set(o, rs.getDate(i + 1));
+					}
+					else if (fieldType.equals(Time.class))
+					{
+						col.setter.set(o, rs.getTime(i + 1));
+					}
+					else if (fieldType.equals(String.class))
+					{
+						col.setter.set(o, rs.getString(i + 1));
+					}
+					else if (fieldType.equals(Boolean.class))
+					{
+						Object dbO = rs.getObject(i + 1);
+						Boolean v;
+						if (rs.wasNull())
+						{
+							v = null;
+						}
+						else if (dbO instanceof String)
+						{
+							v = ((String)dbO).startsWith("t") || ((String)dbO).startsWith("T");
+						}
+						else if (dbO instanceof Integer)
+						{
+							v = ((Integer)dbO).intValue() != 0;
+						}
+						else if (dbO instanceof Boolean)
+						{
+							v = (Boolean)dbO;
+						}
+						else
+						{
+							System.out.println("DBUtil: unsupported Boolean type: "+dbO.getClass().toString());
+							v = false;
+						}
+						col.setter.set(o, v);
+					}
+					else if (fieldType.equals(Geometry.class))
+					{
+						byte bytes[] = rs.getBytes(i + 1);
+						if (bytes == null)
+						{
+							col.setter.set(o, null);
+						}
+						else if (dbType == DBType.MSSQL)
+						{
+							Vector2D vec = MSGeography.parseBinary(bytes);
+							if (vec != null)
+								col.setter.set(o, GeometryUtil.fromVector2D(vec));
+							else
+								col.setter.set(o, null);
+						}
+						else if (dbType == DBType.PostgreSQL || dbType == DBType.PostgreSQLESRI)
+						{
+							bytes = StringUtil.hex2Bytes(new String(bytes));
+							WKBReader reader = new WKBReader();
+							try
+							{
+								col.setter.set(o, reader.read(bytes));
+							}
+							catch (ParseException ex)
+							{
+								sqlLogger.logException(ex);
+							}
+						}
+						else
+						{
+							WKBReader reader = new WKBReader();
+							try
+							{
+								col.setter.set(o, reader.read(bytes));
+							}
+							catch (ParseException ex)
+							{
+								sqlLogger.logException(ex);
+							}
+						}
+					}
+					else if (fieldType.equals(byte[].class))
+					{
+						col.setter.set(o, rs.getBytes(i + 1));
+					}
+					else
+					{
+		//							col.setterMeth.invoke(obj, rs.getObject(i + 1));
+						sqlLogger.logMessage("DBUtil: Unknown fieldType for "+col.field.getName()+" ("+fieldType.toString()+")", LogLevel.ERROR);
+					}
 				}
 			}
 			catch (SQLException ex)
 			{
 				sqlLogger.logMessage("Error in setting field: "+col.field.getName(), LogLevel.ERROR);
 				throw ex;
+			}
+			catch (NoSuchMethodException ex)
+			{
+				sqlLogger.logMessage("Error in setting field of converter: "+col.field.getName(), LogLevel.ERROR);
+				throw new SQLException(ex);
 			}
 			i++;
 		}
@@ -2155,6 +2370,14 @@ public class DBUtil {
 			return "null";
 		}
 		Class<?> fieldType = col.field.getType();
+		if (col.converter != null)
+		{
+			val = col.converter.convertToDatabaseColumn(val);
+			if (val == null)
+			{
+				return "null";
+			}
+		}
 		if (fieldType.equals(Timestamp.class) && val.getClass().equals(Timestamp.class))
 		{
 			return dbTS(dbType, (Timestamp)val);

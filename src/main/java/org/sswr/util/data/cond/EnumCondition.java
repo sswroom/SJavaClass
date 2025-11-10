@@ -1,26 +1,31 @@
 package org.sswr.util.data.cond;
 
+import java.text.AttributedCharacterIterator.Attribute;
 import java.util.Map;
 
 import org.sswr.util.basic.CompareCondition;
+import org.sswr.util.data.QueryConditions;
 import org.sswr.util.db.DBColumnInfo;
 import org.sswr.util.db.DBUtil;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.EnumType;
 
 public class EnumCondition extends FieldCondition
 {
+	private @Nonnull Class<?> cls;
 	private Enum<?> val;
-	private EnumType enumType;
+	private @Nullable EnumType enumType;
 	private CompareCondition cond;
 
-	public EnumCondition(@Nonnull String fieldName, @Nonnull Enum<?> val, @Nonnull EnumType enumType, @Nonnull CompareCondition cond)
+	public EnumCondition(@Nonnull Class<?> cls, @Nonnull String fieldName, @Nonnull Enum<?> val, @Nonnull CompareCondition cond) throws NoSuchFieldException
 	{
 		super(fieldName);
+		this.cls = cls;
 		this.val = val;
-		this.enumType = enumType;
+		this.enumType = QueryConditions.parseEnumType(cls, fieldName);
 		this.cond = cond;
 		if (cond != CompareCondition.Equal && cond != CompareCondition.NotEqual)
 		{
@@ -30,7 +35,14 @@ public class EnumCondition extends FieldCondition
 
 	public @Nonnull ConditionObject clone()
 	{
-		return new EnumCondition(fieldName, val, enumType, cond);
+		try
+		{
+			return new EnumCondition(cls, fieldName, val, cond);
+		}
+		catch (NoSuchFieldException ex)
+		{
+			throw new IllegalArgumentException(ex);
+		}
 	}
 
 	@Nonnull
@@ -38,6 +50,13 @@ public class EnumCondition extends FieldCondition
 	{
 		StringBuilder sb = new StringBuilder();
 		sb.append(DBUtil.dbCol(dbType, toFieldName(colsMap, fieldName)));
+		AttributeConverter<Object, Object> converter = null;
+		DBColumnInfo col;
+		if ((col = colsMap.get(this.fieldName)) != null)
+		{
+			converter = col.converter;
+		}
+
 		if (this.cond == CompareCondition.Equal)
 		{
 			if (val == null)
@@ -47,13 +66,33 @@ public class EnumCondition extends FieldCondition
 			else
 			{
 				sb.append(" = ");
-				if (this.enumType == EnumType.STRING)
+				if (converter == null)
 				{
-					sb.append(DBUtil.dbStr(dbType, this.val.name()));
+					if (this.enumType == EnumType.STRING)
+					{
+						sb.append(DBUtil.dbStr(dbType, this.val.name()));
+					}
+					else
+					{
+						sb.append(this.val.ordinal());
+					}
 				}
 				else
 				{
-					sb.append(this.val.ordinal());
+					Object o = converter.convertToDatabaseColumn(this.val);
+					if (o instanceof String)
+					{
+						sb.append(DBUtil.dbStr(dbType, (String)o));
+					}
+					else if (o instanceof Integer)
+					{
+						sb.append((Integer)o);
+					}
+					else
+					{
+						System.out.println("EnumCondition: Unsupported converter return type "+o.getClass().toString());
+						sb.append(DBUtil.dbStr(dbType, o.toString()));
+					}
 				}
 			}
 		}
@@ -66,13 +105,33 @@ public class EnumCondition extends FieldCondition
 			else
 			{
 				sb.append(" <> ");
-				if (this.enumType == EnumType.STRING)
+				if (converter == null)
 				{
-					sb.append(DBUtil.dbStr(dbType, this.val.name()));
+					if (this.enumType == EnumType.STRING)
+					{
+						sb.append(DBUtil.dbStr(dbType, this.val.name()));
+					}
+					else
+					{
+						sb.append(this.val.ordinal());
+					}
 				}
 				else
 				{
-					sb.append(this.val.ordinal());
+					Object o = converter.convertToDatabaseColumn(this.val);
+					if (o instanceof String)
+					{
+						sb.append(DBUtil.dbStr(dbType, (String)o));
+					}
+					else if (o instanceof Integer)
+					{
+						sb.append((Integer)o);
+					}
+					else
+					{
+						System.out.println("EnumCondition: Unsupported converter return type "+o.getClass().toString());
+						sb.append(DBUtil.dbStr(dbType, o.toString()));
+					}
 				}
 			}
 		}

@@ -270,7 +270,7 @@ public class QueryConditions
 	}
 
 	@Nonnull
-	private EnumType parseEnumType(@Nonnull Class<?> cls, @Nonnull String fieldName) throws NoSuchFieldException
+	public static EnumType parseEnumType(@Nonnull Class<?> cls, @Nonnull String fieldName) throws NoSuchFieldException
 	{
 		EnumType enumType = EnumType.ORDINAL;
 		Field field = cls.getDeclaredField(fieldName);
@@ -289,20 +289,20 @@ public class QueryConditions
 		return enumType;
 	}
 
-	private @Nonnull EnumCondition parseEnumCondition(@Nonnull String fieldName, @Nonnull Enum<?> val, @Nonnull CompareCondition cond) throws NoSuchFieldException
+	private @Nonnull EnumCondition parseEnumCondition(@Nonnull Class<?> cls, @Nonnull String fieldName, @Nonnull Enum<?> val, @Nonnull CompareCondition cond) throws NoSuchFieldException
 	{
-		return new EnumCondition(fieldName, val, parseEnumType(val.getClass(), fieldName), cond);
+		return new EnumCondition(cls, fieldName, val, cond);
 	}
 
-	public @Nonnull QueryConditions enumEquals(@Nonnull String fieldName, @Nonnull Enum<?> val) throws NoSuchFieldException
+	public @Nonnull QueryConditions enumEquals(@Nonnull Class<?> cls, @Nonnull String fieldName, @Nonnull Enum<?> val) throws NoSuchFieldException
 	{
-		this.andCond.addAnd(parseEnumCondition(fieldName, val, CompareCondition.Equal));
+		this.andCond.addAnd(parseEnumCondition(cls, fieldName, val, CompareCondition.Equal));
 		return this;
 	}
 
-	public @Nonnull QueryConditions enumNotEquals(@Nonnull String fieldName, @Nonnull Enum<?> val) throws NoSuchFieldException
+	public @Nonnull QueryConditions enumNotEquals(@Nonnull Class<?> cls, @Nonnull String fieldName, @Nonnull Enum<?> val) throws NoSuchFieldException
 	{
-		this.andCond.addAnd(parseEnumCondition(fieldName, val, CompareCondition.NotEqual));
+		this.andCond.addAnd(parseEnumCondition(cls, fieldName, val, CompareCondition.NotEqual));
 		return this;
 	}
 

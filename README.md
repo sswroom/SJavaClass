@@ -1,9 +1,11 @@
 # SJavaClass
 
 # Changes:
+0.8.20251110
 -Support SAML group
 -Added StringBuilderUTF8.appendHexBuff
--DBUtil supporting Convert
+-DBUtil support Convert
+-ReadingConnection support Convert
 -Enhance Nonnull/Nullable
 
 0.8.20250904

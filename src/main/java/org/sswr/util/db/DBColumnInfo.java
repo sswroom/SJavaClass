@@ -19,5 +19,5 @@ public class DBColumnInfo {
 	public boolean isId;
 	public JoinColumn joinCol;
 	public GenerationType genType;
-	public AttributeConverter<?,?> converter;
+	public AttributeConverter<Object,Object> converter;
 }
