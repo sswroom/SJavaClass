@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.github.sswroom</groupId>
 	<artifactId>util</artifactId>
-	<version>0.8.20251110</version>
+	<version>0.8.20251111</version>
 	
 	<name>sswr-util</name>
 	<packaging>jar</packaging>
@@ -62,7 +62,7 @@
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-api</artifactId>
-			<version>5.13.1</version>
+			<version>6.0.1</version>
 			<scope>test</scope>
 		</dependency>
 

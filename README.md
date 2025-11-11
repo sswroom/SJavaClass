@@ -1,6 +1,9 @@
 # SJavaClass
 
 # Changes:
+0.8.20251111
+-Update to latest libraries
+
 0.8.20251110
 -Support SAML group
 -Added StringBuilderUTF8.appendHexBuff
