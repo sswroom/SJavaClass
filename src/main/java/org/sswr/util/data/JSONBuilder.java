@@ -1,10 +1,19 @@
 package org.sswr.util.data;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.sql.Date;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.locationtech.jts.geom.Geometry;
 import org.sswr.util.math.Coord2DDbl;
@@ -246,6 +255,203 @@ public class JSONBuilder
 		}
 	}
 
+	private void appendObject(@Nonnull Object o, int level)
+	{
+		if (o instanceof Integer)
+		{
+			this.sb.append(((Integer)o).intValue());
+		}
+		else if (o instanceof Long)
+		{
+			this.sb.append(((Long)o).longValue());
+		}
+		else if (o instanceof String)
+		{
+			this.appendStr((String)o);
+		}
+		else if (o instanceof Boolean)
+		{
+			this.sb.append(((Boolean)o).booleanValue()?"true":"false");
+		}
+		else if (o instanceof Enum)
+		{
+			this.appendStr(o.toString());
+		}
+		else if (o instanceof Timestamp)
+		{
+			this.appendStr(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX").format((Timestamp)o));
+		}
+		else if (o instanceof Collection)
+		{
+			Iterable<?> coll = (Iterable<?>) o;
+			boolean isFirst = true;
+			Iterator<?> it = coll.iterator();
+			this.sb.append('[');
+			while (it.hasNext())
+			{
+				if (isFirst)
+					isFirst = false;
+				else
+					this.sb.append(',');
+				this.appendObject(it.next(), level + 1);
+			}
+			this.sb.append(']');
+		}
+		else
+		{
+			if (level > 10)
+			{
+				this.sb.append("{}");
+				return;
+			}
+			Set<String> names = new HashSet<String>();
+			boolean isFirst = true;
+			this.sb.append("{");
+			Class<?> cls = o.getClass();
+			Field[] fields = cls.getFields();
+			String name;
+			Object v;
+			int k;
+			boolean skip;
+			int i = 0;
+			int j = fields.length;
+			while (i < j)
+			{
+				try
+				{
+					if ((fields[i].getModifiers() & Modifier.PUBLIC) != 0 && (fields[i].getModifiers() & Modifier.STATIC) == 0)
+					{
+						name = fields[i].getName();
+						v = fields[i].get(o);
+						if (!names.contains(name))
+						{
+							skip = false;
+							Annotation[] ann = fields[i].getAnnotations();
+							String clsName;
+							k = ann.length;
+							while (k-- > 0)
+							{
+								clsName = ann[k].getClass().toString();
+								if (clsName.endsWith(".Tr"))
+								{
+									skip = true;
+									break;
+								}
+							}
+							if (!skip)
+							{
+								names.add(name);
+								if (isFirst)
+								{
+									isFirst = false;
+								}
+								else
+								{
+									this.sb.append(',');
+								}
+								this.appendStr(name);
+								this.sb.append(':');
+								if (v == null)
+								{
+									this.sb.append("null");
+								}
+								else
+								{
+									this.appendObject(v, level + 1);
+								}
+							}
+						}
+					}
+				}
+				catch (IllegalAccessException|IllegalArgumentException ex)
+				{
+					ex.printStackTrace();
+				}
+				i++;
+			}
+
+			Method[] methods = cls.getMethods();
+			Class<?> returnType;
+
+			i = 0;
+			j = methods.length;
+			while (i < j)
+			{
+				try
+				{
+					if ((methods[i].getModifiers() & Modifier.STATIC) == 0 && methods[i].getParameterCount() == 0)
+					{
+						name = methods[i].getName();
+						returnType = methods[i].getReturnType();
+						if (!returnType.equals(void.class) && !name.equals("getClass"))
+						{
+							skip = true;
+							if (returnType.equals(boolean.class) || returnType.equals(Boolean.class))
+							{
+								if (name.length() >= 4 && (name.startsWith("can") || name.startsWith("has")))
+								{
+									if (Character.isUpperCase(name.charAt(3)))
+									{
+										name = Character.toLowerCase(name.charAt(3))+name.substring(4);
+										skip = false;
+									}
+								}
+								else if (name.length() >= 3 && name.startsWith("is"))
+								{
+									if (Character.isUpperCase(name.charAt(2)))
+									{
+										name = Character.toLowerCase(name.charAt(2))+name.substring(3);
+										skip = false;
+									}
+								}
+							}
+							else
+							{
+								if (name.length() >= 4 && name.startsWith("get"))
+								{
+									if (Character.isUpperCase(name.charAt(3)))
+									{
+										name = Character.toLowerCase(name.charAt(3))+name.substring(4);
+										skip = false;
+									}								
+								}
+							}
+							if (!skip && !names.contains(name))
+							{
+								v = methods[i].invoke(o);
+								names.add(name);
+								if (isFirst)
+								{
+									isFirst = false;
+								}
+								else
+								{
+									this.sb.append(',');
+								}
+								this.appendStr(name);
+								this.sb.append(':');
+								if (v == null)
+								{
+									this.sb.append("null");
+								}
+								else
+								{
+									this.appendObject(v, level + 1);
+								}								
+							}
+						}
+					}
+				}
+				catch (InvocationTargetException|IllegalAccessException ex)
+				{
+					ex.printStackTrace();
+				}
+				i++;
+			}
+			this.sb.append("}");
+		}
+	}
+
 	public JSONBuilder(@Nonnull ObjectType rootType)
 	{
 		this.objTypes = new ArrayList<ObjectType>();
@@ -256,7 +462,7 @@ public class JSONBuilder
 		{
 			this.sb.append('[');
 		}
-		else
+		else if (rootType == ObjectType.OT_OBJECT)
 		{
 			this.sb.append('{');
 		}
@@ -368,6 +574,27 @@ public class JSONBuilder
 		this.currType = this.objTypes.remove(i - 1);
 		this.isFirst = false;
 		this.sb.append(']');
+		return true;
+	}
+
+	public boolean arrayAddObject(@Nullable Object obj)
+	{
+		if (this.currType != ObjectType.OT_ARRAY)
+			return false;
+		if (this.isFirst)
+			this.isFirst = false;
+		else
+		{
+			this.sb.append(",");
+		}
+		if (obj == null)
+		{
+			this.sb.append("null");
+		}
+		else
+		{
+			this.appendObject(obj, 0);
+		}
 		return true;
 	}
 
@@ -678,6 +905,29 @@ public class JSONBuilder
 
 	}
 
+	public boolean objectAddObject(@Nonnull String name, @Nullable Object o)
+	{
+		if (this.currType != ObjectType.OT_OBJECT)
+			return false;
+		if (this.isFirst)
+			this.isFirst = false;
+		else
+		{
+			this.sb.append(",");
+		}
+		this.appendStr(name);
+		this.sb.append(":");
+		if (o == null)
+		{
+			this.sb.append("null");
+		}
+		else
+		{
+			this.appendObject(o, 0);
+		}
+		return true;
+	}
+
 	public void endBuild()
 	{
 		int i;
@@ -709,5 +959,13 @@ public class JSONBuilder
 	{
 		this.endBuild();
 		return this.sb.toString();
+	}
+
+	@Nonnull
+	public static String build(@Nonnull Object o)
+	{
+		JSONBuilder json = new JSONBuilder(ObjectType.OT_END);
+		json.appendObject(o, 0);
+		return json.toString();
 	}
 }

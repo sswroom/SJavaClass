@@ -1,6 +1,8 @@
 # SJavaClass
 
 # Changes:
+-JSONBuilder support Object to JSON
+
 0.8.20251111
 -Update to latest libraries
 
