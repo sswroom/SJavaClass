@@ -1,6 +1,9 @@
 # SJavaClass
 
 # Changes:
+0.3.20251204
+- Update version number
+
 0.3.20250602
 - Added HTTPMyClient.setDebug
 
