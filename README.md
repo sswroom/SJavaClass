@@ -1,6 +1,7 @@
 # SJavaClass
 
 # Changes:
+-Added TCPClient debug messages
 -JSONBuilder support Object to JSON
 
 0.8.20251111
