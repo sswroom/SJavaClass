@@ -1,6 +1,9 @@
 # SJavaClass
 
 # Changes:
+
+0.8.20251231
+-Fix HTTPMyClient size problem
 -Added TCPClient debug messages
 -JSONBuilder support Object to JSON
 

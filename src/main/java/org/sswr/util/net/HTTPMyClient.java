@@ -1021,7 +1021,7 @@ public class HTTPMyClient extends HTTPClient{
 			int writeSize = 0;
 			int currSize = 0;
 			byte[] reqBuff = this.reqMstm.getBuff();
-			int reqSize = reqBuff.length;
+			int reqSize = (int)this.reqMstm.getLength();
 			while (writeSize < reqSize)
 			{
 				currSize = cli.write(reqBuff, writeSize, reqSize - writeSize);
