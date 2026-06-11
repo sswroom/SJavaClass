@@ -1,6 +1,5 @@
 package org.sswr.util.data.cond;
 
-import java.text.AttributedCharacterIterator.Attribute;
 import java.util.Map;
 
 import org.sswr.util.basic.CompareCondition;
@@ -52,7 +51,7 @@ public class EnumCondition extends FieldCondition
 		sb.append(DBUtil.dbCol(dbType, toFieldName(colsMap, fieldName)));
 		AttributeConverter<Object, Object> converter = null;
 		DBColumnInfo col;
-		if ((col = colsMap.get(this.fieldName)) != null)
+		if (colsMap != null && (col = colsMap.get(this.fieldName)) != null)
 		{
 			converter = col.converter;
 		}

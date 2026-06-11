@@ -19,6 +19,7 @@ import org.sswr.util.data.LineBreakType;
 import org.sswr.util.data.SharedDouble;
 import org.sswr.util.data.SharedInt;
 import org.sswr.util.data.SharedLong;
+import org.sswr.util.data.StringBuilderUTF8;
 import org.sswr.util.data.StringUtil;
 import org.sswr.util.io.ResourceLoader;
 import org.sswr.util.io.StreamData;
@@ -1057,7 +1058,7 @@ public class EXIFData
 		}
 	}
 
-	public boolean toString(@Nonnull StringBuilder sb, @Nullable String linePrefix)
+	public boolean toString(@Nonnull StringBuilderUTF8 sb, @Nullable String linePrefix)
 	{
 		List<Integer> exifIds = new ArrayList<Integer>();
 		EXIFItem exItem;
@@ -1078,7 +1079,7 @@ public class EXIFData
 			if (linePrefix != null)
 				sb.append(linePrefix);
 			sb.append("Id = ");
-			sb.append(v);
+			sb.appendI32(v);
 			sb.append(", name = ");
 			sb.append(getEXIFName(this.exifMaker, v));
 			if ((exItem = this.getExifItem(v)) != null)
@@ -1105,7 +1106,7 @@ public class EXIFData
 						if (linePrefix != null)
 							sb.append(linePrefix);
 						sb.append(" Subid = ");
-						sb.append(v2);
+						sb.appendI32(v2);
 						sb.append(", name = ");
 						sb.append(getEXIFName(this.exifMaker, v, v2));
 		
@@ -1139,7 +1140,7 @@ public class EXIFData
 								sb.append(", value = ");
 								if (subExItem.size > 1024)
 								{
-									sb.append(subExItem.size);
+									sb.appendI32(subExItem.size);
 									sb.append(" bytes: ");
 									StringUtil.appendHex(sb, valBuff, 0, 256, ' ', LineBreakType.CRLF);
 									sb.append("\r\n...\r\n");
@@ -1164,7 +1165,7 @@ public class EXIFData
 									{
 										sb.append(", ");
 									}
-									sb.append(ByteTool.readUInt16(valBuff, k * 2));
+									sb.appendI32(ByteTool.readUInt16(valBuff, k * 2));
 									k++;
 								}
 							}
@@ -1182,7 +1183,7 @@ public class EXIFData
 									{
 										sb.append(", ");
 									}
-									sb.append(ByteTool.readInt32(valBuff, k * 4));
+									sb.appendI32(ByteTool.readInt32(valBuff, k * 4));
 									k++;
 								}
 							}
@@ -1201,13 +1202,13 @@ public class EXIFData
 									{
 										sb.append(", ");
 									}
-									sb.append(ByteTool.readInt32(valBuff, k * 8));
+									sb.appendI32(ByteTool.readInt32(valBuff, k * 8));
 									sb.append(" / ");
-									sb.append(ByteTool.readInt32(valBuff, k * 8 + 4));
+									sb.appendI32(ByteTool.readInt32(valBuff, k * 8 + 4));
 									if (ByteTool.readInt32(valBuff, k * 8 + 4) != 0)
 									{
 										sb.append(" (");
-										sb.append(ByteTool.readInt32(valBuff, k * 8) / (double)ByteTool.readInt32(valBuff, k * 8 + 4));
+										sb.appendF64(ByteTool.readInt32(valBuff, k * 8) / (double)ByteTool.readInt32(valBuff, k * 8 + 4));
 										sb.append(")");
 									}
 									k++;
@@ -1227,7 +1228,7 @@ public class EXIFData
 									{
 										sb.append(", ");
 									}
-									sb.append(ByteTool.readInt16(valBuff, k * 2));
+									sb.appendI32(ByteTool.readInt16(valBuff, k * 2));
 									k++;
 								}
 							}
@@ -1302,7 +1303,7 @@ public class EXIFData
 						{
 							sb.append(", ");
 						}
-						sb.append(ByteTool.readDouble(valBuff, k * 8));
+						sb.appendF64(ByteTool.readDouble(valBuff, k * 8));
 						k++;
 					}
 				}
@@ -1325,7 +1326,7 @@ public class EXIFData
 					{
 						if (exItem.size > 1024)
 						{
-							sb.append(exItem.size);
+							sb.appendI32(exItem.size);
 							sb.append(" bytes: ");
 							StringUtil.appendHex(sb, valBuff, 0, 256, ' ', LineBreakType.CRLF);
 							sb.append("\r\n...\r\n");
@@ -1365,7 +1366,7 @@ public class EXIFData
 							{
 								sb.append(", ");
 							}
-							sb.append(ByteTool.readUInt16(valBuff, k * 2));
+							sb.appendI32(ByteTool.readUInt16(valBuff, k * 2));
 							k++;
 						}
 					}
@@ -1384,7 +1385,7 @@ public class EXIFData
 						{
 							sb.append(", ");
 						}
-						sb.append(ByteTool.readInt32(valBuff, k));
+						sb.appendI32(ByteTool.readInt32(valBuff, k));
 						k++;
 					}
 				}
@@ -1402,13 +1403,13 @@ public class EXIFData
 						{
 							sb.append(", ");
 						}
-						sb.append(ByteTool.readInt32(valBuff, k * 8));
+						sb.appendI32(ByteTool.readInt32(valBuff, k * 8));
 						sb.append(" / ");
-						sb.append(ByteTool.readInt32(valBuff, k * 8 + 4));
+						sb.appendI32(ByteTool.readInt32(valBuff, k * 8 + 4));
 						if (ByteTool.readInt32(valBuff, k * 8 + 4) != 0)
 						{
 							sb.append(" (");
-							sb.append(ByteTool.readInt32(valBuff, k * 8) / (double)ByteTool.readInt32(valBuff, k * 8 + 4));
+							sb.appendF64(ByteTool.readInt32(valBuff, k * 8) / (double)ByteTool.readInt32(valBuff, k * 8 + 4));
 							sb.append(")");
 						}
 						k++;
@@ -1428,7 +1429,7 @@ public class EXIFData
 						{
 							sb.append(", ");
 						}
-						sb.append(ByteTool.readInt16(valBuff, k * 2));
+						sb.appendI32(ByteTool.readInt16(valBuff, k * 2));
 						k++;
 					}
 				}
@@ -1444,7 +1445,7 @@ public class EXIFData
 			//			UInt8 *valBuff;
 			//			valBuff = (UInt8*)exItem.dataBuff;
 						sb.append(", Other: size = ");
-						sb.append(exItem.size);
+						sb.appendI32(exItem.size);
 			//			sb.AppendHex(valBuff, subExItem.size, ' ', Text::StringBuilder::LBT_CRLF);
 					}
 				}
@@ -1460,7 +1461,7 @@ public class EXIFData
 						valBuff = (UInt8*)exItem.dataBuff;
 					}*/
 					sb.append(", Unknown: size = ");
-					sb.append(exItem.size);
+					sb.appendI32(exItem.size);
 		//			sb.AppendHex(valBuff, subExItem.size, ' ', Text::StringBuilder::LBT_CRLF);
 				}
 			}
@@ -1470,7 +1471,7 @@ public class EXIFData
 		return true;
 	}
 
-	public boolean toStringCanonCameraSettings(@Nonnull StringBuilder sb, @Nullable String linePrefix, @Nonnull byte[] valBuff, int valOfst, int valCnt)
+	public boolean toStringCanonCameraSettings(@Nonnull StringBuilderUTF8 sb, @Nullable String linePrefix, @Nonnull byte[] valBuff, int valOfst, int valCnt)
 	{
 		boolean isInt16;
 		boolean isUInt16;
@@ -1497,7 +1498,7 @@ public class EXIFData
 					sb.append("2-Normal");
 					break;
 				default:
-					sb.append(ByteTool.readInt16(valBuff, valOfst + k * 2));
+					sb.appendI32(ByteTool.readInt16(valBuff, valOfst + k * 2));
 					break;
 				}
 				break;
@@ -1537,7 +1538,7 @@ public class EXIFData
 					sb.append("131-Movie (2)");
 					break;
 				default:
-					sb.append(ByteTool.readInt16(valBuff, valOfst + k * 2));
+					sb.appendI32(ByteTool.readInt16(valBuff, valOfst + k * 2));
 					break;
 				}
 				break;
@@ -1573,7 +1574,7 @@ public class EXIFData
 					sb.append("16-External Flash");
 					break;
 				default:
-					sb.append(ByteTool.readInt16(valBuff, valOfst + k * 2));
+					sb.appendI32(ByteTool.readInt16(valBuff, valOfst + k * 2));
 					break;
 				}
 				break;
@@ -1609,7 +1610,7 @@ public class EXIFData
 					sb.append("10-Continuous, Silent");
 					break;
 				default:
-					sb.append(ByteTool.readInt16(valBuff, valOfst + k * 2));
+					sb.appendI32(ByteTool.readInt16(valBuff, valOfst + k * 2));
 					break;
 				}
 				break;
@@ -1651,7 +1652,7 @@ public class EXIFData
 					sb.append("519-Movie Servo AF");
 					break;
 				default:
-					sb.append(ByteTool.readInt16(valBuff, valOfst + k * 2));
+					sb.appendI32(ByteTool.readInt16(valBuff, valOfst + k * 2));
 					break;
 				}
 				break;
@@ -1696,7 +1697,7 @@ public class EXIFData
 					sb.append("13-CR3+JPEG");
 					break;
 				default:
-					sb.append(ByteTool.readInt16(valBuff, valOfst + k * 2));
+					sb.appendI32(ByteTool.readInt16(valBuff, valOfst + k * 2));
 					break;
 				}
 				break;
@@ -1762,7 +1763,7 @@ public class EXIFData
 					sb.append("143-4096x2160 Movie");
 					break;
 				default:
-					sb.append(ByteTool.readInt16(valBuff, valOfst + k * 2));
+					sb.appendI32(ByteTool.readInt16(valBuff, valOfst + k * 2));
 					break;
 				}
 				break;
@@ -1984,7 +1985,7 @@ public class EXIFData
 					sb.append("265-Low Light 2");
 					break;
 				default:
-					sb.append(ByteTool.readInt16(valBuff, valOfst + k * 2));
+					sb.appendI32(ByteTool.readInt16(valBuff, valOfst + k * 2));
 					break;
 				}
 				break;
@@ -2005,7 +2006,7 @@ public class EXIFData
 					sb.append("3-Other");
 					break;
 				default:
-					sb.append(ByteTool.readInt16(valBuff, valOfst + k * 2));
+					sb.appendI32(ByteTool.readInt16(valBuff, valOfst + k * 2));
 					break;
 				}
 				break;
@@ -2048,7 +2049,7 @@ public class EXIFData
 					sb.append("5-Center-weighted average");
 					break;
 				default:
-					sb.append(ByteTool.readInt16(valBuff, valOfst + k * 2));
+					sb.appendI32(ByteTool.readInt16(valBuff, valOfst + k * 2));
 					break;
 				}
 				break;
@@ -2090,7 +2091,7 @@ public class EXIFData
 					sb.append("10-Infinity");
 					break;
 				default:
-					sb.append(ByteTool.readInt16(valBuff, valOfst + k * 2));
+					sb.appendI32(ByteTool.readInt16(valBuff, valOfst + k * 2));
 					break;
 				}
 				break;
@@ -2123,7 +2124,7 @@ public class EXIFData
 					sb.append("0x4006-Face Detect");
 					break;
 				default:
-					sb.append(ByteTool.readInt16(valBuff, valOfst + k * 2));
+					sb.appendI32(ByteTool.readInt16(valBuff, valOfst + k * 2));
 					break;
 				}
 				break;
@@ -2156,7 +2157,7 @@ public class EXIFData
 					sb.append("7-Bulb");
 					break;
 				default:
-					sb.append(ByteTool.readInt16(valBuff, valOfst + k * 2));
+					sb.appendI32(ByteTool.readInt16(valBuff, valOfst + k * 2));
 					break;
 				}
 				break;
@@ -2206,7 +2207,7 @@ public class EXIFData
 					sb.append("8-Manual");
 					break;
 				default:
-					sb.append(ByteTool.readInt16(valBuff, valOfst + k * 2));
+					sb.appendI32(ByteTool.readInt16(valBuff, valOfst + k * 2));
 					break;
 				}
 				break;
@@ -2230,7 +2231,7 @@ public class EXIFData
 					sb.append("4-No AE");
 					break;
 				default:
-					sb.append(ByteTool.readInt16(valBuff, valOfst + k * 2));
+					sb.appendI32(ByteTool.readInt16(valBuff, valOfst + k * 2));
 					break;
 				}
 				break;
@@ -2269,7 +2270,7 @@ public class EXIFData
 					sb.append("260-Dynamic");
 					break;
 				default:
-					sb.append(ByteTool.readInt16(valBuff, valOfst + k * 2));
+					sb.appendI32(ByteTool.readInt16(valBuff, valOfst + k * 2));
 					break;
 				}
 				break;
@@ -2296,7 +2297,7 @@ public class EXIFData
 					sb.append("1-AF Point");
 					break;
 				default:
-					sb.append(ByteTool.readInt16(valBuff, valOfst + k * 2));
+					sb.appendI32(ByteTool.readInt16(valBuff, valOfst + k * 2));
 					break;
 				}
 				break;
@@ -2329,7 +2330,7 @@ public class EXIFData
 					sb.append("100-My Color Data");
 					break;
 				default:
-					sb.append(ByteTool.readInt16(valBuff, valOfst + k * 2));
+					sb.appendI32(ByteTool.readInt16(valBuff, valOfst + k * 2));
 					break;
 				}
 				break;
@@ -2383,25 +2384,25 @@ public class EXIFData
 				break;
 			default:
 				sb.append("Unknown(");
-				sb.append(k);
+				sb.appendI32(k);
 				sb.append(") = ");
 				isInt16 = true;
 				break;
 			}
 			if (isInt16)
 			{
-				sb.append(ByteTool.readInt16(valBuff, valOfst + k * 2));
+				sb.appendI32(ByteTool.readInt16(valBuff, valOfst + k * 2));
 			}
 			else if (isUInt16)
 			{
-				sb.append(ByteTool.readUInt16(valBuff, valOfst + k * 2));
+				sb.appendI32(ByteTool.readUInt16(valBuff, valOfst + k * 2));
 			}
 			k++;
 		}
 		return true;
 	}
 
-	public boolean toStringCanonFocalLength(@Nonnull StringBuilder sb, @Nullable String linePrefix, @Nonnull byte[] valBuff, int valOfst, int valCnt)
+	public boolean toStringCanonFocalLength(@Nonnull StringBuilderUTF8 sb, @Nullable String linePrefix, @Nonnull byte[] valBuff, int valOfst, int valCnt)
 	{
 		boolean isInt16;
 		boolean isUInt16;
@@ -2428,7 +2429,7 @@ public class EXIFData
 					sb.append("2-Zoom");
 					break;
 				default:
-					sb.append(ByteTool.readInt16(valBuff, valOfst + k * 2));
+					sb.appendI32(ByteTool.readInt16(valBuff, valOfst + k * 2));
 					break;
 				}
 				break;
@@ -2446,14 +2447,14 @@ public class EXIFData
 				break;
 			default:
 				sb.append("Unknown(");
-				sb.append(k);
+				sb.appendI32(k);
 				sb.append(") = ");
 				isInt16 = true;
 				break;
 			}
 			if (isInt16)
 			{
-				sb.append(ByteTool.readInt16(valBuff, valOfst + k * 2));
+				sb.appendI32(ByteTool.readInt16(valBuff, valOfst + k * 2));
 			}
 			else if (isUInt16)
 			{
@@ -2464,7 +2465,7 @@ public class EXIFData
 		return true;
 	}
 
-	public boolean toStringCanonShotInfo(@Nonnull StringBuilder sb, @Nullable String linePrefix, @Nonnull byte[] valBuff, int valOfst, int valCnt)
+	public boolean toStringCanonShotInfo(@Nonnull StringBuilderUTF8 sb, @Nullable String linePrefix, @Nonnull byte[] valBuff, int valOfst, int valCnt)
 	{
 		boolean isInt16;
 		boolean isUInt16;
@@ -2528,7 +2529,7 @@ public class EXIFData
 					sb.append("3-None");
 					break;
 				default:
-					sb.append(ByteTool.readInt16(valBuff, valOfst + k * 2));
+					sb.appendI32(ByteTool.readInt16(valBuff, valOfst + k * 2));
 					break;
 				}
 				break;
@@ -2606,7 +2607,7 @@ public class EXIFData
 					sb.append("3-On (shot 3)");
 					break;
 				default:
-					sb.append(ByteTool.readInt16(valBuff, valOfst + k * 2));
+					sb.appendI32(ByteTool.readInt16(valBuff, valOfst + k * 2));
 					break;
 				}
 				break;
@@ -2628,7 +2629,7 @@ public class EXIFData
 					sb.append("3-Computer Remote Control");
 					break;
 				default:
-					sb.append(ByteTool.readInt16(valBuff, valOfst + k * 2));
+					sb.appendI32(ByteTool.readInt16(valBuff, valOfst + k * 2));
 					break;
 				}
 				break;
@@ -2676,7 +2677,7 @@ public class EXIFData
 					sb.append("255-DV Camera");
 					break;
 				default:
-					sb.append(ByteTool.readInt16(valBuff, valOfst + k * 2));
+					sb.appendI32(ByteTool.readInt16(valBuff, valOfst + k * 2));
 					break;
 				}
 				break;
@@ -2700,7 +2701,7 @@ public class EXIFData
 					sb.append("3-Rotate 270 CW");
 					break;
 				default:
-					sb.append(ByteTool.readInt16(valBuff, valOfst + k * 2));
+					sb.appendI32(ByteTool.readInt16(valBuff, valOfst + k * 2));
 					break;
 				}
 				break;
@@ -2718,7 +2719,7 @@ public class EXIFData
 					sb.append("1-On");
 					break;
 				default:
-					sb.append(ByteTool.readInt16(valBuff, valOfst + k * 2));
+					sb.appendI32(ByteTool.readInt16(valBuff, valOfst + k * 2));
 					break;
 				}
 				break;
@@ -2732,14 +2733,14 @@ public class EXIFData
 				break;
 			default:
 				sb.append("Unknown(");
-				sb.append(k);
+				sb.appendI32(k);
 				sb.append(") = ");
 				isInt16 = true;
 				break;
 			}
 			if (isInt16)
 			{
-				sb.append(ByteTool.readInt16(valBuff, valOfst + k * 2));
+				sb.appendI32(ByteTool.readInt16(valBuff, valOfst + k * 2));
 			}
 			else if (isUInt16)
 			{
@@ -2750,7 +2751,7 @@ public class EXIFData
 		return true;
 	}
 
-	public boolean toStringCanonLensType(@Nonnull StringBuilder sb, int lensType)
+	public boolean toStringCanonLensType(@Nonnull StringBuilderUTF8 sb, int lensType)
 	{
 		sb.append("0x");
 		sb.append(StringUtil.toHex16(lensType));

@@ -17,6 +17,7 @@ import org.sswr.util.data.ByteIOMSB;
 import org.sswr.util.data.DataTools;
 import org.sswr.util.data.LineBreakType;
 import org.sswr.util.data.SharedInt;
+import org.sswr.util.data.StringBuilderUTF8;
 import org.sswr.util.data.StringUtil;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -199,7 +200,7 @@ public class StaticImage
 		}
 	}
 
-	public static void toICC_ProfileString(@Nonnull ICC_Profile profile, @Nonnull StringBuilder sb)
+	public static void toICC_ProfileString(@Nonnull ICC_Profile profile, @Nonnull StringBuilderUTF8 sb)
 	{
 		try
 		{
@@ -212,7 +213,7 @@ public class StaticImage
 		}
 	}
 
-	public static void toColorSpaceString(@Nonnull ColorSpace cs, @Nonnull StringBuilder sb)
+	public static void toColorSpaceString(@Nonnull ColorSpace cs, @Nonnull StringBuilderUTF8 sb)
 	{
 		if (cs instanceof ICC_ColorSpace)
 		{
@@ -229,21 +230,21 @@ public class StaticImage
 		}
 	}
 
-	public static void toColorModelString(@Nonnull ColorModel cm, @Nonnull StringBuilder sb)
+	public static void toColorModelString(@Nonnull ColorModel cm, @Nonnull StringBuilderUTF8 sb)
 	{
 		int i;
 		int j = cm.getNumComponents();
 		sb.append("PixelSize = ");
-		sb.append(cm.getPixelSize());
+		sb.appendI32(cm.getPixelSize());
 		sb.append("\r\nNumComponents = ");
-		sb.append(j);
+		sb.appendI32(j);
 		i = 0;
 		while (i < j)
 		{
 			sb.append("\r\nComponentSize[");
-			sb.append(i);
+			sb.appendI32(i);
 			sb.append("] = ");
-			sb.append(cm.getComponentSize(i));
+			sb.appendI32(cm.getComponentSize(i));
 			i++;
 		}
 		sb.append("\r\nTransparency = ");
@@ -251,9 +252,9 @@ public class StaticImage
 		sb.append("\r\nTransferType = ");
 		sb.append(getTransferTypeString(cm.getTransferType()));
 		sb.append("\r\nHasAlpha = ");
-		sb.append(cm.hasAlpha());
+		sb.appendBool(cm.hasAlpha());
 		sb.append("\r\nIsAlphaPremultiplied = ");
-		sb.append(cm.isAlphaPremultiplied());
+		sb.appendBool(cm.isAlphaPremultiplied());
 		ColorSpace cs = cm.getColorSpace();
 		if (cs == null)
 		{
@@ -266,18 +267,18 @@ public class StaticImage
 		}
 	}
 
-	public static void toBufferedImageString(@Nonnull BufferedImage bImage, @Nonnull StringBuilder sb)
+	public static void toBufferedImageString(@Nonnull BufferedImage bImage, @Nonnull StringBuilderUTF8 sb)
 	{
 		sb.append("Type = ");
 		sb.append(getBufferedImageTypeString(bImage.getType()));
 		sb.append("\r\nWidth = ");
-		sb.append(bImage.getWidth());
+		sb.appendI32(bImage.getWidth());
 		sb.append("\r\nHeight = ");
-		sb.append(bImage.getHeight());
+		sb.appendI32(bImage.getHeight());
 		sb.append("\r\n");
 		toColorModelString(bImage.getColorModel(), sb);
 		sb.append("\r\nRaster = ");
-		sb.append(bImage.getRaster());
+		sb.append(bImage.getRaster().toString());
 	}
 
 	@Nullable
@@ -291,7 +292,7 @@ public class StaticImage
 		this.exif = exif;
 	}
 
-	public void toString(@Nonnull StringBuilder sb)
+	public void toString(@Nonnull StringBuilderUTF8 sb)
 	{
 		toBufferedImageString(this.img, sb);
 		if (this.exif != null)
@@ -304,7 +305,7 @@ public class StaticImage
 	@Nonnull
 	public String toString()
 	{
-		StringBuilder sb = new StringBuilder();
+		StringBuilderUTF8 sb = new StringBuilderUTF8();
 		toString(sb);
 		return sb.toString();
 	}

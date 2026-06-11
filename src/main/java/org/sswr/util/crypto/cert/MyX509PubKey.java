@@ -1,5 +1,6 @@
 package org.sswr.util.crypto.cert;
 
+import org.sswr.util.data.StringBuilderUTF8;
 import org.sswr.util.net.ASN1Data;
 import org.sswr.util.net.ASN1Item;
 import org.sswr.util.net.ASN1PDUBuilder;
@@ -33,7 +34,7 @@ public class MyX509PubKey extends MyX509File
 	@Nonnull
 	public String toString()
 	{
-		StringBuilder sb = new StringBuilder();
+		StringBuilderUTF8 sb = new StringBuilderUTF8();
 		if (isPublicKeyInfo(this.buff, 0, this.buff.length, "1"))
 		{
 			appendPublicKeyInfo(this.buff, 0, this.buff.length, "1", sb);

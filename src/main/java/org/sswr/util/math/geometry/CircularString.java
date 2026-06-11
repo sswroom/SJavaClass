@@ -33,11 +33,11 @@ public class CircularString extends LineString {
 		CircularString pl;
 		pl = new CircularString(this.srid, this.pointArr.length, this.zArr != null, this.mArr != null);
 		ByteTool.copyArray(pl.pointArr, 0, this.pointArr, 0, this.pointArr.length);
-		if (this.zArr != null)
+		if (this.zArr != null && pl.zArr != null)
 		{	
 			ByteTool.copyArray(pl.zArr, 0, this.zArr, 0, this.pointArr.length);
 		}
-		if (this.mArr != null)
+		if (this.mArr != null && pl.mArr != null)
 		{	
 			ByteTool.copyArray(pl.mArr, 0, this.mArr, 0, this.pointArr.length);
 		}

@@ -76,9 +76,11 @@ public class IAMSmartAPI {
 		public char educationLevel;
 	};
 
+	@Nonnull
 	private TCPClientFactory clif;
 	private SSLEngine ssl;
 	private String domain;
+	@Nonnull
 	private String clientID;
 	private String clientSecret;
 	private RandomBytesGenerator rand;
@@ -430,7 +432,7 @@ public class IAMSmartAPI {
 
 	public boolean getKey(@Nonnull MyX509PrivKey privKey, @Nonnull CEKInfo cek)
 	{
-		StringBuilder sbURL = new StringBuilder();
+		StringBuilderUTF8 sbURL = new StringBuilderUTF8();
 		sbURL.append("https://");
 		sbURL.append(this.domain);
 		sbURL.append("/api/v1/security/getKey");
@@ -539,7 +541,7 @@ public class IAMSmartAPI {
 		}
 		if (logger != null)
 		{
-			sbURL.setLength(0);
+			sbURL.clearStr();
 			StringUtil.appendHex(sbURL, cekBuff2, 0, cekBuff2.length, ' ', LineBreakType.CRLF);
 			logger.logMessage("getKey: CEK = "+ sbURL.toString(), LogLevel.RAW);
 			logger.logMessage("getKey: IssueAt = "+ZonedDateTime.ofInstant(Instant.ofEpochMilli(issueAt), ZoneId.systemDefault()), LogLevel.RAW);

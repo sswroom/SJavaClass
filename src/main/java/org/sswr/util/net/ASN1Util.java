@@ -9,6 +9,7 @@ import org.sswr.util.data.ByteTool;
 import org.sswr.util.data.DateTimeUtil;
 import org.sswr.util.data.LineBreakType;
 import org.sswr.util.data.SharedInt;
+import org.sswr.util.data.StringBuilderUTF8;
 import org.sswr.util.data.StringUtil;
 
 import jakarta.annotation.Nonnull;
@@ -159,12 +160,12 @@ public class ASN1Util
 		return null;
 	}
 
-	public static boolean pduToString(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull StringBuilder sb, int level)
+	public static boolean pduToString(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull StringBuilderUTF8 sb, int level)
 	{
 		return pduToString(pdu, beginOfst, endOfst, sb, level, null);
 	}
 
-	public static boolean pduToString(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull StringBuilder sb, int level, @Nullable SharedInt nextOfst)
+	public static boolean pduToString(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull StringBuilderUTF8 sb, int level, @Nullable SharedInt nextOfst)
 	{
 		while (beginOfst < endOfst)
 		{
@@ -186,11 +187,11 @@ public class ASN1Util
 			switch (type & 255)
 			{
 			case 0x1:
-				StringUtil.appendChar(sb, '\t', level);
+				sb.appendChar('\t', level);
 				sb.append("BOOLEAN ");
-				sb.append('(');
+				sb.appendUTF8Char((byte)'(');
 				booleanToString(pdu, ofst, len.value, sb);
-				sb.append(')');
+				sb.appendUTF8Char((byte)')');
 				sb.append("\r\n");
 				beginOfst = ofst + len.value;
 				break;
@@ -202,14 +203,14 @@ public class ASN1Util
 					{
 						return false;
 					}
-					StringUtil.appendChar(sb, '\t', level);
+					sb.appendChar('\t', level);
 					sb.append("INTEGER ");
-					sb.append(iVal.value);
+					sb.appendI32(iVal.value);
 					sb.append("\r\n");
 				}
 				else if (len.value <= 32)
 				{
-					StringUtil.appendChar(sb, '\t', level);
+					sb.appendChar('\t', level);
 					sb.append("INTEGER ");
 					StringUtil.appendHex(sb, pdu, ofst, len.value, ' ', LineBreakType.NONE);
 					sb.append("\r\n");
@@ -217,7 +218,7 @@ public class ASN1Util
 				}
 				else
 				{
-					StringUtil.appendChar(sb, '\t', level);
+					sb.appendChar('\t', level);
 					sb.append("INTEGER\r\n");
 					StringUtil.appendHex(sb, pdu, ofst, len.value, ' ', LineBreakType.NONE);
 					sb.append("\r\n");
@@ -225,16 +226,16 @@ public class ASN1Util
 				}
 				break;
 			case 0x3:
-				StringUtil.appendChar(sb, '\t', level);
+				sb.appendChar('\t', level);
 				sb.append("BIT STRING ");
 				sb.append(StringUtil.toHex(pdu[ofst]));
 				{
-					StringBuilder innerSb = new StringBuilder();
+					StringBuilderUTF8 innerSb = new StringBuilderUTF8();
 					if (pduToString(pdu, ofst + 1, ofst + len.value, innerSb, level + 1))
 					{
 						sb.append(" {\r\n");
 						sb.append(innerSb.toString());
-						StringUtil.appendChar(sb, '\t', level);
+						sb.appendChar('\t', level);
 						sb.append("}\r\n");
 					}
 					else
@@ -247,15 +248,15 @@ public class ASN1Util
 				beginOfst = ofst + len.value;
 				break;
 			case 0x4:
-				StringUtil.appendChar(sb, '\t', level);
+				sb.appendChar('\t', level);
 				sb.append("OCTET STRING ");
 				{
-					StringBuilder innerSb = new StringBuilder();
+					StringBuilderUTF8 innerSb = new StringBuilderUTF8();
 					if (pduToString(pdu, ofst, ofst + len.value, innerSb, level + 1))
 					{
 						sb.append("{\r\n");
 						sb.append(innerSb.toString());
-						StringUtil.appendChar(sb, '\t', level);
+						sb.appendChar('\t', level);
 						sb.append("}\r\n");
 					}
 					else
@@ -268,12 +269,12 @@ public class ASN1Util
 				beginOfst = ofst + len.value;
 				break;
 			case 0x5:
-				StringUtil.appendChar(sb, '\t', level);
+				sb.appendChar('\t', level);
 				sb.append("NULL\r\n");
 				beginOfst = ofst + len.value;
 				break;
 			case 0x6:
-				StringUtil.appendChar(sb, '\t', level);
+				sb.appendChar('\t', level);
 				sb.append("OID ");
 				oidToString(pdu, ofst, len.value, sb);
 				sb.append(" (");
@@ -284,9 +285,9 @@ public class ASN1Util
 			case 0x0a:
 				if (len.value == 1)
 				{
-					StringUtil.appendChar(sb, '\t', level);
+					sb.appendChar('\t', level);
 					sb.append("ENUMERATED ");
-					sb.append(pdu[ofst] & 255);
+					sb.appendI32(pdu[ofst] & 255);
 					sb.append("\r\n");
 					beginOfst = ofst + len.value;
 				}
@@ -296,49 +297,49 @@ public class ASN1Util
 				}
 				break;
 			case 0x0C:
-				StringUtil.appendChar(sb, '\t', level);
+				sb.appendChar('\t', level);
 				sb.append("UTF8String ");
 				sb.append(new String(pdu, ofst, len.value, StandardCharsets.UTF_8));
 				sb.append("\r\n");
 				beginOfst = ofst + len.value;
 				break;
 			case 0x12:
-				StringUtil.appendChar(sb, '\t', level);
+				sb.appendChar('\t', level);
 				sb.append("NumericString ");
 				sb.append(new String(pdu, ofst, len.value, StandardCharsets.UTF_8));
 				sb.append("\r\n");
 				beginOfst = ofst + len.value;
 				break;
 			case 0x13:
-				StringUtil.appendChar(sb, '\t', level);
+				sb.appendChar('\t', level);
 				sb.append("PrintableString ");
 				sb.append(new String(pdu, ofst, len.value, StandardCharsets.UTF_8));
 				sb.append("\r\n");
 				beginOfst = ofst + len.value;
 				break;
 			case 0x14:
-				StringUtil.appendChar(sb, '\t', level);
+				sb.appendChar('\t', level);
 				sb.append("T61String ");
 				sb.append(new String(pdu, ofst, len.value, StandardCharsets.UTF_8));
 				sb.append("\r\n");
 				beginOfst = ofst + len.value;
 				break;
 			case 0x15:
-				StringUtil.appendChar(sb, '\t', level);
+				sb.appendChar('\t', level);
 				sb.append("VideotexString ");
 				sb.append(new String(pdu, ofst, len.value, StandardCharsets.UTF_8));
 				sb.append("\r\n");
 				beginOfst = ofst + len.value;
 				break;
 			case 0x16:
-				StringUtil.appendChar(sb, '\t', level);
+				sb.appendChar('\t', level);
 				sb.append("IA5String ");
 				sb.append(new String(pdu, ofst, len.value, StandardCharsets.UTF_8));
 				sb.append("\r\n");
 				beginOfst = ofst + len.value;
 				break;
 			case 0x17:
-				StringUtil.appendChar(sb, '\t', level);
+				sb.appendChar('\t', level);
 				sb.append("UTCTIME ");
 				if (len.value == 13 && pdu[ofst + 12] == 'Z')
 				{
@@ -354,7 +355,7 @@ public class ASN1Util
 				beginOfst = ofst + len.value;
 				break;
 			case 0x18:
-				StringUtil.appendChar(sb, '\t', level);
+				sb.appendChar('\t', level);
 				sb.append("GeneralizedTime ");
 				if (len.value == 15 && pdu[ofst + 14] == 'Z')
 				{
@@ -370,14 +371,14 @@ public class ASN1Util
 				beginOfst = ofst + len.value;
 				break;
 			case 0x1C:
-				StringUtil.appendChar(sb, '\t', level);
+				sb.appendChar('\t', level);
 				sb.append("UniversalString ");
 				sb.append(new String(pdu, ofst, len.value, StandardCharsets.UTF_8));
 				sb.append("\r\n");
 				beginOfst = ofst + len.value;
 				break;
 			case 0x1E:
-				StringUtil.appendChar(sb, '\t', level);
+				sb.appendChar('\t', level);
 				sb.append("BMPString (");
 				StringUtil.appendHex(sb, pdu, ofst, len.value, ' ', LineBreakType.NONE);
 				sb.append(")\r\n");
@@ -394,7 +395,7 @@ public class ASN1Util
 				}
 				if ((type & 255) < 0x30)
 				{
-					StringUtil.appendChar(sb, '\t', level);
+					sb.appendChar('\t', level);
 					sb.append("UNKNOWN 0x");
 					sb.append(StringUtil.toHex(type));
 					sb.append(" (");
@@ -405,15 +406,15 @@ public class ASN1Util
 				}
 				else
 				{
-					StringUtil.appendChar(sb, '\t', level);
+					sb.appendChar('\t', level);
 					sb.append("UNKNOWN 0x");
 					sb.append(StringUtil.toHex(type));
-					StringBuilder innerSb = new StringBuilder();
+					StringBuilderUTF8 innerSb = new StringBuilderUTF8();
 					if (pduToString(pdu, ofst, ofst + len.value, innerSb, level + 1))
 					{
 						sb.append(" {\r\n");
 						sb.append(innerSb.toString());
-						StringUtil.appendChar(sb, '\t', level);
+						sb.appendChar('\t', level);
 						sb.append("}\r\n");
 					}
 					else
@@ -433,7 +434,7 @@ public class ASN1Util
 					break;
 				}
 			case 0x30:
-				StringUtil.appendChar(sb, '\t', level);
+				sb.appendChar('\t', level);
 				sb.append("SEQUENCE {\r\n");
 				if (pdu[1] == 0x80)
 				{
@@ -453,11 +454,11 @@ public class ASN1Util
 					}
 					beginOfst = ofst + len.value;
 				}
-				StringUtil.appendChar(sb, '\t', level);
+				sb.appendChar('\t', level);
 				sb.append("}\r\n");
 				break;
 			case 0x31:
-				StringUtil.appendChar(sb, '\t', level);
+				sb.appendChar('\t', level);
 				sb.append("SET {\r\n");
 				if (pdu[1] == 0x80)
 				{
@@ -478,7 +479,7 @@ public class ASN1Util
 					}
 					beginOfst += len.value;
 				}
-				StringUtil.appendChar(sb, '\t', level);
+				sb.appendChar('\t', level);
 				sb.append("}\r\n");
 				break;
 			case 0x80:
@@ -490,9 +491,9 @@ public class ASN1Util
 			case 0x86:
 			case 0x87:
 			case 0x88:
-				StringUtil.appendChar(sb, '\t', level);
+				sb.appendChar('\t', level);
 				sb.append("CHOICE[");
-				sb.append(((type & 255) - 0x80));
+				sb.appendI32(((type & 255) - 0x80));
 				sb.append("] ");
 				if (pdu[1] == 0x80)
 				{
@@ -503,17 +504,17 @@ public class ASN1Util
 						return false;
 					}
 					beginOfst = tmpOfst.value;
-					StringUtil.appendChar(sb, '\t', level);
+					sb.appendChar('\t', level);
 					sb.append("}\r\n");
 				}
 				else
 				{
-					StringBuilder innerSb = new StringBuilder();
+					StringBuilderUTF8 innerSb = new StringBuilderUTF8();
 					if (pduToString(pdu, ofst, ofst + len.value, innerSb, level + 1))
 					{
 						sb.append("{\r\n");
 						sb.append(innerSb.toString());
-						StringUtil.appendChar(sb, '\t', level);
+						sb.appendChar('\t', level);
 						sb.append("}\r\n");
 					}
 					else
@@ -536,9 +537,9 @@ public class ASN1Util
 			case 0xA1:
 			case 0xA2:
 			case 0xA3:
-				StringUtil.appendChar(sb, '\t', level);
+				sb.appendChar('\t', level);
 				sb.append("CONTEXT SPECIFIC[");
-				sb.append(((type & 255) - 0xA0));
+				sb.appendI32(((type & 255) - 0xA0));
 				sb.append("] ");
 				if ((pdu[1] & 255) == 0x80)
 				{
@@ -549,17 +550,17 @@ public class ASN1Util
 						return false;
 					}
 					beginOfst = tmpOfst.value;
-					StringUtil.appendChar(sb, '\t', level);
+					sb.appendChar('\t', level);
 					sb.append("}\r\n");
 				}
 				else
 				{
-					StringBuilder innerSb = new StringBuilder();
+					StringBuilderUTF8 innerSb = new StringBuilderUTF8();
 					if (pduToString(pdu, ofst, ofst + len.value, innerSb, level + 1))
 					{
 						sb.append("{\r\n");
 						sb.append(innerSb.toString());
-						StringUtil.appendChar(sb, '\t', level);
+						sb.appendChar('\t', level);
 						sb.append("}\r\n");
 					}
 					else
@@ -890,20 +891,20 @@ public class ASN1Util
 		return oidCompare(oidPDU, oidPDUOfst, oidPDULen, oid2, 0, oid2.length) == 0;
 	}
 	
-	public static void oidToString(@Nonnull byte[] pdu, int pduOfst, int pduSize, @Nonnull StringBuilder sb)
+	public static void oidToString(@Nonnull byte[] pdu, int pduOfst, int pduSize, @Nonnull StringBuilderUTF8 sb)
 	{
 		int v = 0;
 		int i = 1;
-		sb.append((pdu[pduOfst] & 255) / 40);
-		sb.append('.');
-		sb.append((pdu[pduOfst] & 255) % 40);
+		sb.appendI32((pdu[pduOfst] & 255) / 40);
+		sb.appendUTF8Char((byte)'.');
+		sb.appendI32((pdu[pduOfst] & 255) % 40);
 		while (i < pduSize)
 		{
 			v = (v << 7) | (pdu[pduOfst + i] & 0x7f);
 			if ((pdu[pduOfst + i] & 0x80) == 0)
 			{
-				sb.append('.');
-				sb.append(v);
+				sb.appendUTF8Char((byte)'.');
+				sb.appendI32(v);
 				v = 0;
 			}
 			i++;
@@ -1024,7 +1025,7 @@ public class ASN1Util
 		return Arrays.copyOf(pduBuff, retSize);
 	}
 	
-	public static void booleanToString(@Nonnull byte[] data, int ofst, int dataLen, @Nonnull StringBuilder sb)
+	public static void booleanToString(@Nonnull byte[] data, int ofst, int dataLen, @Nonnull StringBuilderUTF8 sb)
 	{
 		if (dataLen == 1)
 		{
@@ -1048,21 +1049,21 @@ public class ASN1Util
 		}
 	}
 	
-	public static void integerToString(@Nonnull byte[] data, int ofst, int dataLen, @Nonnull StringBuilder sb)
+	public static void integerToString(@Nonnull byte[] data, int ofst, int dataLen, @Nonnull StringBuilderUTF8 sb)
 	{
 		switch (dataLen)
 		{
 		case 1:
-			sb.append(data[ofst] & 255);
+			sb.appendI32(data[ofst] & 255);
 			return;
 		case 2:
-			sb.append(ByteTool.readMUInt16(data, ofst));
+			sb.appendI32(ByteTool.readMUInt16(data, ofst));
 			return;
 		case 3:
-			sb.append(ByteTool.readMUInt24(data, ofst));
+			sb.appendI32(ByteTool.readMUInt24(data, ofst));
 			return;
 		case 4:
-			sb.append(ByteTool.readMInt32(data, ofst));
+			sb.appendI32(ByteTool.readMInt32(data, ofst));
 			return;
 		default:
 			StringUtil.appendHex(sb, data, ofst, dataLen, ' ', LineBreakType.NONE);
@@ -1070,7 +1071,7 @@ public class ASN1Util
 		}
 	}
 	
-	public static void utcTimeToString(@Nonnull byte[] data, int ofst, int dataLen, @Nonnull StringBuilder sb)
+	public static void utcTimeToString(@Nonnull byte[] data, int ofst, int dataLen, @Nonnull StringBuilderUTF8 sb)
 	{
 		ZonedDateTime dt = pduParseUTCTimeCont(data, ofst, dataLen);
 		if (dt != null)

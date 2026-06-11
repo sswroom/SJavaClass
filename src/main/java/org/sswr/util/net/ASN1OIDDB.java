@@ -2,6 +2,7 @@ package org.sswr.util.net;
 
 import java.util.List;
 
+import org.sswr.util.data.StringBuilderUTF8;
 import org.sswr.util.io.ResourceLoader;
 
 import jakarta.annotation.Nonnull;
@@ -16,7 +17,7 @@ public class ASN1OIDDB
 		return (oidList = ResourceLoader.loadObjects(ASN1OIDInfo.class, "SNMPOIDDB.oidList.txt", new String[] {"name", "len", "oid"})) != null;
 	}
 
-	public static void oidToNameString(@Nonnull byte[] pdu, int pduOfst, int pduSize, @Nonnull StringBuilder sb)
+	public static void oidToNameString(@Nonnull byte[] pdu, int pduOfst, int pduSize, @Nonnull StringBuilderUTF8 sb)
 	{
 		if (oidList == null && !loadOIDList())
 		{
@@ -37,8 +38,8 @@ public class ASN1OIDDB
 					v = (v << 7) | (pdu[checkSize] & 0x7f);
 					if ((pdu[checkSize] & 0x80) == 0)
 					{
-						sb.append('.');
-						sb.append(v);
+						sb.appendUTF8Char((byte)'.');
+						sb.appendI32(v);
 						v = 0;
 					}
 					checkSize++;

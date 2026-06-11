@@ -7,6 +7,7 @@ import org.sswr.util.basic.Matrix3;
 import org.sswr.util.basic.Vector3;
 import org.sswr.util.data.ByteTool;
 import org.sswr.util.data.SharedDouble;
+import org.sswr.util.data.StringBuilderUTF8;
 import org.sswr.util.data.StringUtil;
 import org.sswr.util.media.LUTInt.DataFormat;
 import org.sswr.util.media.cs.TransferFunc;
@@ -18,6 +19,7 @@ import jakarta.annotation.Nullable;
 
 public class ICCProfile
 {
+	@Nonnull
 	private byte iccBuff[];
 
 	public ICCProfile(@Nonnull byte iccBuff[])
@@ -662,12 +664,12 @@ public class ICCProfile
 	@Nonnull
 	public String toString()
 	{
-		StringBuilder sb = new StringBuilder();
+		StringBuilderUTF8 sb = new StringBuilderUTF8();
 		toString(sb);
 		return sb.toString();
 	}
 
-	public void toString(@Nonnull StringBuilder sb)
+	public void toString(@Nonnull StringBuilderUTF8 sb)
 	{
 		LocalDateTime ldt;
 		Vector3 xyz;
@@ -677,11 +679,11 @@ public class ICCProfile
 		sb.append(getNameCMMType(this.getCMMType()));
 	
 		sb.append("\r\nProfile version number = ");
-		sb.append(this.getMajorVer());
+		sb.appendI32(this.getMajorVer());
 		sb.append(".");
-		sb.append(this.getMinorVer());
+		sb.appendI32(this.getMinorVer());
 		sb.append(".");
-		sb.append(this.getBugFixVer());
+		sb.appendI32(this.getBugFixVer());
 	
 		sb.append("\r\nProfile/Device class = ");
 		sb.append(getNameProfileClass(this.getProfileClass()));
@@ -694,7 +696,7 @@ public class ICCProfile
 	
 		ldt = this.getCreateTime();
 		sb.append("\r\nCreate Time = ");
-		sb.append(ldt);
+		sb.append(ldt.toString());
 	
 		sb.append("\r\nPrimary Platform = ");
 		sb.append(getNamePrimaryPlatform(this.getPrimaryPlatform()));
@@ -1127,26 +1129,26 @@ public class ICCProfile
 		}
 	}
 
-	public static void getDispCIEXYZ(@Nonnull StringBuilder sb, @Nonnull Vector3 xyz)
+	public static void getDispCIEXYZ(@Nonnull StringBuilderUTF8 sb, @Nonnull Vector3 xyz)
 	{
 		sb.append("X = ");
-		sb.append(xyz.val[0]);
+		sb.appendF64(xyz.val[0]);
 		sb.append(", Y = ");
-		sb.append(xyz.val[1]);
+		sb.appendF64(xyz.val[1]);
 		sb.append(", Z = ");
-		sb.append(xyz.val[2]);
+		sb.appendF64(xyz.val[2]);
 	
 		double sum = xyz.val[0] + xyz.val[1] + xyz.val[2];
 		if (sum != 0)
 		{
 			sb.append(", x = ");
-			sb.append(xyz.val[0] / sum);
+			sb.appendF64(xyz.val[0] / sum);
 			sb.append(", y = ");
-			sb.append(xyz.val[1] / sum);
+			sb.appendF64(xyz.val[1] / sum);
 		}
 	}	
 
-	public static void getDispTagType(@Nonnull StringBuilder sb, @Nonnull byte buff[], int index, int leng)
+	public static void getDispTagType(@Nonnull StringBuilderUTF8 sb, @Nonnull byte buff[], int index, int leng)
 	{
 		int typ = ByteTool.readMInt32(buff, index);
 		int nCh;
@@ -1162,7 +1164,7 @@ public class ICCProfile
 		case 0x6368726D:
 			nCh = ByteTool.readMInt16(buff, index + 8);
 			val = ByteTool.readMInt16(buff, index + 10);
-			sb.append(val);
+			sb.appendI32(val);
 			sb.append(" {");
 			val = 0;
 			while (val < nCh)
@@ -1172,9 +1174,9 @@ public class ICCProfile
 					sb.append(", ");
 				}
 				sb.append("(");
-				sb.append(readU16Fixed16Number(buff, index + val * 8 + 12));
+				sb.appendF64(readU16Fixed16Number(buff, index + val * 8 + 12));
 				sb.append(", ");
-				sb.append(readU16Fixed16Number(buff, index + val * 8 + 16));
+				sb.appendF64(readU16Fixed16Number(buff, index + val * 8 + 16));
 				sb.append(")");
 				val++;
 			}
@@ -1214,7 +1216,7 @@ public class ICCProfile
 			xyz = readXYZNumber(buff, index + 20);
 			getDispCIEXYZ(sb, xyz);
 			sb.append("}, Illuminant type = ");
-			sb.append(ByteTool.readMInt32(buff, index + 32));
+			sb.appendI32(ByteTool.readMInt32(buff, index + 32));
 			break;
 		case 0x6D656173: //measurementType
 			sb.append("Standard observer = ");
@@ -1223,9 +1225,9 @@ public class ICCProfile
 			xyz = readXYZNumber(buff, index + 12);
 			getDispCIEXYZ(sb, xyz);
 			sb.append("}, Measurement geometry = ");
-			sb.append(ByteTool.readMInt32(buff, index + 24));
+			sb.appendI32(ByteTool.readMInt32(buff, index + 24));
 			sb.append(", Measurement flare = ");
-			sb.append(ByteTool.readMInt32(buff, index + 28));
+			sb.appendI32(ByteTool.readMInt32(buff, index + 28));
 			sb.append(", Standard illuminent = ");
 			sb.append(getNameStandardIlluminent(ByteTool.readMInt32(buff, index + 32)));
 			break;
@@ -1250,22 +1252,22 @@ public class ICCProfile
 			sb.append("Curve: ");
 			if (val > 1)
 			{
-				sb.append(val);
+				sb.appendI32(val);
 				sb.append(" entries, ");
 				sb.append("Closed to ");
 			}
 			SharedDouble gamma = new SharedDouble();
 			tt = findTransferType(val, buff, 12, gamma);
-			sb.append(tt);
+			sb.append(tt.toString());
 			if (tt == TransferType.GAMMA)
 			{
 				sb.append(", gamma = ");
-				sb.append(gamma.value);
+				sb.appendF64(gamma.value);
 			}
 			break;
 		case 0x70617261: //parametricCurveType
 			sb.append("CurveType: ");
-			sb.append(ByteTool.readMInt16(buff, index + 8));
+			sb.appendI32(ByteTool.readMInt16(buff, index + 8));
 			{
 				double g;
 				double a;
@@ -1280,7 +1282,7 @@ public class ICCProfile
 				case 0:
 					g = readS15Fixed16Number(buff, index + 12);
 					sb.append(" Y = X ^ ");
-					sb.append(g);
+					sb.appendF64(g);
 					break;
 				case 1:
 					g = readS15Fixed16Number(buff, index + 12);
@@ -1300,15 +1302,15 @@ public class ICCProfile
 					c = readS15Fixed16Number(buff, index + 24);
 					d = readS15Fixed16Number(buff, index + 28);
 					sb.append(" if (X >= ");
-					sb.append(d);
+					sb.appendF64(d);
 					sb.append(") Y = (");
-					sb.append(a);
+					sb.appendF64(a);
 					sb.append(" * X + ");
-					sb.append(b);
+					sb.appendF64(b);
 					sb.append(") ^ ");
-					sb.append(g);
+					sb.appendF64(g);
 					sb.append(" else Y = ");
-					sb.append(c);
+					sb.appendF64(c);
 					sb.append(" * X");
 					break;
 				case 4:
@@ -1320,19 +1322,19 @@ public class ICCProfile
 					e = readS15Fixed16Number(buff, index + 32);
 					f = readS15Fixed16Number(buff, index + 36);
 					sb.append(" if (X >= ");
-					sb.append(d);
+					sb.appendF64(d);
 					sb.append(") Y = (");
-					sb.append(a);
+					sb.appendF64(a);
 					sb.append(" * X + ");
-					sb.append(b);
+					sb.appendF64(b);
 					sb.append(") ^ ");
-					sb.append(g);
+					sb.appendF64(g);
 					sb.append(" + ");
-					sb.append(e);
+					sb.appendF64(e);
 					sb.append(" else Y = ");
-					sb.append(c);
+					sb.appendF64(c);
 					sb.append(" * X + ");
-					sb.append(f);
+					sb.appendF64(f);
 					break;
 				default:
 					break;
@@ -1347,17 +1349,17 @@ public class ICCProfile
 			break;
 		case 0x75693332: //uInt32ArrayType
 			sb.append("uInt32 Array (");
-			sb.append((leng - 8) >> 2);
+			sb.appendI32((leng - 8) >> 2);
 			sb.append(")");
 			break;
 		case 0x75693038: //uInt8ArrayType
 			sb.append("uInt8 Array (");
-			sb.append((leng - 8));
+			sb.appendI32((leng - 8));
 			sb.append(")");
 			break;
 		case 0x73663332: //s15Fixed16ArrayType
 			sb.append("s15Fixed16 Array (");
-			sb.append((leng - 8) >> 2);
+			sb.appendI32((leng - 8) >> 2);
 			sb.append(")");
 			break;
 		case 0x6D6C7563: //multiLocalizedUnicodeType

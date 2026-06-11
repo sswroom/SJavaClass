@@ -23,6 +23,7 @@ import org.sswr.util.io.LogTool;
 public class SQLConnection extends ReadingConnection
 {
 	private Connection conn;
+	@Nonnull
 	private DBType dbType;
 	private byte tzQhr;
 	private String errorMsg;
@@ -33,8 +34,8 @@ public class SQLConnection extends ReadingConnection
 		super(logger);
 		this.conn = conn;
 		this.logger = logger;
-		this.dbType = DBUtil.connGetDBType(this.conn);
-		this.tzQhr = DBUtil.connGetTzQhr(this.conn);
+		this.dbType = DBUtil.connGetDBType(conn);
+		this.tzQhr = DBUtil.connGetTzQhr(conn);
 		this.errorMsg = null;
 		this.tableNames = null;
 	}

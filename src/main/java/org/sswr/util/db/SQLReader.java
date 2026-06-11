@@ -2,6 +2,7 @@ package org.sswr.util.db;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.time.ZonedDateTime;
 
 import org.locationtech.jts.geom.Geometry;
@@ -19,6 +20,7 @@ import jakarta.annotation.Nullable;
 
 public class SQLReader extends DBReader
 {
+	@Nonnull
 	private DBType dbType;
 	private ResultSet rs;
 
@@ -120,10 +122,13 @@ public class SQLReader extends DBReader
 	@Nullable
 	public ZonedDateTime getDate(int colIndex)
 	{
+		
 		if (this.rs == null) return null;
 		try
 		{
-			return DateTimeUtil.newZonedDateTime(this.rs.getTimestamp(colIndex + 1));
+			Timestamp ts = this.rs.getTimestamp(colIndex + 1);
+			if (ts == null) return null;
+			return DateTimeUtil.newZonedDateTime(ts);
 		}
 		catch (SQLException ex)
 		{
@@ -310,7 +315,8 @@ public class SQLReader extends DBReader
 		if (this.rs == null) return ColumnType.Unknown;
 		try
 		{
-			return DBUtil.parseColType(this.dbType, this.rs.getMetaData().getColumnTypeName(colIndex), null);
+			String name = this.rs.getMetaData().getColumnName(colIndex);
+			return DBUtil.parseColType(this.dbType, (name == null)?"varchar":name, null);
 		}
 		catch (SQLException ex)
 		{
@@ -328,7 +334,12 @@ public class SQLReader extends DBReader
 			{
 				return null;
 			}
-			ColumnDef col = new ColumnDef(this.rs.getMetaData().getColumnName(colIndex));
+			String colName = this.rs.getMetaData().getColumnName(colIndex);
+			if (colName == null)
+			{
+				colName = "Column" + (colIndex + 1);
+			}
+			ColumnDef col = new ColumnDef(colName);
 			col.setColType(this.getColumnType(colIndex));
 			col.setColSize(this.rs.getMetaData().getPrecision(colIndex));
 			col.setColDP(this.rs.getMetaData().getScale(colIndex));

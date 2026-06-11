@@ -5,12 +5,15 @@ import jakarta.annotation.Nullable;
 
 public class ColumnDef
 {
+	@Nonnull
 	private String colName;
+	@Nonnull
 	private ColumnType colType;
 	private int colSize;
 	private int colDP;
 	private boolean notNull;
 	private boolean pk;
+	@Nonnull
 	private AutoIncType autoInc;
 	private long autoIncStartIndex;
 	private long autoIncStep;
@@ -108,7 +111,7 @@ public class ColumnDef
 		this.autoIncStep = 1;
 	}
 
-	public void setAutoInc(AutoIncType autoInc, long autoIncStartIndex, long autoIncStep) {
+	public void setAutoInc(@Nonnull AutoIncType autoInc, long autoIncStartIndex, long autoIncStep) {
 		this.autoInc = autoInc;
 		this.autoIncStartIndex = autoIncStartIndex;
 		this.autoIncStep = autoIncStep;

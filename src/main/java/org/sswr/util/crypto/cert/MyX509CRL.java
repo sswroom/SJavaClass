@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.sswr.util.crypto.hash.HashType;
 import org.sswr.util.data.ByteTool;
+import org.sswr.util.data.StringBuilderUTF8;
 import org.sswr.util.net.ASN1Data;
 import org.sswr.util.net.ASN1Item;
 import org.sswr.util.net.ASN1Util;
@@ -124,7 +125,7 @@ public class MyX509CRL extends MyX509File
 	@Nonnull
 	public String toString()
 	{
-		StringBuilder sb = new StringBuilder();
+		StringBuilderUTF8 sb = new StringBuilderUTF8();
 		if (isCertificateList(this.buff, 0, this.buff.length, "1"))
 		{
 			appendCertificateList(this.buff, 0, this.buff.length, "1", sb, null);

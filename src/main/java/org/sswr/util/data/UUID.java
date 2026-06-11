@@ -6,14 +6,17 @@ import jakarta.annotation.Nonnull;
 
 public class UUID
 {
+	@Nonnull
 	private byte[] uuidBuff;
 
 	public UUID(@Nonnull byte[] buff, int ofst)
 	{
-		this.uuidBuff = Arrays.copyOfRange(buff, ofst, ofst + 16);
+		byte[] newBuff = Arrays.copyOfRange(buff, ofst, ofst + 16);
+		if (newBuff == null) throw new IllegalArgumentException("Buff is null");
+		this.uuidBuff = newBuff;
 	}
 
-	public void toString(@Nonnull StringBuilder sb)
+	public void toString(@Nonnull StringBuilderUTF8 sb)
 	{
 		sb.append(StringUtil.toHex32(ByteTool.readInt32(this.uuidBuff, 0)));
 		sb.append("-");
@@ -34,7 +37,7 @@ public class UUID
 	@Nonnull
 	public String toString()
 	{
-		StringBuilder sb = new StringBuilder();
+		StringBuilderUTF8 sb = new StringBuilderUTF8();
 		toString(sb);
 		return sb.toString();
 	}

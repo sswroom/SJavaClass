@@ -16,6 +16,7 @@ import org.sswr.util.crypto.hash.HashType;
 import org.sswr.util.crypto.hash.SHA1;
 import org.sswr.util.data.LineBreakType;
 import org.sswr.util.data.SharedInt;
+import org.sswr.util.data.StringBuilderUTF8;
 import org.sswr.util.data.StringUtil;
 import org.sswr.util.net.ASN1Data;
 import org.sswr.util.net.ASN1Item;
@@ -53,7 +54,7 @@ public class MyX509Key extends MyX509File
 	@Nonnull
 	public String toString()
 	{
-		StringBuilder sb = new StringBuilder();
+		StringBuilderUTF8 sb = new StringBuilderUTF8();
 		boolean found = false;
 		byte[] buff;
 		if (this.keyType == KeyType.RSA)
@@ -64,7 +65,7 @@ public class MyX509Key extends MyX509File
 				if (found) sb.append("\r\n");
 				found = true;
 				sb.append(this.sourceName);
-				sb.append('.');
+				sb.appendUTF8Char((byte)'.');
 				sb.append("RSA.Modulus = ");
 				StringUtil.appendHex(sb, buff, 0, buff.length, ' ', LineBreakType.NONE);
 			}
@@ -74,7 +75,7 @@ public class MyX509Key extends MyX509File
 				if (found) sb.append("\r\n");
 				found = true;
 				sb.append(this.sourceName);
-				sb.append('.');
+				sb.appendUTF8Char((byte)'.');
 				sb.append("RSA.Public Exponent = ");
 				StringUtil.appendHex(sb, buff, 0, buff.length, ' ', LineBreakType.NONE);
 			}
@@ -84,7 +85,7 @@ public class MyX509Key extends MyX509File
 				if (found) sb.append("\r\n");
 				found = true;
 				sb.append(this.sourceName);
-				sb.append('.');
+				sb.appendUTF8Char((byte)'.');
 				sb.append("RSA.Private Exponent = ");
 				StringUtil.appendHex(sb, buff, 0, buff.length, ' ', LineBreakType.NONE);
 			}
@@ -94,7 +95,7 @@ public class MyX509Key extends MyX509File
 				if (found) sb.append("\r\n");
 				found = true;
 				sb.append(this.sourceName);
-				sb.append('.');
+				sb.appendUTF8Char((byte)'.');
 				sb.append("RSA.Prime1 = ");
 				StringUtil.appendHex(sb, buff, 0, buff.length, ' ', LineBreakType.NONE);
 			}
@@ -104,7 +105,7 @@ public class MyX509Key extends MyX509File
 				if (found) sb.append("\r\n");
 				found = true;
 				sb.append(this.sourceName);
-				sb.append('.');
+				sb.appendUTF8Char((byte)'.');
 				sb.append("RSA.Prime2 = ");
 				StringUtil.appendHex(sb, buff, 0, buff.length, ' ', LineBreakType.NONE);
 			}
@@ -114,7 +115,7 @@ public class MyX509Key extends MyX509File
 				if (found) sb.append("\r\n");
 				found = true;
 				sb.append(this.sourceName);
-				sb.append('.');
+				sb.appendUTF8Char((byte)'.');
 				sb.append("RSA.Exponent1 = ");
 				StringUtil.appendHex(sb, buff, 0, buff.length, ' ', LineBreakType.NONE);
 			}
@@ -124,7 +125,7 @@ public class MyX509Key extends MyX509File
 				if (found) sb.append("\r\n");
 				found = true;
 				sb.append(this.sourceName);
-				sb.append('.');
+				sb.appendUTF8Char((byte)'.');
 				sb.append("RSA.Exponent2 = ");
 				StringUtil.appendHex(sb, buff, 0, buff.length, ' ', LineBreakType.NONE);
 			}
@@ -134,7 +135,7 @@ public class MyX509Key extends MyX509File
 				if (found) sb.append("\r\n");
 				found = true;
 				sb.append(this.sourceName);
-				sb.append('.');
+				sb.appendUTF8Char((byte)'.');
 				sb.append("RSA.Coefficient = ");
 				StringUtil.appendHex(sb, buff, 0, buff.length, ' ', LineBreakType.NONE);
 			}
@@ -147,7 +148,7 @@ public class MyX509Key extends MyX509File
 				if (found) sb.append("\r\n");
 				found = true;
 				sb.append(this.sourceName);
-				sb.append('.');
+				sb.appendUTF8Char((byte)'.');
 				sb.append("RSA.Modulus = ");
 				StringUtil.appendHex(sb, buff, 0, buff.length, ' ', LineBreakType.NONE);
 			}
@@ -157,7 +158,7 @@ public class MyX509Key extends MyX509File
 				if (found) sb.append("\r\n");
 				found = true;
 				sb.append(this.sourceName);
-				sb.append('.');
+				sb.appendUTF8Char((byte)'.');
 				sb.append("RSA.Public Exponent = ");
 				StringUtil.appendHex(sb, buff, 0, buff.length, ' ', LineBreakType.NONE);
 			}
@@ -169,7 +170,7 @@ public class MyX509Key extends MyX509File
 			if (found) sb.append("\r\n");
 			found = true;
 			sb.append(this.sourceName);
-			sb.append('.');
+			sb.appendUTF8Char((byte)'.');
 			sb.append("KeyId = ");
 			StringUtil.appendHex(sb, buff, 0, buff.length, ' ', LineBreakType.NONE);
 		}
