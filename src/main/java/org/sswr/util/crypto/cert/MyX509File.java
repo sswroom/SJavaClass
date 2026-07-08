@@ -12,6 +12,7 @@ import java.util.List;
 
 import org.sswr.util.crypto.hash.HashType;
 import org.sswr.util.data.LineBreakType;
+import org.sswr.util.data.StringBuilderUTF8;
 import org.sswr.util.data.StringUtil;
 import org.sswr.util.net.ASN1Data;
 import org.sswr.util.net.ASN1Item;
@@ -117,7 +118,7 @@ public abstract class MyX509File extends ASN1Data
 	
 	}
 
-	public static void appendSigned(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull String path, @Nonnull StringBuilder sb, @Nullable String varName)
+	public static void appendSigned(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull String path, @Nonnull StringBuilderUTF8 sb, @Nullable String varName)
 	{
 		String name;
 		ASN1Item itemPDU;
@@ -194,7 +195,7 @@ public abstract class MyX509File extends ASN1Data
 		return true;
 	}
 
-	public static void appendTBSCertificate(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull String path, @Nonnull StringBuilder sb, @Nullable String varName)
+	public static void appendTBSCertificate(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull String path, @Nonnull StringBuilderUTF8 sb, @Nullable String varName)
 	{
 		String name;
 		int i = 1;
@@ -208,7 +209,7 @@ public abstract class MyX509File extends ASN1Data
 				if (varName != null)
 				{
 					sb.append(varName);
-					sb.append('.');
+					sb.appendUTF8Char((byte)'.');
 				}
 				sb.append("version = ");
 				appendVersion(pdu, itemPDU.ofst, itemPDU.ofst + itemPDU.len, "1", sb);
@@ -223,7 +224,7 @@ public abstract class MyX509File extends ASN1Data
 				if (varName != null)
 				{
 					sb.append(varName);
-					sb.append('.');
+					sb.appendUTF8Char((byte)'.');
 				}
 				sb.append("serialNumber = ");
 				StringUtil.appendHex(sb, pdu, itemPDU.ofst, itemPDU.len, ':', LineBreakType.NONE);
@@ -323,7 +324,7 @@ public abstract class MyX509File extends ASN1Data
 		return isSigned(pdu, beginOfst, endOfst, path) && isTBSCertificate(pdu, beginOfst, endOfst, path + ".1");
 	}
 
-	public static void appendCertificate(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull String path, @Nonnull StringBuilder sb, @Nullable String varName)
+	public static void appendCertificate(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull String path, @Nonnull StringBuilderUTF8 sb, @Nullable String varName)
 	{
 		appendTBSCertificate(pdu, beginOfst, endOfst, path + ".1", sb, varName);
 		appendSigned(pdu, beginOfst, endOfst, path, sb, varName);
@@ -373,7 +374,7 @@ public abstract class MyX509File extends ASN1Data
 		return true;
 	}
 
-	public static void appendTBSCertList(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull String path, @Nonnull StringBuilder sb, @Nullable String varName)
+	public static void appendTBSCertList(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull String path, @Nonnull StringBuilderUTF8 sb, @Nullable String varName)
 	{
 		ZonedDateTime dt;
 		String name;
@@ -388,7 +389,7 @@ public abstract class MyX509File extends ASN1Data
 				if (varName != null)
 				{
 					sb.append(varName);
-					sb.append('.');
+					sb.appendUTF8Char((byte)'.');
 				}
 				sb.append("version = ");
 				appendVersion(pdu, beginOfst, endOfst, path + "." + i, sb);
@@ -429,7 +430,7 @@ public abstract class MyX509File extends ASN1Data
 				if (varName != null)
 				{
 					sb.append(varName);
-					sb.append('.');
+					sb.appendUTF8Char((byte)'.');
 				}
 				sb.append("thisUpdate = ");
 				sb.append(dt.toString());
@@ -444,7 +445,7 @@ public abstract class MyX509File extends ASN1Data
 				if (varName != null)
 				{
 					sb.append(varName);
-					sb.append('.');
+					sb.appendUTF8Char((byte)'.');
 				}
 				sb.append("nextUpdate = ");
 				sb.append(dt.toString());
@@ -467,10 +468,10 @@ public abstract class MyX509File extends ASN1Data
 					if (varName != null)
 					{
 						sb.append(varName);
-						sb.append('.');
+						sb.appendUTF8Char((byte)'.');
 					}
 					sb.append("revokedCertificates[");
-					sb.append(j);
+					sb.appendI32(j);
 					sb.append("].userCertificate = ");
 					StringUtil.appendHex(sb, pdu, subsubitemPDU.ofst, subsubitemPDU.len, ':', LineBreakType.NONE);
 					sb.append("\r\n");
@@ -480,10 +481,10 @@ public abstract class MyX509File extends ASN1Data
 					if (varName != null)
 					{
 						sb.append(varName);
-						sb.append('.');
+						sb.appendUTF8Char((byte)'.');
 					}
 					sb.append("revokedCertificates[");
-					sb.append(j);
+					sb.appendI32(j);
 					sb.append("].revocationDate = ");
 					sb.append(dt.toString());
 					sb.append("\r\n");
@@ -520,7 +521,7 @@ public abstract class MyX509File extends ASN1Data
 		return isSigned(pdu, beginOfst, endOfst, path) && isTBSCertList(pdu, beginOfst, endOfst, path + ".1");
 	}
 
-	public static void appendCertificateList(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull String path, @Nonnull StringBuilder sb, @Nullable String varName)
+	public static void appendCertificateList(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull String path, @Nonnull StringBuilderUTF8 sb, @Nullable String varName)
 	{
 		appendTBSCertList(pdu, beginOfst, endOfst, path + ".1", sb, varName);
 		appendSigned(pdu, beginOfst, endOfst, path, sb, varName);
@@ -555,7 +556,7 @@ public abstract class MyX509File extends ASN1Data
 		return true;
 	}
 
-	public static void appendPrivateKeyInfo(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull String path, @Nonnull StringBuilder sb)
+	public static void appendPrivateKeyInfo(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull String path, @Nonnull StringBuilderUTF8 sb)
 	{
 		ASN1Item itemPDU;
 		KeyType keyType = KeyType.Unknown;
@@ -620,7 +621,7 @@ public abstract class MyX509File extends ASN1Data
 		return true;
 	}
 
-	public static void appendCertificateRequestInfo(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull String path, @Nonnull StringBuilder sb)
+	public static void appendCertificateRequestInfo(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull String path, @Nonnull StringBuilderUTF8 sb)
 	{
 		int i = 1;
 		ASN1Item itemPDU;
@@ -682,7 +683,7 @@ public abstract class MyX509File extends ASN1Data
 		return isSigned(pdu, beginOfst, endOfst, path) && isCertificateRequestInfo(pdu, beginOfst, endOfst, path + ".1");
 	}
 
-	public static void appendCertificateRequest(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull String path, @Nonnull StringBuilder sb)
+	public static void appendCertificateRequest(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull String path, @Nonnull StringBuilderUTF8 sb)
 	{
 		appendCertificateRequestInfo(pdu, beginOfst, endOfst, path + ".1", sb);
 		appendSigned(pdu, beginOfst, endOfst, path, sb, null);
@@ -706,7 +707,7 @@ public abstract class MyX509File extends ASN1Data
 		return true;
 	}
 
-	public static void appendPublicKeyInfo(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull String path, @Nonnull StringBuilder sb)
+	public static void appendPublicKeyInfo(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull String path, @Nonnull StringBuilderUTF8 sb)
 	{
 		ASN1Item item = ASN1Util.pduGetItem(pdu, beginOfst, endOfst, path);
 		if (item != null && item.itemType == ASN1Util.IT_SEQUENCE)
@@ -744,7 +745,7 @@ public abstract class MyX509File extends ASN1Data
 		return true;
 	}
 
-	public static void appendContentInfo(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull String path, @Nonnull StringBuilder sb, @Nullable String varName, @Nonnull ContentDataType dataType)
+	public static void appendContentInfo(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull String path, @Nonnull StringBuilderUTF8 sb, @Nullable String varName, @Nonnull ContentDataType dataType)
 	{
 		ASN1Item item = ASN1Util.pduGetItem(pdu, beginOfst, endOfst, path);
 		if (item != null && item.itemType == ASN1Util.IT_SEQUENCE)
@@ -757,7 +758,7 @@ public abstract class MyX509File extends ASN1Data
 				if (varName != null)
 				{
 					sb.append(varName);
-					sb.append('.');
+					sb.appendUTF8Char((byte)'.');
 				}
 				sb.append("content-type = ");
 				ASN1Util.oidToString(pdu, contentType.ofst, contentType.len, sb);
@@ -766,7 +767,7 @@ public abstract class MyX509File extends ASN1Data
 				{
 					sb.append(" (");
 					sb.append(oid.getName());
-					sb.append(')');
+					sb.appendUTF8Char((byte)')');
 				}
 				sb.append("\r\n");
 			}
@@ -831,7 +832,7 @@ public abstract class MyX509File extends ASN1Data
 		return true;
 	}
 
-	public static void appendPFX(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull String path, @Nonnull StringBuilder sb, @Nullable String varName)
+	public static void appendPFX(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull String path, @Nonnull StringBuilderUTF8 sb, @Nullable String varName)
 	{
 		ASN1Item item = ASN1Util.pduGetItem(pdu, beginOfst, endOfst, path);
 		if (item != null && item.itemType == ASN1Util.IT_SEQUENCE)
@@ -844,7 +845,7 @@ public abstract class MyX509File extends ASN1Data
 				if (varName != null)
 				{
 					sb.append(varName);
-					sb.append('.');
+					sb.appendUTF8Char((byte)'.');
 				}
 				sb.append("version = ");
 				ASN1Util.integerToString(pdu, version.ofst, version.len, sb);
@@ -868,7 +869,7 @@ public abstract class MyX509File extends ASN1Data
 		}
 	}
 
-	protected static void appendVersion(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull String path, @Nonnull StringBuilder sb)
+	protected static void appendVersion(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull String path, @Nonnull StringBuilderUTF8 sb)
 	{
 		ASN1Item itemPDU = ASN1Util.pduGetItem(pdu, beginOfst, endOfst, path);
 		if (itemPDU != null && itemPDU.itemType == ASN1Util.IT_INTEGER)
@@ -892,15 +893,18 @@ public abstract class MyX509File extends ASN1Data
 	}
 
 	@Nonnull
-	protected static KeyType appendAlgorithmIdentifier(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull StringBuilder sb, @Nullable String varName, boolean pubKey)
+	protected static KeyType appendAlgorithmIdentifier(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull StringBuilderUTF8 sb, @Nullable String varName, boolean pubKey)
 	{
 		KeyType keyType = KeyType.Unknown;
 		ASN1Item algorithm = ASN1Util.pduGetItem(pdu, beginOfst, endOfst, "1");
 		ASN1Item parameters = ASN1Util.pduGetItem(pdu, beginOfst, endOfst, "2");
 		if (algorithm != null && algorithm.itemType == ASN1Util.IT_OID)
 		{
-			sb.append(varName);
-			sb.append('.');
+			if (varName != null)
+			{
+				sb.append(varName);
+				sb.appendUTF8Char((byte)'.');
+			}
 			sb.append("algorithm = ");
 			ASN1Util.oidToString(pdu, algorithm.ofst, algorithm.len, sb);
 			keyType = keyTypeFromOID(pdu, algorithm.ofst, algorithm.len, pubKey);
@@ -909,14 +913,17 @@ public abstract class MyX509File extends ASN1Data
 			{
 				sb.append(" (");
 				sb.append(oid.getName());
-				sb.append(')');
+				sb.appendUTF8Char((byte)')');
 			}
 			sb.append("\r\n");
 		}
 		if (parameters != null)
 		{
-			sb.append(varName);
-			sb.append('.');
+			if (varName != null)
+			{
+				sb.append(varName);
+				sb.appendUTF8Char((byte)'.');
+			}
 			sb.append("parameters = ");
 			if (parameters.itemType == ASN1Util.IT_NULL)
 			{
@@ -927,7 +934,7 @@ public abstract class MyX509File extends ASN1Data
 		return keyType;
 	}
 
-	protected static void appendValidity(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull StringBuilder sb, @Nullable String varName)
+	protected static void appendValidity(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull StringBuilderUTF8 sb, @Nullable String varName)
 	{
 		ZonedDateTime dt;
 		ASN1Item itemPDU;
@@ -935,8 +942,11 @@ public abstract class MyX509File extends ASN1Data
 		{
 			if ((itemPDU.itemType == ASN1Util.IT_UTCTIME || itemPDU.itemType == ASN1Util.IT_GENERALIZEDTIME) && (dt = ASN1Util.pduParseUTCTimeCont(pdu, itemPDU.ofst, itemPDU.len)) != null)
 			{
-				sb.append(varName);
-				sb.append('.');
+				if (varName != null)
+				{
+					sb.append(varName);
+					sb.appendUTF8Char((byte)'.');
+				}
 				sb.append("notBefore = ");
 				sb.append(dt.toString());
 				sb.append("\r\n");
@@ -946,8 +956,11 @@ public abstract class MyX509File extends ASN1Data
 		{
 			if ((itemPDU.itemType == ASN1Util.IT_UTCTIME || itemPDU.itemType == ASN1Util.IT_GENERALIZEDTIME) && (dt = ASN1Util.pduParseUTCTimeCont(pdu, itemPDU.ofst, itemPDU.len)) != null)
 			{
-				sb.append(varName);
-				sb.append('.');
+				if (varName != null)
+				{
+					sb.append(varName);
+					sb.appendUTF8Char((byte)'.');
+				}
 				sb.append("notAfter = ");
 				sb.append(dt.toString());
 				sb.append("\r\n");
@@ -955,7 +968,7 @@ public abstract class MyX509File extends ASN1Data
 		}
 	}
 
-	protected static void appendSubjectPublicKeyInfo(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull StringBuilder sb, @Nullable String varName)
+	protected static void appendSubjectPublicKeyInfo(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull StringBuilderUTF8 sb, @Nullable String varName)
 	{
 		ASN1Item itemPDU;
 		KeyType keyType = KeyType.Unknown;
@@ -970,8 +983,12 @@ public abstract class MyX509File extends ASN1Data
 		{
 			if (itemPDU.itemType == ASN1Util.IT_BIT_STRING)
 			{
-				sb.append(varName);
-				sb.append(".subjectPublicKey = ");
+				if (varName != null)
+				{
+					sb.append(varName);
+					sb.appendUTF8Char((byte)'.');
+				}
+				sb.append("subjectPublicKey = ");
 				StringUtil.appendHex(sb, pdu, itemPDU.ofst + 1, itemPDU.len - 1, ':', LineBreakType.NONE);
 				sb.append("\r\n");
 				if (keyType != KeyType.Unknown)
@@ -984,7 +1001,7 @@ public abstract class MyX509File extends ASN1Data
 		}
 	}
 
-	protected static void appendName(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull StringBuilder sb, @Nullable String varName)
+	protected static void appendName(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull StringBuilderUTF8 sb, @Nullable String varName)
 	{
 		ASN1Item itemPDU;
 		int cnt = ASN1Util.pduCountItem(pdu, beginOfst, endOfst, null);
@@ -1003,7 +1020,7 @@ public abstract class MyX509File extends ASN1Data
 		}
 	}
 
-	protected static void appendRelativeDistinguishedName(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull StringBuilder sb, @Nullable String varName)
+	protected static void appendRelativeDistinguishedName(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull StringBuilderUTF8 sb, @Nullable String varName)
 	{
 		ASN1Item itemPDU;
 		int cnt = ASN1Util.pduCountItem(pdu, beginOfst, endOfst, null);
@@ -1022,7 +1039,7 @@ public abstract class MyX509File extends ASN1Data
 		}
 	}
 
-	protected static void appendAttributeTypeAndDistinguishedValue(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull StringBuilder sb, @Nullable String varName)
+	protected static void appendAttributeTypeAndDistinguishedValue(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull StringBuilderUTF8 sb, @Nullable String varName)
 	{
 		ASN1Item typePDU;
 		ASN1Item valuePDU;
@@ -1030,8 +1047,11 @@ public abstract class MyX509File extends ASN1Data
 		valuePDU = ASN1Util.pduGetItem(pdu, beginOfst, endOfst, "2");
 		if (typePDU != null && valuePDU != null && typePDU.itemType == ASN1Util.IT_OID)
 		{
-			sb.append(varName);
-			sb.append('.');
+			if (varName != null)
+			{
+				sb.append(varName);
+				sb.appendUTF8Char((byte)'.');
+			}
 			if (ASN1Util.oidEqualsText(pdu, typePDU.ofst, typePDU.len, "2.5.4.3"))
 			{
 				sb.append("commonName");
@@ -1070,7 +1090,7 @@ public abstract class MyX509File extends ASN1Data
 		}
 	}
 
-	protected static void appendCRLExtensions(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull StringBuilder sb, @Nullable String varName)
+	protected static void appendCRLExtensions(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull StringBuilderUTF8 sb, @Nullable String varName)
 	{
 		ASN1Item itemPDU;
 		ASN1Item subItemPDU;
@@ -1088,7 +1108,7 @@ public abstract class MyX509File extends ASN1Data
 		}
 	}
 	
-	protected static void appendCRLExtension(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull StringBuilder sb, @Nullable String varName)
+	protected static void appendCRLExtension(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull StringBuilderUTF8 sb, @Nullable String varName)
 	{
 		ASN1Item extension = null;
 		ASN1Item itemPDU;
@@ -1097,8 +1117,11 @@ public abstract class MyX509File extends ASN1Data
 		{
 			if (extension.itemType == ASN1Util.IT_OID)
 			{
-				sb.append(varName);
-				sb.append('.');
+				if (varName != null)
+				{
+					sb.append(varName);
+					sb.appendUTF8Char((byte)'.');
+				}
 				sb.append("extensionType = ");
 				ASN1Util.oidToString(pdu, extension.ofst, extension.len, sb);
 				ASN1OIDInfo oid = ASN1OIDDB.oidGetEntry(pdu, extension.ofst, extension.len);
@@ -1106,7 +1129,7 @@ public abstract class MyX509File extends ASN1Data
 				{
 					sb.append(" (");
 					sb.append(oid.getName());
-					sb.append(')');
+					sb.appendUTF8Char((byte)')');
 				}
 				sb.append("\r\n");
 			}
@@ -1119,8 +1142,11 @@ public abstract class MyX509File extends ASN1Data
 		{
 			if (itemPDU.itemType == ASN1Util.IT_BOOLEAN)
 			{
-				sb.append(varName);
-				sb.append('.');
+				if (varName != null)
+				{
+					sb.append(varName);
+					sb.appendUTF8Char((byte)'.');
+				}
 				sb.append("critical = ");
 				ASN1Util.booleanToString(pdu, itemPDU.ofst, itemPDU.len, sb);
 				sb.append("\r\n");
@@ -1141,9 +1167,13 @@ public abstract class MyX509File extends ASN1Data
 							ASN1Item descPDU;
 							if ((descPDU = ASN1Util.pduGetItem(pdu, subItemPDU.ofst, subItemPDU.ofst + subItemPDU.len, "1")) != null && descPDU.itemType == ASN1Util.IT_OID)
 							{
-								sb.append(varName);
-								sb.append(".authorityInfoAccess[");
-								sb.append(i);
+								if (varName != null)
+								{
+									sb.append(varName);
+									sb.appendUTF8Char((byte)'.');
+								}
+								sb.append("authorityInfoAccess[");
+								sb.appendI32(i);
 								sb.append("].accessMethod = ");
 								ASN1Util.oidToString(pdu, descPDU.ofst, descPDU.len, sb);
 								sb.append(" (");
@@ -1157,8 +1187,11 @@ public abstract class MyX509File extends ASN1Data
 				}
 				else if (ASN1Util.oidEqualsText(pdu, extension.ofst, extension.len, "2.5.29.14")) //id-ce-subjectKeyIdentifier
 				{
-					sb.append(varName);
-					sb.append('.');
+					if (varName != null)
+					{
+						sb.append(varName);
+						sb.appendUTF8Char((byte)'.');
+					}
 					sb.append("subjectKeyId = ");
 					if (itemPDU.len == 22 && pdu[itemPDU.ofst + 1] == 20)
 					{
@@ -1174,8 +1207,11 @@ public abstract class MyX509File extends ASN1Data
 				{
 					if ((subItemPDU = ASN1Util.pduGetItem(pdu, itemPDU.ofst, itemPDU.ofst + itemPDU.len, "1")) != null && subItemPDU.itemType == ASN1Util.IT_BIT_STRING)
 					{
-						sb.append(varName);
-						sb.append('.');
+						if (varName != null)
+						{
+							sb.append(varName);
+							sb.appendUTF8Char((byte)'.');
+						}
 						sb.append("keyUsage =");
 						if (subItemPDU.len >= 2)
 						{
@@ -1205,16 +1241,22 @@ public abstract class MyX509File extends ASN1Data
 					{
 						if ((subItemPDU = ASN1Util.pduGetItem(pdu, itemPDU.ofst, itemPDU.ofst + itemPDU.len, "1")) != null && subItemPDU.itemType == ASN1Util.IT_BOOLEAN)
 						{
-							sb.append(varName);
-							sb.append('.');
+							if (varName != null)
+							{
+								sb.append(varName);
+								sb.appendUTF8Char((byte)'.');
+							}
 							sb.append("basicConstraints.cA = ");
 							ASN1Util.booleanToString(pdu, subItemPDU.ofst, subItemPDU.len, sb);
 							sb.append("\r\n");
 						}
 						if ((subItemPDU = ASN1Util.pduGetItem(pdu, itemPDU.ofst, itemPDU.ofst + itemPDU.len, "2")) != null && subItemPDU.itemType == ASN1Util.IT_INTEGER)
 						{
-							sb.append(varName);
-							sb.append('.');
+							if (varName != null)
+							{
+								sb.append(varName);
+								sb.appendUTF8Char((byte)'.');
+							}
 							sb.append("basicConstraints.pathLenConstraint = ");
 							ASN1Util.integerToString(pdu, subItemPDU.ofst, subItemPDU.len, sb);
 							sb.append("\r\n");
@@ -1225,8 +1267,11 @@ public abstract class MyX509File extends ASN1Data
 				{
 					if ((subItemPDU = ASN1Util.pduGetItem(pdu, itemPDU.ofst, itemPDU.ofst + itemPDU.len, "1")) != null && subItemPDU.itemType == ASN1Util.IT_INTEGER)
 					{
-						sb.append(varName);
-						sb.append('.');
+						if (varName != null)
+						{
+							sb.append(varName);
+							sb.appendUTF8Char((byte)'.');
+						}
 						sb.append("cRLNumber = ");
 						ASN1Util.integerToString(pdu, subItemPDU.ofst, subItemPDU.len, sb);
 						sb.append("\r\n");
@@ -1236,8 +1281,11 @@ public abstract class MyX509File extends ASN1Data
 				{
 					if ((subItemPDU = ASN1Util.pduGetItem(pdu, itemPDU.ofst, itemPDU.ofst + itemPDU.len, "1")) != null && subItemPDU.itemType == ASN1Util.IT_ENUMERATED && subItemPDU.len == 1)
 					{
-						sb.append(varName);
-						sb.append('.');
+						if (varName != null)
+						{
+							sb.append(varName);
+							sb.appendUTF8Char((byte)'.');
+						}
 						sb.append("cRLReasons = ");
 						switch (pdu[subItemPDU.ofst])
 						{
@@ -1309,8 +1357,11 @@ public abstract class MyX509File extends ASN1Data
 						{
 							if (subItemPDU.itemType == 0x80)
 							{
-								sb.append(varName);
-								sb.append('.');
+								if (varName != null)
+								{
+									sb.append(varName);
+									sb.appendUTF8Char((byte)'.');
+								}
 								sb.append("authorityKey.keyId = ");
 								StringUtil.appendHex(sb, pdu, subItemPDU.ofst, subItemPDU.len, ':', LineBreakType.NONE);
 								sb.append("\r\n");
@@ -1321,8 +1372,11 @@ public abstract class MyX509File extends ASN1Data
 							}
 							else if (subItemPDU.itemType == 0x82)
 							{
-								sb.append(varName);
-								sb.append('.');
+								if (varName != null)
+								{
+									sb.append(varName);
+									sb.appendUTF8Char((byte)'.');
+								}
 								sb.append("authorityKey.authorityCertSerialNumber = ");
 								StringUtil.appendHex(sb, pdu, subItemPDU.ofst, subItemPDU.len, ':', LineBreakType.NONE);
 								sb.append("\r\n");
@@ -1336,9 +1390,11 @@ public abstract class MyX509File extends ASN1Data
 					if ((itemPDU = ASN1Util.pduGetItem(pdu, itemPDU.ofst, itemPDU.ofst + itemPDU.len, "1")) != null && itemPDU.itemType == ASN1Util.IT_SEQUENCE)
 					{
 						int i = 1;
-	
-						sb.append(varName);
-						sb.append('.');
+						if (varName != null)
+						{
+							sb.append(varName);
+							sb.appendUTF8Char((byte)'.');
+						}
 						sb.append("extKeyUsage =");
 	
 						while ((subItemPDU = ASN1Util.pduGetItem(pdu, itemPDU.ofst, itemPDU.ofst + itemPDU.len, String.valueOf(i))) != null)
@@ -1379,7 +1435,7 @@ public abstract class MyX509File extends ASN1Data
 		}
 	}
 		
-	protected static void appendGeneralNames(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull StringBuilder sb, @Nullable String varName)
+	protected static void appendGeneralNames(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull StringBuilderUTF8 sb, @Nullable String varName)
 	{
 		ASN1Item itemPDU;
 		if ((itemPDU = ASN1Util.pduGetItem(pdu, beginOfst, endOfst, "1")) != null)
@@ -1395,7 +1451,7 @@ public abstract class MyX509File extends ASN1Data
 		}
 	}
 
-	protected static boolean appendGeneralName(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull String path, @Nonnull StringBuilder sb, @Nullable String varName)
+	protected static boolean appendGeneralName(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull String path, @Nonnull StringBuilderUTF8 sb, @Nullable String varName)
 	{
 		ASN1Item subItemPDU;
 		if ((subItemPDU = ASN1Util.pduGetItem(pdu, beginOfst, endOfst, path)) != null)
@@ -1403,26 +1459,42 @@ public abstract class MyX509File extends ASN1Data
 			switch (0x8F & subItemPDU.itemType)
 			{
 			case 0x80:
-				sb.append(varName);
-				sb.append(".otherName = ");
+				if (varName != null)
+				{
+					sb.append(varName);
+					sb.appendUTF8Char((byte)'.');
+				}
+				sb.append("otherName = ");
 				sb.append(new String(pdu, subItemPDU.ofst, subItemPDU.len, StandardCharsets.UTF_8));
 				sb.append("\r\n");
 				return true;
 			case 0x81:
-				sb.append(varName);
-				sb.append(".rfc822Name = ");
+				if (varName != null)
+				{
+					sb.append(varName);
+					sb.appendUTF8Char((byte)'.');
+				}
+				sb.append("rfc822Name = ");
 				sb.append(new String(pdu, subItemPDU.ofst, subItemPDU.len, StandardCharsets.UTF_8));
 				sb.append("\r\n");
 				return true;
 			case 0x82:
-				sb.append(varName);
-				sb.append(".dNSName = ");
+				if (varName != null)
+				{
+					sb.append(varName);
+					sb.appendUTF8Char((byte)'.');
+				}
+				sb.append("dNSName = ");
 				sb.append(new String(pdu, subItemPDU.ofst, subItemPDU.len, StandardCharsets.UTF_8));
 				sb.append("\r\n");
 				return true;
 			case 0x83:
-				sb.append(varName);
-				sb.append(".x400Address = ");
+				if (varName != null)
+				{
+					sb.append(varName);
+					sb.appendUTF8Char((byte)'.');
+				}
+				sb.append("x400Address = ");
 				sb.append(new String(pdu, subItemPDU.ofst, subItemPDU.len, StandardCharsets.UTF_8));
 				sb.append("\r\n");
 				return true;
@@ -1433,20 +1505,32 @@ public abstract class MyX509File extends ASN1Data
 				}
 				return true;
 			case 0x85:
-				sb.append(varName);
-				sb.append(".ediPartyName = ");
+				if (varName != null)
+				{
+					sb.append(varName);
+					sb.appendUTF8Char((byte)'.');
+				}
+				sb.append("ediPartyName = ");
 				sb.append(new String(pdu, subItemPDU.ofst, subItemPDU.len, StandardCharsets.UTF_8));
 				sb.append("\r\n");
 				return true;
 			case 0x86:
-				sb.append(varName);
-				sb.append(".uniformResourceIdentifier = ");
+				if (varName != null)
+				{
+					sb.append(varName);
+					sb.appendUTF8Char((byte)'.');
+				}
+				sb.append("uniformResourceIdentifier = ");
 				sb.append(new String(pdu, subItemPDU.ofst, subItemPDU.len, StandardCharsets.UTF_8));
 				sb.append("\r\n");
 				return true;
 			case 0x87:
-				sb.append(varName);
-				sb.append(".iPAddress = ");
+				if (varName != null)
+				{
+					sb.append(varName);
+					sb.appendUTF8Char((byte)'.');
+				}
+				sb.append("iPAddress = ");
 				if (subItemPDU.len == 4)
 				{
 					sb.append(SocketUtil.getIPv4Name(pdu, subItemPDU.ofst));
@@ -1462,8 +1546,12 @@ public abstract class MyX509File extends ASN1Data
 				sb.append("\r\n");
 				return true;
 			case 0x88:
-				sb.append(varName);
-				sb.append(".registeredID = ");
+				if (varName != null)
+				{
+					sb.append(varName);
+					sb.appendUTF8Char((byte)'.');
+				}
+				sb.append("registeredID = ");
 				ASN1Util.oidToString(pdu, subItemPDU.ofst, subItemPDU.len, sb);
 				{
 					ASN1OIDInfo ent = ASN1OIDDB.oidGetEntry(pdu, subItemPDU.ofst, subItemPDU.len);
@@ -1471,7 +1559,7 @@ public abstract class MyX509File extends ASN1Data
 					{
 						sb.append(" (");
 						sb.append(ent.getName());
-						sb.append(')');
+						sb.appendUTF8Char((byte)')');
 					}
 				}
 				sb.append("\r\n");
@@ -1481,7 +1569,7 @@ public abstract class MyX509File extends ASN1Data
 		return false;
 	}
 
-	protected static boolean appendDistributionPoint(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull String path, @Nonnull StringBuilder sb, @Nullable String varName)
+	protected static boolean appendDistributionPoint(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull String path, @Nonnull StringBuilderUTF8 sb, @Nullable String varName)
 	{
 		ASN1Item itemPDU;
 		ASN1Item subItemPDU;
@@ -1500,8 +1588,12 @@ public abstract class MyX509File extends ASN1Data
 					case ASN1Util.IT_CONTEXT_SPECIFIC_1:
 						if ((subItemPDU = ASN1Util.pduGetItem(pdu, subItemPDU.ofst, subItemPDU.ofst + subItemPDU.len, "1")) != null && subItemPDU.itemType == ASN1Util.IT_BIT_STRING)
 						{
-							sb.append(varName);
-							sb.append(".reasons =");
+							if (varName != null)
+							{
+								sb.append(varName);
+								sb.appendUTF8Char((byte)'.');
+							}
+							sb.append("reasons =");
 							if (subItemPDU.len >= 2)
 							{
 								if ((pdu[subItemPDU.ofst + 1] & 0x80) != 0) sb.append("unused");
@@ -1532,7 +1624,7 @@ public abstract class MyX509File extends ASN1Data
 		return false;
 	}
 
-	protected static void appendDistributionPointName(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull StringBuilder sb, @Nullable String varName)
+	protected static void appendDistributionPointName(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull StringBuilderUTF8 sb, @Nullable String varName)
 	{
 		int i;
 		ASN1Item itemPDU;
@@ -1553,7 +1645,7 @@ public abstract class MyX509File extends ASN1Data
 		}
 	}
 
-	protected static boolean appendPolicyInformation(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull String path, @Nonnull StringBuilder sb, @Nullable String varName)
+	protected static boolean appendPolicyInformation(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull String path, @Nonnull StringBuilderUTF8 sb, @Nullable String varName)
 	{
 		ASN1Item itemPDU;
 		ASN1Item subItemPDU;
@@ -1562,13 +1654,16 @@ public abstract class MyX509File extends ASN1Data
 			subItemPDU = ASN1Util.pduGetItem(pdu, itemPDU.ofst, itemPDU.ofst + itemPDU.len, "1");
 			if (subItemPDU != null && subItemPDU.itemType == ASN1Util.IT_OID)
 			{
-				sb.append(varName);
-				sb.append('.');
+				if (varName != null)
+				{
+					sb.append(varName);
+					sb.appendUTF8Char((byte)'.');
+				}
 				sb.append("policyIdentifier = ");
 				ASN1Util.oidToString(pdu, subItemPDU.ofst, subItemPDU.len, sb);
 				sb.append(" (");
 				ASN1OIDDB.oidToNameString(pdu, subItemPDU.ofst, subItemPDU.len, sb);
-				sb.append(')');
+				sb.appendUTF8Char((byte)')');
 				sb.append("\r\n");
 			}
 			subItemPDU = ASN1Util.pduGetItem(pdu, itemPDU.ofst, itemPDU.ofst + itemPDU.len, "2");
@@ -1580,25 +1675,31 @@ public abstract class MyX509File extends ASN1Data
 				{
 					if ((itemPDU = ASN1Util.pduGetItem(pdu, policyQualifierInfoPDU.ofst, policyQualifierInfoPDU.ofst + policyQualifierInfoPDU.len, "1")) != null && itemPDU.itemType == ASN1Util.IT_OID)
 					{
-						sb.append(varName);
-						sb.append('.');
+						if (varName != null)
+						{
+							sb.append(varName);
+							sb.appendUTF8Char((byte)'.');
+						}
 						sb.append("policyQualifiers[");
-						sb.append(i);
+						sb.appendI32(i);
 						sb.append("].policyQualifierId = ");
 						ASN1Util.oidToString(pdu, itemPDU.ofst, itemPDU.len, sb);
 						sb.append(" (");
 						ASN1OIDDB.oidToNameString(pdu, itemPDU.ofst, itemPDU.len, sb);
-						sb.append(')');
+						sb.appendUTF8Char((byte)')');
 						sb.append("\r\n");
 					}
 					if ((itemPDU = ASN1Util.pduGetItem(pdu, policyQualifierInfoPDU.ofst, policyQualifierInfoPDU.ofst + policyQualifierInfoPDU.len, "2")) != null)
 					{
 						if (policyQualifierInfoPDU.itemType == ASN1Util.IT_IA5STRING)
 						{
-							sb.append(varName);
-							sb.append('.');
+							if (varName != null)
+							{
+								sb.append(varName);
+								sb.appendUTF8Char((byte)'.');
+							}
 							sb.append("policyQualifiers[");
-							sb.append(i);
+							sb.appendI32(i);
 							sb.append("].qualifier = ");
 							sb.append(new String(pdu, itemPDU.ofst, itemPDU.len, StandardCharsets.UTF_8));
 							sb.append("\r\n");
@@ -1616,7 +1717,7 @@ public abstract class MyX509File extends ASN1Data
 		return false;
 	}
 
-	protected static void appendPKCS7SignedData(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull StringBuilder sb, @Nullable String varName)
+	protected static void appendPKCS7SignedData(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull StringBuilderUTF8 sb, @Nullable String varName)
 	{
 		ASN1Item itemPDU = ASN1Util.pduGetItem(pdu, beginOfst, endOfst, "1");
 		if (itemPDU != null && itemPDU.itemType == ASN1Util.IT_SEQUENCE)
@@ -1658,7 +1759,7 @@ public abstract class MyX509File extends ASN1Data
 		}
 	}
 
-	protected static void appendPKCS7DigestAlgorithmIdentifiers(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull StringBuilder sb, @Nullable String varName)
+	protected static void appendPKCS7DigestAlgorithmIdentifiers(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull StringBuilderUTF8 sb, @Nullable String varName)
 	{
 		int i;
 		ASN1Item itemPDU;
@@ -1677,7 +1778,7 @@ public abstract class MyX509File extends ASN1Data
 		}
 	}
 
-	protected static void appendPKCS7SignerInfos(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull StringBuilder sb, @Nullable String varName)
+	protected static void appendPKCS7SignerInfos(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull StringBuilderUTF8 sb, @Nullable String varName)
 	{
 		int i;
 		ASN1Item itemPDU;
@@ -1697,7 +1798,7 @@ public abstract class MyX509File extends ASN1Data
 		}
 	}
 
-	protected static void appendPKCS7SignerInfo(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull StringBuilder sb, @Nullable String varName)
+	protected static void appendPKCS7SignerInfo(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull StringBuilderUTF8 sb, @Nullable String varName)
 	{
 		int i;
 		ASN1Item itemPDU = ASN1Util.pduGetItem(pdu, beginOfst, endOfst, "1");
@@ -1708,8 +1809,11 @@ public abstract class MyX509File extends ASN1Data
 		ASN1Item subItemPDU;
 		if ((subItemPDU = ASN1Util.pduGetItem(pdu, itemPDU.ofst, itemPDU.ofst + itemPDU.len, "1")) != null && subItemPDU.itemType == ASN1Util.IT_INTEGER)
 		{
-			sb.append(varName);
-			sb.append('.');
+			if (varName != null)
+			{
+				sb.append(varName);
+				sb.appendUTF8Char((byte)'.');
+			}
 			sb.append("version = ");
 			ASN1Util.integerToString(pdu, subItemPDU.ofst, subItemPDU.len, sb);
 			sb.append("\r\n");
@@ -1736,8 +1840,11 @@ public abstract class MyX509File extends ASN1Data
 		i++;
 		if ((subItemPDU = ASN1Util.pduGetItem(pdu, itemPDU.ofst, itemPDU.ofst + itemPDU.len, String.valueOf(i))) != null && subItemPDU.itemType == ASN1Util.IT_OCTET_STRING)
 		{
-			sb.append(varName);
-			sb.append('.');
+			if (varName != null)
+			{
+				sb.append(varName);
+				sb.appendUTF8Char((byte)'.');
+			}
 			sb.append("encryptedDigest = ");
 			StringUtil.appendHex(sb, pdu, subItemPDU.ofst, subItemPDU.len, ':', LineBreakType.NONE);
 			sb.append("\r\n");
@@ -1749,7 +1856,7 @@ public abstract class MyX509File extends ASN1Data
 		}
 	}
 
-	protected static void appendIssuerAndSerialNumber(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull StringBuilder sb, @Nullable String varName)
+	protected static void appendIssuerAndSerialNumber(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull StringBuilderUTF8 sb, @Nullable String varName)
 	{
 		ASN1Item itemPDU;
 		if ((itemPDU = ASN1Util.pduGetItem(pdu, beginOfst, endOfst, "1")) != null && itemPDU.itemType == ASN1Util.IT_SEQUENCE)
@@ -1758,15 +1865,18 @@ public abstract class MyX509File extends ASN1Data
 		}
 		if ((itemPDU = ASN1Util.pduGetItem(pdu, beginOfst, endOfst, "2")) != null && itemPDU.itemType == ASN1Util.IT_INTEGER)
 		{
-			sb.append(varName);
-			sb.append('.');
+			if (varName != null)
+			{
+				sb.append(varName);
+				sb.appendUTF8Char((byte)'.');
+			}
 			sb.append("serialNumber = ");
 			StringUtil.appendHex(sb, pdu, itemPDU.ofst, itemPDU.len, ':', LineBreakType.NONE);
 			sb.append("\r\n");
 		}
 	}
 
-	protected static void appendPKCS7Attributes(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull StringBuilder sb, @Nullable String varName)
+	protected static void appendPKCS7Attributes(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull StringBuilderUTF8 sb, @Nullable String varName)
 	{
 		ASN1Item itemPDU;
 		ASN1Item oidPDU;
@@ -1784,8 +1894,11 @@ public abstract class MyX509File extends ASN1Data
 				valuePDU = ASN1Util.pduGetItem(pdu, itemPDU.ofst, itemPDU.ofst + itemPDU.len, "2");
 				if (oidPDU != null && oidPDU.itemType == ASN1Util.IT_OID)
 				{
-					sb.append(varName);
-					sb.append('.');
+					if (varName != null)
+					{
+						sb.append(varName);
+						sb.appendUTF8Char((byte)'.');
+					}
 					sb.append("attributeType = ");
 					ASN1Util.oidToString(pdu, oidPDU.ofst, oidPDU.len, sb);
 					ASN1OIDInfo oid = ASN1OIDDB.oidGetEntry(pdu, oidPDU.ofst, oidPDU.len);
@@ -1793,7 +1906,7 @@ public abstract class MyX509File extends ASN1Data
 					{
 						sb.append(" (");
 						sb.append(oid.getName());
-						sb.append(')');
+						sb.appendUTF8Char((byte)')');
 					}
 					sb.append("\r\n");
 
@@ -1803,8 +1916,11 @@ public abstract class MyX509File extends ASN1Data
 						{
 							if ((itemPDU = ASN1Util.pduGetItem(pdu, valuePDU.ofst, valuePDU.ofst + valuePDU.len, "1")) != null && itemPDU.itemType == ASN1Util.IT_OID)
 							{
-								sb.append(varName);
-								sb.append('.');
+								if (varName != null)
+								{
+									sb.append(varName);
+									sb.appendUTF8Char((byte)'.');
+								}
 								sb.append("contentType = ");
 								ASN1Util.oidToString(pdu, itemPDU.ofst, itemPDU.len, sb);
 								oid = ASN1OIDDB.oidGetEntry(pdu, itemPDU.ofst, itemPDU.len);
@@ -1812,7 +1928,7 @@ public abstract class MyX509File extends ASN1Data
 								{
 									sb.append(" (");
 									sb.append(oid.getName());
-									sb.append(')');
+									sb.appendUTF8Char((byte)')');
 								}
 								sb.append("\r\n");
 							}
@@ -1821,8 +1937,11 @@ public abstract class MyX509File extends ASN1Data
 						{
 							if ((itemPDU = ASN1Util.pduGetItem(pdu, valuePDU.ofst, valuePDU.ofst + valuePDU.len, "1")) != null && itemPDU.itemType == ASN1Util.IT_OCTET_STRING)
 							{
-								sb.append(varName);
-								sb.append('.');
+								if (varName != null)
+								{
+									sb.append(varName);
+									sb.appendUTF8Char((byte)'.');
+								}
 								sb.append("messageDigest = ");
 								StringUtil.appendHex(sb, pdu, itemPDU.ofst, itemPDU.len, ':', LineBreakType.NONE);
 								sb.append("\r\n");
@@ -1832,8 +1951,11 @@ public abstract class MyX509File extends ASN1Data
 						{
 							if ((itemPDU = ASN1Util.pduGetItem(pdu, valuePDU.ofst, valuePDU.ofst + valuePDU.len, "1")) != null && itemPDU.itemType == ASN1Util.IT_UTCTIME)
 							{
-								sb.append(varName);
-								sb.append('.');
+								if (varName != null)
+								{
+									sb.append(varName);
+									sb.appendUTF8Char((byte)'.');
+								}
 								sb.append("signing-time = ");
 								ASN1Util.utcTimeToString(pdu, itemPDU.ofst, itemPDU.len, sb);
 								sb.append("\r\n");
@@ -1864,7 +1986,7 @@ public abstract class MyX509File extends ASN1Data
 		}
 	}
 
-	protected static boolean appendMacData(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull String path, @Nonnull StringBuilder sb, @Nullable String varName)
+	protected static boolean appendMacData(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull String path, @Nonnull StringBuilderUTF8 sb, @Nullable String varName)
 	{
 		ASN1Item itemPDU;
 		ASN1Item subItemPDU;
@@ -1876,16 +1998,22 @@ public abstract class MyX509File extends ASN1Data
 			}
 			if ((subItemPDU = ASN1Util.pduGetItem(pdu, itemPDU.ofst, itemPDU.ofst + itemPDU.len, "2")) != null && subItemPDU.itemType == ASN1Util.IT_OCTET_STRING)
 			{
-				sb.append(varName);
-				sb.append('.');
+				if (varName != null)
+				{
+					sb.append(varName);
+					sb.appendUTF8Char((byte)'.');
+				}
 				sb.append("macSalt = ");
 				StringUtil.appendHex(sb, pdu, subItemPDU.ofst, subItemPDU.len, ' ', LineBreakType.NONE);
 				sb.append("\r\n");
 			}
 			if ((subItemPDU = ASN1Util.pduGetItem(pdu, itemPDU.ofst, itemPDU.ofst + itemPDU.len, "3")) != null && subItemPDU.itemType == ASN1Util.IT_INTEGER)
 			{
-				sb.append(varName);
-				sb.append('.');
+				if (varName != null)
+				{
+					sb.append(varName);
+					sb.appendUTF8Char((byte)'.');
+				}
 				sb.append("iterations = ");
 				ASN1Util.integerToString(pdu, subItemPDU.ofst, subItemPDU.len, sb);
 				sb.append("\r\n");
@@ -1895,7 +2023,7 @@ public abstract class MyX509File extends ASN1Data
 		return false;
 	}
 
-	protected static void appendDigestInfo(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull StringBuilder sb, @Nullable String varName)
+	protected static void appendDigestInfo(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull StringBuilderUTF8 sb, @Nullable String varName)
 	{
 		ASN1Item itemPDU;
 		if ((itemPDU = ASN1Util.pduGetItem(pdu, beginOfst, endOfst, "1")) != null && itemPDU.itemType == ASN1Util.IT_SEQUENCE)
@@ -1904,14 +2032,18 @@ public abstract class MyX509File extends ASN1Data
 		}
 		if ((itemPDU = ASN1Util.pduGetItem(pdu, beginOfst, endOfst, "2")) != null && itemPDU.itemType == ASN1Util.IT_OCTET_STRING)
 		{
-			sb.append(varName);
-			sb.append(".digest = ");
+			if (varName != null)
+			{
+				sb.append(varName);
+				sb.appendUTF8Char((byte)'.');
+			}
+			sb.append("digest = ");
 			StringUtil.appendHex(sb, pdu, itemPDU.ofst, itemPDU.len, ' ', LineBreakType.NONE);
 			sb.append("\r\n");
 		}
 	}
 
-	protected static void appendData(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull StringBuilder sb, @Nullable String varName, @Nonnull ContentDataType dataType)
+	protected static void appendData(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull StringBuilderUTF8 sb, @Nullable String varName, @Nonnull ContentDataType dataType)
 	{
 		switch (dataType)
 		{
@@ -1924,7 +2056,7 @@ public abstract class MyX509File extends ASN1Data
 		}
 	}
 
-	protected static void appendEncryptedData(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull StringBuilder sb, @Nullable String varName, @Nonnull ContentDataType dataType)
+	protected static void appendEncryptedData(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull StringBuilderUTF8 sb, @Nullable String varName, @Nonnull ContentDataType dataType)
 	{
 		ASN1Item itemPDU;
 		ASN1Item subitemPDU;
@@ -1934,7 +2066,7 @@ public abstract class MyX509File extends ASN1Data
 			if (varName != null)
 			{
 				sb.append(varName);
-				sb.append('.');
+				sb.appendUTF8Char((byte)'.');
 			}
 			sb.append("version = ");
 			appendVersion(pdu, itemPDU.ofst, itemPDU.ofst + itemPDU.len, "1", sb);
@@ -1961,7 +2093,7 @@ public abstract class MyX509File extends ASN1Data
 		}
 	}
 
-	protected static void appendAuthenticatedSafe(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull StringBuilder sb, @Nullable String varName)
+	protected static void appendAuthenticatedSafe(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull StringBuilderUTF8 sb, @Nullable String varName)
 	{
 		ASN1Item itemPDU;
 		int i;
@@ -1978,21 +2110,25 @@ public abstract class MyX509File extends ASN1Data
 		}
 	}
 
-	protected static void appendEncryptedContentInfo(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull StringBuilder sb, @Nullable String varName, @Nonnull ContentDataType dataType)
+	protected static void appendEncryptedContentInfo(@Nonnull byte[] pdu, int beginOfst, int endOfst, @Nonnull StringBuilderUTF8 sb, @Nullable String varName, @Nonnull ContentDataType dataType)
 	{
 		String name;
 		ASN1Item itemPDU;
 		if ((itemPDU = ASN1Util.pduGetItem(pdu, beginOfst, endOfst, "1")) != null && itemPDU.itemType == ASN1Util.IT_OID)
 		{
-			sb.append(varName);
-			sb.append(".contentType = ");
+			if (varName != null)
+			{
+				sb.append(varName);
+				sb.appendUTF8Char((byte)'.');
+			}
+			sb.append("contentType = ");
 			ASN1Util.oidToString(pdu, itemPDU.ofst, itemPDU.len, sb);
 			ASN1OIDInfo oid = ASN1OIDDB.oidGetEntry(pdu, itemPDU.ofst, itemPDU.len);
 			if (oid != null)
 			{
 				sb.append(" (");
 				sb.append(oid.getName());
-				sb.append(')');
+				sb.appendUTF8Char((byte)')');
 			}
 			sb.append("\r\n");
 		}
@@ -2007,8 +2143,12 @@ public abstract class MyX509File extends ASN1Data
 		}
 		if ((itemPDU = ASN1Util.pduGetItem(pdu, beginOfst, endOfst, "3")) != null && (itemPDU.itemType & 0x8F) == 0x80)
 		{
-			sb.append(varName);
-			sb.append(".encryptedContent = ");
+			if (varName != null)
+			{
+				sb.append(varName);
+				sb.appendUTF8Char((byte)'.');
+			}
+			sb.append("encryptedContent = ");
 			StringUtil.appendHex(sb, pdu, itemPDU.ofst, itemPDU.len, ' ', LineBreakType.NONE);
 			sb.append("\r\n");
 		}

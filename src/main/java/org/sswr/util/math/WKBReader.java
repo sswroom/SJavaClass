@@ -3,6 +3,7 @@ package org.sswr.util.math;
 import org.sswr.util.data.ByteTool;
 import org.sswr.util.data.LineBreakType;
 import org.sswr.util.data.SharedInt;
+import org.sswr.util.data.StringBuilderUTF8;
 import org.sswr.util.data.StringUtil;
 import org.sswr.util.math.geometry.CircularString;
 import org.sswr.util.math.geometry.CompoundCurve;
@@ -866,7 +867,7 @@ public class WKBReader {
 			}
 		default:
 			{
-				StringBuilder sb = new StringBuilder();
+				StringBuilderUTF8 sb = new StringBuilderUTF8();
 				StringUtil.appendHex(sb, wkb, initOfst, len, ' ', LineBreakType.CRLF);
 				System.out.println("WKBReader: Unsupported type: "+geomType);
 				System.out.println(sb.toString());

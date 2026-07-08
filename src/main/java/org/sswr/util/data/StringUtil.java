@@ -202,11 +202,11 @@ public class StringUtil
 		{
 			return s;
 		}
-		StringBuilder sb = new StringBuilder(minLeng);
+		StringBuilderUTF8 sb = new StringBuilderUTF8();
 		l = minLeng - l;
-		while (l-- > 0)
+		if (l > 0)
 		{
-			sb.append(padChar);
+			sb.appendChar(padChar, l);
 		}
 		sb.append(s);
 		return sb.toString();
@@ -617,7 +617,7 @@ public class StringUtil
 	* @param  ch  Char to seperate for every byte
 	* @param  lbt  LineBreakType to seperate for every 16 bytes
 	*/
-	public static void appendHex(@Nonnull StringBuilder sb, @Nonnull byte buff[], char ch, @Nonnull LineBreakType lbt)
+	public static void appendHex(@Nonnull StringBuilderUTF8 sb, @Nonnull byte buff[], char ch, @Nonnull LineBreakType lbt)
 	{
 		appendHex(sb, buff, 0, buff.length, ch, lbt);
 	}
@@ -632,7 +632,7 @@ public class StringUtil
 	* @param  ch  Char to seperate for every byte
 	* @param  lbt  LineBreakType to seperate for every 16 bytes
 	*/
-	public static void appendHex(@Nonnull StringBuilder sb, @Nonnull byte buff[], int ofst, int count, char ch, @Nonnull LineBreakType lbt)
+	public static void appendHex(@Nonnull StringBuilderUTF8 sb, @Nonnull byte buff[], int ofst, int count, char ch, @Nonnull LineBreakType lbt)
 	{
 		int i = 0;
 		int j = count;
@@ -642,9 +642,9 @@ public class StringUtil
 			while (i < j)
 			{
 				v = buff[i + ofst] & 0xff;
-				sb.append(HEX_ARRAY[v >> 4]);
-				sb.append(HEX_ARRAY[v & 15]);
-				sb.append(ch);
+				sb.appendChar(HEX_ARRAY[v >> 4], 1);
+				sb.appendChar(HEX_ARRAY[v & 15], 1);
+				sb.appendChar(ch, 1);
 				i++;
 				if ((i & 15) == 0)
 				{
@@ -657,8 +657,8 @@ public class StringUtil
 			while (i < j)
 			{
 				v = buff[i + ofst] & 0xff;
-				sb.append(HEX_ARRAY[v >> 4]);
-				sb.append(HEX_ARRAY[v & 15]);
+				sb.appendChar(HEX_ARRAY[v >> 4], 1);
+				sb.appendChar(HEX_ARRAY[v & 15], 1);
 				i++;
 				if ((i & 15) == 0)
 				{
@@ -674,17 +674,17 @@ public class StringUtil
 	* @param  sb  StringBuilder to append
 	* @param  lbt  LineBreakType to append
 	*/
-	public static void appendLineBreak(@Nonnull StringBuilder sb, @Nonnull LineBreakType lbt)
+	public static void appendLineBreak(@Nonnull StringBuilderUTF8 sb, @Nonnull LineBreakType lbt)
 	{
 		switch (lbt)
 		{
 		case NONE:
 			break;
 		case CR:
-			sb.append('\r');
+			sb.appendUTF8Char((byte)'\r');
 			break;
 		case LF:
-			sb.append('\n');
+			sb.appendUTF8Char((byte)'\n');
 			break;
 		case CRLF:
 			sb.append("\r\n");
@@ -912,10 +912,10 @@ public class StringUtil
 		{
 			return "1.#QNAN0";
 		}
-		StringBuilder sb = new StringBuilder();
+		StringBuilderUTF8 sb = new StringBuilderUTF8();
 		if (v < 0)
 		{
-			sb.append('-');
+			sb.appendUTF8Char((byte)'-');
 			v = -v;
 		}
 		if (Double.isInfinite(v))
@@ -932,12 +932,12 @@ public class StringUtil
 			v = v * 10.0;
 			iVal = (int)v;
 			v = v - iVal;
-			sb.append((char)(iVal + 48));
-			sb.append('.');
+			sb.appendUTF8Char((byte)(iVal + 48));
+			sb.appendUTF8Char((byte)'.');
 			v = v * 10.0;
 			iVal = (int)v;
 			v = v - iVal;
-			sb.append((char)(iVal + 48));
+			sb.appendUTF8Char((byte)(iVal + 48));
 			i--;
 	
 			if (v > 1.0e-10)
@@ -947,47 +947,47 @@ public class StringUtil
 					v = v * 10.0;
 					iVal = (int)v;
 					v = v - iVal;
-					sb.append((char)(iVal + 48));
+					sb.appendUTF8Char((byte)(iVal + 48));
 					if (--i <= 0)
 						break;
 				}
-				if (sb.charAt(sb.length() - 1) == '0')
+				if (sb.charAt(sb.getLength() - 1) == '0')
 				{
-					sb.deleteCharAt(sb.length() - 1);
+					sb.trimToLength(sb.getLength() - 1);
 				}
 			}
-			sb.append('e');
+			sb.appendUTF8Char((byte)'e');
 			if (ex < 0)
 			{
-				sb.append('-');
+				sb.appendUTF8Char((byte)'-');
 				ex = -ex;
 			}
 			else
 			{
-				sb.append('+');
+				sb.appendUTF8Char((byte)'+');
 			}
 			sb.append(""+ex);
 		}
 		else if (ex < 0)
 		{
-			sb.append('0');
-			sb.append('.');
+			sb.appendUTF8Char((byte)'0');
+			sb.appendUTF8Char((byte)'.');
 			while (++ex < 0)
 			{
-				sb.append('0');
+				sb.appendUTF8Char((byte)'0');
 			}
 			while (v > 1.0e-10)
 			{
 				v = v * 10.0;
 				iVal = (int)v;
 				v = v - iVal;
-				sb.append((char)(iVal + 48));
+				sb.appendUTF8Char((byte)(iVal + 48));
 				if (--i <= 0)
 					break;
 			}
-			while (sb.charAt(sb.length() - 1) == '0')
+			while (sb.charAt(sb.getLength() - 1) == '0')
 			{
-				sb.deleteCharAt(sb.length() - 1);
+				sb.trimToLength(sb.getLength() - 1);
 			}
 		}
 		else
@@ -997,21 +997,21 @@ public class StringUtil
 				v = v * 10.0;
 				iVal = (int)v;
 				v = v - iVal;
-				sb.append((char)(iVal + 48));
+				sb.appendUTF8Char((byte)(iVal + 48));
 				i--;
 				ex -= 1;
 			}
 			v = v * 10.0;
 			iVal = (int)v;
 			v = v - iVal;
-			sb.append((char)(iVal + 48));
+			sb.appendUTF8Char((byte)(iVal + 48));
 			if (v > 1.0e-10)
 			{
-				sb.append('.');
+				sb.appendUTF8Char((byte)'.');
 				v = v * 10.0;
 				iVal = (int)v;
 				v = v - iVal;
-				sb.append((char)(iVal + 48));
+				sb.appendUTF8Char((byte)(iVal + 48));
 			}
 			i--;
 			if (v > 1.0e-10)
@@ -1021,17 +1021,17 @@ public class StringUtil
 					v = v * 100.0;
 					iVal = (int)v;
 					v = v - iVal;
-					sb.append((char)(iVal + 48));
+					sb.appendUTF8Char((byte)(iVal + 48));
 					if (--i <= 0)
 						break;
 				}
-				while (sb.charAt(sb.length() - 1) == '0')
+				while (sb.charAt(sb.getLength() - 1) == '0')
 				{
-					sb.deleteCharAt(sb.length() - 1);
+					sb.trimToLength(sb.getLength() - 1);
 				}
-				if (sb.charAt(sb.length() - 1) == '.')
+				if (sb.charAt(sb.getLength() - 1) == '.')
 				{
-					sb.deleteCharAt(sb.length() - 1);
+					sb.trimToLength(sb.getLength() - 1);
 				}
 			}
 		}

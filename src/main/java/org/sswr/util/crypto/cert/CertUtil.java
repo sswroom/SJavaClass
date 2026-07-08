@@ -346,7 +346,7 @@ public class CertUtil
 		{
 			System.out.println("key format = "+fmt);
 			byte[] pdu = key.getEncoded();
-			StringBuilder sb = new StringBuilder();
+			StringBuilderUTF8 sb = new StringBuilderUTF8();
 			ASN1Util.pduToString(pdu, 0, pdu.length, sb, 0);
 			System.out.println(sb.toString());
 			return null;

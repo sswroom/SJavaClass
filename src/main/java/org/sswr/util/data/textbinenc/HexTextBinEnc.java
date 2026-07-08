@@ -2,6 +2,7 @@ package org.sswr.util.data.textbinenc;
 
 import org.sswr.util.data.ByteTool;
 import org.sswr.util.data.LineBreakType;
+import org.sswr.util.data.StringBuilderUTF8;
 import org.sswr.util.data.StringUtil;
 
 import jakarta.annotation.Nonnull;
@@ -16,7 +17,7 @@ public class HexTextBinEnc extends TextBinEnc
 	@Nonnull
 	public String encodeBin(@Nonnull byte []dataBuff, int dataOfst, int buffSize)
 	{
-		StringBuilder sb = new StringBuilder();
+		StringBuilderUTF8 sb = new StringBuilderUTF8();
 		StringUtil.appendHex(sb, dataBuff, dataOfst, buffSize, ' ', LineBreakType.CRLF);
 		return sb.toString();
 	}

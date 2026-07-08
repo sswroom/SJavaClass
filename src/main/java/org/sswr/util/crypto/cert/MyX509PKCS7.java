@@ -1,5 +1,6 @@
 package org.sswr.util.crypto.cert;
 
+import org.sswr.util.data.StringBuilderUTF8;
 import org.sswr.util.net.ASN1Data;
 
 import jakarta.annotation.Nonnull;
@@ -29,7 +30,7 @@ public class MyX509PKCS7 extends MyX509File
 	@Nonnull
 	public String toString()
 	{
-		StringBuilder sb = new StringBuilder();
+		StringBuilderUTF8 sb = new StringBuilderUTF8();
 		if (isContentInfo(this.buff, 0, this.buff.length, "1"))
 		{
 			appendContentInfo(this.buff, 0, this.buff.length, "1", sb, null, ContentDataType.Unknown);

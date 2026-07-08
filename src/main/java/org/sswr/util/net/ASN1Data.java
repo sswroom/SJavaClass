@@ -4,6 +4,7 @@ import java.util.Arrays;
 
 import org.sswr.util.data.ByteTool;
 import org.sswr.util.data.LineBreakType;
+import org.sswr.util.data.StringBuilderUTF8;
 import org.sswr.util.data.StringUtil;
 import org.sswr.util.io.ParsedObject;
 import org.sswr.util.io.ParserType;
@@ -12,12 +13,15 @@ import jakarta.annotation.Nonnull;
 
 public abstract class ASN1Data extends ParsedObject
 {
+	@Nonnull
 	protected byte[] buff;
 
 	protected ASN1Data(@Nonnull String sourceName, @Nonnull byte[] buff, int ofst, int size)
 	{
 		super(sourceName);
-		this.buff = Arrays.copyOfRange(buff, ofst, ofst + size);
+		byte[] newBuff = Arrays.copyOfRange(buff, ofst, ofst + size);
+		if (newBuff == null) throw new IllegalArgumentException("Buff is null");
+		this.buff = newBuff;
 	}
 
 	@Nonnull
@@ -33,7 +37,7 @@ public abstract class ASN1Data extends ParsedObject
 	@Nonnull
 	public abstract String toString();
 
-	public boolean toASN1String(@Nonnull StringBuilder sb)
+	public boolean toASN1String(@Nonnull StringBuilderUTF8 sb)
 	{
 		return ASN1Util.pduToString(this.buff, 0, this.buff.length, sb, 0);
 	}
@@ -49,27 +53,27 @@ public abstract class ASN1Data extends ParsedObject
 		return this.buff.length;
 	}
 
-	public static void appendInteger(@Nonnull StringBuilder sb, @Nonnull byte[] pdu, int ofst, int len)
+	public static void appendInteger(@Nonnull StringBuilderUTF8 sb, @Nonnull byte[] pdu, int ofst, int len)
 	{
 		if (len == 1)
 		{
-			sb.append(pdu[ofst] & 255);
+			sb.appendI32(pdu[ofst] & 255);
 		}
 		else if (len == 2)
 		{
-			sb.append(ByteTool.readMInt16(pdu, ofst));
+			sb.appendI32(ByteTool.readMInt16(pdu, ofst));
 		}
 		else if (len == 3)
 		{
-			sb.append(ByteTool.readMInt24(pdu, ofst));
+			sb.appendI32(ByteTool.readMInt24(pdu, ofst));
 		}
 		else if (len == 4)
 		{
-			sb.append(ByteTool.readMInt32(pdu, ofst));
+			sb.appendI32(ByteTool.readMInt32(pdu, ofst));
 		}
 		else if (len == 8)
 		{
-			sb.append(ByteTool.readMInt64(pdu, ofst));
+			sb.appendI64(ByteTool.readMInt64(pdu, ofst));
 		}
 		else
 		{

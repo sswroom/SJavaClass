@@ -11,11 +11,14 @@ import jakarta.annotation.Nullable;
 
 public class ArrayMap<T, V> implements Map<T, V>
 {
+	@Nonnull
 	protected SortableArrayList<T> keys;
+	@Nonnull
 	protected ArrayList<V> vals;
 
-	public ArrayMap()
+	public ArrayMap(@Nonnull SortableArrayList<T> keys)
 	{
+		this.keys = keys;
 		this.vals = new ArrayList<V>();
 	}
 

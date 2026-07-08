@@ -59,11 +59,12 @@ public class LineString extends Vector2D
 		{
 			if (zArr.length != j)
 				throw new IllegalArgumentException("zArr");
-			this.zArr = new double[j];
+			double[] newZArr = new double[j];
+			this.zArr = newZArr;
 			i = 0;
 			while (i < j)
 			{
-				this.zArr[i] = zArr[i];
+				newZArr[i] = zArr[i];
 				i++;
 			}
 		}
@@ -75,11 +76,12 @@ public class LineString extends Vector2D
 		{
 			if (mArr.length != j)
 				throw new IllegalArgumentException("mArr");
-			this.mArr = new double[j];
+			double[] newMArr = new double[j];
+			this.mArr = newMArr;
 			i = 0;
 			while (i < j)
 			{
-				this.mArr[i] = mArr[i];
+				newMArr[i] = mArr[i];
 				i++;
 			}
 		}
@@ -143,11 +145,11 @@ public class LineString extends Vector2D
 	{
 		LineString pl = new LineString(this.srid, this.pointArr.length, this.hasZ(), this.hasM());
 		ByteTool.copyArray(pl.pointArr, 0, this.pointArr, 0, this.pointArr.length);
-		if (this.zArr != null)
+		if (this.zArr != null && pl.zArr != null)
 		{	
 			ByteTool.copyArray(pl.zArr, 0, this.zArr, 0, this.zArr.length);
 		}
-		if (this.mArr != null)
+		if (this.mArr != null && pl.mArr != null)
 		{	
 			ByteTool.copyArray(pl.mArr, 0, this.mArr, 0, this.mArr.length);
 		}
@@ -281,7 +283,8 @@ public class LineString extends Vector2D
 
 	public double calSqrDistance3D(@Nonnull Coord2DDbl pt, double z, @Nonnull Coord2DDbl nearPt, @Nullable SharedDouble nearZ)
 	{
-		if (!this.hasZ())
+		double[] zArr = this.zArr;
+		if (zArr == null)
 		{
 			if (nearZ != null)
 				nearZ.value = z;
@@ -290,11 +293,8 @@ public class LineString extends Vector2D
 		int k;
 		int l;
 		Coord2DDbl[] points;
-		double[] zArr;
 	
 		points = this.pointArr;
-		zArr = this.zArr;
-
 		l = points.length;
 	
 		double calBase;
@@ -496,16 +496,17 @@ public class LineString extends Vector2D
 
 	public void convCSys(@Nonnull CoordinateSystem srcCSys, @Nonnull CoordinateSystem destCSys)
 	{
-		if (this.zArr != null)
+		double[] zArr = this.zArr;
+		if (zArr != null)
 		{
 			Vector3 tmpPos;
 			int i = this.pointArr.length;
 			while (i-- > 0)
 			{
-				tmpPos = CoordinateSystem.convert3D(srcCSys, destCSys, new Vector3(this.pointArr[i].x, this.pointArr[i].y, this.zArr[i]));
+				tmpPos = CoordinateSystem.convert3D(srcCSys, destCSys, new Vector3(this.pointArr[i].x, this.pointArr[i].y, zArr[i]));
 				this.pointArr[i].x = tmpPos.getX();
 				this.pointArr[i].y = tmpPos.getY();
-				this.zArr[i] = tmpPos.getZ();
+				zArr[i] = tmpPos.getZ();
 			}
 			this.srid = destCSys.getSRID();
 		}
@@ -528,6 +529,7 @@ public class LineString extends Vector2D
 		{
 			Coord2DDbl []ptList = lineString.getPointList();
 			double []valArr;
+			double []thisValArr;
 			if (this.pointArr.length != ptList.length)
 			{
 				return false;
@@ -542,25 +544,25 @@ public class LineString extends Vector2D
 						return false;
 					}
 				}
-				if (this.zArr != null)
+				if ((thisValArr = this.zArr) != null && lineString.zArr != null)
 				{
 					valArr = lineString.zArr;
 					i = valArr.length;
 					while (i-- > 0)
 					{
-						if (!MathUtil.nearlyEqualsDbl(valArr[i], this.zArr[i]))
+						if (!MathUtil.nearlyEqualsDbl(valArr[i], thisValArr[i]))
 						{
 							return false;
 						}
 					}
 				}
-				if (this.mArr != null)
+				if ((thisValArr = this.mArr) != null && lineString.mArr != null)
 				{
 					valArr = lineString.mArr;
 					i = valArr.length;
 					while (i-- > 0)
 					{
-						if (!MathUtil.nearlyEqualsDbl(valArr[i], this.mArr[i]))
+						if (!MathUtil.nearlyEqualsDbl(valArr[i], thisValArr[i]))
 						{
 							return false;
 						}
@@ -578,25 +580,25 @@ public class LineString extends Vector2D
 						return false;
 					}
 				}
-				if (this.zArr != null)
+				if ((thisValArr = this.zArr) != null && lineString.zArr != null)
 				{
 					valArr = lineString.zArr;
 					i = valArr.length;
 					while (i-- > 0)
 					{
-						if (valArr[i] != this.zArr[i])
+						if (valArr[i] != thisValArr[i])
 						{
 							return false;
 						}
 					}
 				}
-				if (this.mArr != null)
+				if ((thisValArr = this.mArr) != null && lineString.mArr != null)
 				{
 					valArr = lineString.mArr;
 					i = valArr.length;
 					while (i-- > 0)
 					{
-						if (valArr[i] != this.mArr[i])
+						if (valArr[i] != thisValArr[i])
 						{
 							return false;
 						}

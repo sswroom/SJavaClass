@@ -208,6 +208,19 @@ public class StringBuilderUTF8 implements ByteArray {
 	{
 		return this.append(String.valueOf(iVal));
 	}
+
+	@Nonnull
+	public StringBuilderUTF8 appendF64(double fVal)
+	{
+		return this.append(String.valueOf(fVal));
+	}
+
+	@Nonnull
+	public StringBuilderUTF8 appendBool(boolean bVal)
+	{
+		return this.append(bVal ? "true" : "false");
+	}
+
 	@Nonnull
 	public StringBuilderUTF8 appendHexBuff(@Nonnull byte[] buff, int ofst, int buffSize, byte seperator, LineBreakType lineBreak)
 	{
