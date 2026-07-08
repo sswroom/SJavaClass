@@ -239,7 +239,7 @@ public class StringBuilderUTF8 implements ByteArray {
 			this.leng += (buffSize << 1) + lbCnt;
 			while (buffSize-- > 0)
 			{
-				this.v[buffEnd + 0] = (byte)StringUtil.HEX_ARRAY[buff[ofst] >> 4];
+				this.v[buffEnd + 0] = (byte)StringUtil.HEX_ARRAY[(buff[ofst] >> 4) & 0x0F];
 				this.v[buffEnd + 1] = (byte)StringUtil.HEX_ARRAY[buff[ofst] & 15];
 				buffEnd += 2;
 				ofst++;
@@ -272,7 +272,7 @@ public class StringBuilderUTF8 implements ByteArray {
 			while (buffSize-- > 0)
 			{
 				i++;
-				this.v[buffEnd + 0] = (byte)StringUtil.HEX_ARRAY[buff[ofst] >> 4];
+				this.v[buffEnd + 0] = (byte)StringUtil.HEX_ARRAY[(buff[ofst] >> 4) & 0x0F];
 				this.v[buffEnd + 1] = (byte)StringUtil.HEX_ARRAY[buff[ofst] & 15];
 				ofst++;
 				if (buffSize > 0)
