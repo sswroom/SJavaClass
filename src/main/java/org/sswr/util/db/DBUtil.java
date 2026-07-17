@@ -539,7 +539,7 @@ public class DBUtil {
 	}
 
 	@Nonnull
-	public static PageStatus appendSelect(@Nonnull StringBuilder sb, @Nonnull List<DBColumnInfo> allCols, @Nonnull Table tableAnn, @Nonnull DBType dbType, int dataOfst, int dataCnt)
+	public static PageStatus appendSelect(@Nonnull StringBuilderUTF8 sb, @Nonnull List<DBColumnInfo> allCols, @Nonnull Table tableAnn, @Nonnull DBType dbType, int dataOfst, int dataCnt)
 	{
 		PageStatus status;
 		if (dataOfst == 0 && dataCnt == 0)
@@ -554,7 +554,7 @@ public class DBUtil {
 		if (status == PageStatus.NO_PAGE && dbType == DBType.Access)
 		{
 			sb.append("TOP ");
-			sb.append(dataOfst + dataCnt);
+			sb.appendI32(dataOfst + dataCnt);
 			status = PageStatus.NO_OFFSET;
 		}
 		int i = 0;
@@ -1026,7 +1026,7 @@ public class DBUtil {
 	*/
 	public static <T> Map<Integer, T> loadItemsById(@Nonnull Class<T> cls, @Nonnull Connection conn, @Nonnull Set<Integer> idSet, @Nullable List<String> joinFields)
 	{
-		StringBuilder sb;
+		StringBuilderUTF8 sb;
 		Table tableAnn = parseClassTable(cls);
 		if (tableAnn == null)
 		{
@@ -1058,7 +1058,7 @@ public class DBUtil {
 		DBColumnInfo idCol = idCols.get(0);
 
 		DBType dbType = connGetDBType(conn);
-		sb = new StringBuilder();
+		sb = new StringBuilderUTF8();
 		appendSelect(sb, cols, tableAnn, dbType, 0, 0);
 
 		if (idSet != null && idSet.size() > 0 && idSet.size() <= MAX_SQL_ITEMS)
@@ -1132,7 +1132,7 @@ public class DBUtil {
 
 	static class LoadDataSession<T>
 	{
-		StringBuilder sql;
+		StringBuilderUTF8 sql;
 		Constructor<T> constr;
 		DBType dbType;
 		byte tzQhr;
@@ -1195,7 +1195,7 @@ public class DBUtil {
 
 		sess.dbType = connGetDBType(conn);
 		sess.tzQhr = connGetTzQhr(conn);
-		sess.sql = new StringBuilder();
+		sess.sql = new StringBuilderUTF8();
 		appendSelect(sess.sql, sess.cols, tableAnn, sess.dbType, 0, 0);
 
 		sess.clientConditions = new ArrayList<BooleanObject>();
@@ -1404,7 +1404,7 @@ public class DBUtil {
 	@Nullable
 	public static <T, K> T loadItem(@Nonnull Class<T> cls, @Nonnull Connection conn, @Nonnull K id, @Nullable List<String> joinFields)
 	{
-		StringBuilder sb;
+		StringBuilderUTF8 sb;
 		DBType dbType = connGetDBType(conn);
 		Table tableAnn = parseClassTable(cls);
 		if (tableAnn == null)
@@ -1445,7 +1445,7 @@ public class DBUtil {
 		}
 		DBColumnInfo idCol = idCols.get(0);
 
-		sb = new StringBuilder();
+		sb = new StringBuilderUTF8();
 		appendSelect(sb, cols, tableAnn, dbType, 0, 0);
 
 		sb.append(" where ");

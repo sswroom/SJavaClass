@@ -6,13 +6,13 @@ import jakarta.annotation.Nonnull;
 
 public final class HMAC extends Hash
 {
-	private Hash hashInner;
-	private Hash hashOuter;
-	private byte key[];
+	private @Nonnull Hash hashInner;
+	private @Nonnull Hash hashOuter;
+	private @Nonnull byte[] key;
 	private int keySize;
 	private int padSize;
-	private byte iPad[];
-	private byte oPad[];
+	private @Nonnull byte[] iPad;
+	private @Nonnull byte[] oPad;
 
 	public HMAC(@Nonnull Hash hash, @Nonnull byte key[], int index, int keySize)
 	{

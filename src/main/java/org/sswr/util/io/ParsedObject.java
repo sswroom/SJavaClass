@@ -4,7 +4,7 @@ import jakarta.annotation.Nonnull;
 
 public abstract class ParsedObject
 {
-	protected String sourceName;
+	protected @Nonnull String sourceName;
 
 	protected ParsedObject(@Nonnull String sourceName)
 	{

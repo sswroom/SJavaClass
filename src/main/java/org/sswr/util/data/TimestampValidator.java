@@ -7,7 +7,7 @@ import jakarta.annotation.Nullable;
 
 public class TimestampValidator
 {
-	private String fmt;
+	private @Nonnull String fmt;
 
 	public TimestampValidator(@Nonnull String format)
 	{

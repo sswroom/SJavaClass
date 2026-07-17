@@ -2,6 +2,7 @@ package org.sswr.util.data.textenc;
 
 import java.nio.charset.StandardCharsets;
 
+import org.sswr.util.data.StringBuilderUTF8;
 import org.sswr.util.data.StringUtil;
 
 import jakarta.annotation.Nonnull;
@@ -30,7 +31,7 @@ public class FormEncoding
 	public static String formEncode(@Nonnull String uri)
 	{
 		byte[] carr = uri.getBytes(StandardCharsets.UTF_8);
-		StringBuilder sb = new StringBuilder();
+		StringBuilderUTF8 sb = new StringBuilderUTF8();
 		int i = 0;
 		int j = carr.length;
 		int v;
@@ -39,17 +40,17 @@ public class FormEncoding
 			v = carr[i] & 0xff;
 			if (uriAllow[v] != 0)
 			{
-				sb.append((char)carr[i]);
+				sb.appendChar((char)carr[i], 1);
 			}
 			else if (v == 32)
 			{
-				sb.append('+');
+				sb.appendUTF8Char((byte)'+');
 			}
 			else
 			{
-				sb.append('%');
-				sb.append(StringUtil.HEX_ARRAY[v >> 4]);
-				sb.append(StringUtil.HEX_ARRAY[v & 15]);
+				sb.appendUTF8Char((byte)'%');
+				sb.appendUTF8Char((byte)StringUtil.HEX_ARRAY[v >> 4]);
+				sb.appendUTF8Char((byte)StringUtil.HEX_ARRAY[v & 15]);
 			}
 			i++;
 		}

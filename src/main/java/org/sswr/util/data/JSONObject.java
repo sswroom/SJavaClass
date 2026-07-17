@@ -20,12 +20,12 @@ public class JSONObject extends JSONBase
 	@Nonnull
 	public String toJSONString()
 	{
-		StringBuilder sb = new StringBuilder();
+		StringBuilderUTF8 sb = new StringBuilderUTF8();
 		JSONBase obj;
 		Iterator<String> it = this.objVals.keySet().iterator();
 		String key;
 		boolean first = true;
-		sb.append('{');
+		sb.appendUTF8Char((byte)'{');
 		while (it.hasNext())
 		{
 			if (!first)
@@ -46,7 +46,7 @@ public class JSONObject extends JSONBase
 				sb.append("null");
 			}
 		}
-		sb.append('}');
+		sb.appendUTF8Char((byte)'}');
 		return sb.toString();
 	}
 

@@ -1,6 +1,7 @@
 package org.sswr.util.data.textbinenc;
 
 import org.sswr.util.data.ByteTool;
+import org.sswr.util.data.StringBuilderUTF8;
 
 import jakarta.annotation.Nonnull;
 
@@ -35,7 +36,7 @@ public class Radix64Enc extends TextBinEnc
 	@Nonnull
 	public String encodeBin(@Nonnull byte []dataBuff, int dataOfst, int buffSize)
 	{
-		StringBuilder sb = new StringBuilder();
+		StringBuilderUTF8 sb = new StringBuilderUTF8();
 		int outSize;
 		int tmp1 = buffSize % 3;
 		int tmp2 = buffSize / 3;
@@ -49,25 +50,25 @@ public class Radix64Enc extends TextBinEnc
 		}
 		if (outSize == 0)
 			return "";
-		sb.ensureCapacity(outSize);
+		sb.allocLeng(outSize);
 		while (tmp2-- > 0)
 		{
-			sb.append((char)encArr[ByteTool.shr8(dataBuff[dataOfst + 0], 2)]);
-			sb.append((char)encArr[((dataBuff[dataOfst + 0] << 4) | ByteTool.shr8(dataBuff[dataOfst + 1], 4)) & 0x3f]);
-			sb.append((char)encArr[((dataBuff[dataOfst + 1] << 2) | ByteTool.shr8(dataBuff[dataOfst + 2], 6)) & 0x3f]);
-			sb.append((char)encArr[dataBuff[dataOfst + 2] & 0x3f]);
+			sb.appendUTF8Char(encArr[ByteTool.shr8(dataBuff[dataOfst + 0], 2)]);
+			sb.appendUTF8Char(encArr[((dataBuff[dataOfst + 0] << 4) | ByteTool.shr8(dataBuff[dataOfst + 1], 4)) & 0x3f]);
+			sb.appendUTF8Char(encArr[((dataBuff[dataOfst + 1] << 2) | ByteTool.shr8(dataBuff[dataOfst + 2], 6)) & 0x3f]);
+			sb.appendUTF8Char(encArr[dataBuff[dataOfst + 2] & 0x3f]);
 			dataOfst += 3;
 		}
 		if (tmp1 == 1)
 		{
-			sb.append((char)encArr[ByteTool.shr8(dataBuff[dataOfst + 0], 2)]);
-			sb.append((char)encArr[(dataBuff[dataOfst + 0] << 4) & 0x3f]);
+			sb.appendUTF8Char(encArr[ByteTool.shr8(dataBuff[dataOfst + 0], 2)]);
+			sb.appendUTF8Char(encArr[(dataBuff[dataOfst + 0] << 4) & 0x3f]);
 		}
 		else if (tmp1 == 2)
 		{
-			sb.append((char)encArr[ByteTool.shr8(dataBuff[dataOfst + 0], 2)]);
-			sb.append((char)encArr[((dataBuff[dataOfst + 0] << 4) | ByteTool.shr8(dataBuff[dataOfst + 1], 4)) & 0x3f]);
-			sb.append((char)encArr[(dataBuff[dataOfst + 1] << 2) & 0x3f]);
+			sb.appendUTF8Char(encArr[ByteTool.shr8(dataBuff[dataOfst + 0], 2)]);
+			sb.appendUTF8Char(encArr[((dataBuff[dataOfst + 0] << 4) | ByteTool.shr8(dataBuff[dataOfst + 1], 4)) & 0x3f]);
+			sb.appendUTF8Char(encArr[(dataBuff[dataOfst + 1] << 2) & 0x3f]);
 		}
 		return sb.toString();
 	}

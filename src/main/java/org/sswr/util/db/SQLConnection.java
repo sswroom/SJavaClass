@@ -14,6 +14,7 @@ import jakarta.persistence.Table;
 
 import org.sswr.util.data.FieldComparator;
 import org.sswr.util.data.QueryConditions;
+import org.sswr.util.data.StringBuilderUTF8;
 import org.sswr.util.data.StringUtil;
 import org.sswr.util.data.cond.BooleanObject;
 import org.sswr.util.db.DBUtil.DBType;
@@ -82,7 +83,7 @@ public class SQLConnection extends ReadingConnection
 	@Nullable
 	public <T> List<T> loadItemsAsList(@Nonnull Class<T> cls, @Nullable Object parent, @Nullable QueryConditions conditions, @Nullable List<String> joinFields, @Nullable String sortString, int dataOfst, int dataCnt)
 	{
-		StringBuilder sb;
+		StringBuilderUTF8 sb;
 		Table tableAnn = parseClassTable(cls);
 		if (tableAnn == null)
 		{
@@ -123,7 +124,7 @@ public class SQLConnection extends ReadingConnection
 		}
 
 		Map<String, DBColumnInfo> colsMap = dbCols2Map(cols);
-		sb = new StringBuilder();
+		sb = new StringBuilderUTF8();
 		PageStatus status = DBUtil.appendSelect(sb, cols, tableAnn, dbType, dataOfst, dataCnt);
 
 		List<BooleanObject> clientConditions = new ArrayList<BooleanObject>();
@@ -146,9 +147,9 @@ public class SQLConnection extends ReadingConnection
 			if (dbType == DBType.MySQL)
 			{
 				sb.append(" LIMIT ");
-				sb.append(dataOfst);
+				sb.appendI32(dataOfst);
 				sb.append(", ");
-				sb.append(dataCnt);
+				sb.appendI32(dataCnt);
 				status = PageStatus.SUCC;
 			}
 			else if (dbType == DBType.MSSQL)
@@ -156,9 +157,9 @@ public class SQLConnection extends ReadingConnection
 				if (fieldComp != null)
 				{
 					sb.append(" offset ");
-					sb.append(dataOfst);
+					sb.appendI32(dataOfst);
 					sb.append(" row fetch next ");
-					sb.append(dataCnt);
+					sb.appendI32(dataCnt);
 					sb.append(" row only");
 					status = PageStatus.SUCC;
 				}
@@ -168,12 +169,12 @@ public class SQLConnection extends ReadingConnection
 				if (dataCnt != 0)
 				{
 					sb.append(" LIMIT ");
-					sb.append(dataCnt);
+					sb.appendI32(dataCnt);
 				}
 				if (dataOfst != 0)
 				{
 					sb.append(" OFFSET ");
-					sb.append(dataOfst);
+					sb.appendI32(dataOfst);
 				}
 				status = PageStatus.SUCC;
 			}
@@ -198,7 +199,7 @@ public class SQLConnection extends ReadingConnection
 	@Nullable
 	public <T> Map<Integer, T> loadItemsIClass(@Nonnull Class<T> cls, @Nullable Object parent, @Nullable QueryConditions conditions, @Nullable List<String> joinFields)
 	{
-		StringBuilder sb;
+		StringBuilderUTF8 sb;
 		Table tableAnn = parseClassTable(cls);
 		if (tableAnn == null)
 		{
@@ -229,7 +230,7 @@ public class SQLConnection extends ReadingConnection
 			throw new IllegalArgumentException("No Id column found");
 		}
 
-		sb = new StringBuilder();
+		sb = new StringBuilderUTF8();
 		DBUtil.appendSelect(sb, cols, tableAnn, dbType, 0, 0);
 
 		List<BooleanObject> clientConditions = new ArrayList<BooleanObject>();

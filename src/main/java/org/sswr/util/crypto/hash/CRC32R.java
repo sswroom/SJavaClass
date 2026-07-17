@@ -6,7 +6,7 @@ import jakarta.annotation.Nonnull;
 
 public class CRC32R extends Hash
 {
-	private int[] crctab;
+	private @Nonnull int[] crctab;
 	private int currVal;
 
 	private static void initTable(@Nonnull int[] tab, int rpn)
@@ -122,17 +122,18 @@ public class CRC32R extends Hash
 		this.currVal = 0xffffffff;
 
 		int rpn = reverse(polynomial);
-		int []tab = crctab = new int[256 * 16];
-		initTable(tab, rpn);
+		initTable(this.crctab, rpn);
 	}
 
 	public CRC32R()
 	{
+		this.crctab = new int[256 * 16];
 		this.initTable(CRC32.getPolynormialIEEE());
 	}
 
 	public CRC32R(int polynomial)
 	{
+		this.crctab = new int[256 * 16];
 		this.initTable(polynomial);
 	}
 

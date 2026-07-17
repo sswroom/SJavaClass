@@ -7,7 +7,7 @@ import jakarta.annotation.Nonnull;
 
 public class MemoryDataRef implements StreamData
 {
-	private byte[] data;
+	private @Nonnull byte[] data;
 	private int dataOfst;
 	private int dataLength;
 

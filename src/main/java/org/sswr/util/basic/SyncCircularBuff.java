@@ -2,11 +2,12 @@ package org.sswr.util.basic;
 
 import org.sswr.util.data.ByteTool;
 
+import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
 public class SyncCircularBuff<T>
 {
-	private Object[] buff;
+	private @Nonnull Object[] buff;
 	private int getIndex;
 	private int putIndex;
 

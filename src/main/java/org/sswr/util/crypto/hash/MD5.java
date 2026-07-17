@@ -7,8 +7,8 @@ import jakarta.annotation.Nonnull;
 public final class MD5 extends Hash
 {
 	private long msgLeng;
-	private int[] h;
-	private byte[] buff;
+	private @Nonnull int[] h;
+	private @Nonnull byte[] buff;
 	private int buffSize;
 
 	private static void step1(@Nonnull int[] vals, int w, int x, int y, int z, int dataNum, int s)

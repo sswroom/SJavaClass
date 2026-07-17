@@ -6,8 +6,8 @@ import jakarta.annotation.Nonnull;
 
 public final class SHA1 extends Hash
 {
-	private int intermediateHash[];
-	private byte messageBlock[];
+	private @Nonnull int[] intermediateHash;
+	private @Nonnull byte[] messageBlock;
 	private long messageLength;
 	private int messageBlockIndex;
 

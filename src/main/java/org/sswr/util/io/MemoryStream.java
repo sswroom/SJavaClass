@@ -12,7 +12,7 @@ public class MemoryStream extends SeekableStream
 	private int capacity;
 	private int currPtr;
 	private int currSize;
-	private byte[] memPtr;
+	private @Nonnull byte[] memPtr;
 
 	public MemoryStream()
 	{

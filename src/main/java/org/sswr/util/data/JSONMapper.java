@@ -11,7 +11,7 @@ import jakarta.annotation.Nullable;
 
 public class JSONMapper
 {
-	private static <T> void object2Json(@Nonnull StringBuilder sb, @Nullable T obj)
+	private static <T> void object2Json(@Nonnull StringBuilderUTF8 sb, @Nullable T obj)
 	{
 		if (obj == null)
 		{
@@ -81,7 +81,7 @@ public class JSONMapper
 			}
 			else
 			{
-				sb.append((Float)obj);
+				sb.appendF64(dVal);
 			}
 		}
 		else if (obj instanceof Double)
@@ -104,28 +104,28 @@ public class JSONMapper
 			}
 			else
 			{
-				sb.append((Double)obj);
+				sb.appendF64(dVal);
 			}
 		}
 		else if (obj instanceof Byte)
 		{
-			sb.append((Byte)obj);
+			sb.appendI16(((Byte)obj).shortValue());
 		}
 		else if (obj instanceof Short)
 		{
-			sb.append((Short)obj);
+			sb.appendI16(((Short)obj).shortValue());
 		}
 		else if (obj instanceof Integer)
 		{
-			sb.append((Integer)obj);
+			sb.appendI32(((Integer)obj).intValue());
 		}
 		else if (obj instanceof Long)
 		{
-			sb.append((Long)obj);
+			sb.appendI64(((Long)obj).longValue());
 		}
 		else if (obj instanceof Boolean)
 		{
-			sb.append((Boolean)obj);
+			sb.appendOpt(((Boolean)obj).toString());
 		}
 		else if (obj instanceof Timestamp)
 		{
@@ -176,7 +176,7 @@ public class JSONMapper
 	@Nonnull
 	public static String object2Json(@Nullable Object obj)
 	{
-		StringBuilder sb = new StringBuilder();
+		StringBuilderUTF8 sb = new StringBuilderUTF8();
 		object2Json(sb, obj);
 		return sb.toString();
 	}

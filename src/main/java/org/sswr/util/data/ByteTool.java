@@ -657,7 +657,7 @@ public class ByteTool {
 			return val.intValue();
 	}
 
-	public static byte[] subArray(@Nonnull byte[] buff, int ofst, int size)
+	public static @Nonnull byte[] subArray(@Nonnull byte[] buff, int ofst, int size)
 	{
 		byte[] ret = new byte[size];
 		copyArray(ret, 0, buff, ofst, size);

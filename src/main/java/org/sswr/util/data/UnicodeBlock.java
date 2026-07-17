@@ -9,9 +9,10 @@ public class UnicodeBlock
 	private int firstCode;
 	private int lastCode;
 	private boolean dblWidth;
-	private String name;
+	private @Nonnull String name;
 
 	public UnicodeBlock() {
+		this.name = "";
 	}
 
 	public UnicodeBlock(int firstCode, int lastCode, boolean dblWidth, @Nonnull String name) {

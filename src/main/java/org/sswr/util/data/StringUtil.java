@@ -242,16 +242,16 @@ public class StringUtil
 	@Nonnull
 	public static String join(@Nonnull Iterable<String> strs, @Nonnull String seperator)
 	{
-		StringBuilder sb = new StringBuilder();
+		StringBuilderUTF8 sb = new StringBuilderUTF8();
 		Iterator<String> it = strs.iterator();
 		if (it.hasNext())
 		{
-			sb.append(it.next());
+			sb.appendOpt(it.next());
 		}
 		while (it.hasNext())
 		{
 			sb.append(seperator);
-			sb.append(it.next());
+			sb.appendOpt(it.next());
 		}
 		return sb.toString();
 	}
@@ -266,16 +266,16 @@ public class StringUtil
 	@Nonnull
 	public static String join(@Nonnull String strs[], @Nonnull String seperator)
 	{
-		StringBuilder sb = new StringBuilder();
+		StringBuilderUTF8 sb = new StringBuilderUTF8();
 		int i = 1;
 		int j = strs.length;
 		if (j > 0)
 		{
-			sb.append(strs[0]);
+			sb.appendOpt(strs[0]);
 			while (i < j)
 			{
 				sb.append(seperator);
-				sb.append(strs[i]);
+				sb.appendOpt(strs[i]);
 				i++;
 			}
 		}
@@ -292,16 +292,16 @@ public class StringUtil
 	@Nonnull
 	public static <T extends Object> String joinObjs(@Nonnull Iterable<T> objs, @Nonnull String seperator)
 	{
-		StringBuilder sb = new StringBuilder();
+		StringBuilderUTF8 sb = new StringBuilderUTF8();
 		Iterator<T> it = objs.iterator();
 		if (it.hasNext())
 		{
-			sb.append(it.next().toString());
+			sb.appendOpt(it.next().toString());
 		}
 		while (it.hasNext())
 		{
 			sb.append(seperator);
-			sb.append(it.next().toString());
+			sb.appendOpt(it.next().toString());
 		}
 		return sb.toString();
 	}

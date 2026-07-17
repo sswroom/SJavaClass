@@ -15,7 +15,7 @@ public abstract class BlockCipher extends Encryption
 		OFB
 	};
 
-	protected byte []iv;
+	protected @Nonnull byte []iv;
 	protected int blockSize;
 	protected ChainMode cm;
 

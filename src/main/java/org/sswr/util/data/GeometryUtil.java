@@ -680,7 +680,7 @@ public class GeometryUtil
 		return nPoints;
 	}
 
-	private static <T> void appendGeojsonList(@Nonnull Iterable<T> coll, @Nonnull StringBuilder sb) throws NoSuchFieldException, InvocationTargetException, IllegalAccessException
+	private static <T> void appendGeojsonList(@Nonnull Iterable<T> coll, @Nonnull StringBuilderUTF8 sb) throws NoSuchFieldException, InvocationTargetException, IllegalAccessException
 	{
 		Iterator<T> it = coll.iterator();
 		boolean first = true;
@@ -700,7 +700,7 @@ public class GeometryUtil
 		sb.append("]}");
 	}
 
-	private static void appendGeojsonGeometry(@Nonnull Geometry geom, @Nonnull StringBuilder sb)
+	private static void appendGeojsonGeometry(@Nonnull Geometry geom, @Nonnull StringBuilderUTF8 sb)
 	{
 		String t = geom.getGeometryType();
 		if (t.equals(Geometry.TYPENAME_POINT))
@@ -708,13 +708,13 @@ public class GeometryUtil
 			Coordinate coord = ((Point)geom).getCoordinate();
 			sb.append("{\"type\":\"Point\",");
 			sb.append("\"coordinates\":[");
-			sb.append(coord.x);
+			sb.appendF64(coord.x);
 			sb.append(",");
-			sb.append(coord.y);
+			sb.appendF64(coord.y);
 			if (!Double.isNaN(coord.z))
 			{
 				sb.append(",");
-				sb.append(coord.getZ());
+				sb.appendF64(coord.getZ());
 			}
 			sb.append("]}");
 		}
@@ -743,13 +743,13 @@ public class GeometryUtil
 				{
 					if (m > 0) sb.append(",");
 					sb.append("[");
-					sb.append(coords[m].x);
+					sb.appendF64(coords[m].x);
 					sb.append(",");
-					sb.append(coords[m].y);
+					sb.appendF64(coords[m].y);
 					if (hasZ)
 					{
 						sb.append(",");
-						sb.append(coords[m].getZ());
+						sb.appendF64(coords[m].getZ());
 					}
 					sb.append("]");
 					m++;
@@ -765,7 +765,7 @@ public class GeometryUtil
 		}
 	}
 
-	private static <T> void appendGeojson(@Nonnull T o, @Nonnull StringBuilder sb) throws NoSuchFieldException, InvocationTargetException, IllegalAccessException
+	private static <T> void appendGeojson(@Nonnull T o, @Nonnull StringBuilderUTF8 sb) throws NoSuchFieldException, InvocationTargetException, IllegalAccessException
 	{
 		Class<?> cls = o.getClass();
 		Field[] fields = cls.getDeclaredFields();
@@ -839,7 +839,7 @@ public class GeometryUtil
 							}
 							else
 							{
-								sb.append(v);
+								sb.appendI32(v.intValue());
 							}
 						}
 						else if (t.equals(double.class) || t.equals(Double.class))
@@ -852,7 +852,7 @@ public class GeometryUtil
 							}
 							else
 							{
-								sb.append(v);
+								sb.appendF64(v.doubleValue());
 							}
 						}
 						else if (t.equals(Timestamp.class))
@@ -891,7 +891,7 @@ public class GeometryUtil
 	{
 		try
 		{
-			StringBuilder sb = new StringBuilder();
+			StringBuilderUTF8 sb = new StringBuilderUTF8();
 			appendGeojsonList(o, sb);
 			return sb.toString();
 		}
@@ -907,7 +907,7 @@ public class GeometryUtil
 	{
 		try
 		{
-			StringBuilder sb = new StringBuilder();
+			StringBuilderUTF8 sb = new StringBuilderUTF8();
 			appendGeojson(o, sb);
 			return sb.toString();
 		}

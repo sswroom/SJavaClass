@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import org.sswr.util.data.StringBuilderUTF8;
+
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
@@ -113,7 +115,7 @@ public class ConfigFile
 	@Nonnull
 	public String toString()
 	{
-		StringBuilder sb = new StringBuilder();
+		StringBuilderUTF8 sb = new StringBuilderUTF8();
 		Set<String> cates = this.getCateList();
 		Iterator<String> itCate = cates.iterator();
 		String key;
@@ -130,14 +132,17 @@ public class ConfigFile
 				while (itKey.hasNext())
 				{
 					key = itKey.next();
-					if (cate.length() > 0)
+					if (key != null)
 					{
-						sb.append(cate+".");
+						if (cate.length() > 0)
+						{
+							sb.append(cate+".");
+						}
+						sb.append(key);
+						sb.append("=");
+						sb.appendOpt(this.getValue(cate, key));
+						sb.append("\r\n");
 					}
-					sb.append(key);
-					sb.append("=");
-					sb.append(this.getValue(cate, key));
-					sb.append("\r\n");
 				}
 			}
 		}

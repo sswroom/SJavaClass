@@ -16,40 +16,40 @@ public class JSText
 		int i = 0;
 		int j = carr.length;
 		char c;
-		StringBuilder sb = new StringBuilder();
-		sb.append('\'');
+		StringBuilderUTF8 sb = new StringBuilderUTF8();
+		sb.appendUTF8Char((byte)'\'');
 		while (i < j)
 		{
 			c = carr[i];
 			switch (c)
 			{
 			case '\\':
-				sb.append('\\');
-				sb.append('\\');
+				sb.appendUTF8Char((byte)'\\');
+				sb.appendUTF8Char((byte)'\\');
 				break;
 			case '\r':
-				sb.append('\\');
-				sb.append('r');
+				sb.appendUTF8Char((byte)'\\');
+				sb.appendUTF8Char((byte)'r');
 				break;
 			case '\n':
-				sb.append('\\');
-				sb.append('n');
+				sb.appendUTF8Char((byte)'\\');
+				sb.appendUTF8Char((byte)'n');
 				break;
 			case '\t':
-				sb.append('\\');
-				sb.append('t');
+				sb.appendUTF8Char((byte)'\\');
+				sb.appendUTF8Char((byte)'t');
 				break;
 			case '\'':
-				sb.append('\\');
-				sb.append('\'');
+				sb.appendUTF8Char((byte)'\\');
+				sb.appendUTF8Char((byte)'\'');
 				break;
 			default:
-				sb.append(c);
+				sb.appendChar(c, 1);
 				break;
 			}
 			i++;
 		}
-		sb.append('\'');
+		sb.appendUTF8Char((byte)'\'');
 		return sb.toString();
 	}
 
@@ -64,40 +64,40 @@ public class JSText
 		int i = 0;
 		int j = carr.length;
 		char c;
-		StringBuilder sb = new StringBuilder();
-		sb.append('\"');
+		StringBuilderUTF8 sb = new StringBuilderUTF8();
+		sb.appendUTF8Char((byte)'\"');
 		while (i < j)
 		{
 			c = carr[i];
 			switch (c)
 			{
 			case '\\':
-				sb.append('\\');
-				sb.append('\\');
+				sb.appendUTF8Char((byte)'\\');
+				sb.appendUTF8Char((byte)'\\');
 				break;
 			case '\r':
-				sb.append('\\');
-				sb.append('r');
+				sb.appendUTF8Char((byte)'\\');
+				sb.appendUTF8Char((byte)'r');
 				break;
 			case '\n':
-				sb.append('\\');
-				sb.append('n');
+				sb.appendUTF8Char((byte)'\\');
+				sb.appendUTF8Char((byte)'n');
 				break;
 			case '\t':
-				sb.append('\\');
-				sb.append('t');
+				sb.appendUTF8Char((byte)'\\');
+				sb.appendUTF8Char((byte)'t');
 				break;
 			case '\"':
-				sb.append('\\');
-				sb.append('\"');
+				sb.appendUTF8Char((byte)'\\');
+				sb.appendUTF8Char((byte)'\"');
 				break;
 			default:
-				sb.append(c);
+				sb.appendChar(c, 1);
 				break;
 			}
 			i++;
 		}
-		sb.append('\"');
+		sb.appendUTF8Char((byte)'\"');
 		return sb.toString();
 	}
 
@@ -147,7 +147,7 @@ public class JSText
 		return sb.toString();		
 	}
 
-	public static void toJSTextDQuote(@Nonnull StringBuilder sb, @Nullable String v)
+	public static void toJSTextDQuote(@Nonnull StringBuilderUTF8 sb, @Nullable String v)
 	{
 		if (v == null)
 		{
@@ -158,30 +158,30 @@ public class JSText
 		char c;
 		int i = 0;
 		int j = carr.length;
-		sb.append('\"');
+		sb.appendUTF8Char((byte)'\"');
 		while (i < j)
 		{
 			c = carr[i];
 			switch (c)
 			{
 			case '\"':
-				sb.append('\\');
-				sb.append('\"');
+				sb.appendUTF8Char((byte)'\\');
+				sb.appendUTF8Char((byte)'\"');
 				break;
 			case '\n':
-				sb.append('\\');
-				sb.append('n');
+				sb.appendUTF8Char((byte)'\\');
+				sb.appendUTF8Char((byte)'n');
 				break;
 			case '\r':
-				sb.append('\\');
-				sb.append('n');
+				sb.appendUTF8Char((byte)'\\');
+				sb.appendUTF8Char((byte)'n');
 				break;
 			default:
-				sb.append(c);
+				sb.appendChar(c, 1);
 				break;
 			}
 			i++;
 		}
-		sb.append('\"');
+		sb.appendUTF8Char((byte)'\"');
 	}
 }

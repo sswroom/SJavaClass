@@ -8,8 +8,8 @@ import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
 public class SSHPubKey {
-	private String sourceNameObj;
-	private byte[] buff;
+	private @Nonnull String sourceNameObj;
+	private @Nonnull byte[] buff;
 
 	public SSHPubKey(@Nonnull String sourceName, @Nonnull byte[] buff, int buffOfst, int buffSize)
 	{

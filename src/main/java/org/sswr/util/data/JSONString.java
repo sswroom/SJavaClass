@@ -4,7 +4,7 @@ import jakarta.annotation.Nonnull;
 
 public class JSONString extends JSONBase
 {
-	private String val;
+	private @Nonnull String val;
 
 	public JSONString(@Nonnull String val)
 	{
@@ -14,9 +14,7 @@ public class JSONString extends JSONBase
 	@Nonnull
 	public String toJSONString()
 	{
-		if (this.val == null)
-			return "null";
-		StringBuilder sb = new StringBuilder();
+		StringBuilderUTF8 sb = new StringBuilderUTF8();
 		JSText.toJSTextDQuote(sb, this.val);
 		return sb.toString();
 	}
@@ -43,10 +41,7 @@ public class JSONString extends JSONBase
 	@Nonnull
 	public String toString()
 	{
-		if (this.val == null)
-			return "null";
-		else
-			return this.val;
+		return this.val;
 	}
 
 	@Nonnull
