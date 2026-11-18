@@ -2,6 +2,7 @@
 
 # Changes:
 -Fix StringBuilderUTF8.appendHexBuff
+-Added GUICore
 
 0.8.20251231
 -Fix HTTPMyClient size problem
